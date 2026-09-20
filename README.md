@@ -2,7 +2,7 @@
 
 Private production monorepo for **Zugrio 1.0**.
 
-Zugrio is being rebuilt on a clean production foundation while preserving the tested lineage of the existing research/prototype system. The governing migration rule is:
+Zugrio is moving onto a clean production foundation while preserving the tested lineage of the existing research/prototype system. The governing migration rule is:
 
 > **Freeze → extract → equivalence-test → cut over → delete legacy path.**
 
@@ -10,20 +10,20 @@ This repository is intended to be understandable and operable by a competent eng
 
 ## Current phase
 
-**Engineering Foundation bootstrap.**
+**Engineering Foundation checkpoint.**
 
-Gate 3 has been reported complete by the implementing agent, but its independent review/clearance evidence has not yet been imported into this repository. No Gate 4 implementation or semantic migration is authorized by this bootstrap.
+Gate 3 has been reported complete by the implementing agent, but its independent review/clearance evidence has not yet been imported into this repository. Gate 4 is not authorized by this bootstrap.
 
-The immediate objectives are to establish:
-- engineering charter and source-of-truth rules;
-- AI/human collaboration protocol;
-- production stack and repository boundaries;
-- product-operating model;
-- current Gate/status record;
-- ADR/PRD conventions;
-- GitHub issue/branch/PR workflow;
-- lineage location for Gate 0–3 evidence;
-- a controlled migration path for the current landing page into Next.js/React.
+Read these first:
+
+1. [Engineering Charter](ENGINEERING_CHARTER.md)
+2. [Production Stack](STACK.md)
+3. [Current Gate Status](CURRENT-GATE.md)
+4. [Agent Instructions](AGENTS.md)
+5. [Claude Instructions](CLAUDE.md)
+6. [Repository Structure](docs/engineering/REPOSITORY_STRUCTURE.md)
+7. [AI Collaboration Contract](docs/engineering/AI_COLLABORATION.md)
+8. [GitHub Governance](docs/engineering/GITHUB_GOVERNANCE.md)
 
 ## Working production direction
 
@@ -37,15 +37,27 @@ The immediate objectives are to establish:
 - cTrader and MT5 behind broker-neutral adapter contracts.
 - No Kubernetes/Kafka/microservice complexity without measured need.
 
-See the engineering documents in this repository before implementing changes.
+The current Work-produced landing page is preserved as the visual/content baseline for a controlled Next.js migration; see [Landing Page Migration](docs/engineering/LANDING_PAGE_MIGRATION.md).
 
 ## Repository rule
 
 Do not silently change capital-authority semantics, frozen architecture, or validated Gate behavior while migrating technology. Architecture migration and decision-semantic change must be separately reviewable.
 
-## Founder role
+## Product operating model
 
 The founder operates as **Founder / Product Lead / Technical Product Owner**, owning product intent, prioritization, PRDs, acceptance criteria, release scope and material risk decisions while developing sufficient technical fluency to challenge and govern the system.
+
+See [Founder / Product Operating Model](docs/product/OPERATING_MODEL.md) and the [PRD template](docs/product/PRD-TEMPLATE.md).
+
+## Public-build policy
+
+Public content may support distribution, recruiting and customer discovery, but it must not expose sensitive implementation details or make unsupported trading-performance claims.
+
+See [Public Build Policy](docs/product/PUBLIC_BUILD_POLICY.md).
+
+## Evidence and diligence
+
+Cleared Gate evidence belongs under [legacy/gate-baselines](legacy/gate-baselines/README.md). Technical-diligence material belongs under [docs/diligence](docs/diligence/README.md).
 
 ---
 
