@@ -1,0 +1,39 @@
+name: Foundation integrity
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify governing repository documents
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            "README.md"
+            "ENGINEERING_CHARTER.md"
+            "STACK.md"
+            "AGENTS.md"
+            "CLAUDE.md"
+            "CURRENT-GATE.md"
+            "docs/engineering/AI_COLLABORATION.md"
+            "docs/engineering/GITHUB_GOVERNANCE.md"
+            "docs/engineering/REPOSITORY_STRUCTURE.md"
+            "docs/product/OPERATING_MODEL.md"
+            "docs/product/PRD-TEMPLATE.md"
+            "docs/adr/0000-template.md"
+          )
+          for path in "${required[@]}"; do
+            test -s "$path" || { echo "Missing or empty required file: $path"; exit 1; }
+          done
+          grep -q "Freeze → extract → equivalence-test → cut over → delete legacy path" ENGINEERING_CHARTER.md
+          grep -q "Gate 4: \*\*not authorized" CURRENT-GATE.md
+          echo "Foundation integrity checks passed."
