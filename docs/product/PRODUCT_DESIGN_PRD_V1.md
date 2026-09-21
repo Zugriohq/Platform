@@ -8,7 +8,9 @@ Related source-of-truth documents:
 - `docs/architecture/SYSTEM_ARCHITECTURE_V1.md`
 - `docs/architecture/DOMAIN_MODEL_V1.md`
 - `docs/brand/BRAND_PROPOSITION_V2_2_CANDIDATE.md`
-- `docs/brand/VISUAL_DIRECTION_V0_2.md`
+- `docs/brand/VISUAL_DIRECTION_V0_3.md`
+- `docs/product/PRODUCT_SURFACE_ARCHITECTURE_V1.md`
+- `docs/research/MODERN_PRODUCT_DESIGN_RESEARCH_2026_09_21.md`
 
 This document translates Zugrio's product and architecture into an experience-design brief. It does not authorize changes to trading logic, invent release status, create performance claims, or override the frozen Signal Authority Architecture.
 
@@ -183,7 +185,27 @@ The exact wording must reflect authoritative capability/status data.
 
 ---
 
-## 5. Experience principles
+## 5. Modernity criteria
+
+Zugrio must not define “modern” as merely dark, rounded, animated or minimal.
+
+A modern Zugrio experience should demonstrate:
+
+- **Immediate orientation** — active market, account, mode, freshness and selected object are obvious.
+- **Low visual negotiation cost** — important information has a reliable place and surrounding chrome recedes.
+- **Spatial continuity** — inspect/peek/expand actions preserve context instead of constantly replacing the screen.
+- **Contextual intelligence** — controls and detail appear because they are relevant to the current task.
+- **Expert acceleration** — command/search, keyboard shortcuts, recent items, favorites and saved views reward repeat use.
+- **Controlled personalization** — users can adapt layouts/density without hiding consequential authority/safety state.
+- **State transparency** — current/stale/processing/unknown/disconnected/blocked/research states are explicit.
+- **Quiet confidence** — no constant urgency, decorative AI theater or gratuitous glow.
+- **Microcraft** — excellent typography, numerals, icons, spacing, truncation, focus/hover/pressed states and empty states.
+- **Performance quality** — local interactions are fast, layout remains stable as data updates, long operations expose clear progress/state.
+- **Expansion capacity** — new product domains should fit without rebuilding the shell or adding endless permanent navigation.
+
+These criteria should be reviewed alongside `docs/research/MODERN_PRODUCT_DESIGN_RESEARCH_2026_09_21.md`.
+
+## 6. Experience principles
 
 ### 5.1 Decision-first, not dashboard-first
 
@@ -277,7 +299,7 @@ the interface should reduce ambiguity, highlight the required action/status and 
 
 ---
 
-## 6. Cross-surface product architecture
+## 7. Cross-surface product architecture
 
 Zugrio has one identity across:
 
@@ -330,7 +352,7 @@ Mobile does not need to reproduce every dense desktop interaction.
 
 ---
 
-## 7. Information architecture
+## 8. Information architecture
 
 ### Primary navigation
 
@@ -460,11 +482,70 @@ Contains:
 - display;
 - accessibility;
 - privacy;
+- billing/subscription;
+- downloads/releases;
 - developer/support diagnostics where appropriate.
+
+### Education / Academy
+
+The product architecture must reserve a mature learning surface without turning Zugrio into a generic course marketplace.
+
+Contains as staged:
+- getting started;
+- how Zugrio evaluates a decision;
+- market-family primers;
+- Method/entry concepts;
+- authority-mode education;
+- decision-review education;
+- glossary;
+- contextual “learn why” links;
+- guided demo/sandbox.
+
+Education should be reachable contextually from the relevant product object.
+
+### What's New / Announcements
+
+Contains:
+- product updates;
+- newly released capabilities;
+- migration notices;
+- important service announcements;
+- required-action notices.
+
+Critical trading workflows must not be interrupted by promotional modals.
+
+### Help / Support
+
+Contains:
+- help center;
+- contextual help;
+- contact/support;
+- report issue;
+- diagnostics;
+- service status;
+- connection troubleshooting;
+- legal/risk disclosures.
+
+### Saved Workspaces / Views
+
+Architecture should support:
+- saved layout;
+- density preference;
+- pinned modules;
+- default market/account;
+- session restore.
+
+More advanced resizable modules, templates, multi-window and multi-monitor use may be staged, but the shell must not preclude them.
+
+For the complete product-surface inventory and expansion classification, see `docs/product/PRODUCT_SURFACE_ARCHITECTURE_V1.md`.
 
 ---
 
-## 8. Desktop app shell
+## 9. Desktop app shell
+
+The composition below is a baseline requirement model, **not a frozen permanent grid**. The next exploration must also test adaptive/contextual, customizable and focus/peek workspace models.
+
+
 
 Design a desktop shell that feels native to prolonged use.
 
@@ -531,7 +612,7 @@ The designer may improve the exact arrangement, but the UX must retain clear sep
 
 ---
 
-## 9. Opportunity stream/card
+## 10. Opportunity stream/card
 
 Opportunity cards must be compact but not cryptic.
 
@@ -590,7 +671,7 @@ Exact mapping must be validated against frozen states before implementation.
 
 ---
 
-## 10. Decision Inspector
+## 11. Decision Inspector
 
 This is one of the most important product surfaces.
 
@@ -689,7 +770,7 @@ The hierarchy must remain obvious.
 
 ---
 
-## 11. Chart requirements
+## 12. Chart requirements
 
 The chart is a critical surface, not the whole product.
 
@@ -739,7 +820,7 @@ A chart failure must not cascade into a blank app shell.
 
 ---
 
-## 12. Context / macro experience
+## 13. Context / macro experience
 
 Context must be integrated into the decision rather than becoming a news-feed sidebar.
 
@@ -786,7 +867,7 @@ Not merely:
 
 ---
 
-## 13. Method profile UX
+## 14. Method profile UX
 
 The Method experience should feel serious and inspectable.
 
@@ -829,7 +910,7 @@ Never silently mutate the method attached to existing Decision Cases.
 
 ---
 
-## 14. Mandate / automation UX
+## 15. Mandate / automation UX
 
 Automation should feel like delegated authority, not a turbo button.
 
@@ -891,7 +972,7 @@ If locked:
 
 ---
 
-## 15. Execution UX
+## 16. Execution UX
 
 ### Signal mode
 
@@ -946,7 +1027,7 @@ Design clear states for:
 
 ---
 
-## 16. Risk/account UX
+## 17. Risk/account UX
 
 Risk should feel like a governing context, not a decorative gauge.
 
@@ -970,7 +1051,7 @@ Do not visually imply unsupported guarantees.
 
 ---
 
-## 17. Decision Journal / Memory
+## 18. Decision Journal / Memory
 
 The journal is a core product, not an afterthought.
 
@@ -1045,7 +1126,7 @@ Do not visually reward the profit in a way that obscures the violation.
 
 ---
 
-## 18. Capability/readiness board
+## 19. Capability/readiness board
 
 Public and authenticated versions may differ in detail.
 
@@ -1090,7 +1171,7 @@ Never maintain a manually optimistic marketing status separate from product trut
 
 ---
 
-## 19. Public website requirements
+## 20. Public website requirements
 
 The website is not a disconnected marketing skin.
 
@@ -1141,7 +1222,7 @@ Still:
 
 ---
 
-## 20. Onboarding
+## 21. Onboarding
 
 ### Flow
 
@@ -1168,7 +1249,7 @@ Auto requires a separate mandate flow after ordinary onboarding.
 
 ---
 
-## 21. Billing / subscription UX
+## 22. Billing / subscription UX
 
 Subscription gives product entitlement.
 
@@ -1199,7 +1280,7 @@ unless it only means commercial access and is clearly separated from account aut
 
 ---
 
-## 22. Connection UX
+## 23. Connection UX
 
 ### cTrader
 
@@ -1225,7 +1306,7 @@ Do not ask the user for developer client secrets.
 
 ---
 
-## 23. Notification system
+## 24. Notification system
 
 Notifications should be actionable and tiered.
 
@@ -1250,7 +1331,7 @@ High-severity safety notifications should visually differ from ordinary opportun
 
 ---
 
-## 24. Search / command access
+## 25. Search / command access
 
 Power users should be able to quickly navigate by:
 - symbol;
@@ -1266,7 +1347,7 @@ It should not expose dangerous capital actions without appropriate confirmation.
 
 ---
 
-## 25. Component system
+## 26. Component system
 
 Required primitive/component families include:
 
@@ -1334,7 +1415,7 @@ All controls need:
 
 ---
 
-## 26. Empty, degraded and error states
+## 27. Empty, degraded and error states
 
 Work must design these intentionally.
 
@@ -1369,7 +1450,7 @@ Required:
 
 ---
 
-## 27. Responsive behavior
+## 28. Responsive behavior
 
 ### Desktop
 Dense professional workspace.
@@ -1394,7 +1475,7 @@ Do not squeeze desktop into mobile.
 
 ---
 
-## 28. Accessibility
+## 29. Accessibility
 
 Required:
 - keyboard navigation;
@@ -1409,7 +1490,7 @@ Required:
 
 ---
 
-## 29. Motion system
+## 30. Motion system
 
 Motion should communicate:
 - evidence arrival;
@@ -1429,9 +1510,11 @@ Profit is an outcome, not validation of the process.
 
 ---
 
-## 30. Visual design direction
+## 31. Visual design direction
 
-Use `docs/brand/VISUAL_DIRECTION_V0_2.md`.
+Use `docs/brand/VISUAL_DIRECTION_V0_3.md`.
+
+The dark/premium material direction remains active. **Brand color is open** and must be explored in-context rather than inherited from the first prototypes.
 
 Summary:
 - deep graphite / ink dark-first foundation;
@@ -1449,7 +1532,7 @@ Final exact palette is not locked until founder reference review.
 
 ---
 
-## 31. Design quality bar
+## 32. Design quality bar
 
 The final experience should withstand comparison with world-class modern financial/software products in:
 - hierarchy;
@@ -1475,7 +1558,7 @@ The final experience should withstand comparison with world-class modern financi
 
 ---
 
-## 32. Anti-patterns
+## 33. Anti-patterns
 
 Do not produce:
 
@@ -1500,7 +1583,7 @@ Do not produce:
 
 ---
 
-## 33. GPT Work deliverables
+## 34. GPT Work deliverables
 
 Work should produce design output in stages.
 
@@ -1508,10 +1591,15 @@ Work should produce design output in stages.
 
 1. Visual mood/quality board based on founder references.
 2. Reference decomposition: what to borrow as principle vs what must not be copied.
-3. 2–3 visual system directions within the agreed dark/premium constraint.
-4. Typography candidates.
-5. Provisional color-token systems.
-6. Shape/icon/motion direction.
+3. Modernity research against current high-quality fintech/trading/professional software.
+4. Full-product IA showing how current and future domains fit.
+5. **Four or more additional layout/system hypotheses beyond Meridian / Continuum / Parallax.**
+6. At least one adaptive/contextual workspace direction.
+7. At least one bounded customizable/module direction.
+8. Typography candidates.
+9. **Four or more brand-color strategies** shown on the same product states; no inherited periwinkle default.
+10. Shape/icon/motion direction.
+11. User-facing terminology review.
 
 ### Stage B — Core app architecture
 
@@ -1581,7 +1669,7 @@ Deliver:
 
 ---
 
-## 34. Required fidelity in Work output
+## 35. Required fidelity in Work output
 
 Do not stop at a moodboard or pretty dashboard.
 
@@ -1599,7 +1687,7 @@ Interactive prototypes should demonstrate meaningful product transitions.
 
 ---
 
-## 35. Design acceptance criteria
+## 36. Design acceptance criteria
 
 The design is not ready if:
 
@@ -1638,7 +1726,7 @@ without losing the decision thread.
 
 ---
 
-## 36. Reference intake
+## 37. Reference intake
 
 When founder references arrive, do not immediately reskin Zugrio.
 
