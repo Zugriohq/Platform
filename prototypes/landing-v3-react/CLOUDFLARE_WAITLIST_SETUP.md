@@ -52,9 +52,15 @@ Turnstile is validated server-side through Siteverify. Client-side completion al
 
 ## 4. Apply the database schema
 
-Using Cloudflare D1 tooling or the dashboard, execute:
+If this is a brand-new D1 database, execute:
 
 `schema.sql`
+
+If the existing `zugrio-waitlist` database already contains the original `waitlist` table, **do not drop it**. Apply:
+
+`migrations/0002_expand_waitlist_profile.sql`
+
+That migration preserves prior rows and adds the new profile, attribution, consent-version and retention fields.
 
 The table stores:
 - normalized email
@@ -66,7 +72,7 @@ The table stores:
 - primary platform
 - consent timestamp
 - acquisition source/UTMs
-- created time
+- created/updated time
 - scheduled 12-month expiry
 
 It intentionally does not store the visitor IP.
