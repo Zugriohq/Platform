@@ -88,6 +88,90 @@ Two charts may look similar while the processes, products, costs, calibration an
 
 The production shell is a **modular monolith first**. These are enforceable package/module boundaries, not a mandate for microservices.
 
+## 2A. Identity, workspace, entitlement and client surfaces
+
+Zugrio is one product identity across public web, authenticated web, desktop and mobile surfaces.
+
+Target product flow:
+
+```text
+Public landing / waitlist
+        ↓
+Invitation / signup / login
+        ↓
+Subscription / entitlement
+        ↓
+Authenticated workspace
+        ├── web account/billing/connections
+        ├── desktop trading workspace
+        └── mobile monitoring/approval/control
+```
+
+Waitlist membership is not an account and must not silently create broker/trading authority.
+
+### Core commercial/account entities
+
+- `UserId` — human identity.
+- `WorkspaceId` — tenant boundary. Initial users may each have an individual workspace; the boundary preserves a future path to teams without making team administration a V1 requirement.
+- `SubscriptionId` — commercial subscription relationship.
+- `EntitlementSet` — features/modes the subscription is allowed to access.
+- `DeviceSessionId` — authenticated web/desktop/mobile session.
+- `BrokerConnectionId` — authorized connection to a broker/platform.
+- `TradingAccountId` — canonical customer trading-account identity.
+- `ExecutionAuthorityManifestId` — actual trading permission envelope.
+
+### Entitlement is not execution authority
+
+Commercial entitlement and capital authority are separate.
+
+A subscription may entitle a user to Semi-Auto or Auto capability, but it must never by itself create permission to trade. Actual execution still requires a valid account-bound Execution Authority Manifest plus all normal risk/state/veto/broker requirements.
+
+Likewise, loss/expiry of commercial entitlement must not disable safety-critical risk reduction for already-open exposure where the frozen architecture permits emergency reduction.
+
+### Authentication
+
+- one user identity across web, desktop and mobile;
+- short-lived access credentials with revocable refresh/session state;
+- server-authoritative subscription and entitlement checks;
+- no broker secrets stored in client bundles;
+- device/session revocation support;
+- privileged/admin actions separately authorized and audited.
+
+The identity implementation/provider may change without changing Zugrio domain semantics.
+
+### Client responsibilities
+
+**Public/authenticated web**
+- marketing and waitlist;
+- signup/login;
+- account/subscription/billing;
+- broker connections;
+- settings/method configuration;
+- download/release access;
+- journal/report access.
+
+**Desktop**
+- full trading workspace;
+- chart/market intelligence;
+- decision inspection;
+- broker/connector status;
+- execution controls according to entitlement + authority;
+- local MT5 integration where applicable.
+
+**Mobile**
+- authenticated monitoring;
+- alerts/watchlists;
+- decision review;
+- Semi-Auto approvals where safe/current;
+- positions/account status;
+- automation authority controls and emergency controls according to policy.
+
+Mobile is a first-class authenticated surface even if its implementation is staged after other V1 clients.
+
+### Release/download integrity
+
+Desktop distributions must be versioned and integrity-verifiable. Authenticated download entitlement must not be confused with trust in an arbitrary binary. Release metadata should support signed/hash-verified artifacts and update/rollback policy.
+
 ## 3. Market identity is multidimensional
 
 Do not use “asset class” as a substitute for model scope.
