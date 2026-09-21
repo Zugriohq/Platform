@@ -1,6 +1,6 @@
 # Claude Code — Zugrio Repository Instructions
 
-Read `ENGINEERING_CHARTER.md`, `STACK.md`, accepted ADRs, the current architecture specification, `CURRENT-GATE.md`, and the assigned GitHub issue before making changes.
+Read `ENGINEERING_CHARTER.md`, `STACK.md`, `docs/product/PRODUCT_DIRECTION.md`, `docs/product/ZUGRIO_1_0_PRD.md`, `docs/architecture/SYSTEM_ARCHITECTURE_V1.md`, accepted ADRs, the frozen Signal Authority specification, `CURRENT-GATE.md`, and the assigned GitHub issue before making changes.
 
 ## Non-negotiable workflow
 
