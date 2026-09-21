@@ -71,6 +71,24 @@ Where automation is central:
 
 This grammar should influence hierarchy, flow and content architecture without necessarily being presented everywhere as a branded “5M framework.”
 
+### Standing boundary rule
+
+Pillars may define requirements, thresholds, applicability and rules. **Only Moment reports whether those conditions are currently met.**
+
+Examples:
+- Market defines model/family applicability; Moment reports the current regime/state.
+- Method defines evidence requirements and invalidation rules; Moment reports whether required evidence is present and whether invalidation has occurred.
+- Mandate defines the authority envelope; Moment reports current account/risk/authority facts.
+- Memory records what occurred.
+
+### Standing language rule
+
+Use neutral/technical verbs for system behavior; agency stays with the trader.
+
+Prefer: evaluates, detects, compares, records, preserves, flags, blocks, permits under mandate, reconciles.
+
+Avoid core product copy that says Zugrio “knows,” “remembers,” “wants,” “believes,” or otherwise implies subjective human awareness.
+
 ---
 
 ## 3. Primary users
