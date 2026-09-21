@@ -2,8 +2,8 @@ export async function onRequestGet(context) {
   const env = context.env;
   const ready = Boolean(
     env.TURNSTILE_SITE_KEY &&
-    env.TURNSTILE_SECRET_KEY &&
-    env.WAITLIST_DB
+    env.TURNSTILE_SECRET &&
+    env.DB
   );
 
   return Response.json(
