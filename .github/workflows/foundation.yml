@@ -28,6 +28,10 @@ jobs:
             "docs/engineering/GITHUB_GOVERNANCE.md"
             "docs/engineering/REPOSITORY_STRUCTURE.md"
             "docs/product/OPERATING_MODEL.md"
+            "docs/product/PRODUCT_DIRECTION.md"
+            "docs/product/ZUGRIO_1_0_PRD.md"
+            "docs/architecture/SYSTEM_ARCHITECTURE_V1.md"
+            "docs/architecture/DOMAIN_MODEL_V1.md"
             "docs/product/PRD-TEMPLATE.md"
             "docs/adr/0000-template.md"
           )
