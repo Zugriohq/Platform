@@ -419,3 +419,17 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
     mask-image:radial-gradient(circle 180px at 50% 50%,#000,rgba(0,0,0,.55) 60%,transparent 85%)
   }
 }
+
+.profile-grid input{
+  width:100%;background:#0d1116;color:var(--text);border:1px solid var(--line2);
+  border-radius:9px;padding:10px 11px;outline:none;font-size:11px
+}
+.profile-grid input:focus{border-color:#68727f}
+.honeypot{
+  position:absolute!important;width:1px!important;height:1px!important;
+  overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important
+}
+.privacy-mini{margin-top:11px;border-top:1px solid var(--line);padding-top:10px}
+.privacy-mini summary{cursor:pointer;color:var(--subtle);font-size:9px}
+.privacy-mini p{font-size:9px!important;line-height:1.55!important;margin:8px 0 0!important;color:var(--subtle)!important}
+.privacy-mini a{color:var(--text);text-decoration:underline;text-underline-offset:2px}
