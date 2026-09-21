@@ -146,6 +146,10 @@ The system shall preserve method-specific invalidation rules independently from 
 
 The architecture shall support configurable Method Profiles without requiring an unrestricted end-user strategy programming language in the first release.
 
+### ZR-STR-006 — Method does not widen model scope — V1-F
+
+Enabling a market, setup or Entry Model in a Method Profile shall not automatically admit a probability/calibration model for that scope.
+
 ## 7. Context intelligence
 
 ### ZR-CTX-001 — Macro event context — V1-F
@@ -222,6 +226,10 @@ Acceptance:
 
 The journal shall support review of entered, passed, missed, expired and blocked opportunities, not only executed trades.
 
+### ZR-DEC-006 — Deterministic adherence where possible — V1-F
+
+Where process adherence can be computed from declared method/risk/authority rules and recorded events, the authoritative adherence result shall be deterministic/versioned. AI-generated coaching may explain it but shall not overwrite it.
+
 ## 9. Decision authority and states
 
 ### ZR-AUTH-001 — Preserve frozen authority semantics — V1-F
@@ -293,6 +301,10 @@ Full Auto shall exist in architecture/control semantics but remain locked until 
 ### ZR-MODE-005 — Revocation — V1-F
 
 The user shall be able to revoke automation authority. Revocation prevents new risk-increasing action while preserving governed risk-reduction behavior.
+
+### ZR-MODE-006 — Cross-device authority consistency — V1-F
+
+Authority changes shall be server-authoritative and versioned. A stale approval or second device shall not revive revoked/narrowed automation authority.
 
 ## 12. Broker and execution
 
@@ -393,6 +405,14 @@ Market-data ingestion, context ingestion, evaluations and reconciliation workers
 
 Structured logs/traces shall make it possible to explain why a decision changed or execution was blocked.
 
+### ZR-PLT-007 — Idempotent async processing — V1-F
+
+Retries/duplicate delivery from workers, schedulers or connectors shall not create duplicate decision transitions, FIRE events or broker submissions.
+
+### ZR-PLT-008 — Time discipline — V1-F
+
+Source event time, observed/ingested time and system processing time shall remain distinguishable. Capital freshness shall not rely on an untrusted client clock.
+
 ## 15A. Identity, subscription and client surfaces
 
 ### ZR-ID-001 — One product identity — V1-F
@@ -459,6 +479,10 @@ Desktop release artifacts shall be versioned and integrity-verifiable.
 ### ZR-ID-010 — Billing/provider abstraction — V1-F
 
 Payment/billing-provider implementation shall not define core Zugrio product identity or trading authority. Provider changes must be possible behind a billing/entitlement boundary.
+
+### ZR-ID-011 — Billing event integrity — V1-F
+
+Subscription/entitlement changes shall be derived from verified server-side billing events with idempotent webhook/event handling. Client-side payment success screens shall not be sufficient authority to grant entitlements.
 
 ## 16. Security and privacy
 
