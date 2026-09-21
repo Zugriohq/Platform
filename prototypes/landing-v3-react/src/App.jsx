@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import {
   ArrowRight, Check, ChevronRight, CircleAlert, LockKeyhole,
-  Menu, X, Zap, Activity, Layers3, Radio, ShieldCheck
+  Menu, X, Zap, Activity, Layers3, Radio
 } from "lucide-react";
 import CandlestickChart from "./CandlestickChart.jsx";
 import RollingDescriptors from "./RollingDescriptors.jsx";
@@ -432,10 +432,10 @@ export default function App() {
           </div>
           <div className="status-list">
             {[
-              ["FX · Signal","Illustrative","released"],
-              ["Gold · Semi-Auto","Illustrative","early access"],
-              ["MT5 Auto","Illustrative","validation pending"],
-              ["Full Auto","Illustrative","locked"],
+              ["Released","Available inside its stated scope","STATUS LANGUAGE"],
+              ["Early access","Limited invitation or cohort","STATUS LANGUAGE"],
+              ["Validation pending","Not released for use","STATUS LANGUAGE"],
+              ["Locked","Unavailable by policy or readiness","STATUS LANGUAGE"],
             ].map(([name,scope,state], i) => (
               <motion.div
                 key={name}
@@ -447,7 +447,7 @@ export default function App() {
                 <b>{name}</b><span>{scope}</span><em>{state}</em>
               </motion.div>
             ))}
-            <small>Example states only. The live site must be sourced from authoritative capability data.</small>
+            <small>This preview demonstrates readiness language only. It does not state that any market, broker or automation mode is currently released. A production board must be generated from authoritative capability data.</small>
           </div>
         </motion.section>
 
@@ -470,8 +470,8 @@ export default function App() {
           ].map(([q,a]) => <details key={q}><summary>{q}<ChevronRight size={16}/></summary><p>{a}</p></details>)}
         </motion.section>
 
-        <Waitlist />
         <SilverReveal />
+        <Waitlist />
       </main>
 
       <footer>
