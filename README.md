@@ -19,11 +19,12 @@ Read these first:
 1. [Engineering Charter](ENGINEERING_CHARTER.md)
 2. [Production Stack](STACK.md)
 3. [Current Gate Status](CURRENT-GATE.md)
-4. [Agent Instructions](AGENTS.md)
-5. [Claude Instructions](CLAUDE.md)
-6. [Repository Structure](docs/engineering/REPOSITORY_STRUCTURE.md)
-7. [AI Collaboration Contract](docs/engineering/AI_COLLABORATION.md)
-8. [GitHub Governance](docs/engineering/GITHUB_GOVERNANCE.md)
+4. [Product Direction](docs/product/PRODUCT_DIRECTION.md)
+5. [Agent Instructions](AGENTS.md)
+6. [Claude Instructions](CLAUDE.md)
+7. [Repository Structure](docs/engineering/REPOSITORY_STRUCTURE.md)
+8. [AI Collaboration Contract](docs/engineering/AI_COLLABORATION.md)
+9. [GitHub Governance](docs/engineering/GITHUB_GOVERNANCE.md)
 
 ## Product scope
 
@@ -41,7 +42,7 @@ Zugrio 1.0 carries **forex, gold/metals and synthetic indices in parallel**, whi
 - cTrader and MT5 behind broker-neutral adapter contracts.
 - No Kubernetes/Kafka/microservice complexity without measured need.
 
-The current Work-produced landing page is preserved as the visual/content baseline for a controlled Next.js migration; see [Landing Page Migration](docs/engineering/LANDING_PAGE_MIGRATION.md).
+The current Work-produced landing page is preserved as a **migration-equivalence baseline**, not an approved permanent brand identity; see [Landing Page Migration](docs/engineering/LANDING_PAGE_MIGRATION.md).
 
 ## Repository rule
 
