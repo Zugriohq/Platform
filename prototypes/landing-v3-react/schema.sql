@@ -7,7 +7,10 @@ CREATE TABLE IF NOT EXISTS waitlist_signups (
   mode TEXT NOT NULL,
   strategy TEXT NOT NULL,
   platform TEXT NOT NULL,
+  country TEXT NOT NULL,
+  discovery TEXT NOT NULL,
   consent INTEGER NOT NULL CHECK (consent = 1),
+  consent_version TEXT NOT NULL,
   consent_at TEXT NOT NULL,
   source TEXT NOT NULL,
   referrer TEXT NOT NULL DEFAULT '',
@@ -27,5 +30,9 @@ CREATE INDEX IF NOT EXISTS idx_waitlist_market
 CREATE INDEX IF NOT EXISTS idx_waitlist_role
   ON waitlist_signups(role);
 
--- Retention operation to run on a schedule or manually:
--- DELETE FROM waitlist_signups WHERE expires_at < datetime('now');
+CREATE INDEX IF NOT EXISTS idx_waitlist_country
+  ON waitlist_signups(country);
+
+-- 12-month retention cleanup:
+-- DELETE FROM waitlist_signups
+-- WHERE expires_at < strftime('%Y-%m-%dT%H:%M:%fZ','now');
