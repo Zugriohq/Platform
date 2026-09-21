@@ -393,6 +393,73 @@ Market-data ingestion, context ingestion, evaluations and reconciliation workers
 
 Structured logs/traces shall make it possible to explain why a decision changed or execution was blocked.
 
+## 15A. Identity, subscription and client surfaces
+
+### ZR-ID-001 — One product identity — V1-F
+
+A user shall have one Zugrio identity across authenticated web, desktop and mobile surfaces.
+
+Acceptance:
+- the same account can authenticate on supported clients;
+- sessions are individually revocable;
+- subscription/entitlement state is server-authoritative.
+
+### ZR-ID-002 — Waitlist is not account creation — V1-F
+
+Joining early access/waitlist shall not create a trading account, broker connection or execution authority.
+
+### ZR-ID-003 — Workspace tenant boundary — V1-F
+
+User, broker, trading-account, decision and billing records shall be scoped to a Workspace/Tenant boundary even if V1 primarily exposes individual workspaces.
+
+### ZR-ID-004 — Subscription entitlement — V1-F
+
+Commercial subscription shall produce a versioned/inspectable Entitlement Set.
+
+Entitlement may determine whether Signal, Semi-Auto, Auto or Full Auto capabilities are commercially available, but entitlement shall not itself authorize trading.
+
+### ZR-ID-005 — Authority separation — V1-F
+
+Actual execution shall require a separate valid Execution Authority Manifest bound to the user/workspace/account/strategy/mode scope.
+
+Acceptance:
+- upgrading a subscription cannot place a trade;
+- disabling Auto authority prevents new automatic risk-increasing actions even if the plan still entitles Auto;
+- safety/risk-reduction behavior for existing positions follows the governing safety architecture rather than ordinary commercial gating.
+
+### ZR-ID-006 — Signup/subscription/download flow — V1-F
+
+The product shall support the intended progression:
+
+```text
+landing/waitlist
+→ invitation or signup/login
+→ subscription/payment
+→ account entitlement
+→ desktop download/access
+→ authenticated desktop/mobile use
+```
+
+Individual rollout stages may be invite-gated during early access.
+
+### ZR-ID-007 — Authenticated desktop — V1-F
+
+Desktop shall require Zugrio authentication for account-specific/subscription-dependent functionality.
+
+### ZR-ID-008 — Authenticated mobile — V1-F
+
+Mobile shall be designed as an authenticated first-class surface for monitoring, alerts, review, approvals and permitted controls.
+
+Implementation may be staged, but mobile identity/API contracts must not require a future backend redesign.
+
+### ZR-ID-009 — Release integrity — V1-F
+
+Desktop release artifacts shall be versioned and integrity-verifiable.
+
+### ZR-ID-010 — Billing/provider abstraction — V1-F
+
+Payment/billing-provider implementation shall not define core Zugrio product identity or trading authority. Provider changes must be possible behind a billing/entitlement boundary.
+
 ## 16. Security and privacy
 
 ### ZR-SEC-001 — Least-privilege broker auth — V1-F
