@@ -7,7 +7,8 @@ Platform/
 ├── apps/
 │   ├── web/
 │   ├── api/
-│   └── desktop/
+│   ├── desktop/
+│   └── mobile/
 ├── packages/
 │   ├── decision-core/
 │   ├── domain/
@@ -18,6 +19,9 @@ Platform/
 │   ├── strategy-contract/
 │   ├── context-evidence/
 │   ├── decision-ledger/
+│   ├── identity-contract/
+│   ├── entitlements/
+│   ├── billing-contract/
 │   ├── risk/
 │   ├── position-management/
 │   ├── execution-contract/
@@ -67,6 +71,9 @@ Do not create empty architecture for appearance. Directories should be introduce
 - `strategy-contract` owns versioned Method Profile and Entry Model contracts.
 - `context-evidence` owns sourced macro/news/session/related-market facts and provenance.
 - `decision-ledger` owns append-only Decision Case history and read projections.
+- `identity-contract` owns user/workspace/session identity types independent of auth provider.
+- `entitlements` owns commercial feature availability; it must not create execution authority.
+- `billing-contract` isolates payment/subscription provider semantics from the trading domain.
 - `candidate-contract` owns candidate/evidence boundary types.
 - `position-management` remains distinct from initial entry construction and broker translation.
 
