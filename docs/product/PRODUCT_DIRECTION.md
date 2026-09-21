@@ -39,7 +39,7 @@ Zugrio 1.0 is not forex-only.
 The initial product scope carries these tracks **in parallel**:
 
 - **Forex** — first in public positioning and primary launch narrative.
-- **Gold / metals** — included in the initial market scope, with its own data, cost, session and calibration requirements.
+- **Gold** — included in the initial market scope, with its own data, cost, session and calibration requirements.
 - **Synthetic indices** — retained as a first-class initial product track because Zugrio's lineage began there and dedicated synthetic-market logic/evidence already exists.
 
 Public messaging may lead with forex, but product scope must not silently demote gold or synthetics to a future version.
