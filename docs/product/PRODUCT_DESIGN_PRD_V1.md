@@ -8,7 +8,7 @@ Related source-of-truth documents:
 - `docs/architecture/SYSTEM_ARCHITECTURE_V1.md`
 - `docs/architecture/DOMAIN_MODEL_V1.md`
 - `docs/brand/BRAND_PROPOSITION_V2_2_CANDIDATE.md`
-- `docs/brand/VISUAL_DIRECTION_V0_1.md`
+- `docs/brand/VISUAL_DIRECTION_V0_2.md`
 
 This document translates Zugrio's product and architecture into an experience-design brief. It does not authorize changes to trading logic, invent release status, create performance claims, or override the frozen Signal Authority Architecture.
 
@@ -1431,7 +1431,7 @@ Profit is an outcome, not validation of the process.
 
 ## 30. Visual design direction
 
-Use `docs/brand/VISUAL_DIRECTION_V0_1.md`.
+Use `docs/brand/VISUAL_DIRECTION_V0_2.md`.
 
 Summary:
 - deep graphite / ink dark-first foundation;
