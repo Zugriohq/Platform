@@ -11,6 +11,8 @@ const initialFields = {
   mode: "",
   strategy: "",
   platform: "",
+  country: "",
+  discovery: "",
 };
 
 function loadTurnstileScript() {
@@ -111,7 +113,7 @@ export default function Waitlist() {
   const update = event => setFields(v => ({ ...v, [event.target.name]: event.target.value }));
 
   function missingProfileFields() {
-    return ["role","market","horizon","mode","strategy","platform"].filter(key => !fields[key]);
+    return ["role","market","horizon","mode","strategy","platform","country","discovery"].filter(key => !fields[key]);
   }
 
   async function submit(event) {
@@ -301,6 +303,32 @@ export default function Waitlist() {
                 <option value="desktop">Desktop</option>
                 <option value="mobile">Mobile</option>
                 <option value="both">Desktop + mobile</option>
+              </select>
+            </label>
+
+            <label>Country / region
+              <input
+                name="country"
+                type="text"
+                autoComplete="country-name"
+                maxLength="80"
+                required
+                value={fields.country}
+                onChange={update}
+                placeholder="e.g. Nigeria"
+              />
+            </label>
+
+            <label>How did you hear about Zugrio?
+              <select name="discovery" required value={fields.discovery} onChange={update}>
+                <option value="">Choose</option>
+                <option value="instagram">Instagram</option>
+                <option value="x">X / Twitter</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="friend">Friend / colleague</option>
+                <option value="community">Trading community</option>
+                <option value="search">Search</option>
+                <option value="other">Other</option>
               </select>
             </label>
           </div>
