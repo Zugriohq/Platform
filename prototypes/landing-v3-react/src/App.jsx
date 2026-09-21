@@ -1,21 +1,42 @@
 import React, { useMemo, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import {
-  ArrowRight, Check, ChevronRight, CircleAlert, Clock3, LockKeyhole,
-  Menu, ShieldCheck, X, Zap, History, Activity, Layers3
+  ArrowRight, Check, ChevronRight, CircleAlert, LockKeyhole,
+  Menu, X, Zap, Activity, Layers3, Radio, ShieldCheck
 } from "lucide-react";
+import CandlestickChart from "./CandlestickChart.jsx";
+import RollingDescriptors from "./RollingDescriptors.jsx";
+import Waitlist from "./Waitlist.jsx";
 
 const MARKETS = {
-  FX: { label: "EUR/USD", family: "FX", price: "1.08462", note: "London / New York overlap", status: "Model coverage available" },
-  GOLD: { label: "Gold / USD", family: "Gold", price: "2,614.30", note: "US session", status: "Separate market scope" },
-  SYNTH: { label: "Jump 50", family: "Synthetic", price: "183.42", note: "Synthetic specialist", status: "Family-specific evaluation" },
+  FX: {
+    label: "EUR/USD",
+    family: "FX",
+    note: "London / New York overlap",
+    status: "Market-specific evaluation",
+    priceSpec: { base: 1.0782, unit: .0001, digits: 5 },
+  },
+  GOLD: {
+    label: "Gold / USD",
+    family: "Gold",
+    note: "US session",
+    status: "Separately scoped intelligence",
+    priceSpec: { base: 2532, unit: 1.05, digits: 2 },
+  },
+  SYNTH: {
+    label: "Jump 50",
+    family: "Synthetic",
+    note: "Synthetic specialist",
+    status: "Family-specific evaluation",
+    priceSpec: { base: 96, unit: 1.18, digits: 2 },
+  },
 };
 
 const CASES = {
   valid: {
     label: "Current entry qualifies",
     tone: "good",
-    current: "1.08434",
+    currentNorm: 61,
     rr: "1.88R",
     copy: "The method still qualifies, current conditions remain acceptable and the prepared intent is waiting for approval.",
     action: "Prepared · Semi-Auto",
@@ -23,9 +44,9 @@ const CASES = {
   degraded: {
     label: "Entry no longer qualifies",
     tone: "warn",
-    current: "1.08580",
+    currentNorm: 84,
     rr: "0.67R",
-    copy: "The original signal remains recorded, but current entry economics have deteriorated. The system does not silently relabel the old entry as current.",
+    copy: "The original signal remains recorded, but current entry economics have deteriorated. The old entry is not silently relabelled as current.",
     action: "Pass · Reassess",
   },
 };
@@ -63,18 +84,55 @@ const STORY = [
   },
 ];
 
+const TICKER = [
+  "Market-specific intelligence",
+  "Method-bound evaluation",
+  "Current-condition checks",
+  "Authority before action",
+  "Decision history intact",
+  "FX · Gold · Synthetic Indices",
+];
+
+const sectionReveal = {
+  initial: { opacity: 0, y: 34 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, amount: .18 },
+  transition: { duration: .72, ease: [0.16, 1, 0.3, 1] },
+};
+
+function fmt(priceSpec, value) {
+  return (priceSpec.base + value * priceSpec.unit).toFixed(priceSpec.digits);
+}
+
+function SignalTicker() {
+  const doubled = [...TICKER, ...TICKER];
+  return (
+    <div className="signal-ticker" aria-label="Zugrio product descriptors">
+      <div className="signal-ticker-track">
+        {doubled.map((text, i) => (
+          <span key={text + i}><i /> {text}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Shell({ activeStep, marketKey, setMarketKey, caseKey, setCaseKey }) {
   const market = MARKETS[marketKey];
   const item = CASES[caseKey];
+  const frozenEntry = fmt(market.priceSpec, 60);
+  const current = fmt(market.priceSpec, item.currentNorm);
+  const displayPrice = current;
+
   return (
-    <div className="product-shell" aria-label="Illustrative Zugrio decision workspace">
+    <div className="product-shell" data-step={activeStep} aria-label="Illustrative Zugrio decision workspace">
       <div className="shell-top">
         <div className="shell-brand">
           <span className="zmark">Z</span>
           <span>Decision workspace</span>
         </div>
         <div className="shell-health"><i /> 37s fresh</div>
-        <div className="shell-account">DEMO · SIGNAL / SEMI</div>
+        <div className="shell-account">DEMO-01 · SEMI-AUTO</div>
       </div>
 
       <div className="market-switcher" role="group" aria-label="Illustrative market">
@@ -83,29 +141,28 @@ function Shell({ activeStep, marketKey, setMarketKey, caseKey, setCaseKey }) {
             <span>{m.family}</span><b>{m.label}</b>
           </button>
         ))}
+        <div className="market-context-pill"><Radio size={12}/> illustrative stream</div>
       </div>
 
       <div className="case-grid">
         <div className="chart-panel">
           <div className="chart-head">
-            <div><small>{market.family}</small><h3>{market.label}</h3></div>
-            <div className="live-price"><small>Illustrative price</small><strong>{market.price}</strong></div>
+            <div>
+              <small>{market.family} · M15</small>
+              <h3>{market.label}</h3>
+            </div>
+            <div className="live-price">
+              <small>Illustrative price</small>
+              <strong>{displayPrice}</strong>
+            </div>
           </div>
-          <svg className="chart" viewBox="0 0 760 300" role="img" aria-label="Illustrative price chart">
-            <defs>
-              <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--accent)" stopOpacity=".15"/>
-                <stop offset="100%" stopColor="var(--accent)" stopOpacity="0"/>
-              </linearGradient>
-            </defs>
-            {[60,120,180,240].map(y => <line key={y} x1="0" x2="760" y1={y} y2={y} className="grid-line" />)}
-            <path className="area" d="M0 242 L40 226 L80 232 L120 190 L160 205 L200 166 L240 174 L280 130 L320 145 L360 108 L400 120 L440 84 L480 116 L520 92 L560 112 L600 75 L640 104 L680 70 L720 88 L760 62 L760 300 L0 300Z" />
-            <path className="price-line" d="M0 242 L40 226 L80 232 L120 190 L160 205 L200 166 L240 174 L280 130 L320 145 L360 108 L400 120 L440 84 L480 116 L520 92 L560 112 L600 75 L640 104 L680 70 L720 88 L760 62" />
-            <line x1="0" x2="760" y1="158" y2="158" className="frozen-line" />
-            <text x="12" y="151" className="svg-label">frozen entry</text>
-            <line x1="0" x2="760" y1={caseKey === "valid" ? "148" : "103"} y2={caseKey === "valid" ? "148" : "103"} className="current-line" />
-            <text x="630" y={caseKey === "valid" ? "140" : "95"} className="svg-label strong">current</text>
-          </svg>
+
+          <CandlestickChart
+            marketKey={marketKey}
+            caseKey={caseKey}
+            priceSpec={market.priceSpec}
+          />
+
           <div className="chart-foot">
             <span>{market.note}</span>
             <span>{market.status}</span>
@@ -114,26 +171,46 @@ function Shell({ activeStep, marketKey, setMarketKey, caseKey, setCaseKey }) {
 
         <aside className="inspector">
           <div className="inspector-title">
-            <span>Decision case</span><b>#EUR-091</b>
+            <span>Decision case</span><b>#{marketKey}-091</b>
           </div>
-          <div className="scope-row"><span>Method</span><b>APA Intraday · v3</b></div>
-          <div className="scope-row"><span>State</span><b>Signal preserved</b></div>
 
-          <div className={"now-card " + item.tone}>
+          <div className="scope-row method-row"><span>Method</span><b>APA Intraday · v3</b></div>
+          <div className="scope-row"><span>State</span><b>Signal preserved</b></div>
+          <div className="scope-row context-row"><span>Context</span><b>{market.note}</b></div>
+
+          <motion.div
+            key={caseKey + marketKey}
+            className={"now-card " + item.tone}
+            initial={{ opacity: 0, y: 10, filter: "blur(5px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: .38, ease: [0.16,1,0.3,1] }}
+          >
             <div className="now-label">WHAT CHANGED</div>
             <strong>{item.label}</strong>
             <p>{item.copy}</p>
+          </motion.div>
+
+          <div className="evidence-strip" aria-label="Illustrative evidence">
+            <span>Structure <b>holds</b></span>
+            <span>Method <b>matched</b></span>
+            <span>Entry <b>{caseKey === "valid" ? "current" : "degraded"}</b></span>
           </div>
 
           <div className="delta">
-            <div><span>Frozen entry</span><b>1.08420</b></div>
-            <div><span>Current</span><b>{item.current}</b></div>
+            <div><span>Frozen entry</span><b>{frozenEntry}</b></div>
+            <div><span>Current</span><b>{current}</b></div>
             <div><span>Gross R</span><b>{item.rr}</b></div>
           </div>
 
           <div className="mandate-line">
-            <div><small>AUTHORITY</small><b>{item.action}</b></div>
+            <div><small>MANDATE BOUNDARY</small><b>{item.action}</b></div>
             <LockKeyhole size={16}/>
+          </div>
+
+          <div className="micro-thread" aria-label="Illustrative decision history">
+            <span className="done">09:18 <b>qualified</b></span>
+            <span className="done">09:24 <b>context checked</b></span>
+            <span className={caseKey === "degraded" ? "attention" : "done"}>09:31 <b>{caseKey === "degraded" ? "entry changed" : "entry holds"}</b></span>
           </div>
 
           <div className="story-state">
@@ -160,13 +237,14 @@ function Story({ activeStep, setActiveStep, marketKey, setMarketKey, caseKey, se
           <Shell {...{ activeStep, marketKey, setMarketKey, caseKey, setCaseKey }} />
         </div>
         <div className="story-copy">
-          {STORY.map((s) => (
+          {STORY.map((s, index) => (
             <motion.article
               key={s.key}
               className={"story-step " + (activeStep === s.key ? "active" : "")}
               onViewportEnter={() => setActiveStep(s.key)}
-              viewport={{ amount: .6, margin: "-10% 0px -20% 0px" }}
+              viewport={{ amount: .58, margin: "-8% 0px -22% 0px" }}
             >
+              <div className="story-index">0{index + 1}</div>
               <div className="kicker">{s.overline}</div>
               <h2>{s.title}</h2>
               <p>{s.body}</p>
@@ -181,60 +259,13 @@ function Story({ activeStep, setActiveStep, marketKey, setMarketKey, caseKey, se
   );
 }
 
-function Waitlist() {
-  const [status, setStatus] = useState("ready");
-  const [email, setEmail] = useState("");
-  async function submit(e) {
-    e.preventDefault();
-    setStatus("submitting");
-    try {
-      const res = await fetch("/api/waitlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, source: "landing-v3-prototype" }),
-      });
-      if (!res.ok) throw new Error("unavailable");
-      setStatus("success");
-    } catch {
-      setStatus("unavailable");
-    }
-  }
-  return (
-    <section className="waitlist" id="early-access">
-      <div className="waitlist-copy">
-        <div className="kicker">EARLY ACCESS</div>
-        <h2>See the market. Keep your method. Stay in control.</h2>
-        <p>Join the waitlist for product previews, build updates and invitations as Zugrio opens access.</p>
-        <div className="journey">
-          <span><b>01</b> Join the list</span>
-          <span><b>02</b> Get invited</span>
-          <span><b>03</b> Create your account</span>
-        </div>
-      </div>
-      <form onSubmit={submit}>
-        <label htmlFor="email">Email</label>
-        <div className="form-row">
-          <input id="email" type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" />
-          <button type="submit" disabled={status === "submitting"}>Join the waitlist <ArrowRight size={16}/></button>
-        </div>
-        <label className="consent"><input type="checkbox" required/> Send me Zugrio product updates and early-access invitations.</label>
-        <p className={"form-status " + status}>
-          {status === "ready" && "No payment, password or broker credentials required. Joining does not create an account."}
-          {status === "submitting" && "Submitting…"}
-          {status === "success" && "You’re on the list. Check your email for future updates."}
-          {status === "unavailable" && "Signup is not connected in this prototype. Your email has not been stored."}
-        </p>
-      </form>
-    </section>
-  );
-}
-
 export default function App() {
   const prefersReduced = useReducedMotion();
   const { scrollYProgress } = useScroll();
-  const heroScale = useTransform(scrollYProgress, [0, .12], [0.86, 1]);
-  const heroRotate = useTransform(scrollYProgress, [0, .12], [prefersReduced ? 0 : 2.2, 0]);
-  const heroY = useTransform(scrollYProgress, [0, .12], [prefersReduced ? 0 : 70, 0]);
+  const heroScale = useTransform(scrollYProgress, [0, .12], [0.84, 1]);
+  const heroRotate = useTransform(scrollYProgress, [0, .12], [prefersReduced ? 0 : 2.6, 0]);
+  const heroY = useTransform(scrollYProgress, [0, .12], [prefersReduced ? 0 : 86, 0]);
+  const heroOpacity = useTransform(scrollYProgress, [0, .14], [1, .96]);
 
   const [menu, setMenu] = useState(false);
   const [marketKey, setMarketKey] = useState("FX");
@@ -250,8 +281,14 @@ export default function App() {
     ["Status", "#status"],
   ], []);
 
+  const heroWords = ["The", "chart", "is", "not", "the", "market."];
+
   return (
     <>
+      <motion.div className="scroll-progress" style={{ scaleX: scrollYProgress }} />
+      <div className="ambient ambient-one" aria-hidden="true" />
+      <div className="ambient ambient-two" aria-hidden="true" />
+
       <header className="site-header">
         <a className="brand" href="#top"><span className="zmark">Z</span><b>ZUGRIO</b></a>
         <nav className={menu ? "nav-links open" : "nav-links"}>
@@ -263,32 +300,71 @@ export default function App() {
 
       <main id="top">
         <section className="hero" id="product">
-          <motion.div initial={prefersReduced ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .6 }} className="hero-copy">
-            <div className="eyebrow"><i/> MARKET-AWARE TRADING INTELLIGENCE · PRIVATE BUILD</div>
-            <h1>The chart is not the market.</h1>
-            <p>Zugrio evaluates each opportunity in the market that produced it, against your method and current conditions—then shows what still holds, what changed, and what, if anything, is permitted next.</p>
-            <div className="hero-actions">
+          <motion.div
+            initial={prefersReduced ? false : "hidden"}
+            animate="show"
+            variants={{
+              hidden: { opacity: 0 },
+              show: { opacity: 1, transition: { staggerChildren: .07, delayChildren: .08 } }
+            }}
+            className="hero-copy"
+          >
+            <motion.div variants={{ hidden:{opacity:0,y:10},show:{opacity:1,y:0} }} className="eyebrow">
+              <i/> MARKET-AWARE TRADING INTELLIGENCE · PRIVATE BUILD
+            </motion.div>
+
+            <h1 aria-label="The chart is not the market.">
+              {heroWords.map((word, i) => (
+                <motion.span
+                  aria-hidden="true"
+                  key={word + i}
+                  variants={{
+                    hidden: { opacity: 0, y: 28, filter: "blur(10px)" },
+                    show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: .62, ease: [0.16,1,0.3,1] } }
+                  }}
+                >
+                  {word}{i < heroWords.length - 1 ? " " : ""}
+                </motion.span>
+              ))}
+            </h1>
+
+            <motion.p variants={{ hidden:{opacity:0,y:14},show:{opacity:1,y:0} }}>
+              Zugrio evaluates each opportunity in the market that produced it, against your method and current conditions—then shows what still holds, what changed, and what, if anything, is permitted next.
+            </motion.p>
+
+            <motion.div variants={{ hidden:{opacity:0,y:12},show:{opacity:1,y:0} }}>
+              <RollingDescriptors />
+            </motion.div>
+
+            <motion.div variants={{ hidden:{opacity:0,y:12},show:{opacity:1,y:0} }} className="hero-actions">
               <a className="primary" href="#early-access">Join the early-access waitlist <ArrowRight size={17}/></a>
               <a className="secondary" href="#how">Explore the decision preview <ChevronRight size={17}/></a>
-            </div>
-            <div className="scope">FX <span/> Gold <span/> Synthetic Indices</div>
-            <small>In development and private validation. No public trading access yet. No performance claim.</small>
+            </motion.div>
+
+            <motion.div variants={{ hidden:{opacity:0},show:{opacity:1} }} className="scope">
+              FX <span/> Gold <span/> Synthetic Indices
+            </motion.div>
+            <motion.small variants={{ hidden:{opacity:0},show:{opacity:1} }}>
+              In development and private validation. No public trading access yet. No performance claim.
+            </motion.small>
           </motion.div>
 
-          <motion.div className="hero-product" style={{ scale: heroScale, rotateX: heroRotate, y: heroY }}>
+          <motion.div className="hero-product" style={{ scale: heroScale, rotateX: heroRotate, y: heroY, opacity: heroOpacity }}>
             <Shell {...{ activeStep, marketKey, setMarketKey, caseKey, setCaseKey }} />
           </motion.div>
         </section>
 
-        <section className="bridge">
+        <SignalTicker />
+
+        <motion.section className="bridge" {...sectionReveal}>
           <div className="kicker">ONE DECISION · MORE OF THE RELEVANT PICTURE</div>
           <h2>The chart is where a trade starts.<br/>Not where the decision ends.</h2>
           <p>Price tells you what happened. A trading decision also depends on what market produced that move, whether it fits your method, what is true now, what your account can absorb and what authority you have actually granted.</p>
-        </section>
+        </motion.section>
 
         <Story {...{ activeStep, setActiveStep, marketKey, setMarketKey, caseKey, setCaseKey }} />
 
-        <section className="positive" id="control">
+        <motion.section className="positive" id="control" {...sectionReveal}>
           <div className="positive-copy">
             <div className="kicker">WHEN THE CASE STILL HOLDS</div>
             <h2>Discipline should know when to proceed, too.</h2>
@@ -296,38 +372,58 @@ export default function App() {
           </div>
           <div className="progression">
             {["Opportunity detected","Method requirements satisfied","Current context acceptable","Entry still qualifies","Risk available","Intent prepared","User approves","Broker acknowledges","Protection confirmed"].map((x,i) => (
-              <div key={x}><span>{String(i+1).padStart(2,"0")}</span><b>{x}</b><Check size={15}/></div>
+              <motion.div
+                key={x}
+                initial={{ opacity:0, x:20 }}
+                whileInView={{ opacity:1, x:0 }}
+                viewport={{ once:true, amount:.7 }}
+                transition={{ duration:.4, delay:i*.035 }}
+              >
+                <span>{String(i+1).padStart(2,"0")}</span><b>{x}</b><Check size={15}/>
+              </motion.div>
             ))}
             <small>Illustrative workflow only. Not a live trade, signal or performance result.</small>
           </div>
-        </section>
+        </motion.section>
 
-        <section className="journal" id="journal">
+        <motion.section className="journal" id="journal" {...sectionReveal}>
           <div>
             <div className="kicker">DECISION HISTORY</div>
             <h2>The reason stays with the trade.<br/>Hindsight doesn’t get to rewrite it.</h2>
             <p>Entered, passed, missed, blocked, expired and overridden opportunities all belong in the record—not only winning trades.</p>
           </div>
-          <div className="record-card">
+          <motion.div
+            className="record-card"
+            initial={{ opacity:0, rotateX:8, y:24 }}
+            whileInView={{ opacity:1, rotateX:0, y:0 }}
+            viewport={{ once:true, amount:.4 }}
+            transition={{ duration:.65, ease:[0.16,1,0.3,1] }}
+          >
             <div><span>SYSTEM</span><b>PASS</b></div>
             <div><span>USER</span><b>OVERRIDE</b></div>
             <div><span>OUTCOME</span><b>PROFIT</b></div>
             <div><span>PROCESS</span><b className="warn-text">METHOD VIOLATION</b></div>
-          </div>
-        </section>
+          </motion.div>
+        </motion.section>
 
-        <section className="markets" id="markets">
+        <motion.section className="markets" id="markets" {...sectionReveal}>
           <div className="kicker">INITIAL MARKET SCOPE</div>
           <h2>Built first for FX, Gold and Synthetic Indices.</h2>
           <p>These markets are being developed in parallel, with separate model scope, calibration, context and execution requirements.</p>
           <div className="market-cards">
-            <article><Activity/><b>FX</b><span>Market/session/macro-aware</span></article>
-            <article><Layers3/><b>Gold</b><span>Separately scoped behavior and costs</span></article>
-            <article><Zap/><b>Synthetic Indices</b><span>Specialist family logic where validated</span></article>
+            {[
+              [Activity,"FX","Market/session/macro-aware"],
+              [Layers3,"Gold","Separately scoped behavior and costs"],
+              [Zap,"Synthetic Indices","Specialist family logic where validated"],
+            ].map(([Icon,title,copy]) => (
+              <motion.article key={title} whileHover={prefersReduced ? {} : { y:-6, scale:1.01 }} transition={{ duration:.22 }}>
+                <Icon/><b>{title}</b><span>{copy}</span>
+              </motion.article>
+            ))}
           </div>
-        </section>
+        </motion.section>
 
-        <section className="status-board" id="status">
+        <motion.section className="status-board" id="status" {...sectionReveal}>
           <div className="status-copy">
             <div className="kicker">PRODUCT STATUS</div>
             <h2>Know exactly what’s live.</h2>
@@ -339,18 +435,28 @@ export default function App() {
               ["Gold · Semi-Auto","Illustrative","early access"],
               ["MT5 Auto","Illustrative","validation pending"],
               ["Full Auto","Illustrative","locked"],
-            ].map(([name,scope,state]) => <div key={name}><b>{name}</b><span>{scope}</span><em>{state}</em></div>)}
+            ].map(([name,scope,state], i) => (
+              <motion.div
+                key={name}
+                initial={{ opacity:0, x:22 }}
+                whileInView={{ opacity:1, x:0 }}
+                viewport={{ once:true }}
+                transition={{ duration:.42, delay:i*.055 }}
+              >
+                <b>{name}</b><span>{scope}</span><em>{state}</em>
+              </motion.div>
+            ))}
             <small>Example states only. The live site must be sourced from authoritative capability data.</small>
           </div>
-        </section>
+        </motion.section>
 
-        <section className="education">
+        <motion.section className="education" {...sectionReveal}>
           <div className="education-icon"><CircleAlert/></div>
           <div><div className="kicker">UNDERSTAND THE DECISION</div><h2>Know what the system is showing—and why it matters.</h2></div>
           <p>Zugrio will pair product intelligence with contextual learning: how market families differ, why an entry changed, what automation authority means and how to review a decision without hindsight.</p>
-        </section>
+        </motion.section>
 
-        <section className="faq">
+        <motion.section className="faq" {...sectionReveal}>
           <div className="kicker">QUESTIONS</div>
           <h2>What should you know before joining?</h2>
           {[
@@ -361,7 +467,7 @@ export default function App() {
             ["Does Zugrio guarantee profitable trades?","No. Trading involves risk of loss. Zugrio does not guarantee a return, win rate or profitable outcome."],
             ["What happens after I join?","You’ll receive product updates and early-access invitations as access opens. Joining does not create a trading account, connect a broker or authorise trading."],
           ].map(([q,a]) => <details key={q}><summary>{q}<ChevronRight size={16}/></summary><p>{a}</p></details>)}
-        </section>
+        </motion.section>
 
         <Waitlist />
       </main>
@@ -369,7 +475,12 @@ export default function App() {
       <footer>
         <a className="brand" href="#top"><span className="zmark">Z</span><b>ZUGRIO</b></a>
         <p>Zugrio is in development and private validation. Product screens, prices and trading scenarios shown on this site may be illustrative. They are not investment recommendations, live signals or performance claims. Trading involves risk of loss.</p>
-        <div><a href="#status">Product status</a><a href="#early-access">Early access</a><a href="#top">Back to top</a></div>
+        <div>
+          <a href="#status">Product status</a>
+          <a href="#early-access">Early access</a>
+          <a href="https://www.instagram.com/zugriohq/" target="_blank" rel="noreferrer">Instagram · @zugriohq</a>
+          <a href="#top">Back to top</a>
+        </div>
       </footer>
     </>
   );
