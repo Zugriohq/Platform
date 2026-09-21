@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { useReducedMotion } from "motion/react";
 
 export default function SilverReveal() {
   const ref = useRef(null);
@@ -24,23 +24,22 @@ export default function SilverReveal() {
       aria-label="Zugrio"
     >
       <div className="silver-grid" aria-hidden="true" />
+
       <div className="silver-copy">
         <span>THE CHART IS NOT THE MARKET.</span>
         <strong aria-hidden="true">ZUGRIO</strong>
       </div>
+
       <div className="silver-base" aria-hidden="true">ZUGRIO</div>
+
       <div className="silver-spotlight" aria-hidden="true">
-        <div className="silver-word">ZUGRIO</div>
+        <div className="silver-word" data-word="ZUGRIO">ZUGRIO</div>
       </div>
-      {!reduced && (
-        <motion.div
-          className="silver-sheen"
-          aria-hidden="true"
-          animate={{ x: ["-30%", "140%"] }}
-          transition={{ duration: 7.5, repeat: Infinity, repeatDelay: 2.8, ease: [0.16,1,0.3,1] }}
-        />
-      )}
-      <div className="silver-hint">Move through the field</div>
+
+      <div className="silver-hint">
+        <span className="silver-hint-dot" aria-hidden="true" />
+        Move through the field
+      </div>
     </section>
   );
 }
