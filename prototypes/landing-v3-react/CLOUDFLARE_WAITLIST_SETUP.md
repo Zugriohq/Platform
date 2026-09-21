@@ -28,12 +28,12 @@ Create/select the database in Cloudflare and run `schema.sql` against it.
 
 The Pages Function expects the D1 binding name:
 
-`WAITLIST_DB`
+`DB`
 
 In Cloudflare:
 Workers & Pages → your Pages project → Settings → Bindings → Add → D1 database.
 
-Bind the selected database as `WAITLIST_DB`, then redeploy.
+Bind the selected database as `DB`, then redeploy.
 
 ## 3. Turnstile
 
@@ -42,11 +42,11 @@ Create a Turnstile widget in Cloudflare.
 Configure these Pages variables/secrets:
 
 - `TURNSTILE_SITE_KEY` — public widget site key
-- `TURNSTILE_SECRET_KEY` — secret; server only
-- `ALLOWED_HOSTNAMES` — comma-separated production/preview hostnames you want to accept
-- `PRIVACY_CONTACT` — contact email exposed by `/api/config` when needed
+- `TURNSTILE_SECRET` — secret; server only
+- `TURNSTILE_HOSTNAMES` — comma-separated production/preview hostnames you want to accept
+- `PRIVACY_CONTACT` — currently `privacy@zugrio.xyz`
 
-Do not put `TURNSTILE_SECRET_KEY` in Vite variables or client code.
+Do not put `TURNSTILE_SECRET` in Vite variables or client code.
 
 Turnstile is validated server-side through Siteverify. Client-side completion alone is not accepted.
 
@@ -129,3 +129,21 @@ A separate permitted worker/process can later:
 - process deletion/withdrawal requests
 
 Do not make successful D1 storage depend on a marketing-email provider being available.
+
+
+## Existing Zugrio Cloudflare choices carried forward
+
+The React migration should preserve the Cloudflare work already started:
+
+- canonical domain: `https://zugrio.xyz`
+- `www.zugrio.xyz` redirects to the canonical host
+- D1 database: `zugrio-waitlist`
+- D1 binding variable: `DB`
+- Turnstile widget: `Zugrio Waitlist`
+- Turnstile mode: Managed
+- Turnstile hostnames: `zugrio.xyz` and optionally `www.zugrio.xyz`
+- environment names: `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET`, `TURNSTILE_HOSTNAMES`
+- privacy contact: `privacy@zugrio.xyz`
+- API routes remain `/api/config` and `/api/waitlist`
+
+The React page should replace the old HTML front end without changing these backend names unnecessarily.
