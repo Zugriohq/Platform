@@ -36,7 +36,7 @@ The landing page must remain consistent with `docs/product/PRODUCT_DIRECTION.md`
 
 Specifically:
 
-- public positioning may lead with **forex**, but initial Zugrio 1.0 product scope also carries **gold/metals and synthetic indices in parallel**;
+- public positioning may lead with **forex**, but initial Zugrio 1.0 product scope also carries **gold and synthetic indices in parallel**;
 - cTrader and MT5 are initial execution endpoints, while future broker/venue support remains adapter-based;
 - entry examples such as retests, shallow pullbacks or breakouts must never be presented as an exhaustive entry taxonomy;
 - public copy should refer to configurable/strategy-aware entry conditions unless a specific implemented entry model is being demonstrated;
