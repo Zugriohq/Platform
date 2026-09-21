@@ -1,6 +1,6 @@
 const ALLOWED = {
   role: new Set(["independent_trader","prop_trader","trading_team","researcher","broker_partner","investor"]),
-  market: new Set(["fx","gold","synthetics","multiple"]),
+  market: new Set(["fx","gold","synthetics","stocks","crypto","multiple"]),
   horizon: new Set(["scalping","intraday","swing","multiple"]),
   mode: new Set(["signal","semi_auto","auto","full_auto_interest"]),
   strategy: new Set(["price_action_apa","smc","ict","qmr","other"]),
