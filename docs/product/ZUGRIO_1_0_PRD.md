@@ -1,0 +1,452 @@
+# Zugrio 1.0 Product Requirements
+
+Status: **foundation PRD** for founder/engineering review.  
+Related: `docs/product/PRODUCT_DIRECTION.md`, `docs/architecture/SYSTEM_ARCHITECTURE_V1.md`.
+
+This document defines what Zugrio 1.0 must be capable of representing and governing. It does not claim that every capability is already implemented, validated or released.
+
+## 1. Product objective
+
+Zugrio 1.0 should provide a market-aware decision system that helps a trader:
+
+- discover relevant opportunities;
+- interpret them using the appropriate market/model scope;
+- evaluate them against a declared strategy/method;
+- incorporate current market and context evidence;
+- determine whether the entry still makes economic sense;
+- apply account/risk/authority constraints;
+- act at the user's chosen delegation level;
+- preserve the complete decision path afterward.
+
+The product must separate:
+- the quality of a decision from the eventual P/L outcome;
+- opportunity detection from execution permission;
+- analytical price from executable price;
+- visual similarity from model applicability.
+
+## 2. Initial users
+
+### Primary
+
+Serious self-directed traders operating in:
+- Forex;
+- Gold;
+- Synthetic Indices.
+
+This includes prop-account traders where the relevant account rules can be represented and verified.
+
+### Expansion
+
+Trading teams and allocators are an architectural expansion audience, not a claim of currently released team/AUM/custody functionality.
+
+## 3. Product principles
+
+- **The chart is evidence, not the whole market.**
+- **Do not generalise from appearance alone.**
+- **The reason for a trade stays connected to the decision to act.**
+- **A signal is not permission.**
+- **If the facts change, the decision may change.**
+- **Outcome and process quality are evaluated separately.**
+- **User authority is explicit, bounded and revocable.**
+
+## 4. Requirement priority definitions
+
+- **V1-F** — foundational V1 requirement. Architecture/domain must support it in Zugrio 1.0.
+- **V1-LG** — V1 capability whose user activation is launch-gated by evidence, safety or integration readiness.
+- **POST-V1** — genuinely different product domain not required for the initial trader product.
+
+“Incomplete today” does not make a requirement POST-V1.
+
+## 5. Market identity and intelligence
+
+### ZR-MKT-001 — Parallel initial market scope — V1-F
+
+The system shall represent Forex, Gold and Synthetic Indices as parallel initial market tracks.
+
+Acceptance:
+- product capability data can report support separately for each;
+- no market is forced to inherit another market's model/calibration/cost assumptions;
+- public launch ordering does not alter architecture scope.
+
+### ZR-MKT-002 — Canonical instrument identity — V1-F
+
+The system shall maintain canonical instrument identity separate from broker/venue symbol strings.
+
+Acceptance:
+- two broker symbols can map to one canonical underlying/product relationship where appropriate;
+- the same underlying can map to distinct executable products;
+- broker symbol regex alone cannot determine production instrument identity.
+
+### ZR-MKT-003 — Multidimensional market scope — V1-F
+
+The system shall distinguish at least:
+- price origin / formation class;
+- market/behavioural family;
+- executable product type;
+- instrument;
+- venue;
+- timeframe/horizon;
+- current regime.
+
+Acceptance:
+- model applicability can narrow on any of these dimensions;
+- “asset class” is insufficient as the sole applicability key.
+
+### ZR-MKT-004 — Specialist routing — V1-F
+
+The system shall support family-specialised intelligence without requiring one universal model.
+
+Acceptance:
+- different families may use different feature/model pipelines;
+- routing is driven by registry/model metadata, not hard-coded symbol naming;
+- a family definition is versioned.
+
+### ZR-MKT-005 — No implicit transfer — V1-F
+
+A model, probability calibration, edge estimate, cost model or threshold shall not transfer to another instrument/product/venue/family merely because the chart looks similar.
+
+Acceptance:
+- every admitted inference has an applicability manifest;
+- out-of-scope inference fails closed;
+- broader family admission requires explicit evidence.
+
+### ZR-MKT-006 — Feature reuse without model reuse — V1-F
+
+The architecture shall allow a feature concept such as discontinuity or volatility shock to be reused across markets without implying that the same probability/calibration model is reusable.
+
+## 6. Strategy, setup and entry requirements
+
+### ZR-STR-001 — Versioned Method Profiles — V1-F
+
+Every governed decision shall reference a versioned Method/Strategy Profile.
+
+Acceptance:
+- profile changes create a new version;
+- historical decisions retain their original version;
+- profile defines its applicable market/product/horizon and permitted setup/entry models.
+
+### ZR-STR-002 — Extensible Entry Models — V1-F
+
+Entry logic shall be extensible beyond any fixed list such as retest, shallow pullback or breakout.
+
+Acceptance:
+- a new Entry Model can be added through a defined contract;
+- an Entry Model cannot directly size capital, cause FIRE or submit an order;
+- UI copy can distinguish examples from exhaustive supported taxonomy.
+
+### ZR-STR-003 — Multiple entries per strategy — V1-F
+
+A Method Profile may permit multiple entry models for the same setup family where explicitly configured and validated.
+
+### ZR-STR-004 — Strategy-aware invalidation — V1-F
+
+The system shall preserve method-specific invalidation rules independently from eventual P/L.
+
+### ZR-STR-005 — Controlled configuration — V1-F
+
+The architecture shall support configurable Method Profiles without requiring an unrestricted end-user strategy programming language in the first release.
+
+## 7. Context intelligence
+
+### ZR-CTX-001 — Macro event context — V1-F
+
+The system shall support scheduled macroeconomic events as sourced context evidence.
+
+Minimum metadata:
+- source;
+- event identity/type;
+- affected scope;
+- scheduled/effective time;
+- observed time;
+- freshness/provenance.
+
+### ZR-CTX-002 — News context — V1-F
+
+The system shall support sourced market-moving news/context without granting a news provider direct execution authority.
+
+### ZR-CTX-003 — Session context — V1-F
+
+The system shall represent trading session and session-transition context where relevant to the instrument/strategy.
+
+### ZR-CTX-004 — Related-market context — V1-F
+
+The architecture shall support cross-market/related-market evidence where a strategy/model explicitly consumes it.
+
+### ZR-CTX-005 — Provenance requirement — V1-F
+
+Capital-authoritative context shall be traceable to a source, timestamp, normalisation version and governing feature/policy/model.
+
+Unsourced generative narrative shall not become capital-authoritative evidence.
+
+### ZR-CTX-006 — Missing/stale context — V1-F
+
+Where a policy requires context, missing or stale context shall produce an explicit unavailable/degraded/block reason rather than invented values.
+
+## 8. Decision lifecycle and continuity
+
+### ZR-DEC-001 — Stable Decision Case — V1-F
+
+The system shall maintain a stable Decision Case across the lifecycle of an opportunity.
+
+Acceptance:
+- evidence/state/execution changes can be reconstructed in order;
+- the record is not dependent on UI session state.
+
+### ZR-DEC-002 — Append-only decision history — V1-F
+
+Material decision events shall be append-only/auditable.
+
+Acceptance:
+- later corrections do not erase original events;
+- user overrides preserve the prior system recommendation/state.
+
+### ZR-DEC-003 — Reason continuity — V1-F
+
+A user shall be able to see:
+- why the opportunity originally qualified;
+- what evidence supported/conflicted;
+- what changed;
+- what the current decision state is;
+- why execution was allowed/blocked;
+- what actually happened at the broker.
+
+### ZR-DEC-004 — Outcome/process separation — V1-F
+
+Post-trade review shall store financial outcome separately from process adherence.
+
+Acceptance:
+- profit does not automatically mark a rule violation as compliant;
+- loss does not automatically mark a compliant decision as process failure.
+
+### ZR-DEC-005 — Missed/passed/blocked review — V1-F
+
+The journal shall support review of entered, passed, missed, expired and blocked opportunities, not only executed trades.
+
+## 9. Decision authority and states
+
+### ZR-AUTH-001 — Preserve frozen authority semantics — V1-F
+
+Zugrio 1.0 migration shall preserve the cleared Signal Authority Architecture behavior unless separately amended through evidence and ADR.
+
+### ZR-AUTH-002 — Structural versus probabilistic states — V1-F
+
+A structural candidate without admitted model conviction shall not be represented as probabilistically READY/FIRE.
+
+### ZR-AUTH-003 — No invented thresholds — V1-F
+
+Missing policy/model thresholds shall not be replaced by arbitrary numeric defaults in capital paths.
+
+### ZR-AUTH-004 — Explicit degraded reasons — V1-F
+
+The product shall expose understandable reasons for states such as:
+- insufficient data;
+- model unavailable/out of scope;
+- stale evidence;
+- context missing where required;
+- state policy unavailable;
+- entry no longer economic;
+- risk/authority block;
+- broker uncertainty.
+
+## 10. Entry economics and risk
+
+### ZR-RSK-001 — Current entry economics — V1-F
+
+A setup can remain structurally valid while the currently available entry becomes unattractive.
+
+The system shall model these separately.
+
+### ZR-RSK-002 — Immutable risk snapshot — V1-F
+
+Capital release shall reference an immutable risk snapshot tied to the decision/intent identity.
+
+### ZR-RSK-003 — Account constraints — V1-F
+
+The system shall support configurable account risk constraints and, where verified, prop/account rules.
+
+### ZR-RSK-004 — No duplicate sizing authority — V1-F
+
+There shall be exactly one declared capital-sizing authority path.
+
+### ZR-RSK-005 — Portfolio-aware Full Auto — V1-LG
+
+Full Auto activation shall remain unavailable until portfolio construction/exposure behavior is validated.
+
+## 11. Control modes
+
+### ZR-MODE-001 — Signal — V1-F
+
+Signal mode shall provide decision intelligence without broker order authority.
+
+### ZR-MODE-002 — Semi-Auto — V1-F / V1-LG for live activation
+
+Semi-Auto shall require explicit user approval of a prepared intent and revalidate freshness/risk before submission.
+
+### ZR-MODE-003 — Auto — V1-F / V1-LG for live activation
+
+Auto shall permit execution only within an explicit account/strategy/instrument/risk authority manifest.
+
+### ZR-MODE-004 — Full Auto — V1-F / V1-LG
+
+Full Auto shall exist in architecture/control semantics but remain locked until portfolio-level validation requirements clear.
+
+### ZR-MODE-005 — Revocation — V1-F
+
+The user shall be able to revoke automation authority. Revocation prevents new risk-increasing action while preserving governed risk-reduction behavior.
+
+## 12. Broker and execution
+
+### ZR-EXE-001 — Broker-neutral upstream core — V1-F
+
+Decision intelligence/risk authority shall not depend on cTrader/MT5-specific logic.
+
+### ZR-EXE-002 — cTrader adapter — V1-F / V1-LG
+
+cTrader is an initial execution endpoint using delegated authorization where available.
+
+### ZR-EXE-003 — MT5 adapter — V1-F / V1-LG
+
+MT5 is an initial execution endpoint through a constrained connector architecture.
+
+### ZR-EXE-004 — No Zugrio VPS fleet by default — V1-F
+
+Always-on MT5 shall not require Zugrio to operate a per-customer Windows VPS fleet by default.
+
+### ZR-EXE-005 — Idempotent submission/reconciliation — V1-F
+
+Unknown submission state shall trigger reconciliation/lock behavior rather than blind resend.
+
+### ZR-EXE-006 — Protection confirmation — V1-F
+
+Live execution shall verify broker-side protective state according to the governing execution policy.
+
+## 13. Market/data freshness
+
+### ZR-DATA-001 — Closed-source-event discipline — V1-F
+
+Capital decisions shall bind to explicit source-event/candle identities according to the frozen architecture.
+
+### ZR-DATA-002 — Freshness visibility — V1-F
+
+The user shall be able to distinguish:
+- current;
+- stale;
+- missing;
+- delayed/unavailable evidence.
+
+### ZR-DATA-003 — Data/feed provenance — V1-F
+
+Market and context feeds used in decision authority shall be identifiable by source and normalisation version.
+
+## 14. User experience
+
+### ZR-UX-001 — Explain current state — V1-F
+
+For any surfaced opportunity the user should be able to answer:
+- what is this?
+- why is it here?
+- what still holds?
+- what is missing/conflicting?
+- what would invalidate it?
+- what can happen next?
+- who/what currently has authority to act?
+
+### ZR-UX-002 — Market-family transparency — V1-F
+
+Where useful, the UI shall communicate that an instrument is being evaluated under an appropriate specialist/family model without forcing the user to understand internal implementation names.
+
+### ZR-UX-003 — Chart annotations — V1-F
+
+The product shall support real-time/updated visualisation of relevant market structure and decision geometry without making chart drawings the sole explanation of the decision.
+
+### ZR-UX-004 — Decision journal — V1-F
+
+The journal shall preserve original reasoning, material evidence changes, action/override, execution result and outcome/process review.
+
+### ZR-UX-005 — No fake certainty — V1-F
+
+The UI shall not present an internal heuristic score as a calibrated win probability or performance claim.
+
+## 15. Platform and scalability
+
+### ZR-PLT-001 — Human-auditable production system — V1-F
+
+A competent engineer shall be able to understand, test and operate Zugrio without AI conversation history.
+
+### ZR-PLT-002 — Modular monolith first — V1-F
+
+The initial production system shall use enforceable module/package boundaries without premature microservice complexity.
+
+### ZR-PLT-003 — Durable state — V1-F
+
+Capital-authority correctness shall not rely on mutable in-memory singleton state.
+
+### ZR-PLT-004 — Transactional events — V1-F
+
+Material asynchronous workflows shall use durable transactional/outbox-style event publication where needed.
+
+### ZR-PLT-005 — Horizontal worker scaling — V1-F
+
+Market-data ingestion, context ingestion, evaluations and reconciliation workers should be independently horizontally scalable without changing domain semantics.
+
+### ZR-PLT-006 — Observability — V1-F
+
+Structured logs/traces shall make it possible to explain why a decision changed or execution was blocked.
+
+## 16. Security and privacy
+
+### ZR-SEC-001 — Least-privilege broker auth — V1-F
+
+Use delegated/scoped authorization where supported. Do not expose developer credentials to end users.
+
+### ZR-SEC-002 — Secrets boundary — V1-F
+
+Secrets shall not appear in client bundles, source control, logs or AI prompts.
+
+### ZR-SEC-003 — Signed connector intents — V1-F
+
+Remote execution intents crossing trust boundaries shall be signed, short-lived, account-bound and replay-protected where applicable.
+
+### ZR-SEC-004 — Tenant/account isolation — V1-F
+
+One user's broker/account/decision data shall not be accessible to another user's authorization context.
+
+## 17. V1 launch gating
+
+A capability may be architecturally present but unavailable to users until its release criteria are met.
+
+Live capital activation requires, as applicable:
+- cleared authority Gate evidence;
+- admitted/calibrated market/model scope;
+- complete cost model;
+- broker adapter verification;
+- risk/position-management verification;
+- security/threat-model review;
+- reconciliation and protection tests;
+- observability/runbooks;
+- legal/regulatory launch review.
+
+This gating model applies independently by market/product/broker/mode. One cleared scope must not silently promote another.
+
+## 18. Genuine post-V1 domains
+
+Examples currently classified POST-V1 unless founder direction changes:
+- mature allocator/team administration;
+- full AUM/mandate administration;
+- custody workflows;
+- options-specific strategy/risk UX and nonlinear Greeks/expiry architecture;
+- institutional FIX workflows beyond the initial trader product.
+
+Their future possibility must not contaminate V1 with premature complexity.
+
+## 19. Success evidence
+
+Zugrio 1.0 should eventually be able to demonstrate with evidence—not marketing language—that:
+
+1. the same visible pattern can route differently when market scope differs;
+2. an idea can remain structurally valid while its entry economics expire;
+3. the product can explain why a decision advanced, waited or stopped;
+4. a manual override remains visible after the outcome is known;
+5. a profitable rule violation remains identifiable as a process violation;
+6. new markets/models/adapters can be added without rewriting authority boundaries;
+7. the full decision can be reconstructed from durable records.
