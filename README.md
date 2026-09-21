@@ -25,6 +25,10 @@ Read these first:
 7. [AI Collaboration Contract](docs/engineering/AI_COLLABORATION.md)
 8. [GitHub Governance](docs/engineering/GITHUB_GOVERNANCE.md)
 
+## Product scope
+
+Zugrio 1.0 carries **forex, gold/metals and synthetic indices in parallel**, while forex leads the public launch narrative. Entry logic is extensible and strategy-aware rather than limited to a short fixed list of entry patterns. Context includes properly sourced macroeconomic events, news, session state and related evidence. See [Product Direction](docs/product/PRODUCT_DIRECTION.md).
+
 ## Working production direction
 
 - TypeScript-first production code.
