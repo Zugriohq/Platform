@@ -7,6 +7,7 @@ import {
 import CandlestickChart from "./CandlestickChart.jsx";
 import RollingDescriptors from "./RollingDescriptors.jsx";
 import Waitlist from "./Waitlist.jsx";
+import SilverReveal from "./SilverReveal.jsx";
 
 const MARKETS = {
   FX: {
@@ -470,6 +471,7 @@ export default function App() {
         </motion.section>
 
         <Waitlist />
+        <SilverReveal />
       </main>
 
       <footer>
