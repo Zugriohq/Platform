@@ -1,6 +1,6 @@
 # Landing Page Migration — HTML to Next.js/React
 
-The existing Work-produced Zugrio landing page is the **visual/content baseline**, not disposable prototype work.
+The existing Work-produced Zugrio landing page is the **migration-equivalence baseline**, not disposable prototype work and not an approved permanent brand identity.
 
 ## Migration principle
 
@@ -9,11 +9,14 @@ Do not redesign while changing framework.
 Sequence:
 1. freeze current HTML and hash;
 2. establish visual regression screenshots;
-3. extract design tokens;
+3. extract **temporary migration tokens** from the current implementation;
 4. migrate static/server-renderable sections;
 5. isolate interactive client components;
 6. verify responsive, accessibility and behavioral equivalence;
-7. cut over only after comparison passes.
+7. cut over only after comparison passes;
+8. only then replace temporary migration tokens with a separately approved canonical brand system.
+
+Current colors, typography, logo treatment and taglines must not become permanent `packages/ui` brand tokens merely because they were present in the HTML being migrated.
 
 ## Target architecture
 
@@ -27,8 +30,25 @@ Marketing content should default to static/server rendering. Client components s
 - dialogs;
 - motion controls.
 
-## Content correction before public cutover
+## Product-scope corrections before public cutover
 
-The current page's older “Deriv / cTrader initial integration path” wording must be reconciled with the current broker-neutral direction: cTrader and MT5 are initial execution endpoints, while future broker/venue support remains adapter-based.
+The landing page must remain consistent with `docs/product/PRODUCT_DIRECTION.md`.
 
-Do not make unsupported performance or profitability claims during migration.
+Specifically:
+
+- public positioning may lead with **forex**, but initial Zugrio 1.0 product scope also carries **gold/metals and synthetic indices in parallel**;
+- cTrader and MT5 are initial execution endpoints, while future broker/venue support remains adapter-based;
+- entry examples such as retests, shallow pullbacks or breakouts must never be presented as an exhaustive entry taxonomy;
+- public copy should refer to configurable/strategy-aware entry conditions unless a specific implemented entry model is being demonstrated;
+- context means more than news: scheduled macroeconomic events, session state and other properly sourced context may also be relevant;
+- no unsupported performance, profitability or automation-availability claim may be introduced during migration.
+
+## Positive and negative demonstrations
+
+The page should not depict Zugrio mainly as a system that blocks trades.
+
+Demonstrations should eventually show both:
+- a qualifying opportunity progressing as evidence remains valid; and
+- a setup being held, invalidated or blocked when evidence/economics/risk no longer qualify.
+
+The public product story is **opportunity + judgment + disciplined action**, while internal execution still fails closed when required evidence or authority is missing.
