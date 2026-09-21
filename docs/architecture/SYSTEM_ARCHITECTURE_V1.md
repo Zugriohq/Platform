@@ -260,6 +260,8 @@ Rules:
 
 The router chooses the applicable feature/model pipeline from registry metadata and admitted manifests. Production routing must not depend on fragile symbol-name regexes as the source of truth.
 
+Instrument, market-family, model-applicability and capability registries are themselves governed/versioned control-plane artifacts. A mutable database edit must not silently change which model may control capital. Material registry changes require an auditable version/effective time and should be reproducible from repository/configuration artifacts.
+
 ## 5. Market data and context evidence are separate domains
 
 ### Market Data
@@ -337,6 +339,8 @@ A user may eventually author or customise methods, but an arbitrary public strat
 A decision must always reference the exact method version that governed it.
 
 Changing the method creates a new version; it must not rewrite the historical method attached to an existing decision.
+
+A Method Profile cannot widen model applicability. Enabling an Entry Model or market in a profile does not create calibrated inference for that scope; model admission remains separately governed.
 
 ## 7. Entry Model Contract
 
@@ -431,6 +435,8 @@ A losing compliant decision must not automatically be classified as bad process.
 
 Process-adherence evaluation is analytical/journal output. It does not retroactively modify the original capital decision.
 
+Where adherence can be evaluated from declared rules/events, the authoritative adherence result should be deterministic and versioned. LLM-generated coaching or narrative may explain the record, but it must remain advisory and must not rewrite the adherence result.
+
 ## 10. Control modes are authority envelopes
 
 Signal, Semi-Auto, Auto and Full Auto are not different intelligence engines. They are different **delegation envelopes** around the same validated decision path.
@@ -462,6 +468,8 @@ Signal, Semi-Auto, Auto and Full Auto are not different intelligence engines. Th
 - unavailable is a legitimate V1 runtime state, not a reason to omit the architecture.
 
 Every account must have an explicit `ExecutionAuthorityManifest`. Absence/invalidity fails closed for execution.
+
+Authority manifests are versioned. Prepared intents bind to the authority version/epoch under which they were created. Revocation or narrowing must invalidate incompatible stale intents across devices; a second device cannot revive authority that has already been revoked.
 
 ## 11. V1 market scope
 
@@ -540,6 +548,19 @@ Stateless API/worker processes should be horizontally scalable. Capital-authorit
 - Broker submission unknown → lock/reconcile; no blind resend.
 - Protection failure → invoke governed safety behavior.
 - Audit/ledger persistence failure on a capital transition → fail closed where the transition cannot be durably reconstructed.
+- Duplicate/retried worker delivery → idempotent evaluation/event handling; it must not create duplicate FIRE or duplicate broker submission.
+- Material clock/source-time inconsistency → fail freshness checks rather than guess ordering.
+
+## 14A. Time and concurrency discipline
+
+Freshness and causal order are capital-relevant.
+
+- Store source event time separately from ingestion/observation time.
+- Use UTC for persisted system timestamps and explicit exchange/market timezone metadata where required.
+- Do not infer causal ordering solely from local client clocks.
+- Worker/evaluation commands must carry idempotency keys or stable event identities.
+- Concurrent evaluations of the same candidate/account scope must converge on one authoritative transition.
+- FIRE/submission identities remain the ultimate duplicate-execution defense defined by the frozen authority architecture.
 
 ## 15. Security boundaries
 
