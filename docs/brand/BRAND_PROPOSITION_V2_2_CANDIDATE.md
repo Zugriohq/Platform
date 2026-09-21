@@ -1,6 +1,6 @@
-# Zugrio Brand Proposition v2.2 — Candidate Foundation
+# Zugrio Brand Proposition v2.2 — Frozen for Application Testing
 
-Status: **candidate brand foundation for founder review and real-trader comprehension testing**.  
+Status: **frozen for application testing and real-trader comprehension testing**. Do not reopen wording from first principles unless application evidence reveals a material comprehension, credibility, or distinctiveness problem.  
 This document does not change Zugrio's frozen trading authority architecture, product validation status, or released capabilities.
 
 ## 1. Master thesis
@@ -141,7 +141,44 @@ Pillar line:
 Behavioral expression:
 > **A winning trade can still be a bad decision. A losing trade can still be a good one.**
 
-## 6. Pillar-boundary rule
+## 6. Standing semantic rules
+
+### 6.1 System-language rule
+
+Use neutral, technical verbs for what Zugrio does. Agency, intent and discretionary choice stay with the trader.
+
+Prefer verbs such as:
+- evaluates;
+- detects;
+- compares;
+- records;
+- preserves;
+- flags;
+- blocks;
+- permits under mandate;
+- reconciles.
+
+Avoid personifying verbs that imply human-like subjective awareness or intent unless used metaphorically and clearly outside product truth.
+
+Examples to avoid in core product copy:
+- “Zugrio knows...”
+- “Zugrio remembers...”
+- “Zugrio wants...”
+- “Zugrio believes...”
+
+### 6.2 Pillar-definition vs current-state rule
+
+Pillars other than Moment may define thresholds, rules, applicability and requirements. **Only Moment reports whether those conditions are currently met.**
+
+Examples:
+- Market defines which model/family is applicable; Moment reports the current regime/state.
+- Method defines required evidence and invalidation; Moment reports whether the evidence is currently present and whether invalidation has occurred.
+- Mandate defines the allowed authority envelope; Moment reports the current authority/risk/account facts against that envelope.
+- Memory records the resulting history after those facts/events occur.
+
+This prevents the five pillars from duplicating “current state.”
+
+## 7. Pillar-boundary rule
 
 Do not divide pillars by “slow-changing” versus “fast-changing” alone.
 
@@ -160,7 +197,7 @@ Borderline test:
 
 The former is Moment; the latter is Market.
 
-## 7. Trust layer
+## 8. Trust layer
 
 Headline:
 > **Know exactly what's live.**
@@ -181,7 +218,7 @@ Illustrative presentation only:
 
 These example statuses are not claims of current release state.
 
-## 8. Investor formulation
+## 9. Investor formulation
 
 > **Zugrio is building the intelligence and control layer between market evidence and trading action.**
 
@@ -204,7 +241,7 @@ Potential compounding assets include:
 
 Do not claim exclusivity or competitor absence without evidence.
 
-## 9. Initial market communication
+## 10. Initial market communication
 
 Trader-facing homepage:
 > **FX · Gold · Synthetic Indices**
@@ -213,7 +250,7 @@ Investor/regulatory-facing material may lead with **FX and Gold** while explaini
 
 This is an audience-ordering decision, not a product-scope demotion.
 
-## 10. Voice constraints
+## 11. Voice constraints
 
 Zugrio should sound:
 - perceptive;
@@ -234,7 +271,7 @@ Prefer:
 - explicit uncertainty/status;
 - clear distinctions between evidence, decision, permission and outcome.
 
-## 11. Application tests before freeze
+## 12. Application tests before brand freeze
 
 This candidate should be tested in:
 1. three materially different homepage hero applications;
@@ -267,7 +304,7 @@ participants predominantly classify Zugrio as only:
 
 Do not fabricate a numeric conversion conclusion from a small qualitative test. Use it to identify misunderstanding and refine the hero before wider quantitative testing.
 
-## 12. Candidate freeze block
+## 13. Frozen application-test block
 
 **MASTER THESIS**  
 The chart is not the market.
