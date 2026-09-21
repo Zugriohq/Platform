@@ -28,7 +28,7 @@ Read these first:
 
 ## Product scope
 
-Zugrio 1.0 carries **forex, gold/metals and synthetic indices in parallel**, while forex leads the public launch narrative. Entry logic is extensible and strategy-aware rather than limited to a short fixed list of entry patterns. Context includes properly sourced macroeconomic events, news, session state and related evidence. See [Product Direction](docs/product/PRODUCT_DIRECTION.md).
+Zugrio 1.0 carries **forex, gold and synthetic indices in parallel**, while forex leads the public launch narrative. Entry logic is extensible and strategy-aware rather than limited to a short fixed list of entry patterns. Context includes properly sourced macroeconomic events, news, session state and related evidence. See [Product Direction](docs/product/PRODUCT_DIRECTION.md).
 
 ## Working production direction
 
