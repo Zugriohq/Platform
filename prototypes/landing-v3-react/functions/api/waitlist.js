@@ -127,7 +127,6 @@ export async function onRequestPost(context) {
   const expires = new Date(now);
   expires.setUTCFullYear(expires.getUTCFullYear() + 1);
 
-  const id = crypto.randomUUID();
   const source = optionalText(body.source, 80) || "landing-v3";
   const referrer = optionalText(body.referrer, 500);
   const utmSource = optionalText(body.utm_source, 100);
@@ -137,20 +136,20 @@ export async function onRequestPost(context) {
   try {
     await env.DB
       .prepare(
-        `INSERT OR IGNORE INTO waitlist_signups (
-          id, email, role, market, horizon, mode, strategy, platform,
+        `INSERT OR IGNORE INTO waitlist (
+          email, role, market, style, mode, strategy, platform,
           country, discovery,
           consent, consent_version, consent_at, source, referrer,
           utm_source, utm_medium, utm_campaign,
-          created_at, expires_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          created_at, updated_at, expires_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .bind(
-        id, email, role, market, horizon, mode, strategy, platform,
+        email, role, market, horizon, mode, strategy, platform,
         country, discovery,
         "waitlist-v1", now.toISOString(), source, referrer,
         utmSource, utmMedium, utmCampaign,
-        now.toISOString(), expires.toISOString()
+        now.toISOString(), now.toISOString(), expires.toISOString()
       )
       .run();
   } catch (error) {
