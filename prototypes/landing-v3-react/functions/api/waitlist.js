@@ -5,6 +5,7 @@ const ALLOWED = {
   mode: new Set(["signal","semi_auto","auto","full_auto_interest"]),
   strategy: new Set(["price_action_apa","smc","ict","qmr","other"]),
   platform: new Set(["desktop","mobile","both"]),
+  discovery: new Set(["instagram","x","linkedin","friend","community","search","other"]),
 };
 
 function json(body, status = 200) {
@@ -31,7 +32,7 @@ function optionalText(value, max = 300) {
 
 async function verifyTurnstile(env, request, token) {
   const form = new FormData();
-  form.set("secret", env.TURNSTILE_SECRET_KEY);
+  form.set("secret", env.TURNSTILE_SECRET);
   form.set("response", token);
   form.set("idempotency_key", crypto.randomUUID());
 
@@ -50,7 +51,7 @@ async function verifyTurnstile(env, request, token) {
     return { success: false, "error-codes": ["action-mismatch"] };
   }
 
-  const allowedHostnames = clean(env.ALLOWED_HOSTNAMES, 500)
+  const allowedHostnames = clean(env.TURNSTILE_HOSTNAMES, 500)
     .split(",")
     .map(x => x.trim().toLowerCase())
     .filter(Boolean);
@@ -69,7 +70,7 @@ async function verifyTurnstile(env, request, token) {
 export async function onRequestPost(context) {
   const { request, env } = context;
 
-  if (!env.WAITLIST_DB || !env.TURNSTILE_SECRET_KEY) {
+  if (!env.DB || !env.TURNSTILE_SECRET) {
     return json({ ok: false, status: "unavailable" }, 503);
   }
 
@@ -97,6 +98,8 @@ export async function onRequestPost(context) {
   const mode = clean(body.mode);
   const strategy = clean(body.strategy);
   const platform = clean(body.platform);
+  const country = clean(body.country, 80);
+  const discovery = clean(body.discovery);
   const token = clean(body.token, 2048);
 
   if (
@@ -107,6 +110,8 @@ export async function onRequestPost(context) {
     !ALLOWED.mode.has(mode) ||
     !ALLOWED.strategy.has(strategy) ||
     !ALLOWED.platform.has(platform) ||
+    country.length < 2 ||
+    !ALLOWED.discovery.has(discovery) ||
     body.consent !== true ||
     !token
   ) {
@@ -130,18 +135,20 @@ export async function onRequestPost(context) {
   const utmCampaign = optionalText(body.utm_campaign, 160);
 
   try {
-    await env.WAITLIST_DB
+    await env.DB
       .prepare(
         `INSERT OR IGNORE INTO waitlist_signups (
           id, email, role, market, horizon, mode, strategy, platform,
-          consent, consent_at, source, referrer,
+          country, discovery,
+          consent, consent_version, consent_at, source, referrer,
           utm_source, utm_medium, utm_campaign,
           created_at, expires_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .bind(
         id, email, role, market, horizon, mode, strategy, platform,
-        now.toISOString(), source, referrer,
+        country, discovery,
+        "waitlist-v1", now.toISOString(), source, referrer,
         utmSource, utmMedium, utmCampaign,
         now.toISOString(), expires.toISOString()
       )
