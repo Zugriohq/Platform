@@ -118,6 +118,13 @@ export default function Waitlist() {
     event.preventDefault();
     const missing = missingProfileFields();
 
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.trim())) {
+      setStatus("attention");
+      setMessage("Enter a valid email address before joining.");
+      document.getElementById("email")?.focus();
+      return;
+    }
+
     if (missing.length) {
       if (detailsRef.current) detailsRef.current.open = true;
       setStatus("attention");
@@ -144,7 +151,7 @@ export default function Waitlist() {
       ...fields,
       consent: true,
       token,
-      company: "",
+      company: String(new FormData(event.currentTarget).get("company") || ""),
       source: "landing-v3",
       referrer: document.referrer || "",
       utm_source: params.get("utm_source") || "",
@@ -249,8 +256,10 @@ export default function Waitlist() {
               <select name="market" required value={fields.market} onChange={update}>
                 <option value="">Choose</option>
                 <option value="fx">FX</option>
-                <option value="gold">Gold</option>
+                <option value="gold">Gold / Commodities</option>
                 <option value="synthetics">Synthetic Indices</option>
+                <option value="stocks">Stocks / Equities</option>
+                <option value="crypto">Crypto</option>
                 <option value="multiple">Multiple</option>
               </select>
             </label>
@@ -297,6 +306,10 @@ export default function Waitlist() {
           </div>
         </details>
 
+        <div className="honeypot" aria-hidden="true">
+          <label>Company<input name="company" tabIndex="-1" autoComplete="off" /></label>
+        </div>
+
         <div className="turnstile-host" ref={challengeRef} />
 
         <label className="consent">
@@ -306,6 +319,12 @@ export default function Waitlist() {
 
         <p className={"form-status " + status} role="status" aria-live="polite">{message}</p>
         <p className="form-fine">No payment, password or broker credentials required. Joining does not create a trading account or authorise trading.</p>
+
+        <details className="privacy-mini">
+          <summary>Privacy & data use</summary>
+          <p>We use your email and trader profile to manage early access, understand product demand and send the updates you consent to receive. Waitlist records are scheduled for deletion after 12 months unless you withdraw earlier.</p>
+          {config?.privacyContact && <p>Questions, access, correction or deletion: <a href={"mailto:" + config.privacyContact}>{config.privacyContact}</a></p>}
+        </details>
       </form>
     </section>
   );
