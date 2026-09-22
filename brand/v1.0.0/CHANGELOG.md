@@ -1,0 +1,1 @@
+# Zugrio Brand V1 Changelog\n\n## 1.0.0\n- Established one canonical path-only wordmark.\n- Derived flat variants and monogram from the same geometry.\n- Retired the rejected generic-font master and ridge/mountain graphic.\n- Defined signature metallic motion and human-handoff rules.\n
