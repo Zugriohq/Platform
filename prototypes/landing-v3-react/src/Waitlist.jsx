@@ -38,10 +38,10 @@ const MODE_OPTIONS = [
 ];
 
 const STRATEGY_OPTIONS = [
-  { value: "price_action_apa", label: "Price Action / APA" },
-  { value: "smc", label: "SMC" },
-  { value: "ict", label: "ICT" },
-  { value: "qmr", label: "QMR" },
+  { value: "price_action_structure", label: "Price action / market structure" },
+  { value: "smc", label: "Smart-money concepts" },
+  { value: "supply_demand", label: "Supply & demand" },
+  { value: "breakout_momentum", label: "Breakout / momentum" },
   { value: "other", label: "Other / custom" },
 ];
 
@@ -198,6 +198,23 @@ export default function Waitlist() {
     return ["role","market","horizon","mode","strategy","platform","country","discovery"].filter(key => !fields[key].trim());
   }
 
+  function openProfile() {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.trim())) {
+      setStatus("attention");
+      setMessage("Enter a valid email address, then continue to the trader profile.");
+      document.getElementById("email")?.focus();
+      return;
+    }
+
+    if (detailsRef.current) detailsRef.current.open = true;
+    setProfileOpen(true);
+    setStatus(current => current === "submitting" ? current : "ready");
+    setMessage("Complete the short trader profile, then submit from the bottom.");
+    requestAnimationFrame(() => {
+      detailsRef.current?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "nearest" });
+    });
+  }
+
   async function submit(event) {
     event.preventDefault();
     const missing = missingProfileFields();
@@ -242,7 +259,7 @@ export default function Waitlist() {
       consent: true,
       token,
       company: String(new FormData(event.currentTarget).get("company") || ""),
-      source: "landing-v3",
+      source: "landing-v4",
       referrer: document.referrer || "",
       utm_source: params.get("utm_source") || "",
       utm_medium: params.get("utm_medium") || "",
@@ -399,10 +416,12 @@ export default function Waitlist() {
                   onChange={event => setField("email", event.target.value)}
                   placeholder="you@example.com"
                 />
-                <button type="submit" disabled={status === "submitting"}>
-                  {status === "submitting" ? "Registering…" : "Join the waitlist"}
-                  <ArrowRight size={16}/>
-                </button>
+                {!profileOpen && (
+                  <button type="button" className="form-continue" onClick={openProfile} disabled={status === "submitting"}>
+                    Continue
+                    <ArrowRight size={16}/>
+                  </button>
+                )}
               </div>
 
               <details
