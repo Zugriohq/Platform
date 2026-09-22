@@ -670,3 +670,173 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
 .form-row button:focus-visible,.success-actions a:focus-visible,.instagram-link:focus-visible{
   outline:none;box-shadow:0 0 0 3px rgba(232,237,241,.09)
 }
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   BRAND INTEGRATION V1 — one canonical wordmark geometry everywhere.
+   Metallic, flat and animated treatments are finishes of the same master.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.brand-wordmark{
+  position:relative;display:inline-block;line-height:0;isolation:isolate;
+  flex:0 0 auto
+}
+.brand-wordmark img{
+  display:block;width:100%;height:auto;user-select:none;-webkit-user-drag:none
+}
+.brand-wordmark-sweep{
+  position:absolute;inset:0;pointer-events:none;opacity:0;
+  background:
+    linear-gradient(104deg,
+      transparent 0%,transparent 39%,
+      rgba(214,220,226,.08) 44%,
+      rgba(250,251,252,.96) 49.5%,
+      rgba(203,211,218,.28) 53.5%,
+      transparent 60%,transparent 100%);
+  background-size:300% 100%;
+  -webkit-mask:url("/brand/zugrio-wordmark-master.svg") center/contain no-repeat;
+  mask:url("/brand/zugrio-wordmark-master.svg") center/contain no-repeat;
+  animation:zugrioSignatureSweep 1.18s cubic-bezier(.16,1,.3,1) .14s 1 both;
+  filter:drop-shadow(0 0 8px rgba(255,255,255,.14))
+}
+
+.header-wordmark{width:112px}
+.footer-wordmark{width:116px}
+.shell-wordmark{width:66px;opacity:.92}
+.hero-wordmark{width:clamp(180px,19vw,286px)}
+
+.brand{
+  min-width:0;display:flex;align-items:center;text-decoration:none
+}
+.brand>.brand-wordmark{display:block}
+.shell-brand{
+  display:flex!important;align-items:center!important;gap:11px!important
+}
+.shell-brand>span:last-child{
+  border-left:1px solid var(--line2);padding-left:11px
+}
+
+.brand-intro{
+  position:fixed;inset:0;z-index:260;display:grid;place-items:center;
+  pointer-events:none;overflow:hidden;background:#050608;
+  isolation:isolate
+}
+.brand-intro:after{
+  content:"";position:absolute;inset:0;z-index:-1;
+  background:
+    radial-gradient(circle at 50% 42%,rgba(255,255,255,.055),transparent 23%),
+    linear-gradient(to bottom,rgba(5,6,8,.05),#050608 92%)
+}
+.brand-intro-ridge{
+  position:absolute;left:-4%;right:-4%;bottom:-4%;height:58%;opacity:.34;
+  background:url("/brand/zugrio-ridge-horizon.svg") center bottom/cover no-repeat;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 3%,#000 48%,#000 100%);
+  mask-image:linear-gradient(to bottom,transparent 3%,#000 48%,#000 100%)
+}
+.brand-intro-inner{
+  position:relative;z-index:2;width:min(72vw,720px);display:flex;
+  flex-direction:column;align-items:center;gap:20px
+}
+.brand-intro-inner .brand-wordmark{width:min(70vw,590px)}
+.brand-intro-inner>span{
+  color:#79838e;font-size:9px;font-weight:670;letter-spacing:.22em;
+  text-transform:uppercase
+}
+
+.hero{
+  position:relative;isolation:isolate;overflow:hidden
+}
+.hero-ridge{
+  position:absolute;z-index:-1;left:34%;right:-12%;top:18px;height:56%;
+  background:url("/brand/zugrio-ridge-horizon.svg") center 39%/cover no-repeat;
+  opacity:.34;filter:saturate(0) contrast(1.05);
+  -webkit-mask-image:
+    linear-gradient(to right,transparent 0%,#000 20%,#000 88%,transparent 100%),
+    linear-gradient(to bottom,#000 0%,#000 70%,transparent 100%);
+  -webkit-mask-composite:source-in;
+  mask-image:linear-gradient(to left,transparent 0%,#000 18%,#000 80%,transparent 100%);
+  pointer-events:none
+}
+.hero-copy,.hero-product{position:relative;z-index:1}
+.hero-brand-lockup{margin:0 0 18px;display:flex;justify-content:center}
+.hero-brand-lockup .brand-wordmark{
+  filter:drop-shadow(0 9px 30px rgba(180,190,200,.07))
+}
+
+/* Canonical vector replaces text-built closing mark. */
+.silver-base,.silver-spotlight{
+  display:grid;place-items:center
+}
+.silver-base{
+  width:min(86vw,1120px);opacity:.055;color:transparent;text-shadow:none!important
+}
+.silver-base>.brand-wordmark,
+.silver-spotlight>.brand-wordmark{
+  width:min(86vw,1120px)
+}
+.silver-base:after{display:none!important}
+.silver-spotlight{
+  width:100%;height:100%
+}
+.silver-spotlight .brand-wordmark{
+  filter:drop-shadow(0 0 12px rgba(255,255,255,.12))
+}
+.silver-ridge{
+  position:absolute;inset:auto -6% -7% -6%;height:53%;pointer-events:none;
+  background:url("/brand/zugrio-ridge-horizon.svg") center bottom/cover no-repeat;
+  opacity:.23;
+  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 50%,#000);
+  mask-image:linear-gradient(to bottom,transparent,#000 50%,#000)
+}
+.silver-copy{z-index:6}
+.silver-grid{z-index:1}
+.silver-base,.silver-spotlight{z-index:3}
+.silver-hint{z-index:7}
+
+/* A single material language: brushed highlights are rare and structural. */
+.site-header{
+  box-shadow:0 1px 0 rgba(255,255,255,.018);
+  background:rgba(7,9,12,.84)!important
+}
+.header-cta{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06)
+}
+.waitlist-stage form,.waitlist-success{
+  box-shadow:
+    0 26px 70px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.025)
+}
+
+@keyframes zugrioSignatureSweep{
+  0%{background-position:145% 0;opacity:0}
+  13%{opacity:.16}
+  36%{opacity:.92}
+  76%{opacity:.48}
+  100%{background-position:-55% 0;opacity:0}
+}
+
+@media(max-width:1050px){
+  .header-wordmark{width:105px}
+  .hero-ridge{left:18%;right:-24%;height:47%;opacity:.27}
+}
+@media(max-width:720px){
+  .header-wordmark{width:100px}
+  .footer-wordmark{width:108px}
+  .hero-brand-lockup{justify-content:flex-start;margin-bottom:16px}
+  .hero-wordmark{width:178px}
+  .hero-ridge{
+    left:12%;right:-42%;top:64px;height:34%;opacity:.24;
+    background-position:62% bottom
+  }
+  .brand-intro-inner{width:86vw;gap:15px}
+  .brand-intro-inner .brand-wordmark{width:82vw}
+  .brand-intro-inner>span{font-size:8px;letter-spacing:.16em;text-align:center}
+  .silver-base,.silver-base>.brand-wordmark,.silver-spotlight>.brand-wordmark{
+    width:min(90vw,760px)
+  }
+  .silver-ridge{height:47%;opacity:.2}
+}
+@media(prefers-reduced-motion:reduce){
+  .brand-wordmark-sweep{display:none!important;animation:none!important}
+  .brand-intro{display:none!important}
+}
