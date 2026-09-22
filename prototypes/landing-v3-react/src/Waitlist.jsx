@@ -117,6 +117,7 @@ export default function Waitlist() {
   const [config, setConfig] = useState(null);
   const [token, setToken] = useState("");
   const [successProfile, setSuccessProfile] = useState(null);
+  const [profileOpen, setProfileOpen] = useState(false);
   const detailsRef = useRef(null);
   const challengeRef = useRef(null);
   const widgetRef = useRef(null);
@@ -210,6 +211,7 @@ export default function Waitlist() {
 
     if (missing.length) {
       if (detailsRef.current) detailsRef.current.open = true;
+      setProfileOpen(true);
       setStatus("attention");
       setMessage("Complete the short trader profile before joining.");
       requestAnimationFrame(() => document.querySelector('[data-field="' + missing[0] + '"] button, [name="' + missing[0] + '"]')?.focus());
@@ -281,6 +283,7 @@ export default function Waitlist() {
       setConsent(false);
       setToken("");
       if (detailsRef.current) detailsRef.current.open = false;
+      setProfileOpen(false);
     } catch (error) {
       setStatus("error");
       setMessage(error.name === "AbortError" ? "Confirmation timed out. Please retry." : error.message);
@@ -402,7 +405,11 @@ export default function Waitlist() {
                 </button>
               </div>
 
-              <details className="required-profile" ref={detailsRef}>
+              <details
+                className="required-profile"
+                ref={detailsRef}
+                onToggle={event => setProfileOpen(event.currentTarget.open)}
+              >
                 <summary>
                   <span><b>Tell us how you trade</b><small>Required · about 30 seconds</small></span>
                   <ChevronDown size={16}/>
@@ -444,6 +451,13 @@ export default function Waitlist() {
                 <input type="checkbox" checked={consent} onChange={event => setConsent(event.target.checked)} required/>
                 <span>Send me Zugrio product updates and early-access invitations. I can withdraw at any time.</span>
               </label>
+
+              {profileOpen && (
+                <button className="profile-submit-bottom" type="submit" disabled={status === "submitting"}>
+                  {status === "submitting" ? "Registering…" : "Join the early-access waitlist"}
+                  <ArrowRight size={16}/>
+                </button>
+              )}
 
               <p className={"form-status " + status} role="status" aria-live="polite">{message}</p>
               <p className="form-fine">No payment, password or broker credentials required. Joining does not create a trading account or authorise trading.</p>
