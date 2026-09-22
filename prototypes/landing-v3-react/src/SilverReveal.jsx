@@ -1,6 +1,5 @@
 import React, { useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
-import BrandWordmark from "./BrandWordmark.jsx";
 
 export default function SilverReveal() {
   const ref = useRef(null);
@@ -24,20 +23,17 @@ export default function SilverReveal() {
       onPointerMove={move}
       aria-label="Zugrio"
     >
-      <div className="silver-ridge" aria-hidden="true" />
       <div className="silver-grid" aria-hidden="true" />
 
       <div className="silver-copy">
         <span>THE CHART IS NOT THE MARKET.</span>
-        <strong aria-hidden="true">A HIGHER STANDARD</strong>
+        <strong aria-hidden="true">ZUGRIO</strong>
       </div>
 
-      <div className="silver-base" aria-hidden="true">
-        <BrandWordmark variant="silver" decorative />
-      </div>
+      <div className="silver-base" aria-hidden="true">ZUGRIO</div>
 
       <div className="silver-spotlight" aria-hidden="true">
-        <BrandWordmark variant="metallic" sweep={!reduced} decorative />
+        <div className="silver-word" data-word="ZUGRIO">ZUGRIO</div>
       </div>
 
       <div className="silver-hint">
