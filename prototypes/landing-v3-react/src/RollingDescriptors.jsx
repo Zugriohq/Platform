@@ -5,7 +5,7 @@ const PHRASES = [
   "market-specific intelligence",
   "method-bound evaluation",
   "current-condition checks",
-  "explicit trading authority",
+  "explicit trading mandate",
   "decision history that stays intact",
 ];
 
@@ -15,7 +15,7 @@ export default function RollingDescriptors() {
 
   useEffect(() => {
     if (reduced) return;
-    const timer = setInterval(() => setIndex(i => (i + 1) % PHRASES.length), 2300);
+    const timer = setInterval(() => setIndex(i => (i + 1) % PHRASES.length), 3200);
     return () => clearInterval(timer);
   }, [reduced]);
 
@@ -32,7 +32,7 @@ export default function RollingDescriptors() {
               initial={{ y: 18, opacity: 0, filter: "blur(5px)" }}
               animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
               exit={{ y: -18, opacity: 0, filter: "blur(5px)" }}
-              transition={{ duration: .38, ease: [0.16,1,0.3,1] }}
+              transition={{ duration: .52, ease: [0.16,1,0.3,1] }}
             >
               {PHRASES[index]}
             </motion.strong>
