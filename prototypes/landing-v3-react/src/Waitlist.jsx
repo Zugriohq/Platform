@@ -208,7 +208,6 @@ export default function Waitlist() {
 
     if (detailsRef.current) detailsRef.current.open = true;
     setProfileOpen(true);
-    setStatus(current => current === "submitting" ? current : "ready");
     setMessage("Complete the short trader profile, then submit from the bottom.");
     requestAnimationFrame(() => {
       detailsRef.current?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "nearest" });
@@ -440,7 +439,7 @@ export default function Waitlist() {
                   <ZugrioSelect label="Trading horizon" name="horizon" required value={fields.horizon} onChange={setField} options={HORIZON_OPTIONS} />
                   <ZugrioSelect label="Preferred control" name="mode" required value={fields.mode} onChange={setField} options={MODE_OPTIONS} />
                   <ZugrioSelect label="Method / strategy interest" name="strategy" required value={fields.strategy} onChange={setField} options={STRATEGY_OPTIONS} />
-                  <ZugrioSelect label="Primary platform" name="platform" required value={fields.platform} onChange={setField} options={PLATFORM_OPTIONS} />
+                  <ZugrioSelect label="Preferred Zugrio access" name="platform" required value={fields.platform} onChange={setField} options={PLATFORM_OPTIONS} />
 
                   <label className="profile-text-field">
                     <span>Country / region <i aria-hidden="true">·</i></span>
