@@ -1,29 +1,57 @@
-# Zugrio Landing v3 React Prototype
+# Zugrio Landing V4 Candidate
 
-Purpose: copy + interaction-hierarchy prototype. Not production and not a final visual identity.
+Purpose: public marketing + early-access candidate for Zugrio.
 
-## Run
+## Run locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Intent
+## Current direction
 
-- frozen brand thesis: “The chart is not the market.”
-- FX + Gold + Synthetic Indices
-- Market → Method → Current conditions → Authority → Decision history
-- positive and degraded decision states
-- waitlist conversion
-- scroll expansion / sticky narrative inspired by current React scroll patterns, without scroll hijacking
-- neutral brand accent placeholder because the final brand color is intentionally open
+- brand thesis: **The chart is not the market.**
+- market-aware trading intelligence for FX, Gold and Synthetic Indices
+- one canonical ZUGRIO wordmark geometry
+- full-screen metallic initialization sequence
+- Market Topography atmosphere
+- decision-first product preview
+- Market -> Method -> Current conditions -> Mandate -> Decision history
+- live decision annotation
+- process / outcome separation
+- Signals, Semi-Auto, Auto and Full Auto as different authority envelopes
+- Cloudflare-backed early-access waitlist
+- reduced-motion and mobile-specific behavior
 
-## Guardrails
+## Brand source of truth
 
-- illustrative data only
-- no live-trading claim
+Repository master:
+
+`/brand/v1.0.0/master/ZUGRIO_WORDMARK_MASTER.svg`
+
+Website copy:
+
+`/public/brand/zugrio-wordmark-master.svg`
+
+Every flat, metallic, ghost and motion treatment derives from that geometry. Do not redraw the lettering, substitute a font, or regenerate it with AI.
+
+## Truthfulness guardrails
+
+- illustrative chart data only
+- no live-signal implication
 - no performance claim
-- no public execution claim
-- waitlist endpoint is a placeholder integration point until the server contract is wired
-- reduced-motion respected
+- no claim that a product capability is released unless authoritative capability data says so
+- no custody claim beyond the designed non-custodial architecture
+- no automation authority beyond the user's configured mandate
+- waitlist does not connect a broker or authorize trading
+
+## Cloudflare
+
+The waitlist API is implemented under `functions/api/` with D1 + Turnstile.
+
+Production environment and live-form verification must be completed from the Cloudflare account before public launch. See `CLOUDFLARE_WAITLIST_SETUP.md`.
+
+## Review gate
+
+Do not merge or deploy to production without founder visual review and a final Cloudflare end-to-end test.
