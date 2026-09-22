@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 798.3 150" role="img" aria-label="ZUGRIO">
+  <defs>
+<linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0%" stop-color="#4f555c"/><stop offset="18%" stop-color="#aeb5bc"/>
+<stop offset="35%" stop-color="#f6f8fa"/><stop offset="49%" stop-color="#757c84"/>
+<stop offset="64%" stop-color="#e1e5e9"/><stop offset="82%" stop-color="#737a82"/>
+<stop offset="100%" stop-color="#c7ccd1"/>
+</linearGradient>
+<filter id="softGlow" x="-20%" y="-30%" width="140%" height="160%">
+<feGaussianBlur in="SourceAlpha" stdDeviation="1.2" result="b"/>
+<feColorMatrix in="b" type="matrix" values="0 0 0 0 .82 0 0 0 0 .86 0 0 0 0 .9 0 0 0 .13 0"/>
+<feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
+</defs><g fill="url(#metal)" filter="url(#softGlow)"><path d="M50 0H1286V352H575C628 411 680 469 730 528L1280 1178V1490H64V1138H767C712 1078 659 1019 607 959L50 312Z" transform="translate(16.000 134) scale(0.094 -0.09)"/>
+<path d="M722 -24C1111 -24 1364 194 1364 530V1490H960V564C960 425 862 326 722 326C584 326 484 426 484 564V1490H80V530C80 193 332 -24 722 -24Z" transform="translate(148.352 134) scale(0.094 -0.09)"/>
+<path d="M772 -24C1185 -24 1460 229 1460 617V832H784V535H1054C1050 415 956 336 787 336C572 336 460 479 460 744C460 1009 570 1154 781 1154C924 1154 1004 1087 1025 976H1449C1422 1300 1127 1514 764 1514C357 1514 40 1242 40 744C40 273 328 -24 772 -24Z" transform="translate(290.856 134) scale(0.094 -0.09)"/>
+<path d="M80 0H496V466H682L905 0H1338L1065 556C1210 642 1292 785 1292 970C1292 1289 1069 1490 713 1490H80ZM496 788V1152H682C807 1152 886 1079 886 970C886 861 807 788 682 788Z" transform="translate(440.128 134) scale(0.094 -0.09)"/>
+<path d="M496 1490H80V0H496Z" transform="translate(575.018 134) scale(0.094 -0.09)"/>
+<path d="M764 -24C1169 -24 1488 247 1488 744C1488 1242 1169 1514 764 1514C357 1514 40 1242 40 744C40 250 357 -24 764 -24ZM764 336C569 336 460 487 460 744C460 1002 569 1154 764 1154C960 1154 1068 1002 1068 744C1068 487 960 336 764 336Z" transform="translate(635.930 134) scale(0.094 -0.09)"/></g>
+</svg>
