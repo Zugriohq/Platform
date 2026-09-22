@@ -406,7 +406,7 @@ export default function App() {
             <p>Zugrio is not being built simply to block trades. When the relevant evidence remains valid, the current entry still makes sense, account limits are respected and the required authority exists, the decision can progress appropriately.</p>
           </div>
           <div className="progression">
-            {["Opportunity detected","Method requirements satisfied","Current context acceptable","Entry still qualifies","Risk available","Intent prepared","User approves","Broker acknowledges","Protection confirmed"].map((x,i) => (
+            {["Opportunity detected","Method requirements satisfied","Current context acceptable","Entry still qualifies","Risk available","Intent prepared","Mandate permits next action","Broker acknowledges","Protection confirmed"].map((x,i) => (
               <motion.div
                 key={x}
                 initial={{ opacity:0, x:20 }}
@@ -460,16 +460,16 @@ export default function App() {
 
         <motion.section className="status-board" id="status" {...sectionReveal}>
           <div className="status-copy">
-            <div className="kicker">PRODUCT STATUS</div>
+            <div className="kicker">READINESS VOCABULARY</div>
             <h2>Know exactly what’s live.</h2>
-            <p>Markets, brokers and control modes do not all become ready at once. Production status should show the exact scope that is released, in early access, under validation, research-only or locked.</p>
+            <p>The labels below demonstrate how Zugrio will communicate capability status. Markets, brokers and control modes do not all become ready at once; production status must come from authoritative capability data.</p>
           </div>
           <div className="status-list">
             {[
-              ["Released","Available inside its stated scope","STATUS LANGUAGE"],
-              ["Early access","Limited invitation or cohort","STATUS LANGUAGE"],
-              ["Validation pending","Not released for use","STATUS LANGUAGE"],
-              ["Locked","Unavailable by policy or readiness","STATUS LANGUAGE"],
+              ["Released","Available inside its stated scope","ILLUSTRATIVE STATE"],
+              ["Early access","Limited invitation or cohort","ILLUSTRATIVE STATE"],
+              ["Validation pending","Not released for use","ILLUSTRATIVE STATE"],
+              ["Locked","Unavailable by policy or readiness","ILLUSTRATIVE STATE"],
             ].map(([name,scope,state], i) => (
               <motion.div
                 key={name}
