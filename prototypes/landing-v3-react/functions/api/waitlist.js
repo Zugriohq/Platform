@@ -3,7 +3,7 @@ const ALLOWED = {
   market: new Set(["fx","gold","synthetics","stocks","crypto","multiple"]),
   horizon: new Set(["scalping","intraday","swing","multiple"]),
   mode: new Set(["signal","semi_auto","auto","full_auto_interest"]),
-  strategy: new Set(["price_action_apa","smc","ict","qmr","other"]),
+  strategy: new Set(["price_action_structure","smc","supply_demand","breakout_momentum","other"]),
   platform: new Set(["desktop","mobile","both"]),
   discovery: new Set(["instagram","x","linkedin","friend","community","search","other"]),
 };
@@ -127,7 +127,7 @@ export async function onRequestPost(context) {
   const expires = new Date(now);
   expires.setUTCFullYear(expires.getUTCFullYear() + 1);
 
-  const source = optionalText(body.source, 80) || "landing-v3";
+  const source = optionalText(body.source, 80) || "landing-v4";
   const referrer = optionalText(body.referrer, 500);
   const utmSource = optionalText(body.utm_source, 100);
   const utmMedium = optionalText(body.utm_medium, 100);
