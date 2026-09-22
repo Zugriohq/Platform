@@ -9,21 +9,22 @@ const SOURCES = {
 
 export default function BrandWordmark({
   variant = "silver",
-  sweep = false,
   className = "",
   decorative = false,
+  eager = false,
 }) {
   const src = SOURCES[variant] || SOURCES.silver;
 
   return (
-    <span className={["brand-wordmark", "brand-wordmark-" + variant, sweep ? "has-sweep" : "", className].filter(Boolean).join(" ")}>
+    <span className={["brand-wordmark", "brand-wordmark-" + variant, className].filter(Boolean).join(" ")}>
       <img
         src={src}
         alt={decorative ? "" : "ZUGRIO"}
         aria-hidden={decorative || undefined}
         draggable="false"
+        loading={eager ? "eager" : "lazy"}
+        fetchPriority={eager ? "high" : "auto"}
       />
-      {sweep && <span className="brand-wordmark-sweep" aria-hidden="true" />}
     </span>
   );
 }
