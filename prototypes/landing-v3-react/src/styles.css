@@ -769,3 +769,227 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
 @media(prefers-reduced-motion:reduce){
   .annotation-sequence>span:after{box-shadow:0 0 0 5px #0b0e12}
 }
+
+
+/* ── ZUGRIO BRAND V1 / LANDING V4 PRODUCTION PASS ─────────────────────────
+   Canonical geometry lives in /public/brand/zugrio-wordmark-master.svg.
+   All finishes, masks and motion derive from that same source.
+   ───────────────────────────────────────────────────────────────────────── */
+
+.brand-wordmark{
+  position:relative;display:inline-block;line-height:0;flex:0 0 auto
+}
+.brand-wordmark img{
+  display:block;width:100%;height:auto;user-select:none;-webkit-user-drag:none
+}
+.header-wordmark{width:116px}
+.footer-wordmark{width:122px}
+.brand{
+  min-width:0;display:flex;align-items:center;text-decoration:none
+}
+.shell-monogram{
+  width:25px;height:21px;object-fit:contain;display:block;opacity:.92;flex:0 0 auto
+}
+.shell-brand>span:last-child{
+  border-left:1px solid var(--line2);padding-left:10px
+}
+
+/* First-frame signature reveal: formed metal, not a generic shimmer. */
+.brand-intro{
+  position:fixed;inset:0;z-index:1000;display:grid;place-items:center;
+  overflow:hidden;background:#050508;pointer-events:auto;isolation:isolate
+}
+.brand-intro:before{
+  content:"";position:absolute;inset:-15%;z-index:-2;
+  background:
+    radial-gradient(circle at 50% 44%,rgba(228,233,238,.055),transparent 23%),
+    radial-gradient(circle at 36% 64%,rgba(132,141,151,.025),transparent 28%),
+    #050508
+}
+.brand-intro-ambient{
+  position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.012),transparent 24%,transparent 80%,rgba(255,255,255,.01));
+  opacity:.8
+}
+.brand-intro-inner{
+  width:min(84vw,1050px);display:flex;flex-direction:column;align-items:center;
+  gap:22px;position:relative
+}
+.brand-intro-stage{
+  position:relative;width:min(82vw,980px);isolation:isolate
+}
+.brand-intro-wordmark{width:100%;filter:drop-shadow(0 16px 46px rgba(0,0,0,.55))}
+.intro-light,.intro-glint{
+  position:absolute;inset:0;pointer-events:none;
+  -webkit-mask:url("/brand/zugrio-wordmark-master.svg") center/contain no-repeat;
+  mask:url("/brand/zugrio-wordmark-master.svg") center/contain no-repeat;
+  mix-blend-mode:screen
+}
+.intro-light-soft{
+  left:-10%;right:-10%;
+  background:linear-gradient(104deg,
+    transparent 0%,transparent 40%,
+    rgba(198,205,212,.03) 44%,
+    rgba(248,250,251,.26) 49.5%,
+    rgba(188,196,203,.08) 54%,transparent 60%,transparent 100%);
+  filter:blur(13px);
+  transform:translateX(-118%) skewX(-7deg);
+  animation:zugrioIntroSoft 1.55s cubic-bezier(.16,1,.3,1) .42s 1 both
+}
+.intro-light-primary{
+  left:-7%;right:-7%;
+  background:linear-gradient(104deg,
+    transparent 0%,transparent 45%,
+    rgba(224,229,233,.12) 47.5%,
+    rgba(255,255,255,.98) 50%,
+    rgba(216,222,227,.34) 52.2%,
+    transparent 56%,transparent 100%);
+  filter:drop-shadow(0 0 8px rgba(255,255,255,.18));
+  transform:translateX(-130%) skewX(-8deg);
+  animation:zugrioIntroPrimary 1.22s cubic-bezier(.16,1,.3,1) .50s 1 both
+}
+.intro-glint{opacity:0;filter:blur(.2px) drop-shadow(0 0 9px rgba(255,255,255,.24))}
+.intro-glint-z{
+  background:radial-gradient(ellipse 14% 72% at 15% 48%,rgba(255,255,255,.98),rgba(235,239,242,.2) 34%,transparent 69%);
+  animation:zugrioContourCatch .42s cubic-bezier(.16,1,.3,1) .73s 1 both
+}
+.intro-glint-g{
+  background:radial-gradient(ellipse 11% 38% at 48.5% 53%,rgba(255,255,255,.92),rgba(225,231,236,.16) 37%,transparent 73%);
+  animation:zugrioContourCatch .40s cubic-bezier(.16,1,.3,1) 1.02s 1 both
+}
+.intro-glint-r{
+  background:radial-gradient(ellipse 11% 58% at 67.5% 55%,rgba(255,255,255,.9),rgba(225,231,236,.14) 38%,transparent 72%);
+  animation:zugrioContourCatch .44s cubic-bezier(.16,1,.3,1) 1.21s 1 both
+}
+.intro-glint-o{
+  background:radial-gradient(ellipse 12% 55% at 91% 47%,rgba(255,255,255,.9),rgba(225,231,236,.14) 38%,transparent 72%);
+  animation:zugrioContourCatch .46s cubic-bezier(.16,1,.3,1) 1.42s 1 both
+}
+.brand-intro-descriptor{
+  color:#7f8892;font-size:9px;font-weight:700;letter-spacing:.23em;text-transform:uppercase
+}
+
+/* Market Topography: a data field, not a mountain silhouette. */
+.hero{position:relative;isolation:isolate}
+.hero-copy,.hero-product{position:relative;z-index:2}
+.market-topography{
+  position:absolute;z-index:0;left:50%;top:330px;
+  width:min(1540px,118vw);height:auto;transform:translateX(-50%);
+  pointer-events:none;opacity:.72;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 12%,#000 76%,transparent 100%);
+  mask-image:linear-gradient(to bottom,transparent 0%,#000 12%,#000 76%,transparent 100%)
+}
+.market-topography-field{
+  display:block;width:100%;height:auto;opacity:.8;
+  transform:translate3d(0,0,0) scale(1.015);
+  animation:marketFieldDrift 19s ease-in-out infinite alternate
+}
+.market-topography-bloom{
+  position:absolute;left:54%;top:20%;width:38%;height:38%;border-radius:50%;
+  background:radial-gradient(circle,rgba(240,243,246,.08),rgba(197,205,212,.025) 32%,transparent 70%);
+  filter:blur(28px);animation:marketBloom 13s ease-in-out infinite alternate
+}
+.market-topography-graze{
+  position:absolute;left:-35%;top:24%;width:26%;height:62%;
+  background:linear-gradient(102deg,transparent,rgba(255,255,255,.018),rgba(255,255,255,.11),rgba(206,214,221,.02),transparent);
+  filter:blur(10px);transform:skewX(-12deg);mix-blend-mode:screen;
+  animation:marketGraze 12.5s cubic-bezier(.16,1,.3,1) 1.8s infinite
+}
+
+/* Closing ghost mark: atmosphere, not a second logo treatment. */
+.silver-base,.silver-spotlight{
+  display:grid;place-items:center
+}
+.silver-base{
+  width:min(86vw,1120px);opacity:.038;color:transparent;text-shadow:none!important
+}
+.silver-base>.brand-wordmark,.silver-spotlight>.brand-wordmark{
+  width:min(86vw,1120px)
+}
+.silver-base:after{display:none!important}
+.silver-spotlight{
+  width:100%;height:100%;
+  -webkit-mask-image:radial-gradient(circle 145px at var(--spot-x) var(--spot-y),#000 0%,rgba(0,0,0,.95) 20%,rgba(0,0,0,.5) 52%,rgba(0,0,0,.12) 78%,transparent 100%);
+  mask-image:radial-gradient(circle 145px at var(--spot-x) var(--spot-y),#000 0%,rgba(0,0,0,.95) 20%,rgba(0,0,0,.5) 52%,rgba(0,0,0,.12) 78%,transparent 100%);
+  opacity:.04;transition:opacity .38s cubic-bezier(.16,1,.3,1)
+}
+.silver-reveal.is-active .silver-spotlight{opacity:.92}
+.silver-spotlight .brand-wordmark{
+  filter:brightness(1.2) drop-shadow(0 0 14px rgba(235,240,244,.12))
+}
+.silver-copy strong{font-weight:700;letter-spacing:.15em}
+.silver-word{display:none!important}
+
+/* Waitlist: the expanded flow has one final action at its natural endpoint. */
+.form-continue{white-space:nowrap}
+.required-profile[open]{border-color:#303843}
+.profile-submit-bottom{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 8px 22px rgba(0,0,0,.18)
+}
+
+/* Motion tokens tuned for a slower, more considered financial-product rhythm. */
+@keyframes zugrioIntroSoft{
+  0%{transform:translateX(-118%) skewX(-7deg);opacity:0}
+  12%{opacity:.15}
+  44%{opacity:.72}
+  100%{transform:translateX(120%) skewX(-7deg);opacity:0}
+}
+@keyframes zugrioIntroPrimary{
+  0%{transform:translateX(-130%) skewX(-8deg);opacity:0}
+  15%{opacity:.08}
+  43%{opacity:1}
+  76%{opacity:.55}
+  100%{transform:translateX(132%) skewX(-8deg);opacity:0}
+}
+@keyframes zugrioContourCatch{
+  0%{opacity:0;transform:scale(.985)}
+  34%{opacity:.92;transform:scale(1)}
+  100%{opacity:0;transform:scale(1.012)}
+}
+@keyframes marketFieldDrift{
+  0%{transform:translate3d(-.8%,0,0) scale(1.015)}
+  50%{transform:translate3d(.35%,-1.1%,0) scale(1.022)}
+  100%{transform:translate3d(.9%,.35%,0) scale(1.016)}
+}
+@keyframes marketBloom{
+  from{transform:translate3d(-3%,3%,0) scale(.92);opacity:.45}
+  to{transform:translate3d(5%,-4%,0) scale(1.12);opacity:.78}
+}
+@keyframes marketGraze{
+  0%,20%{transform:translateX(0) skewX(-12deg);opacity:0}
+  27%{opacity:.55}
+  48%{opacity:.28}
+  60%,100%{transform:translateX(620%) skewX(-12deg);opacity:0}
+}
+
+@media(max-width:1050px){
+  .header-wordmark{width:108px}
+  .market-topography{top:390px;width:145vw;opacity:.54}
+}
+
+@media(max-width:720px){
+  .header-wordmark{width:101px}
+  .footer-wordmark{width:112px}
+  .brand-intro-inner{width:90vw;gap:17px}
+  .brand-intro-stage{width:88vw}
+  .brand-intro-descriptor{font-size:7.5px;letter-spacing:.16em;text-align:center}
+  .market-topography{top:470px;width:190vw;opacity:.38}
+  .market-topography-graze{display:none}
+  .silver-base,.silver-base>.brand-wordmark,.silver-spotlight>.brand-wordmark{width:min(91vw,760px)}
+  .silver-spotlight{
+    opacity:.5;
+    -webkit-mask-image:radial-gradient(circle 136px at 50% 52%,#000 0%,rgba(0,0,0,.8) 28%,rgba(0,0,0,.32) 62%,transparent 100%);
+    mask-image:radial-gradient(circle 136px at 50% 52%,#000 0%,rgba(0,0,0,.8) 28%,rgba(0,0,0,.32) 62%,transparent 100%)
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .brand-intro-wordmark{filter:none}
+  .market-topography-field,.market-topography-bloom,.market-topography-graze{animation:none!important}
+  .market-topography-graze{display:none}
+  .silver-spotlight{
+    opacity:.55;
+    -webkit-mask-image:radial-gradient(circle 170px at 50% 50%,#000,rgba(0,0,0,.48) 62%,transparent 88%);
+    mask-image:radial-gradient(circle 170px at 50% 50%,#000,rgba(0,0,0,.48) 62%,transparent 88%)
+  }
+}
