@@ -8,6 +8,8 @@ import CandlestickChart from "./CandlestickChart.jsx";
 import RollingDescriptors from "./RollingDescriptors.jsx";
 import Waitlist from "./Waitlist.jsx";
 import SilverReveal from "./SilverReveal.jsx";
+import BrandWordmark from "./BrandWordmark.jsx";
+import BrandIntro from "./BrandIntro.jsx";
 
 const MARKETS = {
   FX: {
@@ -129,7 +131,7 @@ function Shell({ activeStep, marketKey, setMarketKey, caseKey, setCaseKey }) {
     <div className="product-shell" data-step={activeStep} aria-label="Illustrative Zugrio decision workspace">
       <div className="shell-top">
         <div className="shell-brand">
-          <span className="zmark">Z</span>
+          <BrandWordmark variant="silver" className="shell-wordmark" decorative />
           <span>Decision workspace</span>
         </div>
         <div className="shell-health"><i /> 37s fresh</div>
@@ -286,12 +288,13 @@ export default function App() {
 
   return (
     <>
+      <BrandIntro />
       <motion.div className="scroll-progress" style={{ scaleX: scrollYProgress }} />
       <div className="ambient ambient-one" aria-hidden="true" />
       <div className="ambient ambient-two" aria-hidden="true" />
 
       <header className="site-header">
-        <a className="brand" href="#top"><span className="zmark">Z</span><b>ZUGRIO</b></a>
+        <a className="brand" href="#top" aria-label="Zugrio home"><BrandWordmark variant="silver" className="header-wordmark" decorative /></a>
         <nav className={menu ? "nav-links open" : "nav-links"}>
           {nav.map(([label, href]) => <a key={href} href={href} onClick={() => setMenu(false)}>{label}</a>)}
         </nav>
@@ -301,6 +304,7 @@ export default function App() {
 
       <main id="top">
         <section className="hero" id="product">
+          <div className="hero-ridge" aria-hidden="true" />
           <motion.div
             initial={prefersReduced ? false : "hidden"}
             animate="show"
@@ -310,6 +314,10 @@ export default function App() {
             }}
             className="hero-copy"
           >
+            <motion.div variants={{ hidden:{opacity:0,y:10},show:{opacity:1,y:0} }} className="hero-brand-lockup">
+              <BrandWordmark variant="metallic" className="hero-wordmark" decorative />
+            </motion.div>
+
             <motion.div variants={{ hidden:{opacity:0,y:10},show:{opacity:1,y:0} }} className="eyebrow">
               <i/> MARKET-AWARE TRADING INTELLIGENCE · PRIVATE BUILD
             </motion.div>
@@ -475,7 +483,7 @@ export default function App() {
       </main>
 
       <footer>
-        <a className="brand" href="#top"><span className="zmark">Z</span><b>ZUGRIO</b></a>
+        <a className="brand" href="#top" aria-label="Zugrio home"><BrandWordmark variant="silver" className="footer-wordmark" decorative /></a>
         <p>Zugrio is in development and private validation. Product screens, prices and trading scenarios shown on this site may be illustrative. They are not investment recommendations, live signals or performance claims. Trading involves risk of loss.</p>
         <div>
           <a href="#status">Product status</a>
