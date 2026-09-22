@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 650" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#080b0f" stop-opacity="0"/><stop offset=".55" stop-color="#080b0f" stop-opacity=".18"/><stop offset="1" stop-color="#050608" stop-opacity=".98"/></linearGradient>
+<linearGradient id="ridgeFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#20262d"/><stop offset=".45" stop-color="#11161c"/><stop offset="1" stop-color="#050608"/></linearGradient>
+<linearGradient id="silverEdge" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5f6872" stop-opacity=".08"/><stop offset=".35" stop-color="#c9d0d6" stop-opacity=".72"/><stop offset=".56" stop-color="#f3f5f7" stop-opacity=".92"/><stop offset=".78" stop-color="#8b949e" stop-opacity=".22"/><stop offset="1" stop-color="#5f6872" stop-opacity="0"/></linearGradient>
+<filter id="mist"><feGaussianBlur stdDeviation="22"/></filter>
+</defs>
+<rect width="1600" height="650" fill="#050608"/>
+<ellipse cx="1180" cy="225" rx="330" ry="120" fill="#bfc7cf" opacity=".035" filter="url(#mist)"/>
+<path d="M0 530 L110 475 L200 505 L305 420 L392 468 L500 375 L585 430 L705 300 L790 380 L900 248 L990 334 L1100 205 L1195 300 L1325 242 L1410 355 L1528 294 L1600 340 L1600 650 L0 650 Z" fill="#0c1015"/>
+<path d="M0 585 L160 520 L268 552 L418 462 L530 505 L690 390 L810 470 L970 332 L1076 425 L1230 302 L1360 405 L1510 348 L1600 400 L1600 650 L0 650 Z" fill="url(#ridgeFill)" opacity=".98"/>
+<path d="M0 574 L160 520 L268 552 L418 462 L530 505 L690 390 L810 470 L970 332 L1076 425 L1230 302 L1360 405 L1510 348 L1600 400" fill="none" stroke="url(#silverEdge)" stroke-width="2.2"/>
+<path d="M100 600 L260 555 L390 590 L545 520 L670 565 L820 490 L965 525 L1120 446 L1260 514 L1430 452 L1600 490 L1600 650 L100 650 Z" fill="#07090c" opacity=".98"/>
+<path d="M300 645 C520 585 650 620 820 575 C1000 530 1190 575 1420 520" fill="none" stroke="#c9d0d6" stroke-opacity=".08" stroke-width="1"/>
+<rect width="1600" height="650" fill="url(#sky)"/>
+</svg>
