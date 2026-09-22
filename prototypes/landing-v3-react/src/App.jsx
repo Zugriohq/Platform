@@ -8,8 +8,6 @@ import CandlestickChart from "./CandlestickChart.jsx";
 import RollingDescriptors from "./RollingDescriptors.jsx";
 import Waitlist from "./Waitlist.jsx";
 import SilverReveal from "./SilverReveal.jsx";
-import BrandWordmark from "./BrandWordmark.jsx";
-import BrandIntro from "./BrandIntro.jsx";
 
 const MARKETS = {
   FX: {
@@ -59,31 +57,31 @@ const STORY = [
     key: "market",
     overline: "MARKET",
     title: "Same pattern. Different market. Different answer.",
-    body: "A similar-looking move can come from a different market family, product and execution environment. Zugrio starts by asking what it is actually looking at.",
+    body: "A structure break can look similar in FX, Gold and a Synthetic Index and still mean something different. Zugrio evaluates the opportunity inside the market family that produced it instead of forcing every instrument through one generic model.",
   },
   {
     key: "method",
     overline: "METHOD",
     title: "Your method sets the rules. Zugrio doesn’t silently bend them.",
-    body: "Your method defines what qualifies, what evidence is required, which entry models are allowed and what invalidates the idea.",
+    body: "Choose the framework you trade — structure and liquidity, smart-money concepts, or your own price-action rules. Zugrio keeps applying that standard without quietly changing it because the session is slow, the last trade lost or you have been watching too long.",
   },
   {
     key: "moment",
     overline: "CURRENT CONDITIONS",
     title: "If the facts change, the trade changes.",
-    body: "Price, spread, entry economics, regime, macro events, session and account state can all change after the original setup appears.",
+    body: "A setup does not exist in isolation. Price, spread, entry economics, session, volatility, market regime and account state can change what still qualifies after the original opportunity appears.",
   },
   {
     key: "mandate",
     overline: "CONTROL",
     title: "A signal is not permission.",
-    body: "Market intelligence, account risk, execution authority and broker reality remain separate. Automation can only act inside the mandate you explicitly set.",
+    body: "Your methodology determines how an opportunity is evaluated. Your automation setting determines what Zugrio is allowed to do about it. Market intelligence, account risk, execution authority and broker reality remain separate.",
   },
   {
     key: "memory",
     overline: "DECISION HISTORY",
     title: "The reason stays with the trade.",
-    body: "The original case, changes, override, broker result and outcome remain attached so hindsight cannot quietly rewrite the process.",
+    body: "Entered, passed, blocked, expired, missed or overridden — the case stays in the record. Outcome and process remain separate so hindsight cannot quietly rewrite what was known at the time.",
   },
 ];
 
@@ -91,8 +89,8 @@ const TICKER = [
   "Market-specific intelligence",
   "Method-bound evaluation",
   "Current-condition checks",
-  "Authority before action",
-  "Decision history intact",
+  "Mandate before action",
+  "Decision integrity preserved",
   "FX · Gold · Synthetic Indices",
 ];
 
@@ -100,7 +98,7 @@ const sectionReveal = {
   initial: { opacity: 0, y: 34 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, amount: .18 },
-  transition: { duration: .72, ease: [0.16, 1, 0.3, 1] },
+  transition: { duration: .88, ease: [0.16, 1, 0.3, 1] },
 };
 
 function fmt(priceSpec, value) {
@@ -131,7 +129,7 @@ function Shell({ activeStep, marketKey, setMarketKey, caseKey, setCaseKey }) {
     <div className="product-shell" data-step={activeStep} aria-label="Illustrative Zugrio decision workspace">
       <div className="shell-top">
         <div className="shell-brand">
-          <BrandWordmark variant="silver" className="shell-wordmark" decorative />
+          <span className="zmark">Z</span>
           <span>Decision workspace</span>
         </div>
         <div className="shell-health"><i /> 37s fresh</div>
@@ -252,7 +250,8 @@ function Story({ activeStep, setActiveStep, marketKey, setMarketKey, caseKey, se
               <h2>{s.title}</h2>
               <p>{s.body}</p>
               {s.key === "market" && <em>Different markets deserve different intelligence.</em>}
-              {s.key === "mandate" && <em>Automation access does not authorise a trade. Your mandate does.</em>}
+              {s.key === "method" && <em>Methodology and automation are separate choices.</em>}
+              {s.key === "mandate" && <em>Buying automation access does not authorise a trade. Your mandate does.</em>}
               {s.key === "memory" && <em>Hindsight doesn’t get to rewrite it.</em>}
             </motion.article>
           ))}
@@ -265,9 +264,9 @@ function Story({ activeStep, setActiveStep, marketKey, setMarketKey, caseKey, se
 export default function App() {
   const prefersReduced = useReducedMotion();
   const { scrollYProgress } = useScroll();
-  const heroScale = useTransform(scrollYProgress, [0, .12], [0.84, 1]);
-  const heroRotate = useTransform(scrollYProgress, [0, .12], [prefersReduced ? 0 : 2.6, 0]);
-  const heroY = useTransform(scrollYProgress, [0, .12], [prefersReduced ? 0 : 86, 0]);
+  const heroScale = useTransform(scrollYProgress, [0, .12], [0.9, 1]);
+  const heroRotate = useTransform(scrollYProgress, [0, .12], [prefersReduced ? 0 : 1.1, 0]);
+  const heroY = useTransform(scrollYProgress, [0, .12], [prefersReduced ? 0 : 58, 0]);
   const heroOpacity = useTransform(scrollYProgress, [0, .14], [1, .96]);
 
   const [menu, setMenu] = useState(false);
@@ -288,13 +287,12 @@ export default function App() {
 
   return (
     <>
-      <BrandIntro />
       <motion.div className="scroll-progress" style={{ scaleX: scrollYProgress }} />
       <div className="ambient ambient-one" aria-hidden="true" />
       <div className="ambient ambient-two" aria-hidden="true" />
 
       <header className="site-header">
-        <a className="brand" href="#top" aria-label="Zugrio home"><BrandWordmark variant="silver" className="header-wordmark" decorative /></a>
+        <a className="brand" href="#top"><span className="zmark">Z</span><b>ZUGRIO</b></a>
         <nav className={menu ? "nav-links open" : "nav-links"}>
           {nav.map(([label, href]) => <a key={href} href={href} onClick={() => setMenu(false)}>{label}</a>)}
         </nav>
@@ -304,20 +302,15 @@ export default function App() {
 
       <main id="top">
         <section className="hero" id="product">
-          <div className="hero-ridge" aria-hidden="true" />
           <motion.div
             initial={prefersReduced ? false : "hidden"}
             animate="show"
             variants={{
               hidden: { opacity: 0 },
-              show: { opacity: 1, transition: { staggerChildren: .07, delayChildren: .08 } }
+              show: { opacity: 1, transition: { staggerChildren: .09, delayChildren: .12 } }
             }}
             className="hero-copy"
           >
-            <motion.div variants={{ hidden:{opacity:0,y:10},show:{opacity:1,y:0} }} className="hero-brand-lockup">
-              <BrandWordmark variant="metallic" className="hero-wordmark" decorative />
-            </motion.div>
-
             <motion.div variants={{ hidden:{opacity:0,y:10},show:{opacity:1,y:0} }} className="eyebrow">
               <i/> MARKET-AWARE TRADING INTELLIGENCE · PRIVATE BUILD
             </motion.div>
@@ -329,7 +322,7 @@ export default function App() {
                   key={word + i}
                   variants={{
                     hidden: { opacity: 0, y: 28, filter: "blur(10px)" },
-                    show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: .62, ease: [0.16,1,0.3,1] } }
+                    show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: .78, ease: [0.16,1,0.3,1] } }
                   }}
                 >
                   {word}{i < heroWords.length - 1 ? " " : ""}
@@ -338,7 +331,7 @@ export default function App() {
             </h1>
 
             <motion.p variants={{ hidden:{opacity:0,y:14},show:{opacity:1,y:0} }}>
-              Zugrio evaluates each opportunity in the market that produced it, against your method and current conditions—then shows what still holds, what changed, and what, if anything, is permitted next.
+              Zugrio evaluates each opportunity in the market that produced it, against your method and current conditions — then shows what still holds, what changed, and what is permitted next.
             </motion.p>
 
             <motion.div variants={{ hidden:{opacity:0,y:12},show:{opacity:1,y:0} }}>
@@ -348,6 +341,10 @@ export default function App() {
             <motion.div variants={{ hidden:{opacity:0,y:12},show:{opacity:1,y:0} }} className="hero-actions">
               <a className="primary" href="#early-access">Join the early-access waitlist <ArrowRight size={17}/></a>
               <a className="secondary" href="#how">Explore the decision preview <ChevronRight size={17}/></a>
+            </motion.div>
+
+            <motion.div variants={{ hidden:{opacity:0},show:{opacity:1} }} className="hero-trust">
+              Your capital stays in your broker account. You set the mandate; Zugrio evaluates what qualifies and acts only within the authority you grant.
             </motion.div>
 
             <motion.div variants={{ hidden:{opacity:0},show:{opacity:1} }} className="scope">
@@ -371,7 +368,28 @@ export default function App() {
           <p>Price tells you what happened. A trading decision also depends on what market produced that move, whether it fits your method, what is true now, what your account can absorb and what authority you have actually granted.</p>
         </motion.section>
 
+        <motion.section className="annotation" {...sectionReveal}>
+          <div>
+            <div className="kicker">LIVE DECISION ANNOTATION</div>
+            <h2>Watch the reasoning form on the chart.</h2>
+            <p>Zugrio does not wait until the trade is over to explain itself. As structure develops, the chart can show what has actually been confirmed, what the system is waiting for and what would invalidate the case.</p>
+          </div>
+          <div className="annotation-sequence" aria-label="Illustrative live annotation sequence">
+            <span><b>09:18</b><strong>Break confirmed</strong><small>Structure condition satisfied</small></span>
+            <span><b>09:21</b><strong>Awaiting retest</strong><small>No entry permission yet</small></span>
+            <span><b>09:24</b><strong>Retest qualified</strong><small>Current conditions rechecked</small></span>
+            <em>Illustrative product states — not a live signal.</em>
+          </div>
+        </motion.section>
+
         <Story {...{ activeStep, setActiveStep, marketKey, setMarketKey, caseKey, setCaseKey }} />
+
+        <motion.section className="discipline" {...sectionReveal}>
+          <div className="kicker">CONSISTENCY UNDER PRESSURE</div>
+          <h2>Your rules should not change because your mood did.</h2>
+          <p>Long chart sessions create pressure: impatience, early entries, revenge re-entry, moving the goalposts after a loss, or seeing a setup because you want one to be there. Zugrio keeps applying the method you defined and records when you choose to override it.</p>
+          <strong>The market does not care how long you have been watching it. Your evaluation standard should not either.</strong>
+        </motion.section>
 
         <motion.section className="positive" id="control" {...sectionReveal}>
           <div className="positive-copy">
@@ -386,7 +404,7 @@ export default function App() {
                 initial={{ opacity:0, x:20 }}
                 whileInView={{ opacity:1, x:0 }}
                 viewport={{ once:true, amount:.7 }}
-                transition={{ duration:.4, delay:i*.035 }}
+                transition={{ duration:.52, delay:i*.05, ease:[0.16,1,0.3,1] }}
               >
                 <span>{String(i+1).padStart(2,"0")}</span><b>{x}</b><Check size={15}/>
               </motion.div>
@@ -399,14 +417,14 @@ export default function App() {
           <div>
             <div className="kicker">DECISION HISTORY</div>
             <h2>The reason stays with the trade.<br/>Hindsight doesn’t get to rewrite it.</h2>
-            <p>Entered, passed, missed, blocked, expired and overridden opportunities all belong in the record—not only winning trades.</p>
+            <p>Entered, passed, blocked, expired, missed and overridden opportunities all stay in the record. Outcome and process remain separate: a profitable trade is not automatically a good decision, and a losing trade is not automatically a bad one.</p>
           </div>
           <motion.div
             className="record-card"
             initial={{ opacity:0, rotateX:8, y:24 }}
             whileInView={{ opacity:1, rotateX:0, y:0 }}
             viewport={{ once:true, amount:.4 }}
-            transition={{ duration:.65, ease:[0.16,1,0.3,1] }}
+            transition={{ duration:.82, ease:[0.16,1,0.3,1] }}
           >
             <div><span>SYSTEM</span><b>PASS</b></div>
             <div><span>USER</span><b>OVERRIDE</b></div>
@@ -450,7 +468,7 @@ export default function App() {
                 initial={{ opacity:0, x:22 }}
                 whileInView={{ opacity:1, x:0 }}
                 viewport={{ once:true }}
-                transition={{ duration:.42, delay:i*.055 }}
+                transition={{ duration:.56, delay:i*.065, ease:[0.16,1,0.3,1] }}
               >
                 <b>{name}</b><span>{scope}</span><em>{state}</em>
               </motion.div>
@@ -465,6 +483,12 @@ export default function App() {
           <p>Zugrio will pair product intelligence with contextual learning: how market families differ, why an entry changed, what automation authority means and how to review a decision without hindsight.</p>
         </motion.section>
 
+        <motion.section className="why" {...sectionReveal}>
+          <div className="kicker">WHY ZUGRIO EXISTS</div>
+          <h2>Good rules are easiest to follow away from the market.</h2>
+          <p>They are harder to follow after a loss, deep into a session, or when a setup is almost — but not quite — there. Zugrio is being built to keep the method, the evidence, the mandate and the resulting decision connected from opportunity to outcome, so the same avoidable breakdown does not have to be rediscovered trade after trade.</p>
+        </motion.section>
+
         <motion.section className="faq" {...sectionReveal}>
           <div className="kicker">QUESTIONS</div>
           <h2>What should you know before joining?</h2>
@@ -473,7 +497,7 @@ export default function App() {
             ["Which markets are first?","FX, Gold and Synthetic Indices are the initial product tracks. Each requires its own data, calibration, cost and validation work."],
             ["Does Zugrio use one trading strategy?","No. Zugrio is designed around versioned Methods and entry models rather than one universal setup."],
             ["How does automation work?","Signal, Semi-Auto, Auto and Full Auto represent different levels of delegated authority. Execution remains bound to account, Method, market and risk rules."],
-            ["Does Zugrio guarantee profitable trades?","No. Trading involves risk of loss. Zugrio does not guarantee a return, win rate or profitable outcome."],
+            ["Does Zugrio guarantee profitable trades?","No. A disciplined process can still produce a losing trade, just as a poor decision can sometimes make money. Zugrio is designed to improve decision consistency and traceability — not promise a return, win rate or profitable outcome."],
             ["What happens after I join?","You’ll receive product updates and early-access invitations as access opens. Joining does not create a trading account, connect a broker or authorise trading."],
           ].map(([q,a]) => <details key={q}><summary>{q}<ChevronRight size={16}/></summary><p>{a}</p></details>)}
         </motion.section>
@@ -483,7 +507,7 @@ export default function App() {
       </main>
 
       <footer>
-        <a className="brand" href="#top" aria-label="Zugrio home"><BrandWordmark variant="silver" className="footer-wordmark" decorative /></a>
+        <a className="brand" href="#top"><span className="zmark">Z</span><b>ZUGRIO</b></a>
         <p>Zugrio is in development and private validation. Product screens, prices and trading scenarios shown on this site may be illustrative. They are not investment recommendations, live signals or performance claims. Trading involves risk of loss.</p>
         <div>
           <a href="#status">Product status</a>
