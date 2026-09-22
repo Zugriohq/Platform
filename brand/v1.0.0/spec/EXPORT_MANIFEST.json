@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "canonical_master": "master/ZUGRIO_WORDMARK_MASTER.svg",
+  "master_viewbox": "0 0 2064 332",
+  "geometry_locked": true,
+  "live_fonts": false,
+  "colors": {
+    "obsidian_black": "#050508",
+    "graphite": "#1A1A1A",
+    "steel_silver": "#C8CCD0",
+    "soft_white": "#F5F5F7"
+  }
+}
