@@ -8,6 +8,9 @@ import CandlestickChart from "./CandlestickChart.jsx";
 import RollingDescriptors from "./RollingDescriptors.jsx";
 import Waitlist from "./Waitlist.jsx";
 import SilverReveal from "./SilverReveal.jsx";
+import BrandWordmark from "./BrandWordmark.jsx";
+import BrandIntro from "./BrandIntro.jsx";
+import MarketTopography from "./MarketTopography.jsx";
 
 const MARKETS = {
   FX: {
@@ -129,7 +132,7 @@ function Shell({ activeStep, marketKey, setMarketKey, caseKey, setCaseKey }) {
     <div className="product-shell" data-step={activeStep} aria-label="Illustrative Zugrio decision workspace">
       <div className="shell-top">
         <div className="shell-brand">
-          <span className="zmark">Z</span>
+          <img className="shell-monogram" src="/brand/zugrio-monogram-silver.svg" alt="" aria-hidden="true" />
           <span>Decision workspace</span>
         </div>
         <div className="shell-health"><i /> 37s fresh</div>
@@ -269,6 +272,7 @@ export default function App() {
   const heroY = useTransform(scrollYProgress, [0, .12], [prefersReduced ? 0 : 58, 0]);
   const heroOpacity = useTransform(scrollYProgress, [0, .14], [1, .96]);
 
+  const [introComplete, setIntroComplete] = useState(false);
   const [menu, setMenu] = useState(false);
   const [marketKey, setMarketKey] = useState("FX");
   const [caseKey, setCaseKey] = useState("valid");
@@ -287,12 +291,15 @@ export default function App() {
 
   return (
     <>
+      <BrandIntro onComplete={() => setIntroComplete(true)} />
       <motion.div className="scroll-progress" style={{ scaleX: scrollYProgress }} />
       <div className="ambient ambient-one" aria-hidden="true" />
       <div className="ambient ambient-two" aria-hidden="true" />
 
       <header className="site-header">
-        <a className="brand" href="#top"><span className="zmark">Z</span><b>ZUGRIO</b></a>
+        <a className="brand" href="#top" aria-label="Zugrio home">
+          <BrandWordmark variant="silver" className="header-wordmark" decorative eager />
+        </a>
         <nav className={menu ? "nav-links open" : "nav-links"}>
           {nav.map(([label, href]) => <a key={href} href={href} onClick={() => setMenu(false)}>{label}</a>)}
         </nav>
@@ -302,9 +309,10 @@ export default function App() {
 
       <main id="top">
         <section className="hero" id="product">
+          <MarketTopography />
           <motion.div
             initial={prefersReduced ? false : "hidden"}
-            animate="show"
+            animate={prefersReduced || introComplete ? "show" : "hidden"}
             variants={{
               hidden: { opacity: 0 },
               show: { opacity: 1, transition: { staggerChildren: .09, delayChildren: .12 } }
@@ -507,7 +515,9 @@ export default function App() {
       </main>
 
       <footer>
-        <a className="brand" href="#top"><span className="zmark">Z</span><b>ZUGRIO</b></a>
+        <a className="brand" href="#top" aria-label="Zugrio home">
+          <BrandWordmark variant="silver" className="footer-wordmark" decorative />
+        </a>
         <p>Zugrio is in development and private validation. Product screens, prices and trading scenarios shown on this site may be illustrative. They are not investment recommendations, live signals or performance claims. Trading involves risk of loss.</p>
         <div>
           <a href="#status">Product status</a>
