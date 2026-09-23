@@ -6,7 +6,8 @@ const PHRASES = [
   "FORMING → READY → TRIGGERED",
   "background opportunity alerts",
   "your control stays explicit",
-  "broker-linked trade review",
+  "behavioral analytics",
+  "decision replay",
 ];
 
 export default function RollingDescriptors() {
