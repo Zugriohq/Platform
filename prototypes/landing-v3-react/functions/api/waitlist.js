@@ -8,6 +8,121 @@ const ALLOWED = {
   discovery: new Set(["instagram","x","linkedin","friend","community","search","other"]),
 };
 
+
+function brevoReady(env) {
+  return Boolean(
+    env.BREVO_API_KEY &&
+    env.BREVO_LIST_ID &&
+    env.BREVO_WELCOME_TEMPLATE_ID &&
+    env.BREVO_SENDER_EMAIL
+  );
+}
+
+async function brevoRequest(env, pathname, init = {}) {
+  const response = await fetch("https://api.brevo.com/v3" + pathname, {
+    ...init,
+    headers: {
+      "accept": "application/json",
+      "content-type": "application/json",
+      "api-key": env.BREVO_API_KEY,
+      ...(init.headers || {}),
+    },
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error("brevo_http_" + response.status + (text ? ":" + text.slice(0, 240) : ""));
+  }
+
+  if (response.status === 204) return null;
+  return response.json().catch(() => null);
+}
+
+async function syncBrevoContact(env, profile) {
+  const listId = Number(env.BREVO_LIST_ID);
+  if (!Number.isInteger(listId) || listId < 1) throw new Error("brevo_list_id_invalid");
+
+  await brevoRequest(env, "/contacts", {
+    method: "POST",
+    body: JSON.stringify({
+      email: profile.email,
+      listIds: [listId],
+      updateEnabled: true,
+    }),
+  });
+}
+
+async function sendBrevoWelcome(env, profile) {
+  const templateId = Number(env.BREVO_WELCOME_TEMPLATE_ID);
+  if (!Number.isInteger(templateId) || templateId < 1) throw new Error("brevo_welcome_template_invalid");
+
+  const sender = {
+    name: env.BREVO_SENDER_NAME || "Zugrio",
+    email: env.BREVO_SENDER_EMAIL,
+  };
+
+  const payload = {
+    sender,
+    to: [{ email: profile.email }],
+    templateId,
+    params: {
+      MARKET: profile.market,
+      HORIZON: profile.horizon,
+      MODE: profile.mode,
+    },
+  };
+
+  if (env.BREVO_REPLY_TO) payload.replyTo = { email: env.BREVO_REPLY_TO };
+
+  return brevoRequest(env, "/smtp/email", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+async function startEmailLifecycle(env, profile, waitlistId, nowIso) {
+  if (!brevoReady(env)) return;
+
+  try {
+    await syncBrevoContact(env, profile);
+    await env.DB.prepare(
+      "UPDATE waitlist SET brevo_synced_at = ?, email_last_error = NULL WHERE id = ?"
+    ).bind(nowIso, waitlistId).run();
+  } catch (error) {
+    console.error("brevo_contact_sync_failed", error?.message || String(error));
+    await env.DB.prepare(
+      "UPDATE waitlist SET email_last_error = ? WHERE id = ?"
+    ).bind(("contact_sync:" + (error?.message || String(error))).slice(0, 500), waitlistId).run();
+    return;
+  }
+
+  try {
+    const result = await sendBrevoWelcome(env, profile);
+    const messageId = result?.messageId ? String(result.messageId).slice(0, 200) : "";
+    const nextAt = new Date(new Date(nowIso).getTime() + 24 * 60 * 60 * 1000).toISOString();
+
+    await env.DB.prepare(
+      `UPDATE waitlist
+       SET welcome_sent_at = ?,
+           email_sequence_step = 1,
+           email_next_at = ?,
+           email_last_error = NULL
+       WHERE id = ?`
+    ).bind(nowIso, nextAt, waitlistId).run();
+
+    await env.DB.prepare(
+      `INSERT INTO email_send_log
+       (waitlist_id, email, template_key, provider_message_id, status, sent_at)
+       VALUES (?, ?, 'EA00', ?, 'sent', ?)`
+    ).bind(waitlistId, profile.email, messageId, nowIso).run();
+  } catch (error) {
+    console.error("brevo_welcome_failed", error?.message || String(error));
+    await env.DB.prepare(
+      "UPDATE waitlist SET email_last_error = ? WHERE id = ?"
+    ).bind(("welcome:" + (error?.message || String(error))).slice(0, 500), waitlistId).run();
+  }
+}
+
 function json(body, status = 200) {
   return Response.json(body, {
     status,
@@ -134,7 +249,7 @@ export async function onRequestPost(context) {
   const utmCampaign = optionalText(body.utm_campaign, 160);
 
   try {
-    await env.DB
+    const inserted = await env.DB
       .prepare(
         `INSERT OR IGNORE INTO waitlist (
           email, role, market, style, mode, strategy, platform,
@@ -152,6 +267,23 @@ export async function onRequestPost(context) {
         now.toISOString(), now.toISOString(), expires.toISOString()
       )
       .run();
+
+    if ((inserted?.meta?.changes || 0) > 0 && brevoReady(env)) {
+      const row = await env.DB
+        .prepare("SELECT id FROM waitlist WHERE email = ? COLLATE NOCASE")
+        .bind(email)
+        .first();
+
+      if (row?.id) {
+        // Email delivery is deliberately best-effort. D1 acceptance remains authoritative.
+        await startEmailLifecycle(
+          env,
+          { email, market, horizon, mode },
+          row.id,
+          now.toISOString()
+        );
+      }
+    }
   } catch (error) {
     console.error("waitlist_insert_failed", error?.message || String(error));
     return json({ ok: false, status: "unavailable" }, 503);
