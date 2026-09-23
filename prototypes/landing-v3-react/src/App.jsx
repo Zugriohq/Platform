@@ -353,7 +353,7 @@ export default function App() {
             </motion.div>
 
             <motion.div variants={{ hidden:{opacity:0},show:{opacity:1} }} className="hero-trust">
-              Your money stays in your broker account. In Signal mode, you keep execution control. More automation only works inside the trading limits and permissions you choose.
+              Your money stays in your broker account. Signal mode leaves execution with you. Automation only acts inside limits you set.
             </motion.div>
 
             <motion.div variants={{ hidden:{opacity:0},show:{opacity:1} }} className="scope">
@@ -374,7 +374,7 @@ export default function App() {
         <motion.section className="bridge" {...sectionReveal}>
           <div className="kicker">SCAN IN THE BACKGROUND · STEP IN WHEN IT MATTERS</div>
           <h2>You don’t need to stare at every chart all day.</h2>
-          <p>Zugrio scans in the background and brings you back when a setup forms, triggers, changes or dies — with the reason and next step attached.</p>
+          <p>Zugrio scans in the background and brings you back when a setup forms, triggers, changes or expires — with the reason and next step attached.</p>
         </motion.section>
 
         <motion.section className="annotation" {...sectionReveal}>
@@ -384,9 +384,9 @@ export default function App() {
             <p>FORMING. READY. TRIGGERED. Zugrio marks what is confirmed, what is missing and what invalidates the setup — live on the chart.</p>
           </div>
           <div className="annotation-sequence" aria-label="Illustrative live annotation sequence">
-            <span><b>09:18</b><strong>FORMING</strong><small>Setup developing · conditions still missing</small></span>
-            <span><b>09:21</b><strong>READY</strong><small>Strategy conditions in place · waiting for trigger</small></span>
-            <span><b>09:24</b><strong>TRIGGERED</strong><small>Defined trigger satisfied · signal fired</small></span>
+            <span><b>09:18</b><strong>FORMING</strong><small>Setup developing</small></span>
+            <span><b>09:21</b><strong>READY</strong><small>Conditions met · waiting for trigger</small></span>
+            <span><b>09:24</b><strong>TRIGGERED</strong><small>Trigger hit · signal fired</small></span>
             <em>Illustrative progression — not a live signal.</em>
           </div>
         </motion.section>
@@ -502,17 +502,17 @@ export default function App() {
           <div className="kicker">QUESTIONS</div>
           <h2>What to know before joining.</h2>
           {[
-            ["What can I use today?","The current public experience is a product preview and waitlist. Zugrio is in development and private validation. Public trading access is not yet available."],
-            ["Which markets are first?","FX, Gold and Synthetic Indices are the initial product tracks. Each requires its own data, calibration, cost and validation work."],
-            ["Does Zugrio use one trading strategy?","Zugrio Core is the default starting strategy and remains under validation. Zugrio also supports clearly defined strategies where their rules, market scope and evidence are implemented."],
-            ["How does automation work?","Signal, Semi-Auto, Auto and Full Auto represent different levels of control. Signal keeps execution with you. More automated modes act only inside the account rules, strategy rules and permissions you choose, and only where that capability is available."],
-            ["What does behavioral analytics actually show?","With a supported read-only broker connection, Zugrio compares the plan with what actually happened: timing, entry, size or risk changes, early exits, overrides and other observable actions. It separates system actions from your interventions and keeps decision quality, execution quality and financial outcome as different questions. It does not claim to infer emotions from a trade record."],
-            ["Can I use my own discretionary plan?","Yes. You can record a manual plan — including the conditions, invalidation and risk — even when Zugrio does not automate that strategy. Zugrio can then help you review adherence and execution without claiming that it independently validated the trading thesis."],
-            ["What happens when there is no setup?","No setup is a valid answer. Zugrio shows when nothing qualifies, when evidence is missing or stale, and when a setup expires or invalidates instead of manufacturing activity to keep the screen busy."],
-            ["Can I review a past decision?","Decision replay preserves what was known at the time so you can revisit the setup without using later information to rewrite the earlier choice. Passed and missed cases remain reviewable too. Over a meaningful sample, strategy health stays separated by market and strategy version and shows where evidence is strong, weak or still insufficient."],
-            ["How does desktop and mobile fit together?","Desktop gives you the fuller trading workspace. Mobile keeps alerts, the current trade case and the next relevant step accessible. Moving between devices preserves the same case and its history rather than starting a disconnected view."],
-            ["Does Zugrio guarantee profitable trades?","No. A disciplined process can still produce a losing trade, just as a poor decision can sometimes make money. Zugrio improves decision consistency and traceability; it does not promise a return, win rate or profitable outcome."],
-            ["What happens after I join?","You’ll receive product updates and early-access invitations as access opens. Joining does not create a trading account, connect a broker or authorise trading."],
+            ["What can I use today?","The site is a product preview and waitlist. Zugrio remains in private validation; public trading access is not yet open."],
+            ["Which markets are first?","FX, Gold and Synthetic Indices. Each is validated separately."],
+            ["Does Zugrio use one trading strategy?","Zugrio Core is the default starting strategy under validation. Other supported strategies keep their own rules and market scope."],
+            ["How does automation work?","Signal keeps execution with you. Semi-Auto, Auto and Full Auto add control only inside the rules, limits and permissions you choose."],
+            ["What does behavioral analytics show?","With read-only broker data, Zugrio compares the plan with observable actions — timing, entry, risk changes, exits and overrides — without pretending to infer emotions."],
+            ["Can I use my own discretionary plan?","Yes. Record the conditions, invalidation and risk, then review adherence even when Zugrio does not automate the strategy."],
+            ["What happens when there is no setup?","No setup is a valid answer. Zugrio shows when nothing qualifies, evidence is stale, or a setup expires or invalidates."],
+            ["Can I review a past decision?","Replay shows what was known at the time. Passed and missed cases stay reviewable, and strategy health stays separated by market and version."],
+            ["How does desktop and mobile fit together?","Desktop is the fuller workspace. Mobile keeps alerts, the current case and the next step accessible. The same history follows you."],
+            ["Does Zugrio guarantee profitable trades?","No. Zugrio improves consistency and decision review; it does not promise returns, win rate or profitable outcomes."],
+            ["What happens after I join?","You’ll receive build updates and early-access invitations. Joining does not connect a broker or authorise trading."],
           ].map(([q,a]) => <details key={q}><summary>{q}<ChevronRight size={16}/></summary><p>{a}</p></details>)}
         </motion.section>
 
