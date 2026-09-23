@@ -349,7 +349,7 @@ export default function App() {
 
             <motion.div variants={{ hidden:{opacity:0,y:12},show:{opacity:1,y:0} }} className="hero-actions">
               <a className="primary" href="#early-access">Join the early-access waitlist <ArrowRight size={17}/></a>
-              <a className="secondary" href="#how">Explore the decision preview <ChevronRight size={17}/></a>
+              <a className="secondary" href="#how">Explore the trading workspace <ChevronRight size={17}/></a>
             </motion.div>
 
             <motion.div variants={{ hidden:{opacity:0},show:{opacity:1} }} className="hero-trust">
@@ -426,7 +426,7 @@ export default function App() {
           <div>
             <div className="kicker">BEHAVIORAL ANALYTICS</div>
             <h2>Your P&amp;L tells you what happened. Zugrio shows how you traded.</h2>
-            <p>With read-only broker data, Zugrio compares the plan with what you actually did — early entries, chased price, changed risk, early exits and overrides. System actions and your interventions stay separate.</p>
+            <p>With read-only broker data, Zugrio spots patterns in how you trade — early entries, chased price, risk changes, early exits and overrides. System actions and your interventions stay separate.</p>
           </div>
           <motion.div
             className="record-card"
