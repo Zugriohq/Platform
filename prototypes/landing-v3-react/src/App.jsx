@@ -42,7 +42,7 @@ const CASES = {
     tone: "good",
     currentNorm: 61,
     rr: "1.88R",
-    copy: "The method still qualifies, current conditions remain acceptable and the prepared intent is waiting for approval.",
+    copy: "The strategy still qualifies, current conditions remain acceptable and the next step is waiting for the control check.",
     action: "Prepared · Semi-Auto",
   },
   degraded: {
@@ -59,41 +59,41 @@ const STORY = [
   {
     key: "market",
     overline: "MARKET",
-    title: "Same pattern. Different market. Different answer.",
-    body: "A structure break can look similar in FX, Gold and a Synthetic Index and still mean something different. Zugrio evaluates the opportunity inside the market family that produced it instead of forcing every instrument through one generic model.",
+    title: "Same setup. Different market. Different answer.",
+    body: "A move can look similar on EUR/USD, Gold and a Synthetic Index and still behave differently. Zugrio evaluates each setup inside the market that produced it instead of assuming the same chart pattern means the same thing everywhere.",
   },
   {
     key: "method",
-    overline: "METHOD",
-    title: "Your method sets the rules. Zugrio doesn’t silently bend them.",
-    body: "Choose the framework you trade — structure and liquidity, smart-money concepts, or your own price-action rules. Zugrio keeps applying that standard without quietly changing it because the session is slow, the last trade lost or you have been watching too long.",
+    overline: "STRATEGY",
+    title: "Your strategy sets the rules. Zugrio keeps checking them.",
+    body: "Start with Zugrio Core, our proposed default strategy, or choose another supported strategy. Zugrio keeps applying the same rules instead of quietly moving the standard because the session is slow, the last trade lost or you have been watching too long.",
   },
   {
     key: "moment",
     overline: "CURRENT CONDITIONS",
-    title: "If the facts change, the trade changes.",
-    body: "A setup does not exist in isolation. Price, spread, entry economics, session, volatility, market regime and account state can change what still qualifies after the original opportunity appears.",
+    title: "A good setup can become a bad entry.",
+    body: "Price can move after a signal fires. The spread can widen. Your account risk can change. Zugrio keeps the original signal, then checks what still makes sense now instead of treating an old entry as if nothing changed.",
   },
   {
     key: "mandate",
     overline: "CONTROL",
-    title: "A signal is not permission.",
-    body: "Your methodology determines how an opportunity is evaluated. Your automation setting determines what Zugrio is allowed to do about it. Market intelligence, account risk, execution authority and broker reality remain separate.",
+    title: "A signal is not the same as “trade now.”",
+    body: "When a setup fires, Zugrio still checks the current price, costs, account risk and the control level you chose. Signal, Semi-Auto, Auto and Full Auto are different levels of control — not shortcuts around your rules.",
   },
   {
     key: "memory",
     overline: "DECISION HISTORY",
-    title: "The reason stays with the trade.",
-    body: "Entered, passed, blocked, expired, missed or overridden — the case stays in the record. Outcome and process remain separate so hindsight cannot quietly rewrite what was known at the time.",
+    title: "See what happened — not just whether you won.",
+    body: "The setup, the signal, what changed, what you did and the result stay connected. That makes it easier to tell the difference between a good decision that lost and a poor decision that happened to make money.",
   },
 ];
 
 const TICKER = [
-  "Market-specific intelligence",
-  "Method-bound evaluation",
-  "Current-condition checks",
-  "Mandate before action",
-  "Decision integrity preserved",
+  "Strategy-aware scanning",
+  "WATCH → READY → FIRE",
+  "Background alerts",
+  "Broker-linked review",
+  "Your control stays explicit",
   "FX · Gold · Synthetic Indices",
 ];
 
@@ -133,7 +133,7 @@ function Shell({ activeStep, marketKey, setMarketKey, caseKey, setCaseKey }) {
       <div className="shell-top">
         <div className="shell-brand">
           <img className="shell-monogram" src="/brand/zugrio-monogram-silver.svg" alt="" aria-hidden="true" />
-          <span>Decision workspace</span>
+          <span>Trading workspace</span>
         </div>
         <div className="shell-health"><i /> 37s fresh</div>
         <div className="shell-account">DEMO-01 · SEMI-AUTO</div>
@@ -178,7 +178,7 @@ function Shell({ activeStep, marketKey, setMarketKey, caseKey, setCaseKey }) {
             <span>Decision case</span><b>#{marketKey}-091</b>
           </div>
 
-          <div className="scope-row method-row"><span>Method</span><b>APA Intraday · v3</b></div>
+          <div className="scope-row method-row"><span>Strategy</span><b>Zugrio Core · preview</b></div>
           <div className="scope-row"><span>State</span><b>Signal preserved</b></div>
           <div className="scope-row context-row"><span>Context</span><b>{market.note}</b></div>
 
@@ -196,7 +196,7 @@ function Shell({ activeStep, marketKey, setMarketKey, caseKey, setCaseKey }) {
 
           <div className="evidence-strip" aria-label="Illustrative evidence">
             <span>Structure <b>holds</b></span>
-            <span>Method <b>matched</b></span>
+            <span>Strategy <b>matched</b></span>
             <span>Entry <b>{caseKey === "valid" ? "current" : "degraded"}</b></span>
           </div>
 
@@ -253,8 +253,8 @@ function Story({ activeStep, setActiveStep, marketKey, setMarketKey, caseKey, se
               <h2>{s.title}</h2>
               <p>{s.body}</p>
               {s.key === "market" && <em>Different markets deserve different intelligence.</em>}
-              {s.key === "method" && <em>Methodology and automation are separate choices.</em>}
-              {s.key === "mandate" && <em>Buying automation access does not authorise a trade. Your mandate does.</em>}
+              {s.key === "method" && <em>Your strategy and your level of automation are separate choices.</em>}
+              {s.key === "mandate" && <em>More automation never means more permission than you chose to give.</em>}
               {s.key === "memory" && <em>Hindsight doesn’t get to rewrite it.</em>}
             </motion.article>
           ))}
@@ -287,7 +287,7 @@ export default function App() {
     ["Status", "#status"],
   ], []);
 
-  const heroWords = ["The", "chart", "is", "not", "the", "market."];
+  const heroWords = ["Find", "your", "setup.", "Know", "what’s", "next."];
 
   return (
     <>
@@ -323,7 +323,7 @@ export default function App() {
               <i/> MARKET-AWARE TRADING INTELLIGENCE · PRIVATE BUILD
             </motion.div>
 
-            <h1 aria-label="The chart is not the market.">
+            <h1 aria-label="Find your setup. Know what’s next.">
               {heroWords.map((word, i) => (
                 <motion.span
                   aria-hidden="true"
@@ -339,7 +339,7 @@ export default function App() {
             </h1>
 
             <motion.p variants={{ hidden:{opacity:0,y:14},show:{opacity:1,y:0} }}>
-              Zugrio evaluates each opportunity in the market that produced it, against your method and current conditions — then shows what still holds, what changed, and what is permitted next.
+              Zugrio scans supported markets with Zugrio Core or the strategy you choose, follows setups from WATCH to READY to FIRE, and alerts you when something changes — with the levels, reasoning and next step kept together.
             </motion.p>
 
             <motion.div variants={{ hidden:{opacity:0,y:12},show:{opacity:1,y:0} }}>
@@ -352,14 +352,14 @@ export default function App() {
             </motion.div>
 
             <motion.div variants={{ hidden:{opacity:0},show:{opacity:1} }} className="hero-trust">
-              Your capital stays in your broker account. You set the mandate; Zugrio evaluates what qualifies and acts only within the authority you grant.
+              Your money stays in your broker account. In Signal mode, you keep execution control. More automation only works inside the trading limits and permissions you choose.
             </motion.div>
 
             <motion.div variants={{ hidden:{opacity:0},show:{opacity:1} }} className="scope">
               FX <span/> Gold <span/> Synthetic Indices
             </motion.div>
             <motion.small variants={{ hidden:{opacity:0},show:{opacity:1} }}>
-              In development and private validation. No public trading access yet. No performance claim.
+              Private build. Zugrio Core and other product capabilities are under validation. No public trading access yet. No performance claim.
             </motion.small>
           </motion.div>
 
@@ -371,22 +371,22 @@ export default function App() {
         <SignalTicker />
 
         <motion.section className="bridge" {...sectionReveal}>
-          <div className="kicker">ONE DECISION · MORE OF THE RELEVANT PICTURE</div>
-          <h2>The chart is where a trade starts.<br/>Not where the decision ends.</h2>
-          <p>Price tells you what happened. A trading decision also depends on what market produced that move, whether it fits your method, what is true now, what your account can absorb and what authority you have actually granted.</p>
+          <div className="kicker">SCAN IN THE BACKGROUND · STEP IN WHEN IT MATTERS</div>
+          <h2>You should not have to stare at every chart all day.</h2>
+          <p>Zugrio keeps scanning the markets and strategy you chose. When a setup starts forming, changes state or fires, the planned alert experience brings you back to the case with the important levels and what happened next.</p>
         </motion.section>
 
         <motion.section className="annotation" {...sectionReveal}>
           <div>
-            <div className="kicker">LIVE DECISION ANNOTATION</div>
-            <h2>Watch the reasoning form on the chart.</h2>
-            <p>Zugrio does not wait until the trade is over to explain itself. As structure develops, the chart can show what has actually been confirmed, what the system is waiting for and what would invalidate the case.</p>
+            <div className="kicker">OPPORTUNITY PROGRESSION</div>
+            <h2>Watch a setup move from WATCH to READY to FIRE.</h2>
+            <p>WATCH means a setup is worth following. READY means the strategy’s required conditions are in place. FIRE means the defined trigger has been satisfied and an alert can be created. If the setup weakens or expires, Zugrio should say that too.</p>
           </div>
           <div className="annotation-sequence" aria-label="Illustrative live annotation sequence">
-            <span><b>09:18</b><strong>Break confirmed</strong><small>Structure condition satisfied</small></span>
-            <span><b>09:21</b><strong>Awaiting retest</strong><small>No entry permission yet</small></span>
-            <span><b>09:24</b><strong>Retest qualified</strong><small>Current conditions rechecked</small></span>
-            <em>Illustrative product states — not a live signal.</em>
+            <span><b>09:18</b><strong>WATCH</strong><small>Setup worth following</small></span>
+            <span><b>09:21</b><strong>READY</strong><small>Strategy conditions in place</small></span>
+            <span><b>09:24</b><strong>FIRE</strong><small>Defined trigger satisfied · alert created</small></span>
+            <em>Illustrative progression — not a live signal.</em>
           </div>
         </motion.section>
 
@@ -395,18 +395,18 @@ export default function App() {
         <motion.section className="discipline" {...sectionReveal}>
           <div className="kicker">CONSISTENCY UNDER PRESSURE</div>
           <h2>Your rules should not change because your mood did.</h2>
-          <p>Long chart sessions create pressure: impatience, early entries, revenge re-entry, moving the goalposts after a loss, or seeing a setup because you want one to be there. Zugrio keeps applying the method you defined and records when you choose to override it.</p>
+          <p>Long chart sessions create pressure: impatience, early entries, revenge re-entry, chasing price after an alert, changing risk after a loss, or seeing a setup because you want one to be there. Zugrio keeps applying the strategy you chose and records when your actions move away from the plan.</p>
           <strong>The market does not care how long you have been watching it. Your evaluation standard should not either.</strong>
         </motion.section>
 
         <motion.section className="positive" id="control" {...sectionReveal}>
           <div className="positive-copy">
-            <div className="kicker">WHEN THE CASE STILL HOLDS</div>
-            <h2>Discipline should know when to proceed, too.</h2>
-            <p>Zugrio is not being built simply to block trades. When the relevant evidence remains valid, the current entry still makes sense, account limits are respected and the required authority exists, the decision can progress appropriately.</p>
+            <div className="kicker">AFTER A SIGNAL FIRES</div>
+            <h2>FIRE tells you the setup triggered. Zugrio still checks what is true now.</h2>
+            <p>An alert is a moment in time. Before the next step, Zugrio should recheck the current price, spread, account risk and the control level you chose — so a signal that was valid a few minutes ago is not treated as a fresh entry forever.</p>
           </div>
           <div className="progression">
-            {["Opportunity detected","Method requirements satisfied","Current context acceptable","Entry still qualifies","Risk available","Intent prepared","Mandate permits next action","Broker acknowledges","Protection confirmed"].map((x,i) => (
+            {["Signal fired","Current price checked","Spread / costs checked","Entry still acceptable","Account risk available","Control level checked","Next action prepared","Broker acknowledges","Protection confirmed"].map((x,i) => (
               <motion.div
                 key={x}
                 initial={{ opacity:0, x:20 }}
@@ -423,9 +423,9 @@ export default function App() {
 
         <motion.section className="journal" id="journal" {...sectionReveal}>
           <div>
-            <div className="kicker">DECISION HISTORY</div>
-            <h2>The reason stays with the trade.<br/>Hindsight doesn’t get to rewrite it.</h2>
-            <p>Entered, passed, blocked, expired, missed and overridden opportunities all stay in the record. Outcome and process remain separate: a profitable trade is not automatically a good decision, and a losing trade is not automatically a bad one.</p>
+            <div className="kicker">BEHAVIOUR & DECISION REVIEW</div>
+            <h2>Connect the plan to what you actually did.</h2>
+            <p>With a supported read-only broker connection, Signal mode can compare the setup Zugrio showed you with the trade you actually took — without permission to place orders. Semi-Auto and Auto can also separate system actions from your own changes. That makes review more useful: late entries, chased price, changed risk, early exits and overrides can be examined alongside the result.</p>
           </div>
           <motion.div
             className="record-card"
@@ -437,14 +437,14 @@ export default function App() {
             <div><span>SYSTEM</span><b>PASS</b></div>
             <div><span>USER</span><b>OVERRIDE</b></div>
             <div><span>OUTCOME</span><b>PROFIT</b></div>
-            <div><span>PROCESS</span><b className="warn-text">METHOD VIOLATION</b></div>
+            <div><span>PROCESS</span><b className="warn-text">STRATEGY RULE BROKEN</b></div>
           </motion.div>
         </motion.section>
 
         <motion.section className="markets" id="markets" {...sectionReveal}>
           <div className="kicker">INITIAL MARKET SCOPE</div>
           <h2>Built first for FX, Gold and Synthetic Indices.</h2>
-          <p>These markets are being developed in parallel, with separate model scope, calibration, context and execution requirements.</p>
+          <p>These markets are being developed in parallel. Zugrio will not assume that a strategy proven useful in one market automatically works the same way in another.</p>
           <div className="market-cards">
             {[
               [Activity,"FX","Market/session/macro-aware"],
@@ -460,9 +460,9 @@ export default function App() {
 
         <motion.section className="status-board" id="status" {...sectionReveal}>
           <div className="status-copy">
-            <div className="kicker">READINESS VOCABULARY</div>
-            <h2>Know exactly what’s live.</h2>
-            <p>The labels below demonstrate how Zugrio will communicate capability status. Markets, brokers and control modes do not all become ready at once; production status must come from authoritative capability data.</p>
+            <div className="kicker">WHAT IS LIVE · WHAT IS STILL BEING BUILT</div>
+            <h2>Know what you can actually use.</h2>
+            <p>Markets, broker connections and control modes will not all become ready at the same time. Zugrio should show clearly what is released, what is in early access, what is still being validated and what is unavailable.</p>
           </div>
           <div className="status-list">
             {[
@@ -487,14 +487,14 @@ export default function App() {
 
         <motion.section className="education" {...sectionReveal}>
           <div className="education-icon"><CircleAlert/></div>
-          <div><div className="kicker">UNDERSTAND THE DECISION</div><h2>Know what the system is showing—and why it matters.</h2></div>
-          <p>Zugrio will pair product intelligence with contextual learning: how market families differ, why an entry changed, what automation authority means and how to review a decision without hindsight.</p>
+          <div><div className="kicker">UNDERSTAND WHAT YOU SEE</div><h2>Know why the setup is changing.</h2></div>
+          <p>Zugrio is being designed to explain the strategy, the market, what changed after the signal and what your selected control mode allows — without forcing traders to learn internal system vocabulary first.</p>
         </motion.section>
 
         <motion.section className="why" {...sectionReveal}>
           <div className="kicker">WHY ZUGRIO EXISTS</div>
-          <h2>Good rules are easiest to follow away from the market.</h2>
-          <p>They are harder to follow after a loss, deep into a session, or when a setup is almost — but not quite — there. Zugrio is being built to keep the method, the evidence, the mandate and the resulting decision connected from opportunity to outcome, so the same avoidable breakdown does not have to be rediscovered trade after trade.</p>
+          <h2>Good rules get harder to follow in a live market.</h2>
+          <p>After a loss, deep into a session, or when a setup is almost right, traders can enter early, chase price, change risk or abandon their own plan. Zugrio is being built to keep the strategy, the changing setup, your actions and the result connected — so you can see what really happened and improve from it.</p>
         </motion.section>
 
         <motion.section className="faq" {...sectionReveal}>
@@ -503,8 +503,8 @@ export default function App() {
           {[
             ["What can I use today?","The current public experience is a product preview and waitlist. Zugrio is in development and private validation. Public trading access is not yet available."],
             ["Which markets are first?","FX, Gold and Synthetic Indices are the initial product tracks. Each requires its own data, calibration, cost and validation work."],
-            ["Does Zugrio use one trading strategy?","No. Zugrio is designed around versioned Methods and entry models rather than one universal setup."],
-            ["How does automation work?","Signal, Semi-Auto, Auto and Full Auto represent different levels of delegated authority. Execution remains bound to account, Method, market and risk rules."],
+            ["Does Zugrio use one trading strategy?","Zugrio Core is the proposed default strategy and is still under validation. The platform is also designed to support other clearly defined strategies where their rules, market scope and evidence are implemented."],
+            ["How does automation work?","Signal, Semi-Auto, Auto and Full Auto represent different levels of control. Signal keeps execution with you. More automated modes can only act inside the account rules, strategy rules and permissions you have chosen, and only where that capability is actually available."],
             ["Does Zugrio guarantee profitable trades?","No. A disciplined process can still produce a losing trade, just as a poor decision can sometimes make money. Zugrio is designed to improve decision consistency and traceability — not promise a return, win rate or profitable outcome."],
             ["What happens after I join?","You’ll receive product updates and early-access invitations as access opens. Joining does not create a trading account, connect a broker or authorise trading."],
           ].map(([q,a]) => <details key={q}><summary>{q}<ChevronRight size={16}/></summary><p>{a}</p></details>)}
