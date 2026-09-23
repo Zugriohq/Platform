@@ -17,21 +17,21 @@ const MARKETS = {
     label: "EUR/USD",
     family: "FX",
     note: "London / New York overlap",
-    status: "Market-specific evaluation",
+    status: "FX-specific checks",
     priceSpec: { base: 1.0782, unit: .0001, digits: 5 },
   },
   GOLD: {
     label: "Gold / USD",
     family: "Gold",
     note: "US session",
-    status: "Separately scoped intelligence",
+    status: "Gold-specific checks",
     priceSpec: { base: 2532, unit: 1.05, digits: 2 },
   },
   SYNTH: {
     label: "Jump 50",
     family: "Synthetic",
     note: "Synthetic specialist",
-    status: "Family-specific evaluation",
+    status: "Synthetic-specific checks",
     priceSpec: { base: 96, unit: 1.18, digits: 2 },
   },
 };
@@ -207,7 +207,7 @@ function Shell({ activeStep, marketKey, setMarketKey, caseKey, setCaseKey }) {
           </div>
 
           <div className="mandate-line">
-            <div><small>MANDATE BOUNDARY</small><b>{item.action}</b></div>
+            <div><small>CONTROL LIMIT</small><b>{item.action}</b></div>
             <LockKeyhole size={16}/>
           </div>
 
