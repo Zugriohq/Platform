@@ -3,7 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 const PHRASES = [
   "strategy-aware market scanning",
-  "WATCH → READY → FIRE",
+  "FORMING → READY → TRIGGERED",
   "background opportunity alerts",
   "your control stays explicit",
   "broker-linked trade review",
