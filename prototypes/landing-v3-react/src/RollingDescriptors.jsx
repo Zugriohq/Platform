@@ -5,8 +5,10 @@ const PHRASES = [
   "strategy-aware market scanning",
   "FORMING → READY → TRIGGERED",
   "background opportunity alerts",
+  "live chart reasoning",
   "your control stays explicit",
-  "broker-linked trade review",
+  "behavioral analytics",
+  "decision replay",
 ];
 
 export default function RollingDescriptors() {
