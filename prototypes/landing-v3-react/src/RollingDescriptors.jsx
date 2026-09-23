@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 const PHRASES = [
-  "market-specific intelligence",
-  "method-bound evaluation",
-  "current-condition checks",
-  "explicit trading mandate",
-  "decision history that stays intact",
+  "strategy-aware market scanning",
+  "WATCH → READY → FIRE",
+  "background opportunity alerts",
+  "your control stays explicit",
+  "broker-linked trade review",
 ];
 
 export default function RollingDescriptors() {
