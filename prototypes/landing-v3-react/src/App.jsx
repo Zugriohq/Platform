@@ -288,7 +288,7 @@ export default function App() {
     ["Readiness", "#status"],
   ], []);
 
-  const heroWords = ["Find", "your", "setup.", "Know", "what’s", "next."];
+  const heroWords = ["See", "the", "setup", "before", "it", "becomes", "a", "signal."];
 
   return (
     <>
@@ -324,7 +324,7 @@ export default function App() {
               <i/> MARKET-AWARE TRADING INTELLIGENCE · PRIVATE BUILD
             </motion.div>
 
-            <h1 aria-label="Find your setup. Know what’s next.">
+            <h1 aria-label="See the setup before it becomes a signal.">
               {heroWords.map((word, i) => (
                 <motion.span
                   aria-hidden="true"
@@ -380,7 +380,7 @@ export default function App() {
         <motion.section className="annotation" {...sectionReveal}>
           <div>
             <div className="kicker">OPPORTUNITY PROGRESSION</div>
-            <h2>See the setup before it becomes a signal.</h2>
+            <h2>Every state tells you what changed.</h2>
             <p>FORMING. READY. TRIGGERED. Zugrio marks what is confirmed, what is missing and what invalidates the setup — live on the chart.</p>
           </div>
           <div className="annotation-sequence" aria-label="Illustrative live annotation sequence">
