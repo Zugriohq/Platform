@@ -66,7 +66,7 @@ const STORY = [
     key: "method",
     overline: "STRATEGY",
     title: "Your strategy sets the rules. Zugrio keeps checking them.",
-    body: "Zugrio Core is the default starting strategy and remains under validation. Choose another supported strategy where available. Zugrio shows where a strategy fits your market and trading horizon, keeps its evidence limits visible, and applies the same rules without quietly moving the standard after a loss or a long session.",
+    body: "Zugrio Core is the default starting strategy and remains under validation. Choose another supported strategy where available. Zugrio shows where a strategy fits your market and trading horizon, keeps its evidence limits visible, and never pretends one strategy is best everywhere. Once selected, the rules stay consistent through losses and long sessions.",
   },
   {
     key: "moment",
@@ -373,7 +373,7 @@ export default function App() {
         <motion.section className="bridge" {...sectionReveal}>
           <div className="kicker">SCAN IN THE BACKGROUND · STEP IN WHEN IT MATTERS</div>
           <h2>You don’t need to stare at every chart all day.</h2>
-          <p>Zugrio starts with the markets you follow: the relevant session, scheduled events, current conditions and setups that deserve attention. Then it keeps scanning in the background. When a setup forms, becomes ready, triggers or stops qualifying, Zugrio alerts you and brings the case back with the important levels, reasoning and next step.</p>
+          <p>Zugrio starts with the markets you follow: the relevant session, scheduled events, current conditions and setups that deserve attention. Then it keeps scanning in the background. When a setup forms, becomes ready, triggers or stops qualifying, Zugrio alerts you and brings the case back with the important levels, reasoning and next step. You control the notifications you receive, and delivery status stays visible.</p>
         </motion.section>
 
         <motion.section className="annotation" {...sectionReveal}>
@@ -508,7 +508,8 @@ export default function App() {
             ["What does behavioral analytics actually show?","With a supported read-only broker connection, Zugrio compares the plan with what actually happened: timing, entry, size or risk changes, early exits, overrides and other observable actions. It separates system actions from your interventions and keeps decision quality, execution quality and financial outcome as different questions. It does not claim to infer emotions from a trade record."],
             ["Can I use my own discretionary plan?","Yes. You can record a manual plan — including the conditions, invalidation and risk — even when Zugrio does not automate that strategy. Zugrio can then help you review adherence and execution without claiming that it independently validated the trading thesis."],
             ["What happens when there is no setup?","No setup is a valid answer. Zugrio shows when nothing qualifies, when evidence is missing or stale, and when a setup expires or invalidates instead of manufacturing activity to keep the screen busy."],
-            ["Can I review a past decision?","Decision replay preserves what was known at the time so you can revisit the setup without using later information to rewrite the earlier choice. Passed and missed cases remain reviewable too, and strategy health stays separated by market and strategy version."],
+            ["Can I review a past decision?","Decision replay preserves what was known at the time so you can revisit the setup without using later information to rewrite the earlier choice. Passed and missed cases remain reviewable too. Over a meaningful sample, strategy health stays separated by market and strategy version and shows where evidence is strong, weak or still insufficient."],
+            ["How does desktop and mobile fit together?","Desktop gives you the fuller trading workspace. Mobile keeps alerts, the current trade case and the next relevant step accessible. Moving between devices preserves the same case and its history rather than starting a disconnected view."],
             ["Does Zugrio guarantee profitable trades?","No. A disciplined process can still produce a losing trade, just as a poor decision can sometimes make money. Zugrio improves decision consistency and traceability; it does not promise a return, win rate or profitable outcome."],
             ["What happens after I join?","You’ll receive product updates and early-access invitations as access opens. Joining does not create a trading account, connect a broker or authorise trading."],
           ].map(([q,a]) => <details key={q}><summary>{q}<ChevronRight size={16}/></summary><p>{a}</p></details>)}
