@@ -394,9 +394,9 @@ export default function App() {
 
         <motion.section className="discipline" {...sectionReveal}>
           <div className="kicker">CONSISTENCY UNDER PRESSURE</div>
-          <h2>Your rules should not change because your mood did.</h2>
+          <h2>Your rules don’t change because your mood did.</h2>
           <p>Long chart sessions create pressure: impatience, early entries, revenge re-entry, chasing price after an alert, changing risk after a loss, or seeing a setup because you want one to be there. Zugrio keeps applying the strategy you chose and records when your actions move away from the plan.</p>
-          <strong>The market does not care how long you have been watching it. Your evaluation standard should not either.</strong>
+          <strong>The market does not care how long you have been watching it. Your evaluation standard doesn’t change either.</strong>
         </motion.section>
 
         <motion.section className="positive" id="control" {...sectionReveal}>
