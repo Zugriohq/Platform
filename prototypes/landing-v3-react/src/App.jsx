@@ -92,6 +92,7 @@ const TICKER = [
   "Strategy-aware scanning",
   "FORMING → READY → TRIGGERED",
   "Background alerts",
+  "Live chart reasoning",
   "Behavioral analytics",
   "Your control stays explicit",
   "FX · Gold · Synthetic Indices",
@@ -380,7 +381,7 @@ export default function App() {
           <div>
             <div className="kicker">OPPORTUNITY PROGRESSION</div>
             <h2>Watch a setup move from FORMING to READY to TRIGGERED.</h2>
-            <p>FORMING means a possible setup is developing and some required conditions are still missing. READY means the strategy’s required conditions are in place and Zugrio is waiting for the defined trigger. TRIGGERED means that trigger has occurred and the signal is created. If the setup weakens, invalidates or expires, Zugrio says that too. A triggered alert carries the instrument, direction, strategy, time, entry reference, invalidation, targets and supporting evidence together.</p>
+            <p>FORMING means a possible setup is developing and some required conditions are still missing. READY means the strategy’s required conditions are in place and Zugrio is waiting for the defined trigger. TRIGGERED means that trigger has occurred and the signal is created. Zugrio marks that reasoning on the chart as it forms, so you can see what is confirmed, what it is waiting for and what would invalidate the setup. If the setup weakens, invalidates or expires, Zugrio says that too. A triggered alert carries the instrument, direction, strategy, time, entry reference, invalidation, targets and supporting evidence together.</p>
           </div>
           <div className="annotation-sequence" aria-label="Illustrative live annotation sequence">
             <span><b>09:18</b><strong>FORMING</strong><small>Setup developing · conditions still missing</small></span>
