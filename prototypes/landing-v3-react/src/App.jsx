@@ -407,7 +407,7 @@ export default function App() {
             <p>Zugrio rechecks price, spread, account risk and your control level before the next step.</p>
           </div>
           <div className="progression">
-            {["Signal fired","Current price checked","Spread / costs checked","Entry still acceptable","Account risk available","Control level checked","Next action prepared","Broker acknowledges","Protection confirmed"].map((x,i) => (
+            {["Signal fired","Price & costs rechecked","Entry still qualifies","Risk & control checked","Next step available"].map((x,i) => (
               <motion.div
                 key={x}
                 initial={{ opacity:0, x:20 }}
