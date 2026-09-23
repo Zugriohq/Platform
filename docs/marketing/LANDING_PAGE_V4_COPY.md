@@ -84,7 +84,7 @@ Signals age. Price moves. Spread widens. Context changes. Zugrio keeps the origi
 
 Triggered does not mean trade now. Zugrio checks current price, costs, account risk and your control level before the next action.
 
-**More automation never means more permission than you chose to give.**
+**Prepared ≠ submitted ≠ filled ≠ protected.**
 
 ## Decision history
 
@@ -159,7 +159,7 @@ Record the setup, invalidation and risk before you act. Zugrio keeps the plan be
 
 # Good rules get harder to follow in a live market.
 
-After a loss, deep into a session, or when a setup is almost right, traders can enter early, chase price, change risk or abandon their own plan. Zugrio stays useful before, during and after the trade: it keeps the strategy, the changing setup, your actions and the result connected so you can see what really happened and improve from it.
+After a loss or deep into a session, traders can enter early, chase price or abandon the plan. Zugrio stays useful before, during and after the trade — keeping strategy, setup, actions and outcome connected so you can see what really happened and improve.
 
 ## Early access
 
