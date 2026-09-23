@@ -5,6 +5,7 @@ const PHRASES = [
   "strategy-aware market scanning",
   "FORMING → READY → TRIGGERED",
   "background opportunity alerts",
+  "live chart reasoning",
   "your control stays explicit",
   "behavioral analytics",
   "decision replay",
