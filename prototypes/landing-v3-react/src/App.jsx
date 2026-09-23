@@ -255,7 +255,7 @@ function Story({ activeStep, setActiveStep, marketKey, setMarketKey, caseKey, se
               <p>{s.body}</p>
               {s.key === "market" && <em>Different markets deserve different intelligence.</em>}
               {s.key === "method" && <em>Your strategy and your level of automation are separate choices.</em>}
-              {s.key === "mandate" && <em>More automation never means more permission than you chose to give.</em>}
+              {s.key === "mandate" && <em>Prepared ≠ submitted ≠ filled ≠ protected.</em>}
               {s.key === "memory" && <em>Hindsight doesn’t get to rewrite it.</em>}
             </motion.article>
           ))}
@@ -495,7 +495,7 @@ export default function App() {
         <motion.section className="why" {...sectionReveal}>
           <div className="kicker">WHY ZUGRIO EXISTS</div>
           <h2>Good rules get harder to follow in a live market.</h2>
-          <p>After a loss, deep into a session, or when a setup is almost right, traders can enter early, chase price, change risk or abandon their own plan. Zugrio stays useful before, during and after the trade: it keeps the strategy, the changing setup, your actions and the result connected so you can see what really happened and improve from it.</p>
+          <p>After a loss or deep into a session, traders can enter early, chase price or abandon the plan. Zugrio stays useful before, during and after the trade — keeping strategy, setup, actions and outcome connected so you can see what really happened and improve.</p>
         </motion.section>
 
         <motion.section className="faq" {...sectionReveal}>
