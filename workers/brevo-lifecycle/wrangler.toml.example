@@ -1,0 +1,27 @@
+name = "zugrio-brevo-lifecycle"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+# Hourly is sufficient for an onboarding sequence measured in days.
+[triggers]
+crons = ["17 * * * *"]
+
+# Fill this in from the existing zugrio-waitlist D1 database before deploy.
+[[d1_databases]]
+binding = "DB"
+database_name = "zugrio-waitlist"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+[vars]
+BREVO_SENDER_NAME = "Zugrio"
+BREVO_DAILY_SEND_CAP = "250"
+
+# Set these as Worker secrets / environment vars, NOT in Git:
+# BREVO_API_KEY
+# BREVO_SENDER_EMAIL
+# BREVO_REPLY_TO
+# BREVO_TEMPLATE_EA01
+# BREVO_TEMPLATE_EA02
+# BREVO_TEMPLATE_EA03
+# BREVO_TEMPLATE_EA04
+# BREVO_TEMPLATE_EA05
