@@ -153,3 +153,60 @@ The React migration should preserve the Cloudflare work already started:
 - API routes remain `/api/config` and `/api/waitlist`
 
 The React page should replace the old HTML front end without changing these backend names unnecessarily.
+
+
+## 10. Brevo email lifecycle
+
+Zugrio now supports a provider-independent email lifecycle.
+
+Apply migration:
+
+`migrations/0003_add_brevo_email_lifecycle.sql`
+
+D1 remains the source of truth. Brevo is a best-effort delivery provider: a Brevo outage must not make a valid waitlist signup fail.
+
+### Pages project secrets / variables
+
+Configure:
+
+- `BREVO_API_KEY` — secret
+- `BREVO_LIST_ID` — dedicated early-access list
+- `BREVO_WELCOME_TEMPLATE_ID=1`
+- `BREVO_SENDER_NAME=Zugrio`
+- `BREVO_SENDER_EMAIL`
+- `BREVO_REPLY_TO`
+
+The signup handler will:
+1. store the signup in D1;
+2. add a newly inserted contact to Brevo;
+3. send EA00 welcome;
+4. record sync/send state in D1.
+
+### Follow-up Worker
+
+See:
+
+`workers/brevo-lifecycle/`
+
+This hourly cron worker sends the due EA01-EA05 sequence from D1 while enforcing a conservative free-plan daily send cap.
+
+Before enabling it:
+- activate the reviewed templates in Brevo;
+- bind the same D1 database;
+- add the required Brevo secrets;
+- replace the D1 database ID in the Wrangler config;
+- deploy and verify `/health`;
+- perform a controlled test signup.
+
+### Current Brevo draft template IDs
+
+- EA00 = 1
+- EA01 = 2
+- EA02 = 3
+- EA03 = 4
+- EA04 = 5
+- EA05 = 6
+- Build Note = 7
+- Early-access invitation = 8
+
+All templates were intentionally created inactive pending visual/content review and branded-domain sender setup.
