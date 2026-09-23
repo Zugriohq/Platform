@@ -314,7 +314,7 @@ export default function Waitlist() {
     <section className="waitlist" id="early-access">
       <div className="waitlist-copy">
         <div className="kicker">EARLY ACCESS</div>
-        <h2>See the market. Keep your method. Stay in control.</h2>
+        <h2>See the market. Keep your strategy. Stay in control.</h2>
         <p>Join the waitlist for product previews, build updates and invitations as Zugrio opens access.</p>
 
         <div className="journey">
@@ -438,7 +438,7 @@ export default function Waitlist() {
                   <ZugrioSelect label="Primary market" name="market" required value={fields.market} onChange={setField} options={MARKET_OPTIONS} />
                   <ZugrioSelect label="Trading horizon" name="horizon" required value={fields.horizon} onChange={setField} options={HORIZON_OPTIONS} />
                   <ZugrioSelect label="Preferred control" name="mode" required value={fields.mode} onChange={setField} options={MODE_OPTIONS} />
-                  <ZugrioSelect label="Method / strategy interest" name="strategy" required value={fields.strategy} onChange={setField} options={STRATEGY_OPTIONS} />
+                  <ZugrioSelect label="Strategy interest" name="strategy" required value={fields.strategy} onChange={setField} options={STRATEGY_OPTIONS} />
                   <ZugrioSelect label="Preferred Zugrio access" name="platform" required value={fields.platform} onChange={setField} options={PLATFORM_OPTIONS} />
 
                   <label className="profile-text-field">

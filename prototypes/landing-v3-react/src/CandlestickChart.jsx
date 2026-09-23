@@ -83,13 +83,13 @@ export default function CandlestickChart({ marketKey, caseKey, priceSpec }) {
         ))}
 
         <rect x={left} y={y(64)} width={plotW} height={Math.max(4, y(57)-y(64))} fill={"url(#zone-" + marketKey + ")"} />
-        <text x={left + 8} y={y(64) - 6} className="chart-tag">decision zone</text>
+        <text x={left + 8} y={y(64) - 6} className="chart-tag">entry zone</text>
 
         <line x1={left} x2={W-right} y1={y(bos)} y2={y(bos)} className="structure-line" />
         <text x={W-right-42} y={y(bos)-6} className="chart-tag">BOS</text>
 
         <line x1={left} x2={W-right} y1={y(entry)} y2={y(entry)} className="frozen-line" />
-        <text x={left+8} y={y(entry)-6} className="svg-label">frozen entry · {fmt(entry)}</text>
+        <text x={left+8} y={y(entry)-6} className="svg-label">signal entry · {fmt(entry)}</text>
 
         <line x1={left} x2={W-right} y1={y(stop)} y2={y(stop)} className="stop-line" />
         <text x={W-right+7} y={y(stop)+4} className="axis-label stop-label">SL</text>

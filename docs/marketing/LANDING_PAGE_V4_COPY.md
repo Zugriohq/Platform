@@ -1,12 +1,29 @@
 # Zugrio Landing Page V4 Copy
 
-Status: meeting-copy candidate.  
+Status: confident-product-copy candidate.  
 Visual/layout system: unchanged.  
 Company thesis remains: **The chart is not the market.**
 
 ## Public-language rule
 
-Use **strategy** in public copy. Avoid difficult architecture vocabulary unless it is proprietary and necessary. The page should make immediate sense to a beginner trader without weakening the product truth.
+Use **strategy** in public copy. Avoid architecture-heavy terminology unless it is proprietary and necessary.
+
+Product capability copy is **declarative and present tense**:
+- Zugrio scans.
+- Zugrio checks.
+- Zugrio records.
+- Zugrio says when a setup no longer qualifies.
+- Zugrio shows what changed.
+
+Do not describe product behaviour as what Zugrio *should* do, *might* do, or *hopes* to do.
+
+Current release truth stays in a separate status layer:
+- private build;
+- capabilities under validation;
+- no public trading access yet;
+- no performance claim.
+
+That allows the page to describe the product clearly without pretending unreleased capability is already publicly available.
 
 ## Hero
 
@@ -14,7 +31,7 @@ Use **strategy** in public copy. Avoid difficult architecture vocabulary unless 
 
 # Find your setup. Know what’s next.
 
-Zugrio scans supported markets with Zugrio Core or the strategy you choose, follows setups from WATCH to READY to FIRE, and alerts you when something changes — with the levels, reasoning and next step kept together.
+Zugrio scans supported markets with Zugrio Core or the strategy you choose, follows setups from FORMING to READY to TRIGGERED, and alerts you when something changes — with the levels, reasoning and next step kept together.
 
 **Trust line:**  
 Your money stays in your broker account. In Signal mode, you keep execution control. More automation only works inside the trading limits and permissions you choose.
@@ -30,22 +47,25 @@ Secondary CTA: **Explore the decision preview**
 
 **SCAN IN THE BACKGROUND · STEP IN WHEN IT MATTERS**
 
-# You should not have to stare at every chart all day.
+# You don’t need to stare at every chart all day.
 
-Zugrio keeps scanning the markets and strategy you chose. When a setup starts forming, changes state or fires, the planned alert experience brings you back to the case with the important levels and what happened next.
+Zugrio scans the markets and strategy you chose in the background. When a setup forms, becomes ready, triggers or stops qualifying, Zugrio alerts you and brings the case back with the important levels, reasoning and next step.
 
 ## Opportunity progression
 
 **OPPORTUNITY PROGRESSION**
 
-# Watch a setup move from WATCH to READY to FIRE.
+# Watch a setup move from FORMING to READY to TRIGGERED.
 
-WATCH means a setup is worth following. READY means the strategy’s required conditions are in place. FIRE means the defined trigger has been satisfied and an alert can be created. If the setup weakens or expires, Zugrio should say that too.
+**FORMING** means a possible setup is developing and some required conditions are still missing.
 
-Illustrative progression:
-- WATCH — Setup worth following
-- READY — Strategy conditions in place
-- FIRE — Defined trigger satisfied · alert created
+**READY** means the strategy’s required conditions are in place and Zugrio is waiting for the defined trigger.
+
+**TRIGGERED** means that trigger has occurred and the signal is created.
+
+If the setup weakens, invalidates or expires, **Zugrio says that too.**
+
+The word **fire** remains useful as a natural verb — for example, “the signal fired at 09:24” — but it is not the formal state name.
 
 ## Market
 
@@ -57,7 +77,7 @@ A move can look similar on EUR/USD, Gold and a Synthetic Index and still behave 
 
 # Your strategy sets the rules. Zugrio keeps checking them.
 
-Start with Zugrio Core, our proposed default strategy, or choose another supported strategy. Zugrio keeps applying the same rules instead of quietly moving the standard because the session is slow, the last trade lost or you have been watching too long.
+Zugrio Core is the default starting strategy and remains under validation. Choose another supported strategy where available. Zugrio keeps applying the same rules instead of quietly moving the standard because the session is slow, the last trade lost or you have been watching too long.
 
 **Your strategy and your level of automation are separate choices.**
 
@@ -71,7 +91,7 @@ Price can move after a signal fires. The spread can widen. Your account risk can
 
 # A signal is not the same as “trade now.”
 
-When a setup fires, Zugrio still checks the current price, costs, account risk and the control level you chose. Signal, Semi-Auto, Auto and Full Auto are different levels of control — not shortcuts around your rules.
+When a setup is triggered, Zugrio checks the current price, costs, account risk and the control level you chose. Signal, Semi-Auto, Auto and Full Auto are different levels of control — not shortcuts around your rules.
 
 **More automation never means more permission than you chose to give.**
 
@@ -85,19 +105,19 @@ The setup, the signal, what changed, what you did and the result stay connected.
 
 **CONSISTENCY UNDER PRESSURE**
 
-# Your rules should not change because your mood did.
+# Your rules don’t change because your mood did.
 
 Long chart sessions create pressure: impatience, early entries, revenge re-entry, chasing price after an alert, changing risk after a loss, or seeing a setup because you want one to be there. Zugrio keeps applying the strategy you chose and records when your actions move away from the plan.
 
-**The market does not care how long you have been watching it. Your evaluation standard should not either.**
+**The market does not care how long you have been watching it. Your evaluation standard doesn’t change either.**
 
 ## After a signal fires
 
 **AFTER A SIGNAL FIRES**
 
-# FIRE tells you the setup triggered. Zugrio still checks what is true now.
+# TRIGGERED means the setup fired. Zugrio checks what is true now.
 
-An alert is a moment in time. Before the next step, Zugrio should recheck the current price, spread, account risk and the control level you chose — so a signal that was valid a few minutes ago is not treated as a fresh entry forever.
+An alert captures a moment in time. Zugrio rechecks the current price, spread, account risk and the control level you chose before the next action — so a signal that was valid a few minutes ago is never treated as a fresh entry forever.
 
 Illustrative progression:
 1. Signal fired
@@ -116,13 +136,13 @@ Illustrative progression:
 
 # Connect the plan to what you actually did.
 
-With a supported read-only broker connection, Signal mode can compare the setup Zugrio showed you with the trade you actually took — without permission to place orders. Semi-Auto and Auto can also separate system actions from your own changes. That makes review more useful: late entries, chased price, changed risk, early exits and overrides can be examined alongside the result.
+With a supported read-only broker connection, Signal mode compares the setup Zugrio showed you with the trade you actually took — without permission to place orders. Semi-Auto and Auto separate system actions from your own changes. That makes review more useful: late entries, chased price, changed risk, early exits and overrides stay visible alongside the result.
 
 ## Markets
 
 # Built first for FX, Gold and Synthetic Indices.
 
-These markets are being developed in parallel. Zugrio will not assume that a strategy proven useful in one market automatically works the same way in another.
+Zugrio treats FX, Gold and Synthetic Indices as separate market tracks. A strategy validated for one market is never assumed to work the same way in another.
 
 ## Readiness
 
@@ -130,7 +150,9 @@ These markets are being developed in parallel. Zugrio will not assume that a str
 
 # Know what you can actually use.
 
-Markets, broker connections and control modes will not all become ready at the same time. Zugrio should show clearly what is released, what is in early access, what is still being validated and what is unavailable.
+Markets, broker connections and control modes have separate readiness. Zugrio shows clearly what is released, what is in early access, what is still under validation and what is unavailable.
+
+The preview demonstrates the readiness language only. It does not state that any market, broker or automation mode is currently released. Live status always reflects authoritative capability data.
 
 ## Education
 
@@ -138,20 +160,26 @@ Markets, broker connections and control modes will not all become ready at the s
 
 # Know why the setup is changing.
 
-Zugrio is being designed to explain the strategy, the market, what changed after the signal and what your selected control mode allows — without forcing traders to learn internal system vocabulary first.
+Zugrio explains the strategy, the market, what changed after the signal and what your selected control mode allows — without forcing traders to learn internal system vocabulary first.
 
 ## Why Zugrio exists
 
 # Good rules get harder to follow in a live market.
 
-After a loss, deep into a session, or when a setup is almost right, traders can enter early, chase price, change risk or abandon their own plan. Zugrio is being built to keep the strategy, the changing setup, your actions and the result connected — so you can see what really happened and improve from it.
+After a loss, deep into a session, or when a setup is almost right, traders can enter early, chase price, change risk or abandon their own plan. Zugrio keeps the strategy, the changing setup, your actions and the result connected — so you can see what really happened and improve from it.
+
+## Early access
+
+# See the market. Keep your strategy. Stay in control.
+
+Join the waitlist for product previews, build updates and invitations as Zugrio opens access.
 
 ## FAQ truth boundaries
 
-- **What can I use today?** The public experience is a product preview and waitlist. Zugrio is in development and private validation.
-- **Does Zugrio use one trading strategy?** Zugrio Core is the proposed default strategy and is still under validation. Other clearly defined strategies can be supported where their rules, market scope and evidence are implemented.
-- **How does automation work?** Signal, Semi-Auto, Auto and Full Auto represent different levels of control. Signal keeps execution with the trader. More automated modes can only act inside chosen account rules, strategy rules and permissions, and only where that capability is actually available.
-- **Does Zugrio guarantee profitable trades?** No. The product is designed to improve consistency and decision review, not promise returns, win rate or profitable outcomes.
+- **What can I use today?** The current public experience is a product preview and waitlist. Zugrio is in development and private validation. Public trading access is not yet available.
+- **Does Zugrio use one trading strategy?** Zugrio Core is the default starting strategy and remains under validation. Zugrio also supports clearly defined strategies where their rules, market scope and evidence are implemented.
+- **How does automation work?** Signal, Semi-Auto, Auto and Full Auto represent different levels of control. Signal keeps execution with you. More automated modes act only inside the account rules, strategy rules and permissions you choose, and only where that capability is available.
+- **Does Zugrio guarantee profitable trades?** No. A disciplined process can still produce a losing trade, just as a poor decision can sometimes make money. Zugrio improves decision consistency and traceability; it does not promise a return, win rate or profitable outcome.
 
 ## Closing signature
 
