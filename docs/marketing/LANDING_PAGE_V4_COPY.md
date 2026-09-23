@@ -35,7 +35,7 @@ Your money stays in your broker account. Signal mode leaves execution with you. 
 **Status:** Private build. Zugrio Core and other product capabilities are under validation. No public trading access yet. No performance claim.
 
 Primary CTA: **Join the early-access waitlist**  
-Secondary CTA: **Explore the decision preview**
+Secondary CTA: **Explore the trading workspace**
 
 ## Background scanning
 
@@ -123,7 +123,7 @@ Illustrative progression:
 
 # Your P&L tells you what happened. Zugrio shows how you traded.
 
-With read-only broker data, Zugrio compares the plan with what you actually did — early entries, chased price, changed risk, early exits and overrides. System actions and your interventions stay separate.
+With read-only broker data, Zugrio spots patterns in how you trade — early entries, chased price, risk changes, early exits and overrides. System actions and your interventions stay separate.
 
 ## Markets
 
