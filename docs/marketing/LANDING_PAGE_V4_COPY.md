@@ -63,6 +63,8 @@ Zugrio starts with the markets you follow: the relevant session, scheduled event
 
 **TRIGGERED** means that trigger has occurred and the signal is created.
 
+Zugrio marks that reasoning on the chart as it forms, so you can see what is confirmed, what it is waiting for and what would invalidate the setup.
+
 If the setup weakens, invalidates or expires, **Zugrio says that too.**
 
 A triggered alert carries the instrument, direction, strategy, time, entry reference, invalidation, targets and supporting evidence together.
