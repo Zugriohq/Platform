@@ -11,7 +11,7 @@ The earlier `zugrio-copy-brief.md` is **superseded** and must not be used as a s
 
 Reasons include:
 - it uses **Method** as public language where current public language should use **strategy**;
-- it treats "The chart is not the market" as the acquisition hero, which is no longer approved for that role;
+- it treats "The chart is not the market" as the acquisition hero; current direction reserves that line for the later/closing brand signature rather than the acquisition hero;
 - it implies Zugrio can apply a trader's named methodology "exactly as you would," which is incompatible with scope-specific, versioned strategy implementation and admission;
 - it blurs user-declared plan conditions with Zugrio-admitted strategy qualification;
 - it describes AI-like chart narration more broadly than the current deterministic chart-annotation boundary allows.
@@ -50,9 +50,15 @@ Do not imply Gold or Synthetic Indices are future-only markets.
 
 ## 4. Launch strategy inventory
 
-### Current provable launch-positioning decision
+### Current launch decision
 
-Position the initial product around **one named first-party strategy direction: Zugrio Core**.
+**Launch strategy count target: 1 admitted first-party strategy — Zugrio Core.**
+
+**External strategies in the launch promise: 0.**
+
+Zugrio Core may only be described as admitted/released if its evidence and StrategyAdmission gates have actually cleared. If they have not cleared at launch time, public copy must state the real readiness status rather than implying admission.
+
+Position the initial product around **Zugrio Core as the single named first-party starting strategy**.
 
 Current repository state does not define a second external strategy with a sufficiently explicit:
 - MethodProfile/version;
