@@ -123,12 +123,53 @@ It remains separate from trader process adherence, execution adherence and finan
 ### DeclaredTradePlan
 User-authored plan that may define conditions, levels, invalidation, risk, horizon and expiry without claiming that Zugrio independently validates the trading thesis.
 
+### SetupModelDefinition
+Immutable/versioned opportunity-pattern/state contract.
+
+Key identity: `SetupModelId + version`.
+
+Defines formation, qualification, invalidation, expiry and supported scope. It does not itself authorize entry.
+
+### LocationModelDefinition
+Immutable/versioned price-location/reference contract.
+
+Key identity: `LocationModelId + version`.
+
+Examples include structural levels, range/equilibrium boundaries, retracement/Fibonacci bands, imbalance/FVG zones, order-block/supply-demand zones and admitted volatility/moving references.
+
+A LocationModel is evidence/geometry, not a standalone signal.
+
 ### EntryModelDefinition
 Immutable/versioned entry-condition contract.
 
 Key identity: `EntryModelId + version`.
 
-A Method Profile references allowed Entry Models; an Entry Model does not own capital authority.
+Defines what state/trigger must occur before an otherwise valid setup becomes actionable. It does not own broker or capital authority.
+
+### ProtectionModelDefinition
+Immutable/versioned initial thesis/risk-boundary contract.
+
+Key identity: `ProtectionModelId + version`.
+
+Defines structural/volatility/failsafe protection semantics. Protection remains subordinate to the governing risk/safety architecture.
+
+### ExitManagementModelDefinition
+Immutable/versioned post-entry management/exit contract.
+
+Key identity: `ExitManagementModelId + version`.
+
+May define target logic, partial scale-out, break-even transitions, trailing logic, time/session exits or other admitted management rules. It cannot widen the original risk authority.
+
+### StrategyComponentPolicy
+Immutable/versioned policy selecting among components already permitted by the exact MethodProfile version.
+
+Key identity: `StrategyComponentPolicyId + version`.
+
+Inputs may include market/instrument/horizon, regime/context and evidence/admission state. Output may include a permitted component bundle or PASS.
+
+It cannot silently switch strategy families or add a non-permitted component.
+
+A Method Profile references its allowed component definitions and component-selection policy; none of those components owns capital authority.
 
 ## 6. Opportunity and decision domain
 
