@@ -47,9 +47,27 @@ The initial product scope carries these tracks **in parallel**:
 - **Gold** — included in the initial market scope, with its own data, cost, session and calibration requirements.
 - **Synthetic indices** — retained as a first-class initial product track because Zugrio's lineage began there and dedicated synthetic-market logic/evidence already exists.
 
-Public messaging may lead with forex, but product scope must not silently demote gold or synthetics to a future version.
+Public messaging may lead with forex, but product scope must not silently demote gold or synthetics to a future version. The first-screen market scope should keep **FX · Gold · Synthetic Indices** visible together.
 
 No edge, calibration, threshold, execution assumption or cost model automatically transfers between forex, gold and synthetics. Each remains separately scoped and validated.
+
+### Planned market expansion
+
+The product architecture should preserve a clear distinction between initial markets and planned expansion.
+
+Planned expansion families:
+- **Crypto** — with spot/perpetual distinctions where relevant;
+- **Stocks / Equities**;
+- **broader Commodities** beyond Gold;
+- **traditional Indices**, distinct from Synthetic Indices;
+- **ETFs**;
+- **Futures**.
+
+**Options** remain a later specialist family because nonlinear payoff, Greeks, expiry and exercise/assignment semantics require dedicated architecture.
+
+Public UI may show planned markets in a visually secondary planned/coming state, but must not imply they are currently supported, admitted or tied to a launch date without evidence.
+
+Detailed roadmap: `docs/product/INITIAL_MARKET_AND_STRATEGY_PORTFOLIO.md`.
 
 ## 3. Entry logic must be extensible
 
@@ -98,7 +116,22 @@ Zugrio 1.0 should support four product truths without collapsing them:
 - **execution adherence** — whether actual broker action matched the planned/approved action;
 - **financial outcome** — what happened economically.
 
-Detailed direction: `docs/product/STRATEGY_BEHAVIOUR_HEALTH_V1.md`.
+### Initial strategy portfolio direction
+
+Zugrio should not be positioned as a one-strategy product.
+
+Alongside the proprietary first-party **Zugrio Core** baseline, the initial selectable-strategy roadmap prioritises four strategy families:
+
+1. **Advanced Price Action (APA)**;
+2. **Smart Money Concepts (SMC)**;
+3. **Trend Following**;
+4. **Range / Mean Reversion**.
+
+These are roadmap targets, not automatic launch/admission claims. Each requires its own exact MethodProfile/version, Entry Model contracts, market/horizon scope, evidence and StrategyAdmission.
+
+Breakout/retest, liquidity sweeps, FVGs, pullbacks and similar concepts should remain setup/evidence/entry archetypes where they cut across strategy families rather than being duplicated as top-level strategies without distinct governing logic.
+
+Detailed direction: `docs/product/STRATEGY_BEHAVIOUR_HEALTH_V1.md` and `docs/product/INITIAL_MARKET_AND_STRATEGY_PORTFOLIO.md`.
 
 ## 5. Context intelligence
 

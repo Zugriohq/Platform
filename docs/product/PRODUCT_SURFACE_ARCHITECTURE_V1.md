@@ -73,6 +73,8 @@ Features:
 - FX;
 - Gold;
 - Synthetic Indices;
+- planned-market roadmap visibility for Crypto, Stocks/Equities, broader Commodities, traditional Indices, ETFs and Futures;
+- Options as a later specialist market family;
 - search;
 - filters;
 - watchlists;

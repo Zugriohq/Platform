@@ -236,6 +236,27 @@ Acceptance:
 - product language distinguishes "your plan condition occurred" from "Zugrio independently qualified a strategy signal";
 - manual-plan monitoring does not create model applicability or strategy admission.
 
+### ZR-STR-014 — Initial multi-strategy portfolio — V1-F / V1-LG by admitted scope
+
+The product architecture and strategy library shall support a first-party baseline plus multiple separately governed strategy families.
+
+Initial roadmap:
+- Zugrio Core;
+- Advanced Price Action;
+- Smart Money Concepts;
+- Trend Following;
+- Range / Mean Reversion.
+
+Acceptance:
+- each strategy family is an exact versioned MethodProfile, not only a menu label;
+- each declares its own supported setup/evidence grammar and Entry Models;
+- evidence and StrategyAdmission remain independent by market/instrument/horizon/control mode;
+- selecting a strategy changes the applicable rules/annotations/qualification logic rather than only changing UI text;
+- absence of admission for one strategy or market does not prevent other admitted strategies/scopes from operating;
+- the UI exposes available/in-validation/planned status rather than representing roadmap entries as live support.
+
+No claim is made by this requirement that any listed strategy is profitable or already admitted.
+
 ## 7. Context intelligence
 
 ### ZR-CTX-001 — Macro event context — V1-F

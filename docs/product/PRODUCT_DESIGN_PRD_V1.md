@@ -149,6 +149,13 @@ The product-design system must support in parallel:
 
 Forex may lead some public messaging. Product UI must not treat Gold or Synthetics as accidental add-ons.
 
+Market-selection/marketing surfaces should distinguish:
+- **Initial:** FX, Gold, Synthetic Indices;
+- **Planned expansion:** Crypto, Stocks/Equities, broader Commodities, traditional Indices, ETFs, Futures;
+- **Later specialist:** Options.
+
+Planned-market treatment should be visually secondary and non-interactive unless a real preview workflow is intentionally provided. A "coming" treatment must never imply current data, analysis, strategy admission or execution support.
+
 Design must support market-specific intelligence.
 
 The UI must not imply:
@@ -879,6 +886,26 @@ Not merely:
 ## 14. Method profile UX
 
 The Method experience should feel serious and inspectable.
+
+### Strategy library
+
+The strategy library should be capable of showing the initial roadmap without implying equal readiness.
+
+Initial portfolio:
+- Zugrio Core;
+- Advanced Price Action;
+- Smart Money Concepts;
+- Trend Following;
+- Range / Mean Reversion.
+
+Each card/profile must expose a truthful readiness state such as:
+- **Available / admitted for stated scope**;
+- **In validation**;
+- **Planned**.
+
+A planned or in-validation strategy must not present actionable Zugrio signals as though admission has cleared.
+
+Strategy choice must be substantive: changing the selected strategy changes applicable rules, evidence requirements, chart annotations, entry models and invalidation logic.
 
 ### Method library
 

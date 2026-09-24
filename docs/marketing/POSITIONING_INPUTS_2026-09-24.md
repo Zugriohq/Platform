@@ -35,49 +35,55 @@ Those are not interchangeable claims.
 
 ### Decision
 
-**Forex leads the acquisition narrative.**
-
-Gold and Synthetic Indices remain parallel initial product tracks and must be visible from the first screen/page context.
+**Forex leads the acquisition narrative, while FX, Gold and Synthetic Indices appear together as the initial market scope.**
 
 Recommended positioning pattern:
-- Hero narrative/examples: primarily Forex.
+- Hero narrative/examples: primarily Forex when one market example is needed.
 - Immediate scope line: **FX · Gold · Synthetic Indices**.
+- Do not visually style Gold or Synthetic Indices as "coming soon"; all three are initial product tracks.
 - Market section: explain that each market is separately scoped/validated and that logic/evidence does not transfer merely because charts look similar.
+- A separate secondary roadmap row may show **Crypto · Stocks · Commodities · Indices · ETFs · Futures** as planned expansion, with **Options** later.
 
 This is a marketing hierarchy, not a product-scope hierarchy.
 
-Do not imply Gold or Synthetic Indices are future-only markets.
+"Planned" does not imply a launch date or current market support.
 
-## 4. Launch strategy inventory
+## 4. Initial strategy portfolio
 
-### Current launch decision
+### Founder direction
 
-**Launch strategy count target: 1 admitted first-party strategy — Zugrio Core.**
+Zugrio should be positioned as **strategy-aware and multi-strategy**, not as a one-strategy product.
 
-**External strategies in the launch promise: 0.**
+The current product roadmap contains:
 
-Zugrio Core may only be described as admitted/released if its evidence and StrategyAdmission gates have actually cleared. If they have not cleared at launch time, public copy must state the real readiness status rather than implying admission.
+**First-party baseline**
+- **Zugrio Core**
 
-Position the initial product around **Zugrio Core as the single named first-party starting strategy**.
+**Four initial selectable strategy families**
+1. **Advanced Price Action (APA)**
+2. **Smart Money Concepts (SMC)**
+3. **Trend Following**
+4. **Range / Mean Reversion**
 
-Current repository state does not define a second external strategy with a sufficiently explicit:
-- MethodProfile/version;
-- Entry Model contract;
-- market/instrument/horizon scope;
-- evidence bundle;
-- StrategyAdmissionRecord;
-- launch readiness/admission status.
+This is an implementation/admission target, not permission to claim all four are already supported.
 
-Therefore public launch positioning must **not** promise broad "choose your strategy" support.
+### Public-claim rule
 
-### What can still be truthfully positioned
+A strategy may appear as:
+- **available/admitted** only after the exact version/scope clears implementation, evidence and StrategyAdmission;
+- **in validation** while evidence/admission work remains;
+- **planned** while it is only on the roadmap.
 
-- **Zugrio Core** — first-party starting strategy, subject to evidence/admission and release readiness.
-- **Bring your own plan** — trader can declare/structure conditions, invalidation, risk, horizon and review adherence without Zugrio pretending the plan is independently validated.
-- **User-defined structured strategies** — product direction supports structuring/evaluation over time, but existence/representation does not equal Zugrio admission.
-- **Additional supported strategies** — future/expansion language only after an exact version has been implemented, evidenced and admitted for a stated scope.
+Do not say "choose any strategy." Do not advertise SMC, APA, Trend Following or Range/Mean Reversion as live/admitted until their actual status supports that claim.
 
-Until another strategy clears those gates, do not market SMC, ICT, advanced price action, order flow or another named methodology as launch-supported simply because Zugrio intends to support multiple strategies architecturally.
+**Bring your own plan** remains separate:
+- the trader can declare/structure conditions, invalidation, risk and horizon;
+- Zugrio may monitor and review those conditions;
+- that does not convert the user's strategy into a Zugrio-admitted signal source.
+
+Breakout/retest, liquidity sweeps, FVGs, order blocks, pullbacks and similar concepts may be strategy-specific setup/entry components. Scalping/day/swing are horizons/styles, not separate strategy engines.
+
+Order Flow remains a later candidate because suitable microstructure/feed data is a prerequisite. ICT should not be duplicated beside SMC as a public strategy without a deliberately distinct implementation and naming/IP review.
 
 ## 5. Chart annotation boundary
 
