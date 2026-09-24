@@ -421,7 +421,7 @@ No numeric threshold is defined by this PRD.
 
 V1 shall not recommend switching to another strategy merely because another strategy has a current setup.
 
-Any future strategy-discovery/routing feature requires separate user opt-in, behavioral safeguards, evidence and regulatory review.
+Any future strategy-discovery/routing feature requires separate user opt-in, behavioural safeguards, evidence and regulatory review.
 
 Detailed taxonomy: `docs/product/STRATEGY_EXECUTION_COMPONENT_TAXONOMY_V1.md`.
 
