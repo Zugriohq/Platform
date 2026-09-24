@@ -501,7 +501,11 @@ Conceptual policy strengths:
 
 Advisory and confirmation behaviour do not create broker authority.
 
-An enforcing behavioural guardrail is capital-relevant. It may only affect actions routed through Zugrio and requires accepted deterministic policy/authority integration before production activation. This architecture does not authorize that integration by itself.
+An enforcing behavioural guardrail is capital-relevant. It may only affect **new risk-increasing actions** routed through Zugrio and requires accepted deterministic policy/authority integration before production activation. This architecture does not authorize that integration by itself.
+
+Behavioral guardrails obey **risk-reduction precedence**: no guardrail may be the blocking authority for a governed close, reduce, cancel-risk, protection-restoration or other action already classified by the safety architecture as risk-reducing. Broker/reconciliation/safety constraints remain independently authoritative.
+
+A guardrail may preserve or narrow an existing authority envelope. It may never widen authority.
 
 Guardrail events (presentation, acknowledgement, trigger and any eventual enforcement result) should be durable and attributable to policy/version, user/account scope, supporting evidence and DecisionCase where relevant.
 
@@ -522,7 +526,8 @@ Signal, Semi-Auto, Auto and Full Auto are not different intelligence engines. Th
 - explicit user approval is required before submission;
 - approval triggers freshness/risk/safety revalidation;
 - stale approval cannot revive an expired FIRE;
-- advisory/confirmation guardrails may require re-review inside Zugrio;
+- advisory/confirmation guardrails may require re-review inside Zugrio for a new risk-increasing action;
+- behavioral friction must not obstruct governed risk-reducing action;
 - a new behaviour-based capital block is not production-authorized until its deterministic policy and authority precedence are accepted.
 
 ### AUTO
@@ -532,7 +537,8 @@ Signal, Semi-Auto, Auto and Full Auto are not different intelligence engines. Th
 - all normal risk, veto, broker safety and reconciliation requirements still apply;
 - behavioural analytics attributes system action separately from user intervention;
 - inferred emotion never becomes execution authority;
-- any behaviour-derived execution constraint must be a separately admitted deterministic policy.
+- any behaviour-derived execution constraint must be a separately admitted deterministic policy;
+- such a constraint can narrow new risk-increasing action only and must not obstruct governed risk reduction.
 
 ### FULL_AUTO
 
@@ -671,6 +677,8 @@ The following must remain testable:
 15. A behaviour observation is reconstructable from recorded facts and does not convert inferred emotion into fact.
 16. Advisory/confirmation guardrails cannot claim authority over broker actions outside Zugrio's execution path.
 17. No LLM output creates strategy admission, model applicability, risk authority or execution authority.
+18. Behavioural guardrails never block or delay governed risk-reducing actions.
+19. Behavioural guardrails can preserve/narrow existing authority but cannot widen it.
 
 ## 17. Relationship to the frozen Signal Authority Architecture
 
