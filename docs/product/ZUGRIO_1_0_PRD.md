@@ -393,6 +393,19 @@ Behaviour analytics shall distinguish system actions from user interventions.
 
 No inferred emotion may become capital-authoritative. Any behavioural constraint affecting automatic execution requires deterministic policy, versioning, explicit scope, evidence and accepted authority integration.
 
+Any future enforcing behavioural constraint may only preserve or narrow authority for **new risk-increasing action**. It must not block or delay a governed risk-reducing action.
+
+### ZR-BHV-007A — Risk-reduction precedence — V1-F
+
+Behavioural guardrails shall not be the blocking authority for governed risk-reducing actions.
+
+Acceptance:
+- close/reduce actions remain outside behavioural-friction blocking where the existing safety architecture classifies them as risk-reducing;
+- restoring required protection is not blocked by behavioural confirmation/enforcement;
+- cancelling an unfilled risk-increasing order is not blocked by a behavioural guardrail;
+- stale/unavailable guardrail state may never be converted into a reason to obstruct governed risk reduction;
+- broker/reconciliation/safety constraints remain independently authoritative.
+
 Full Auto remains subject to the existing portfolio-validation gate.
 
 ### ZR-BHV-008 — Guardrail audit — V1-F
@@ -738,4 +751,6 @@ Zugrio 1.0 should eventually be able to demonstrate with evidence—not marketin
 9. strategy-health claims expose their scope, version and evidence limitations;
 10. behaviour observations can be traced to recorded facts without inferring emotions as facts;
 11. advisory/confirmation guardrails state their actual authority limits;
-12. strategy health, process adherence, execution adherence and financial outcome remain independently reviewable.
+12. strategy health, process adherence, execution adherence and financial outcome remain independently reviewable;
+13. behavioural guardrails never block governed risk-reducing actions;
+14. future enforcing guardrails can only preserve/narrow existing authority, never widen it.
