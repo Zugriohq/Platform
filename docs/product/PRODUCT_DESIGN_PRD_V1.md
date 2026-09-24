@@ -895,7 +895,11 @@ Sections:
 - invalidation;
 - risk-policy references;
 - execution modes permitted;
-- version history.
+- version history;
+- strategy evidence/admission status;
+- Strategy Health summary where evidence exists.
+
+A method can be recorded/structured without being admitted for Zugrio-generated signals or automated action. The UI must make that distinction visible.
 
 ### Editing
 
@@ -907,6 +911,38 @@ Where configuration is supported:
 - confirmation before activating material changes.
 
 Never silently mutate the method attached to existing Decision Cases.
+
+### User strategy creation
+
+The product should support a controlled path such as:
+- use a Zugrio strategy;
+- start from a supported strategy template;
+- create/describe a user strategy.
+
+AI-assisted structuring may ask clarifying questions and produce a reviewable draft, but:
+- ambiguity remains visible;
+- unsupported clauses remain unsupported;
+- AI does not declare profitability;
+- AI cannot create strategy admission or trading authority.
+
+### Strategy Health
+
+Do not use a universal vanity score.
+
+Display as evidence permits:
+- exact strategy/version;
+- market/instrument/horizon scope;
+- evidence status;
+- observation period;
+- eligible/qualified case count;
+- outcome/distribution metrics where valid;
+- costs/slippage basis;
+- session/regime segmentation where supported;
+- evidence limitations;
+- last assessed;
+- admission status by control mode.
+
+Use qualitative evidence-strength states only when their definitions are validated.
 
 ---
 
@@ -1051,7 +1087,85 @@ Do not visually imply unsupported guarantees.
 
 ---
 
-## 18. Decision Journal / Memory
+## 18. Strategy and behavior review
+
+Strategy Health, Process / Behavior Health and Outcome must be visibly separate.
+
+### Strategy Health
+Answer:
+> What does the evidence currently support for this exact strategy version and scope?
+
+Show:
+- version/scope;
+- evidence strength/status;
+- sample/period;
+- key metrics where valid;
+- costs/assumptions;
+- limitations;
+- admission/review status.
+
+### Process / Behavior Health
+Answer:
+> Did I/system follow the declared process, and what observable deviations recur?
+
+Show only evidence-supported observations such as:
+- early entry;
+- entry outside declared zone;
+- risk/size change;
+- early exit;
+- override;
+- manual intervention;
+- repeated re-entry;
+- mode/authority changes.
+
+Never label an internal emotion as fact.
+
+Every recurring behavior insight should expose its basis: event count/sample, period, strategy scope and any matching uncertainty.
+
+### Behavioral guardrails
+
+Guardrails should communicate both **strength** and **reach**.
+
+Potential user-facing treatment:
+
+```text
+INFORM
+Shows the pattern. Never blocks.
+
+CONFIRM
+Requires acknowledgement before a Zugrio-controlled action continues.
+
+ENFORCE
+Blocks a prohibited new risk-increasing action through Zugrio when policy and authority allow.
+```
+
+The UI must state when a guardrail cannot control an independently placed broker order.
+
+A guardrail should show:
+- condition;
+- scope;
+- strength;
+- source/owner;
+- applicable modes;
+- effective/expiry time;
+- last triggered;
+- override/bypass history.
+
+### Current-case intervention
+
+An intervention should explain:
+- the factual trigger;
+- which declared rule/guardrail applies;
+- what Zugrio can actually do in the current mode;
+- what the trader can still do outside Zugrio;
+- the next available action.
+
+Example:
+> Entry is 13 pips beyond your declared zone. This guardrail requires review before Semi-Auto submission. It cannot prevent a separate manual broker order.
+
+---
+
+## 19. Decision Journal / Memory
 
 The journal is a core product, not an afterthought.
 
@@ -1064,8 +1178,10 @@ Each Decision Case shows:
 - direction;
 - decision path;
 - action;
+- Strategy Health/evidence state at the time where applicable;
 - outcome;
 - process adherence;
+- behavior/intervention markers;
 - override marker;
 - mode.
 
@@ -1109,6 +1225,9 @@ Make the distinction unmistakable.
 Example:
 
 ```text
+Strategy evidence
+ESTABLISHED FOR STATED SCOPE
+
 Outcome
 +1.8R
 
@@ -1126,7 +1245,7 @@ Do not visually reward the profit in a way that obscures the violation.
 
 ---
 
-## 19. Capability/readiness board
+## 20. Capability/readiness board
 
 Public and authenticated versions may differ in detail.
 
@@ -1171,7 +1290,7 @@ Never maintain a manually optimistic marketing status separate from product trut
 
 ---
 
-## 20. Public website requirements
+## 21. Public website requirements
 
 The website is not a disconnected marketing skin.
 
@@ -1222,7 +1341,7 @@ Still:
 
 ---
 
-## 21. Onboarding
+## 22. Onboarding
 
 ### Flow
 
@@ -1249,7 +1368,7 @@ Auto requires a separate mandate flow after ordinary onboarding.
 
 ---
 
-## 22. Billing / subscription UX
+## 23. Billing / subscription UX
 
 Subscription gives product entitlement.
 
@@ -1280,7 +1399,7 @@ unless it only means commercial access and is clearly separated from account aut
 
 ---
 
-## 23. Connection UX
+## 24. Connection UX
 
 ### cTrader
 
@@ -1306,7 +1425,7 @@ Do not ask the user for developer client secrets.
 
 ---
 
-## 24. Notification system
+## 25. Notification system
 
 Notifications should be actionable and tiered.
 
@@ -1331,7 +1450,7 @@ High-severity safety notifications should visually differ from ordinary opportun
 
 ---
 
-## 25. Search / command access
+## 26. Search / command access
 
 Power users should be able to quickly navigate by:
 - symbol;
@@ -1347,7 +1466,7 @@ It should not expose dangerous capital actions without appropriate confirmation.
 
 ---
 
-## 26. Component system
+## 27. Component system
 
 Required primitive/component families include:
 
@@ -1415,7 +1534,7 @@ All controls need:
 
 ---
 
-## 27. Empty, degraded and error states
+## 28. Empty, degraded and error states
 
 Work must design these intentionally.
 
@@ -1450,7 +1569,7 @@ Required:
 
 ---
 
-## 28. Responsive behavior
+## 29. Responsive behavior
 
 ### Desktop
 Dense professional workspace.
@@ -1475,7 +1594,7 @@ Do not squeeze desktop into mobile.
 
 ---
 
-## 29. Accessibility
+## 30. Accessibility
 
 Required:
 - keyboard navigation;
@@ -1490,7 +1609,7 @@ Required:
 
 ---
 
-## 30. Motion system
+## 31. Motion system
 
 Motion should communicate:
 - evidence arrival;
@@ -1510,7 +1629,7 @@ Profit is an outcome, not validation of the process.
 
 ---
 
-## 31. Visual design direction
+## 32. Visual design direction
 
 Use `docs/brand/VISUAL_DIRECTION_V0_3.md`.
 
@@ -1532,7 +1651,7 @@ Final exact palette is not locked until founder reference review.
 
 ---
 
-## 32. Design quality bar
+## 33. Design quality bar
 
 The final experience should withstand comparison with world-class modern financial/software products in:
 - hierarchy;
@@ -1558,7 +1677,7 @@ The final experience should withstand comparison with world-class modern financi
 
 ---
 
-## 33. Anti-patterns
+## 34. Anti-patterns
 
 Do not produce:
 
@@ -1583,7 +1702,7 @@ Do not produce:
 
 ---
 
-## 34. GPT Work deliverables
+## 35. GPT Work deliverables
 
 Work should produce design output in stages.
 
@@ -1669,7 +1788,7 @@ Deliver:
 
 ---
 
-## 35. Required fidelity in Work output
+## 36. Required fidelity in Work output
 
 Do not stop at a moodboard or pretty dashboard.
 
@@ -1687,7 +1806,7 @@ Interactive prototypes should demonstrate meaningful product transitions.
 
 ---
 
-## 36. Design acceptance criteria
+## 37. Design acceptance criteria
 
 The design is not ready if:
 
@@ -1726,7 +1845,7 @@ without losing the decision thread.
 
 ---
 
-## 37. Reference intake
+## 38. Reference intake
 
 When founder references arrive, do not immediately reskin Zugrio.
 
