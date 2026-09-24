@@ -85,7 +85,7 @@ Examples:
 
 ### Standing language rule
 
-Use neutral/technical verbs for system behavior; agency stays with the trader.
+Use neutral/technical verbs for system behaviour; agency stays with the trader.
 
 Prefer: evaluates, detects, compares, records, preserves, flags, blocks, permits under mandate, reconciles.
 
@@ -1357,7 +1357,7 @@ Zugrio evaluates each opportunity in its market, against your method and current
 **Scope**  
 FX · Gold · Synthetic Indices
 
-### Website visual behavior
+### Website visual behaviour
 
 Marketing may be more cinematic than the trading workspace.
 
@@ -1605,7 +1605,7 @@ Required:
 
 ---
 
-## 28. Responsive behavior
+## 28. Responsive behaviour
 
 ### Desktop
 Dense professional workspace.
@@ -1836,7 +1836,7 @@ For major surfaces, Work should show:
 - stale/degraded;
 - error/blocked;
 - locked/research-only;
-- narrow/mobile behavior where applicable.
+- narrow/mobile behaviour where applicable.
 
 Interactive prototypes should demonstrate meaningful product transitions.
 
