@@ -708,11 +708,16 @@ Answer:
 
 Surface:
 - profile/version;
+- strategy source/owner;
+- operational admission for this exact scope;
+- strategy-health evidence state/limitations;
 - setup family;
 - required conditions;
 - permitted entry model;
 - invalidation;
 - unmet method conditions.
+
+Do not use a green "strategy healthy" badge without visible scope/evidence context. Strategy representation, evidence and admission must remain distinguishable.
 
 #### MOMENT
 
@@ -1124,6 +1129,149 @@ OVERRIDE
 
 Do not visually reward the profit in a way that obscures the violation.
 
+### Four-way review
+
+Where evidence exists, a completed case should keep four questions visually separate:
+
+1. **Strategy Health** — what does the broader evidence say about this strategy/version in this scope?
+2. **Decision / Process** — did the decision follow the declared method, evidence, risk and authority process?
+3. **Execution** — did actual action match the plan/approved intent within broker realities?
+4. **Outcome** — what happened financially?
+
+Do not let a single composite score hide disagreement between these dimensions.
+
+---
+
+## 18A. Strategy Health and admission experience
+
+Strategy Health is a core analytical surface, not a decorative score.
+
+### Strategy header
+
+Show:
+- strategy name;
+- source/owner;
+- exact version;
+- market/instrument/horizon scope;
+- representation state;
+- operational admission state;
+- last evidence review;
+- known limitations/exclusions.
+
+### Evidence panel
+
+Show, where applicable:
+- eligible/completed/unresolved case count;
+- evidence period;
+- historical/out-of-sample/forward/live-observed source;
+- cost/slippage basis;
+- outcome/expectancy evidence where valid;
+- drawdown/MAE/MFE;
+- session/regime/instrument segmentation;
+- robustness/sensitivity evidence;
+- evidence recency;
+- review reason if under review.
+
+A user should be able to inspect the cases/artifacts behind a health statement.
+
+Avoid:
+- unexplained 0–100 strategy scores;
+- calling a user strategy "Zugrio validated" merely because it is machine-readable;
+- mixing multiple strategy versions into one performance number without explicit aggregation logic;
+- treating a short losing streak as automatic degradation.
+
+### User strategy creation
+
+The intended UX should support distinct paths:
+- start from a Zugrio first-party strategy where available;
+- start from an explicitly supported template;
+- describe/structure a user strategy;
+- record a discretionary plan.
+
+AI may help structure natural language and identify missing definitions.
+
+Before a structured strategy becomes eligible for Zugrio-generated signals/automation, the UI must show that evidence/admission remains a separate step.
+
+### Declared discretionary plan
+
+A user can record levels, conditions, invalidation, risk, horizon and expiry without Zugrio pretending to validate the thesis.
+
+If Zugrio monitors the declaration, language should say things such as:
+- "Your condition occurred";
+- "Your confirmation is still missing";
+- "Your declared entry zone expired";
+
+rather than presenting an independently qualified Zugrio signal.
+
+---
+
+## 18B. Behaviour Health and guardrail experience
+
+Behaviour Health should make deviations visible without diagnosing emotions.
+
+### Behaviour Health surface
+
+Show:
+- observation/pattern name;
+- plain factual definition;
+- sample/case count;
+- period;
+- strategy/market/mode scope;
+- supporting cases;
+- matching uncertainty;
+- trend only where evidence supports it.
+
+Example:
+> 6 of 13 matched entries occurred outside the declared entry zone.
+
+Avoid:
+> You revenge trade after losses.
+
+unless the user is quoting their own reflection; Zugrio itself should stick to observable evidence.
+
+### Guardrail creation
+
+A trader may turn a supported deterministic condition into a personal guardrail.
+
+Conceptual strengths:
+- **Advisory** — tell me;
+- **Confirmation** — make me re-review/acknowledge inside Zugrio;
+- **Enforcing** — prevent the action through Zugrio where separately admitted.
+
+The UI must explain that enforcing guardrails cannot prevent a trader from bypassing Zugrio and acting directly at the broker unless an integration explicitly grants that control.
+
+### Mode-specific interaction
+
+**Signal**
+- warning and review only;
+- read-only broker comparison where available;
+- no wording that implies Zugrio blocked an external order.
+
+**Semi-Auto**
+- warnings before approval;
+- confirmation/re-review can add friction inside Zugrio;
+- behaviour-based hard blocking remains unavailable until authoritative policy integration is accepted.
+
+**Auto**
+- clearly attribute system actions versus user intervention;
+- show policy/authority changes as separate events;
+- no emotion inference becomes an execution condition.
+
+**Full Auto**
+- preserve the same attribution/guardrail truth;
+- portfolio-level release remains gated.
+
+### Guardrail event UX
+
+Record:
+- why it triggered;
+- evidence used;
+- policy/version;
+- what the user/system did next;
+- whether the action remained possible outside Zugrio.
+
+Guardrails should not become gamified punishment.
+
 ---
 
 ## 19. Capability/readiness board
@@ -1313,6 +1461,8 @@ Notifications should be actionable and tiered.
 Priority classes:
 - decision/opportunity;
 - context/macro;
+- strategy-health/review;
+- behavioural guardrail;
 - execution;
 - risk/safety;
 - connection;
@@ -1326,6 +1476,8 @@ Examples:
 - “Auto mandate revoked”
 - “Broker submission status unknown — reconciling”
 - “Protective stop not confirmed”
+- “Strategy evidence review required for this scope”
+- “Your current entry is outside the zone you declared”
 
 High-severity safety notifications should visually differ from ordinary opportunity alerts.
 
@@ -1365,6 +1517,9 @@ Required primitive/component families include:
 - capability status;
 - mandate status;
 - risk state;
+- strategy admission state;
+- evidence-strength/limitation state;
+- guardrail state;
 - provenance/source tag.
 
 ### Cards/panels
