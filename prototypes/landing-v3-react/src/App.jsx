@@ -71,8 +71,8 @@ const STORY = [
   {
     key: "moment",
     overline: "CURRENT CONDITIONS",
-    title: "A good setup can become a bad entry.",
-    body: "Signals age. Price moves. Spread widens. Context changes. Zugrio keeps the original signal and rechecks what still makes sense now.",
+    title: "What qualified then may not qualify now.",
+    body: "Signals age. Price moves. Spread widens. Context changes. Zugrio keeps rechecking what still qualifies.",
   },
   {
     key: "mandate",
@@ -246,6 +246,7 @@ function Story({ activeStep, setActiveStep, marketKey, setMarketKey, caseKey, se
             <motion.article
               key={s.key}
               className={"story-step " + (activeStep === s.key ? "active" : "")}
+              id={s.key === "mandate" ? "control" : undefined}
               onViewportEnter={() => setActiveStep(s.key)}
               viewport={{ amount: .58, margin: "-8% 0px -22% 0px" }}
             >
@@ -255,6 +256,7 @@ function Story({ activeStep, setActiveStep, marketKey, setMarketKey, caseKey, se
               <p>{s.body}</p>
               {s.key === "market" && <em>Different markets deserve different intelligence.</em>}
               {s.key === "method" && <em>Your strategy and your level of automation are separate choices.</em>}
+              {s.key === "moment" && <em>The signal fired. The market kept moving.</em>}
               {s.key === "mandate" && <em>Prepared ≠ submitted ≠ filled ≠ protected.</em>}
               {s.key === "memory" && <em>Hindsight doesn’t get to rewrite it.</em>}
             </motion.article>
@@ -288,7 +290,7 @@ export default function App() {
     ["Readiness", "#status"],
   ], []);
 
-  const heroWords = ["See", "the", "setup", "before", "it", "becomes", "a", "signal."];
+  const heroWords = ["A", "good", "setup", "can", "become", "a", "bad", "entry."];
 
   return (
     <>
@@ -324,7 +326,7 @@ export default function App() {
               <i/> MARKET-AWARE TRADING INTELLIGENCE · PRIVATE BUILD
             </motion.div>
 
-            <h1 aria-label="See the setup before it becomes a signal.">
+            <h1 aria-label="A good setup can become a bad entry.">
               {heroWords.map((word, i) => (
                 <motion.span
                   aria-hidden="true"
@@ -340,7 +342,7 @@ export default function App() {
             </h1>
 
             <motion.p variants={{ hidden:{opacity:0,y:14},show:{opacity:1,y:0} }}>
-              Zugrio scans your markets, tracks setups from FORMING to READY to TRIGGERED, and alerts you with the levels, reasoning and next step.
+              Zugrio finds setups that fit your strategy, evaluates each one in the market that produced it, and keeps rechecking what still qualifies — within your limits, with every decision on record.
             </motion.p>
 
             <motion.div variants={{ hidden:{opacity:0,y:12},show:{opacity:1,y:0} }}>
@@ -380,7 +382,7 @@ export default function App() {
         <motion.section className="annotation" {...sectionReveal}>
           <div>
             <div className="kicker">OPPORTUNITY PROGRESSION</div>
-            <h2>Every state tells you what changed.</h2>
+            <h2>See the setup before it becomes a signal.</h2>
             <p>FORMING. READY. TRIGGERED. Zugrio marks what is confirmed, what is missing and what invalidates the setup — live on the chart.</p>
           </div>
           <div className="annotation-sequence" aria-label="Illustrative live annotation sequence">
@@ -398,28 +400,6 @@ export default function App() {
           <h2>Your rules don’t change because your mood did.</h2>
           <p>Zugrio keeps applying the same strategy through losses, long sessions and the temptation to chase. When your actions drift from the plan, the record shows it.</p>
           <strong>The market doesn’t change its standard because your mood did.</strong>
-        </motion.section>
-
-        <motion.section className="positive" id="control" {...sectionReveal}>
-          <div className="positive-copy">
-            <div className="kicker">AFTER A SIGNAL FIRES</div>
-            <h2>The signal fired. The market kept moving.</h2>
-            <p>Zugrio rechecks price, spread, account risk and your control level before the next step.</p>
-          </div>
-          <div className="progression">
-            {["Signal fired","Price & costs rechecked","Entry still qualifies","Risk & control checked","Next step available"].map((x,i) => (
-              <motion.div
-                key={x}
-                initial={{ opacity:0, x:20 }}
-                whileInView={{ opacity:1, x:0 }}
-                viewport={{ once:true, amount:.7 }}
-                transition={{ duration:.52, delay:i*.05, ease:[0.16,1,0.3,1] }}
-              >
-                <span>{String(i+1).padStart(2,"0")}</span><b>{x}</b><Check size={15}/>
-              </motion.div>
-            ))}
-            <small>Illustrative workflow only. Not a live trade, signal or performance result.</small>
-          </div>
         </motion.section>
 
         <motion.section className="journal" id="journal" {...sectionReveal}>
