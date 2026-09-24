@@ -94,16 +94,24 @@ A public strategy label has zero operational meaning until Zugrio defines an exa
 
 For every selectable strategy:
 - create a MethodProfile/version;
-- define supported setup/evidence grammar;
+- define supported Setup Models;
+- define Location Models (including retracement/reference rules where applicable);
 - define Entry Model contracts;
+- define Protection Models;
+- define Exit / Position-Management Models;
+- define any permitted StrategyComponentPolicy for adaptive component selection;
 - define invalidation/expiry;
-- define market/instrument/horizon applicability;
+- define market/instrument/horizon/regime applicability;
 - define context dependencies;
 - produce evidence bundles;
 - complete StrategyAdmission by exact scope;
 - expose evidence/readiness honestly in the UI.
 
-The same strategy family may be admitted in Forex but unavailable in Gold or Synthetics until separate evidence clears.
+Detailed component taxonomy: `docs/product/STRATEGY_EXECUTION_COMPONENT_TAXONOMY_V1.md`.
+
+The same strategy family may be admitted in Forex but unavailable in Gold or Synthetics until separate evidence clears. Likewise, one Entry/Exit component combination may be admitted for EURUSD in a trend regime while another combination remains research-only.
+
+Platform representability must never be described as proof that every strategy works on every market or regime.
 
 ## 6. Launch positioning rule
 
