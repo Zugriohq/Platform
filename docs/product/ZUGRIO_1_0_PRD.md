@@ -1,7 +1,7 @@
 # Zugrio 1.0 Product Requirements
 
 Status: **foundation PRD** for founder/engineering review.  
-Related: `docs/product/PRODUCT_DIRECTION.md`, `docs/architecture/SYSTEM_ARCHITECTURE_V1.md`.
+Related: `docs/product/PRODUCT_DIRECTION.md`, `docs/architecture/SYSTEM_ARCHITECTURE_V1.md`, `docs/product/STRATEGY_BEHAVIOUR_HEALTH_V1.md`.
 
 This document defines what Zugrio 1.0 must be capable of representing and governing. It does not claim that every capability is already implemented, validated or released.
 
@@ -150,6 +150,92 @@ The architecture shall support configurable Method Profiles without requiring an
 
 Enabling a market, setup or Entry Model in a Method Profile shall not automatically admit a probability/calibration model for that scope.
 
+### ZR-STR-007 — Strategy source/provenance — V1-F
+
+Every Method Profile shall identify whether it is Zugrio first-party, Zugrio-supported external, user-defined structured, or another explicitly governed source class.
+
+Acceptance:
+- source class is versioned/auditable;
+- first-party ownership does not bypass evidence requirements;
+- user-defined ownership remains visible in product surfaces.
+
+### ZR-STR-008 — Representation is not admission — V1-F
+
+A strategy being drafted, structured or machine-evaluable shall not make it admitted for Zugrio-generated Signal, Semi-Auto, Auto or Full Auto.
+
+Acceptance:
+- representation state and operational admission are separate;
+- LLM output cannot promote strategy admission;
+- subscription entitlement cannot promote strategy admission.
+
+### ZR-STR-009 — Strategy evidence bundle — V1-F
+
+The system shall be capable of binding a strategy-health/admission assessment to explicit evidence.
+
+The evidence contract shall support, where applicable:
+- exact Method Profile version;
+- market/product/instrument/horizon scope;
+- dataset/time-window identity;
+- in-sample/out-of-sample/forward-observation identity;
+- eligible/completed/unresolved case counts;
+- cost/slippage assumptions;
+- outcome definition;
+- drawdown/adverse-excursion evidence;
+- robustness/sensitivity evidence;
+- known exclusions;
+- artifact/provenance identities;
+- evidence-policy version.
+
+No arbitrary numeric threshold is introduced by this requirement.
+
+### ZR-STR-010 — Scope-specific strategy admission — V1-F / V1-LG for capital activation
+
+Operational admission shall be version- and scope-specific.
+
+Acceptance:
+- a strategy may be monitored/evaluated while not admitted for Zugrio-generated signals;
+- Signal/Semi-Auto/Auto admission can differ by scope;
+- admission references evidence and a versioned admission policy;
+- admission in one market/instrument/horizon does not transfer automatically to another;
+- live-capital use remains launch-gated.
+
+### ZR-STR-011 — Strategy health — V1-F
+
+The product shall represent ongoing evidence about the strategy separately from trader adherence and P/L.
+
+Strategy-health assessments may include, where appropriate:
+- expectancy after modeled/observed costs;
+- outcome distribution;
+- drawdown;
+- MAE/MFE;
+- cost/slippage sensitivity;
+- market/instrument/session/regime segmentation;
+- robustness/sensitivity;
+- historical versus forward behaviour;
+- drift/degradation evidence;
+- evidence sufficiency/recency.
+
+Acceptance:
+- user-facing conclusions identify strategy version and scope;
+- evidence strength/limitations are visible;
+- a short losing streak alone is not automatically classified as strategy failure;
+- health does not overwrite historical decisions.
+
+### ZR-STR-012 — Strategy health review/suspension — V1-F / V1-LG for capital activation
+
+A previously admitted strategy shall be reviewable when evidence becomes stale, scope/data assumptions change, or a versioned degradation policy is triggered.
+
+No degradation threshold is defined by this PRD.
+
+### ZR-STR-013 — Declared discretionary plans — V1-F
+
+A user may record a plan with conditions, levels, invalidation, risk, horizon and expiry even when Zugrio does not independently validate the trading thesis.
+
+Acceptance:
+- declared conditions may be monitored where technically possible;
+- product language distinguishes "your plan condition occurred" from "Zugrio independently qualified a strategy signal";
+- manual-plan monitoring does not create model applicability or strategy admission.
+
 ## 7. Context intelligence
 
 ### ZR-CTX-001 — Macro event context — V1-F
@@ -229,6 +315,112 @@ The journal shall support review of entered, passed, missed, expired and blocked
 ### ZR-DEC-006 — Deterministic adherence where possible — V1-F
 
 Where process adherence can be computed from declared method/risk/authority rules and recorded events, the authoritative adherence result shall be deterministic/versioned. AI-generated coaching may explain it but shall not overwrite it.
+
+### ZR-DEC-007 — Four-way review separation — V1-F
+
+Post-trade/strategy review shall be able to represent separately:
+- strategy health;
+- decision/process adherence;
+- execution adherence;
+- financial outcome.
+
+Acceptance:
+- none of the four automatically overwrites another;
+- a profitable process violation remains a violation;
+- a compliant losing trade is not automatically a process failure;
+- deteriorating strategy evidence can be investigated without assigning trader fault by default.
+
+## 8A. Behaviour health and guardrails
+
+### ZR-BHV-001 — Observable behaviour only — V1-F
+
+Authoritative behaviour observations shall be based on reconstructable events such as plan conditions, Decision Case events, broker actions, approvals, overrides, risk changes, exits and authority changes.
+
+The system shall not present fear, greed, revenge, tilt, impatience or another internal state as a fact solely from a trade record.
+
+### ZR-BHV-002 — Behaviour observation provenance — V1-F
+
+Every behaviour observation shall reference enough evidence to reconstruct why it was recorded.
+
+Examples may include:
+- entry before required confirmation;
+- entry after the declared entry ceased to qualify;
+- entry outside a declared zone;
+- risk differing from the plan;
+- early exit relative to a declared rule;
+- manual override;
+- repeated re-entry after invalidation;
+- manual intervention in an automated case.
+
+### ZR-BHV-003 — Cross-case pattern evidence — V1-F
+
+A behaviour-pattern assessment shall expose:
+- definition/version;
+- sample/case count;
+- time period;
+- strategy version(s);
+- market/instrument scope;
+- control mode;
+- supporting cases;
+- plan-to-broker matching uncertainty.
+
+The product shall not assert a pattern when matching evidence is insufficient.
+
+### ZR-BHV-004 — Guardrail strengths — V1-F
+
+The product architecture shall support distinct guardrail strengths:
+- advisory;
+- confirmation/friction inside a Zugrio-controlled workflow;
+- enforcing, subject to separate capital-policy admission.
+
+The exact public labels may evolve.
+
+### ZR-BHV-005 — Signal-mode truth — V1-F
+
+Signal mode may warn, compare plan versus action and review read-only broker activity where supported.
+
+It shall not claim that Zugrio can block a manual order placed outside Zugrio's execution authority.
+
+### ZR-BHV-006 — Semi-Auto guardrail truth — V1-F / V1-LG
+
+Semi-Auto may present warnings and require re-review/acknowledgement before Zugrio submission.
+
+Any new behavioural rule that blocks capital submission is launch-gated until integrated through accepted deterministic authority/policy semantics.
+
+### ZR-BHV-007 — Auto/Full-Auto guardrail truth — V1-F / V1-LG
+
+Behaviour analytics shall distinguish system actions from user interventions.
+
+No inferred emotion may become capital-authoritative. Any behavioural constraint affecting automatic execution requires deterministic policy, versioning, explicit scope, evidence and accepted authority integration.
+
+Full Auto remains subject to the existing portfolio-validation gate.
+
+### ZR-BHV-008 — Guardrail audit — V1-F
+
+Guardrail presentation, acknowledgement, trigger and any eventual enforcement outcome shall be durably attributable to:
+- guardrail policy/version;
+- user/account scope;
+- supporting evidence;
+- Decision Case where relevant;
+- time/effective state.
+
+### ZR-BHV-009 — Outside-path limitation — V1-F
+
+Where a user acts directly at a broker outside Zugrio's execution path, Zugrio may observe/review the action if data is available but shall not represent that it had authority to prevent the action.
+
+## 8B. AI assistance boundaries
+
+### ZR-AI-001 — Strategy structuring assistance — V1-F
+
+AI may translate a natural-language strategy description into a draft structured representation and ask for missing definitions.
+
+It shall not silently convert ambiguous language into capital-authoritative rules.
+
+### ZR-AI-002 — Case-aware explanation — V1-F
+
+AI may explain a Decision Case, strategy-health evidence, behaviour observation or guardrail using provenance-bound system data.
+
+AI explanation shall not overwrite deterministic records or create missing evidence/admission.
 
 ## 9. Decision authority and states
 
@@ -509,6 +701,7 @@ A capability may be architecturally present but unavailable to users until its r
 Live capital activation requires, as applicable:
 - cleared authority Gate evidence;
 - admitted/calibrated market/model scope;
+- strategy version/scope admission where the workflow depends on Zugrio-generated strategy qualification;
 - complete cost model;
 - broker adapter verification;
 - risk/position-management verification;
@@ -540,4 +733,9 @@ Zugrio 1.0 should eventually be able to demonstrate with evidence—not marketin
 4. a manual override remains visible after the outcome is known;
 5. a profitable rule violation remains identifiable as a process violation;
 6. new markets/models/adapters can be added without rewriting authority boundaries;
-7. the full decision can be reconstructed from durable records.
+7. the full decision can be reconstructed from durable records;
+8. a user-authored strategy can be represented without being misrepresented as Zugrio-admitted;
+9. strategy-health claims expose their scope, version and evidence limitations;
+10. behaviour observations can be traced to recorded facts without inferring emotions as facts;
+11. advisory/confirmation guardrails state their actual authority limits;
+12. strategy health, process adherence, execution adherence and financial outcome remain independently reviewable.
