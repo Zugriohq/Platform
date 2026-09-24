@@ -410,7 +410,7 @@ Guardrail confirmation/friction/enforcement must not delay or block, solely beca
 
 Existing broker reality, reconciliation state, protection policy and safety rules still apply. This rule does not promise that a broker can always complete a risk-reducing command; it means behavioural guardrails cannot be the blocking authority.
 
-If guardrail state is stale, unavailable or conflicted, a future enforcing policy may fail closed for **new risk-increasing action**, but must not use that uncertainty to obstruct governed risk reduction.
+If guardrail state is stale, unavailable or conflicted, a future enforcing policy must fail closed for **new risk-increasing action** within that guardrail's admitted scope, but must not use that uncertainty to obstruct governed risk reduction.
 
 ## 11. Guardrails by control mode
 
