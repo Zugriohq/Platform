@@ -145,25 +145,40 @@ Future:
 - saved event filters;
 - alert rules.
 
-### G. Methods — V1 foundational
+### G. Methods / Strategy Health — V1 foundational
 
 Features:
 - method library;
+- source/owner class;
 - active/archive;
 - versioning;
 - applicability;
+- representation/evaluatability state;
+- operational admission by exact scope/mode;
+- strategy-health evidence summary;
+- evidence limitations/recency;
 - setup families;
 - entry models;
 - required evidence;
 - invalidation;
 - permitted modes;
-- change history.
+- change history;
+- declared discretionary plans.
+
+Staged product direction:
+- structured strategy builder;
+- AI-assisted natural-language-to-draft structuring with explicit user review;
+- supported templates;
+- monitored discretionary plans;
+- evidence drill-down;
+- admission/review history.
 
 Future:
-- richer method builder;
-- templates;
 - import/export;
+- strategy licensing/marketplace only if evidence, IP, governance and commercial requirements justify it;
 - shared/team methods only when governance exists.
+
+A strategy existing in the library must not visually imply that Zugrio has admitted or endorsed it.
 
 ### H. Automation / Authority — V1 foundational, activation gated
 
@@ -233,14 +248,27 @@ Features:
 - original reasons;
 - current changes;
 - execution;
-- outcome;
-- process adherence;
+- financial outcome;
+- decision/process adherence;
+- execution adherence;
+- relevant strategy-health context;
+- behavioural observations;
+- override markers;
 - annotations/notes if introduced;
 - compare cases.
+
+Behaviour Health within/adjacent to Journal:
+- factual pattern list;
+- supporting cases;
+- sample/period/scope;
+- matching uncertainty;
+- user-defined guardrails;
+- guardrail history.
 
 Future:
 - cohort analysis;
 - method adherence trends;
+- behaviour pattern trend analysis;
 - advanced replay;
 - exports;
 - team review.
@@ -278,6 +306,8 @@ Classes:
 - opportunity;
 - decision changed;
 - macro/context;
+- strategy-health/review;
+- behavioural guardrail;
 - risk/safety;
 - execution;
 - broker/connection;
@@ -458,6 +488,9 @@ Potential:
 - journal report;
 - account/risk report;
 - method adherence report;
+- execution-adherence report;
+- strategy-health evidence report;
+- behaviour-health/guardrail report;
 - CSV/PDF/shareable summary where safe.
 
 Future:
@@ -494,6 +527,8 @@ Recommended stable model:
 - Methods
 - Automation
 - Connections
+
+Strategy Health should live contextually within Methods/Decision surfaces rather than becoming a permanent top-level navigation item by default. Behaviour Health should live contextually within Journal/Decision surfaces and guardrail settings rather than creating another primary navigation destination unless user testing proves otherwise.
 
 ### Learn / discover
 - Academy

@@ -103,6 +103,26 @@ Immutable/versioned strategy/method definition.
 
 Key identity: `MethodProfileId + version`.
 
+A MethodProfile also declares source/provenance class (for example Zugrio first-party, Zugrio-supported external, user-defined structured) without implying admission.
+
+### StrategyEvidenceBundle
+Immutable/versioned evidence package used to assess a specific MethodProfile version within an explicit market/product/instrument/horizon scope.
+
+May reference research datasets, replay/out-of-sample evidence, forward observation, cost/slippage models, robustness artifacts, case counts, exclusions and evidence-policy version.
+
+### StrategyAdmissionRecord
+Auditable record stating what operational use, if any, an exact MethodProfile version is admitted for in an exact scope.
+
+Representation/evaluatability does not create admission.
+
+### StrategyHealthAssessment
+Versioned analytical assessment of current evidence for an exact strategy version/scope.
+
+It remains separate from trader process adherence, execution adherence and financial outcome.
+
+### DeclaredTradePlan
+User-authored plan that may define conditions, levels, invalidation, risk, horizon and expiry without claiming that Zugrio independently validates the trading thesis.
+
 ### EntryModelDefinition
 Immutable/versioned entry-condition contract.
 
@@ -205,10 +225,33 @@ Financial/market outcome of the decision/position.
 ### ProcessAdherenceRecord
 Separate evaluation of whether declared method/risk/authority process was followed.
 
+### ExecutionAdherenceRecord
+Separate evaluation of whether actual broker/user execution matched the planned or approved action within known execution realities.
+
+### BehaviourObservation
+Derived projection from the authoritative ProcessAdherenceRecord and/or ExecutionAdherenceRecord plus their underlying event references.
+
+A BehaviourObservation may describe a deviation such as early entry, off-zone entry, changed risk or manual override. It does not establish an internal emotion and does not own an independent competing compliance verdict.
+
+### BehaviourPatternAssessment
+Cross-case assessment referencing observation definition/version, supporting cases, scope, period and matching uncertainty.
+
+### GuardrailPolicy
+Versioned user/account-scoped policy describing advisory, confirmation or (where separately admitted) enforcing behaviour for a deterministic condition.
+
+A GuardrailPolicy must declare its action class/effect scope. Enforcing policy may narrow **new risk-increasing action** only.
+
+Guardrail policy is not broker authority by itself and cannot block a governed risk-reducing action.
+
+### GuardrailEvent
+Durable record of guardrail presentation, acknowledgement, trigger and any eventual enforcement outcome.
+
+If a guardrail bypass also overrides a system recommendation, prepared action or governed system action, the GuardrailEvent references the corresponding OverrideRecord.
+
 ### OverrideRecord
 Append-only record of user/manual deviation from system recommendation or prepared action.
 
-Outcome does not overwrite adherence. Override does not overwrite original system state.
+Strategy health, process adherence, execution adherence and outcome do not overwrite one another. Override does not overwrite original system state. Behaviour observations/patterns do not rewrite the underlying broker or Decision Case events.
 
 ## 10. Capability scope
 
@@ -222,8 +265,10 @@ canonical instrument
 broker / venue
 data source
 method profile
+strategy admission
 model applicability
 control mode
+guardrail capability/policy status
 account type
 client surface
 release channel
@@ -267,17 +312,23 @@ User ── Workspace ── Subscription ── EntitlementSet
               │
               ├── DeviceSession
               ├── BrokerConnection ── TradingAccount ── ExecutionAuthorityManifest
+              ├── MethodProfile
+              │      ├── StrategyEvidenceBundle
+              │      ├── StrategyAdmissionRecord
+              │      └── StrategyHealthAssessment
               │
               └── DecisionCase
                      ├── CanonicalInstrument
-                     ├── MethodProfile
+                     ├── MethodProfile / StrategyAdmission reference
+                     ├── DeclaredTradePlan
                      ├── Candidate
                      ├── Evidence / ContextFact
                      ├── ModelApplicabilityManifest → InferenceRecord
                      ├── State / Selection / Geometry / ExecutionSnapshot
                      ├── RiskContext / FireEvent / EntryIntent
                      ├── BrokerOrder / Fill / Position / Protection
-                     └── Outcome / ProcessAdherence / Override
+                     ├── Outcome / ProcessAdherence / ExecutionAdherence / Override
+                     └── BehaviourObservation / GuardrailEvent
 ```
 
 ## 13. Database implementation rule
@@ -290,4 +341,9 @@ Do not let ORM convenience collapse:
 - current state into historical decision record;
 - outcome into process quality;
 - market family into asset class;
-- feature similarity into model applicability.
+- feature similarity into model applicability;
+- strategy representation into strategy admission;
+- strategy health into trade outcome;
+- behaviour observation into inferred emotion;
+- advisory guardrail into broker execution authority;
+- behavioural guardrail into a blocker of governed risk-reducing action.
