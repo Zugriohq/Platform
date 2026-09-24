@@ -4,6 +4,11 @@ Status: marketing-compression candidate.
 Visual/layout system: unchanged.  
 Company thesis remains: **The chart is not the market.**
 
+**Hero freeze — 24 September 2026:**  
+**A good setup can become a bad entry.**
+
+Do not reopen the hero based on copy taste alone. Reopen only if product truth changes or real user evidence shows a comprehension/distinctiveness problem.
+
 ## Copy rule
 
 This is a marketing page, not the product manual.
@@ -23,9 +28,9 @@ Do not describe Zugrio as what it *should*, *might* or *hopes* to do.
 
 **MARKET-AWARE TRADING INTELLIGENCE · PRIVATE BUILD**
 
-# Find your setup. Know what’s next.
+# A good setup can become a bad entry.
 
-Zugrio scans your markets, tracks setups from FORMING to READY to TRIGGERED, and alerts you with the levels, reasoning and next step.
+Zugrio finds setups that fit your strategy, evaluates each one in the market that produced it, and keeps rechecking what still qualifies — within your limits, with every decision on record.
 
 **Trust line:**  
 Your money stays in your broker account. Signal mode leaves execution with you. Automation only acts inside limits you set.
@@ -74,9 +79,11 @@ Choose Zugrio Core or another supported strategy. Zugrio keeps the rules consist
 
 ## Current conditions
 
-# A good setup can become a bad entry.
+# What qualified then may not qualify now.
 
-Signals age. Price moves. Spread widens. Context changes. Zugrio keeps the original signal and rechecks what still makes sense now.
+Signals age. Price moves. Spread widens. Context changes. Zugrio keeps rechecking what still qualifies.
+
+**The signal fired. The market kept moving.**
 
 ## Control
 
@@ -101,21 +108,6 @@ Setup, changes, actions and outcome stay connected. Replay shows what was known 
 Zugrio keeps applying the same strategy through losses, long sessions and the temptation to chase. When your actions drift from the plan, the record shows it.
 
 **The market doesn’t change its standard because your mood did.**
-
-## After a signal fires
-
-**AFTER A SIGNAL FIRES**
-
-# The signal fired. The market kept moving.
-
-Zugrio rechecks price, spread, account risk and your control level before the next step.
-
-Illustrative progression:
-1. Signal fired
-2. Price & costs rechecked
-3. Entry still qualifies
-4. Risk & control checked
-5. Next step available
 
 ## Behavioral analytics
 
