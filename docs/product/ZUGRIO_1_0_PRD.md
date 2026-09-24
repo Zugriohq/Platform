@@ -1,7 +1,7 @@
 # Zugrio 1.0 Product Requirements
 
 Status: **foundation PRD** for founder/engineering review.  
-Related: `docs/product/PRODUCT_DIRECTION.md`, `docs/architecture/SYSTEM_ARCHITECTURE_V1.md`.
+Related: `docs/product/PRODUCT_DIRECTION.md`, `docs/product/STRATEGY_HEALTH_AND_BEHAVIOR_GUARDRAILS.md`, `docs/architecture/SYSTEM_ARCHITECTURE_V1.md`, ADR-0004.
 
 This document defines what Zugrio 1.0 must be capable of representing and governing. It does not claim that every capability is already implemented, validated or released.
 
@@ -22,7 +22,9 @@ The product must separate:
 - the quality of a decision from the eventual P/L outcome;
 - opportunity detection from execution permission;
 - analytical price from executable price;
-- visual similarity from model applicability.
+- visual similarity from model applicability;
+- strategy definition from strategy evidence/admission;
+- Strategy Health from Process / Behavior Health and financial Outcome.
 
 ## 2. Initial users
 
@@ -48,6 +50,9 @@ Trading teams and allocators are an architectural expansion audience, not a clai
 - **If the facts change, the decision may change.**
 - **Outcome and process quality are evaluated separately.**
 - **User authority is explicit, bounded and revocable.**
+- **A represented strategy is not automatically an admitted strategy.**
+- **Behavioral evidence describes observable actions; it does not prove internal emotion.**
+- **AI may explain or structure; it does not create capital authority or unsupported evidence.**
 
 ## 4. Requirement priority definitions
 
@@ -150,6 +155,71 @@ The architecture shall support configurable Method Profiles without requiring an
 
 Enabling a market, setup or Entry Model in a Method Profile shall not automatically admit a probability/calibration model for that scope.
 
+### ZR-STR-007 — Strategy definition and admission are separate — V1-F
+
+The system shall distinguish a versioned Strategy/Method Profile from evidence that admits that strategy for a specific product use.
+
+Acceptance:
+- recording or structuring a strategy does not itself create a Zugrio-admitted signal;
+- strategy admission is versioned and scoped;
+- admission can differ by market/instrument/horizon and control mode;
+- Signal admission does not imply Semi-Auto, Auto or Full Auto admission.
+
+### ZR-STR-008 — User strategy lifecycle — V1-F
+
+The architecture shall support user strategies that may be recorded, structured/monitorable, evaluatable and evidence-assessed before any governed admission.
+
+Acceptance:
+- ambiguous rules remain unresolved until defined;
+- unsupported strategy components remain visibly unsupported;
+- material edits create a new version;
+- a user strategy may remain useful for monitoring/review without Zugrio endorsing it.
+
+### ZR-STR-009 — Strategy evidence artifacts — V1-F
+
+Strategy evidence shall be represented by immutable/reproducible artifacts tied to exact strategy and scope identities.
+
+Evidence artifacts shall be capable of recording, where applicable:
+- dataset/evaluation identity;
+- market/instrument/horizon;
+- cost/slippage assumptions;
+- observation period and sample size;
+- historical versus holdout/forward evidence;
+- outcome/distribution metrics;
+- limitations/exclusions.
+
+No universal evidence threshold is established by this PRD. Thresholds require separate research and validation.
+
+### ZR-STR-010 — Strategy Health — V1-F
+
+The system shall support a scoped Strategy Health assessment that communicates what the current evidence supports without promising future profitability.
+
+Acceptance:
+- assessment references underlying evidence artifacts;
+- evidence strength/limitations are visible;
+- one short losing sequence cannot automatically define strategy failure;
+- strategy health does not overwrite historical Decision Cases;
+- missing evidence does not become a neutral/positive default score.
+
+### ZR-STR-011 — Strategy admission can expire/suspend — V1-F
+
+A governed StrategyAdmission may expire, be suspended or be superseded without deleting historical evidence or rewriting prior decisions.
+
+Acceptance:
+- historical decisions retain the governing strategy/admission version;
+- expired/suspended admission cannot silently continue in a mode that requires it;
+- suspension cannot widen any authority path.
+
+### ZR-STR-012 — AI strategy structuring is non-authoritative — V1-F
+
+AI may translate natural-language strategy descriptions into a reviewable structured draft.
+
+Acceptance:
+- AI does not silently resolve ambiguous rules;
+- the trader can inspect unresolved/unsupported clauses;
+- AI output cannot create StrategyAdmission, calibrated conviction, capital sizing or ExecutionAuthorityManifest;
+- deterministic/versioned contracts remain authoritative.
+
 ## 7. Context intelligence
 
 ### ZR-CTX-001 — Macro event context — V1-F
@@ -230,6 +300,41 @@ The journal shall support review of entered, passed, missed, expired and blocked
 
 Where process adherence can be computed from declared method/risk/authority rules and recorded events, the authoritative adherence result shall be deterministic/versioned. AI-generated coaching may explain it but shall not overwrite it.
 
+### ZR-DEC-007 — Behavior observations are factual — V1-F
+
+Behavior analytics shall derive from recorded plan/state plus user/system/broker events.
+
+Acceptance:
+- observable deviations such as early entry, entry outside a declared zone, size/risk change, early exit, override or manual intervention can be represented;
+- user, system and broker actors remain distinct;
+- uncertain broker-to-plan matching remains explicitly uncertain;
+- the product does not state fear, greed, revenge, tilt or another internal emotion as a recorded fact.
+
+### ZR-DEC-008 — Behavior evidence strength — V1-F
+
+Behavioral insights shall expose sufficient evidence context to avoid false precision.
+
+Where relevant, the product shall retain:
+- observation period;
+- sample size/event count;
+- strategy version(s);
+- market/instrument scope;
+- source events;
+- match confidence/limitations.
+
+### ZR-DEC-009 — Separate review dimensions — V1-F
+
+Review shall preserve at least:
+- Strategy Health/evidence status;
+- Process / Behavior Health/adherence;
+- financial Outcome.
+
+Acceptance:
+- one dimension cannot overwrite another;
+- a profitable process violation remains a violation;
+- a compliant losing decision can remain compliant;
+- insufficient strategy evidence remains insufficient even after a profitable outcome.
+
 ## 9. Decision authority and states
 
 ### ZR-AUTH-001 — Preserve frozen authority semantics — V1-F
@@ -305,6 +410,37 @@ The user shall be able to revoke automation authority. Revocation prevents new r
 ### ZR-MODE-006 — Cross-device authority consistency — V1-F
 
 Authority changes shall be server-authoritative and versioned. A stale approval or second device shall not revive revoked/narrowed automation authority.
+
+### ZR-MODE-007 — Behavioral guardrail strengths — V1-F
+
+The system shall support versioned behavioral guardrails whose effect is explicit.
+
+Conceptual strengths:
+- Inform — surface evidence without blocking;
+- Confirm — require acknowledgement/review inside a Zugrio-controlled action path;
+- Enforce — prevent a prohibited new risk-increasing action only inside an explicitly governed Zugrio execution path.
+
+Exact public labels may change.
+
+Acceptance:
+- Inform cannot block;
+- Confirm does not claim to block independent broker activity;
+- Enforce can only preserve or narrow existing authority;
+- a guardrail cannot create missing execution authority, increase a risk limit or widen allowed scope.
+
+### ZR-MODE-008 — Mode-specific intervention boundary — V1-F
+
+Behavioral intervention shall respect the current control mode and broker capability.
+
+Acceptance:
+- Signal mode may warn, explain, record and compare against read-only broker facts but cannot claim order-blocking authority;
+- Semi-Auto may expire/block a prepared Zugrio intent when a governed rule fails and may require acknowledgement before approval;
+- Auto/Full Auto may enforce only within valid delegated authority and released capabilities;
+- independently placed broker trades remain outside Zugrio's control unless a verified broker capability explicitly provides such control.
+
+### ZR-MODE-009 — Intervention events are auditable — V1-F
+
+Warnings, acknowledgement requirements, enforced blocks, bypasses and overrides shall be append-only decision/process events with actor, reason, policy version and time.
 
 ## 12. Broker and execution
 
