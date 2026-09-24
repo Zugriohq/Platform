@@ -21,7 +21,7 @@ Every track retains independent:
 - data requirements;
 - context requirements;
 - cost model;
-- instrument behavior;
+- instrument behaviour;
 - model applicability;
 - strategy evidence;
 - StrategyAdmission;
@@ -62,7 +62,7 @@ Zugrio's architecture is multi-strategy, while the V1 active build is intentiona
 
 1. **Advanced Price Action (APA)**
    - APA is also the principal research lineage beneath Core V1.
-   - A separate selectable APA preset must not be marketed as distinct from Core until an explicit rule/behavior distinction is demonstrated.
+   - A separate selectable APA preset must not be marketed as distinct from Core until an explicit rule/behaviour distinction is demonstrated.
 
 2. **Smart Money Concepts (SMC)**
    - Separate precise implementation required.
@@ -73,7 +73,7 @@ Zugrio's architecture is multi-strategy, while the V1 active build is intentiona
    - Requires its own frozen bundles and evidence.
 
 4. **Range / Mean Reversion**
-   - Distinct strategy family for equilibrium/range/reversion behavior.
+   - Distinct strategy family for equilibrium/range/reversion behaviour.
    - Requires its own frozen bundles and evidence.
 
 These remain roadmap/in-validation families, not V1 live alternatives.
