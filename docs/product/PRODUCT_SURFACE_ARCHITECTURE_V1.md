@@ -147,10 +147,11 @@ Future:
 - saved event filters;
 - alert rules.
 
-### G. Methods / Strategy Health — V1 foundational
+### G. Strategy / Strategy Health — V1 foundational
 
 Features:
-- method library;
+- Core strategy profile/library as V1 active target;
+- in-validation strategy statuses for SMC, Trend Following, Range / Mean Reversion and any future distinct APA preset;
 - source/owner class;
 - active/archive;
 - versioning;
@@ -159,8 +160,8 @@ Features:
 - operational admission by exact scope/mode;
 - strategy-health evidence summary;
 - evidence limitations/recency;
-- setup families;
-- entry models;
+- frozen TradeBundle identity/components;
+- RegimeModel/TimeframeMap identity;
 - required evidence;
 - invalidation;
 - permitted modes;
