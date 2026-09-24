@@ -257,6 +257,82 @@ Acceptance:
 
 No claim is made by this requirement that any listed strategy is profitable or already admitted.
 
+### ZR-STR-015 — Setup, location and entry separation — V1-F
+
+The system shall distinguish:
+- the setup/opportunity state;
+- the location/reference model;
+- the entry/trigger model.
+
+Acceptance:
+- a setup may exist without a valid entry;
+- a LocationModel such as Fibonacci/retracement, structure, range boundary or imbalance zone cannot by itself create a Zugrio signal;
+- retracement depth is represented as location evidence rather than silently creating separate strategies;
+- historical Decision Cases retain exact component versions.
+
+### ZR-STR-016 — Entry trigger versus broker order route — V1-F / V1-LG for live execution
+
+Entry qualification shall be separate from how an order is submitted.
+
+Acceptance:
+- a valid entry may map to market, limit, stop or prepared Semi-Auto intent only where the execution policy permits;
+- broker order type cannot make an invalid strategy entry valid;
+- spread, slippage, quote freshness, drift, broker rules and control mode may block/change the order route without rewriting the original entry evidence.
+
+### ZR-STR-017 — Protection and exit-management models — V1-F / V1-LG for live execution
+
+The system shall represent initial protection separately from profit-taking/position management.
+
+Acceptance:
+- ProtectionModel identifies the thesis/risk boundary;
+- ExitManagementModel identifies target/partial/break-even/trailing/time/state management;
+- exit management cannot widen initial risk authority;
+- risk-reducing safety actions retain precedence over profit-management logic;
+- one strategy may permit multiple versioned exit-management models where explicitly evidenced.
+
+### ZR-STR-018 — Strategy component policy — V1-F / V1-LG by admitted scope
+
+A versioned StrategyComponentPolicy may select among components already permitted by the exact strategy version.
+
+Acceptance:
+- inputs identify market/instrument/horizon and applicable regime/context;
+- output identifies the exact setup/location/entry/protection/exit bundle or PASS;
+- policy cannot select a component not permitted by the MethodProfile;
+- policy cannot silently switch strategy family;
+- policy can be reconstructed from the Decision Case;
+- component selection has explicit evidence/admission by scope.
+
+### ZR-STR-019 — No silent strategy switching — V1-F
+
+When the user selects a supported preset or Custom Strategy, Zugrio shall not silently replace it with another strategy family.
+
+Acceptance:
+- if the selected strategy is incompatible/unadmitted for the current state, the product may return no setup/no compatible route;
+- the product may recommend another supported strategy only as an explicit recommendation with evidence/status;
+- any future automatic strategy-family routing is represented as a distinct first-party meta-strategy and requires separate admission/user authority.
+
+### ZR-STR-020 — Component-level health evidence — V1-F
+
+Strategy-health analysis shall be capable of segmenting evidence by applicable component and scope without implying that every slice is statistically reliable.
+
+Potential dimensions include:
+- setup model;
+- LocationModel;
+- EntryModel;
+- ProtectionModel;
+- ExitManagementModel;
+- instrument;
+- horizon/session;
+- regime.
+
+Acceptance:
+- component conclusions expose sample/evidence limitations;
+- repeated slicing/data mining does not create a positive claim by default;
+- material strategy/component-policy changes create a new version and evidence path;
+- degradation in one component/scope does not silently rewrite unrelated scopes.
+
+Detailed taxonomy: `docs/product/STRATEGY_EXECUTION_COMPONENT_TAXONOMY_V1.md`.
+
 ## 7. Context intelligence
 
 ### ZR-CTX-001 — Macro event context — V1-F
