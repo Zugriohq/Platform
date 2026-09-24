@@ -229,9 +229,9 @@ Separate evaluation of whether declared method/risk/authority process was follow
 Separate evaluation of whether actual broker/user execution matched the planned or approved action within known execution realities.
 
 ### BehaviourObservation
-Reconstructable observation derived from declared plan/process and recorded actions.
+Derived projection from the authoritative ProcessAdherenceRecord and/or ExecutionAdherenceRecord plus their underlying event references.
 
-A BehaviourObservation may describe a deviation such as early entry, off-zone entry, changed risk or manual override. It does not establish an internal emotion.
+A BehaviourObservation may describe a deviation such as early entry, off-zone entry, changed risk or manual override. It does not establish an internal emotion and does not own an independent competing compliance verdict.
 
 ### BehaviourPatternAssessment
 Cross-case assessment referencing observation definition/version, supporting cases, scope, period and matching uncertainty.
@@ -245,6 +245,8 @@ Guardrail policy is not broker authority by itself and cannot block a governed r
 
 ### GuardrailEvent
 Durable record of guardrail presentation, acknowledgement, trigger and any eventual enforcement outcome.
+
+If a guardrail bypass also overrides a system recommendation, prepared action or governed system action, the GuardrailEvent references the corresponding OverrideRecord.
 
 ### OverrideRecord
 Append-only record of user/manual deviation from system recommendation or prepared action.
@@ -344,4 +346,4 @@ Do not let ORM convenience collapse:
 - strategy health into trade outcome;
 - behaviour observation into inferred emotion;
 - advisory guardrail into broker execution authority;
-- behavioral guardrail into a blocker of governed risk-reducing action.
+- behavioural guardrail into a blocker of governed risk-reducing action.
