@@ -69,7 +69,7 @@ Each preset is Zugrio's exact versioned implementation of that family.
 
 For V1 product status:
 - these presets are **In validation / later**, not simultaneously represented as live admitted alternatives to Core;
-- APA is also the principal research lineage underlying Core V1, so a separate public APA preset must not be presented as distinct from Core until a measurable semantic/behavioral distinction is demonstrated.
+- APA is also the principal research lineage underlying Core V1, so a separate public APA preset must not be presented as distinct from Core until a measurable semantic/behavioural distinction is demonstrated.
 
 ### 2.3 User-defined Custom Strategy
 
@@ -309,7 +309,7 @@ A `RegimeModelDefinition` must identify:
 - state taxonomy;
 - point-in-time labeling semantics;
 - freshness;
-- transition/uncertain behavior;
+- transition/uncertain behaviour;
 - provenance/evidence.
 
 Potential states may include trending, ranging, expansion, compression, transition/uncertain and specialist market-family states, but exact semantics are model-specific.
@@ -344,7 +344,7 @@ If that bundle does not qualify, the result is PASS.
 
 "Synthetic Indices" is not automatically one homogeneous bundle.
 
-Where synthetic products belong to materially different generator/family behaviors, admission is by the appropriate synthetic family/instrument scope. No universal synthetic bundle is assumed.
+Where synthetic products belong to materially different generator/family behaviours, admission is by the appropriate synthetic family/instrument scope. No universal synthetic bundle is assumed.
 
 ## 14. Future StrategyComponentPolicy — V1-LG
 
@@ -435,7 +435,7 @@ Running multiple strategies on the same symbol/account can create:
 - doubled exposure;
 - offsetting/opposing intent;
 - correlation concentration;
-- netting-account merge behavior;
+- netting-account merge behaviour;
 - hedging-account position interaction;
 - ambiguous attribution.
 
@@ -495,7 +495,7 @@ Reasons:
 
 A future strategy-discovery/routing feature requires:
 - explicit user opt-in/authority;
-- behavioral safeguards;
+- behavioural safeguards;
 - separate evidence;
 - regulatory review.
 
@@ -570,7 +570,7 @@ The architecture above is the long-term map. The first build is much smaller.
 - StrategyComponentPolicy / adaptive bundle routing;
 - Custom Strategy builder;
 - component-level optimization/health claims beyond properly controlled bundle comparisons;
-- enforcing behavioral guardrails;
+- enforcing behavioural guardrails;
 - Auto;
 - Full Auto;
 - automated multi-strategy portfolio execution;
@@ -608,7 +608,7 @@ Before the first live-capital/adaptive promotions:
 - define SMC distinctness and run the predeclared overlap test;
 - define evidence/admission thresholds;
 - define later bundle-pooling/nested-selection research policy;
-- verify broker account-mode/netting/hedging behavior;
+- verify broker account-mode/netting/hedging behaviour;
 - resolve implementation prerequisites already tracked in issue #21.
 
 No implementation should fill these with arbitrary defaults.
