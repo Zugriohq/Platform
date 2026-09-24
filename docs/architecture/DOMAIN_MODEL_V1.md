@@ -138,7 +138,7 @@ Defines:
 - state taxonomy;
 - point-in-time labeling semantics;
 - freshness;
-- transition/uncertain behavior.
+- transition/uncertain behaviour.
 
 Historical evaluation must use labels that were knowable at the historical point in time.
 
