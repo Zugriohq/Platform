@@ -453,7 +453,7 @@ AI explanation shall not overwrite deterministic records or create missing evide
 
 ### ZR-AUTH-001 — Preserve frozen authority semantics — V1-F
 
-Zugrio 1.0 migration shall preserve the cleared Signal Authority Architecture behavior unless separately amended through evidence and ADR.
+Zugrio 1.0 migration shall preserve the cleared Signal Authority Architecture behaviour unless separately amended through evidence and ADR.
 
 ### ZR-AUTH-002 — Structural versus probabilistic states — V1-F
 
@@ -497,7 +497,7 @@ There shall be exactly one declared capital-sizing authority path.
 
 ### ZR-RSK-005 — Portfolio-aware Full Auto — V1-LG
 
-Full Auto activation shall remain unavailable until portfolio construction/exposure behavior is validated.
+Full Auto activation shall remain unavailable until portfolio construction/exposure behaviour is validated.
 
 ## 11. Control modes
 
@@ -519,7 +519,7 @@ Full Auto shall exist in architecture/control semantics but remain locked until 
 
 ### ZR-MODE-005 — Revocation — V1-F
 
-The user shall be able to revoke automation authority. Revocation prevents new risk-increasing action while preserving governed risk-reduction behavior.
+The user shall be able to revoke automation authority. Revocation prevents new risk-increasing action while preserving governed risk-reduction behaviour.
 
 ### ZR-MODE-006 — Cross-device authority consistency — V1-F
 
@@ -545,7 +545,7 @@ Always-on MT5 shall not require Zugrio to operate a per-customer Windows VPS fle
 
 ### ZR-EXE-005 — Idempotent submission/reconciliation — V1-F
 
-Unknown submission state shall trigger reconciliation/lock behavior rather than blind resend.
+Unknown submission state shall trigger reconciliation/lock behaviour rather than blind resend.
 
 ### ZR-EXE-006 — Protection confirmation — V1-F
 
@@ -664,7 +664,7 @@ Actual execution shall require a separate valid Execution Authority Manifest bou
 Acceptance:
 - upgrading a subscription cannot place a trade;
 - disabling Auto authority prevents new automatic risk-increasing actions even if the plan still entitles Auto;
-- safety/risk-reduction behavior for existing positions follows the governing safety architecture rather than ordinary commercial gating.
+- safety/risk-reduction behaviour for existing positions follows the governing safety architecture rather than ordinary commercial gating.
 
 ### ZR-ID-006 — Signup/subscription/download flow — V1-F
 
