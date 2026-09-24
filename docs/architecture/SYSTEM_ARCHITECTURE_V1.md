@@ -370,6 +370,36 @@ It may **not**:
 
 This keeps the entry taxonomy extensible without weakening authority boundaries.
 
+## 7A. Strategy evidence, health and admission
+
+Method representation, evidence and operational admission are distinct domains.
+
+A MethodProfile may exist without any operational admission. A user-authored or AI-structured strategy does not gain Zugrio Signal/automation status merely because its rules are machine-readable.
+
+A strategy evidence layer should preserve immutable/versioned evidence bundles capable of binding:
+
+- MethodProfile identity/version;
+- market/product/instrument/horizon scope;
+- dataset/time-window identity;
+- in-sample/out-of-sample/forward-observation identity where applicable;
+- eligible/completed/unresolved case counts;
+- cost/slippage assumptions;
+- outcome definition;
+- robustness/sensitivity evidence;
+- known exclusions;
+- artifact hashes/versions;
+- evidence-policy version.
+
+A separate StrategyAdmissionRecord binds an exact MethodProfile version and scope to an admitted product use, such as informational monitoring, Signal, Semi-Auto or Auto. The record references the evidence and admission policy that justified the decision.
+
+No subscription, user preference, strategy name or LLM response creates admission.
+
+Strategy Health is analytical evidence about whether the strategy continues to be supported in its declared scope. It remains separate from process adherence, execution adherence and P/L.
+
+No numeric health/admission threshold is defined by this architecture. Thresholds belong to versioned evidence/admission policy established through research and review.
+
+If strategy admission is later wired directly into capital release beyond existing admitted model/method requirements, that integration is a capital-path change and must be reviewed against frozen authority semantics.
+
 ## 8. Decision Case and continuity ledger
 
 The product promise “the reason stays with the trade” requires a technical record.
@@ -403,7 +433,13 @@ POSITION_MANAGEMENT_EVENT
 CLOSED
 OUTCOME_RECORDED
 PROCESS_ADHERENCE_EVALUATED
+EXECUTION_ADHERENCE_EVALUATED
+BEHAVIOUR_OBSERVATION_RECORDED
+GUARDRAIL_PRESENTED
+GUARDRAIL_ACKNOWLEDGED
 ```
+
+Strategy-level evidence/admission changes are durable/auditable records but need not be stored as Decision Case events unless a case references the change. Historical cases retain the strategy/admission identities that applied at the relevant time.
 
 Events reference immutable snapshots/artifact identities rather than duplicating mutable state.
 
@@ -420,14 +456,16 @@ The ledger supports:
 
 The operational database may maintain projections for fast reads; the append-only record remains the historical source for reconstruction.
 
-## 9. Outcome and process are separate
+## 9. Outcome, process, execution and strategy health are separate
 
 Profit/loss is not a substitute for decision quality.
 
-Post-trade evaluation should keep at least two independent concepts:
+Review should preserve at least four independent concepts:
 
-- **Outcome:** what financially happened.
+- **Strategy health:** what evidence supports the strategy/version in the declared scope.
 - **Process adherence:** whether the declared method, evidence, risk and authority rules were followed.
+- **Execution adherence:** whether actual broker/user action matched the planned/approved action within known execution realities.
+- **Outcome:** what financially happened.
 
 A profitable rule violation must not be reclassified as a compliant decision merely because it made money.
 
@@ -437,6 +475,36 @@ Process-adherence evaluation is analytical/journal output. It does not retroacti
 
 Where adherence can be evaluated from declared rules/events, the authoritative adherence result should be deterministic and versioned. LLM-generated coaching or narrative may explain the record, but it must remain advisory and must not rewrite the adherence result.
 
+## 9A. Behaviour observations and guardrails
+
+Behaviour analytics consumes observable facts from Decision Cases, declared plans, broker records, approvals, overrides, risk changes, mode/authority changes and position-management events.
+
+A BehaviourObservation is a reconstructable statement about plan/process versus observed action. It must reference the evidence that supports it.
+
+A BehaviourPatternAssessment is a cross-case analytical record. It should bind:
+- observation definition/version;
+- supporting DecisionCaseIds and/or broker events;
+- period;
+- strategy version(s);
+- market/instrument scope;
+- control mode;
+- plan-to-broker matching quality/uncertainty.
+
+The system must not treat inferred fear, greed, revenge, tilt or impatience as an authoritative fact merely because a pattern appears in trade data.
+
+A GuardrailPolicy is separate from the observation that motivated it.
+
+Conceptual policy strengths:
+- advisory;
+- confirmation/friction inside a Zugrio-controlled workflow;
+- enforcing.
+
+Advisory and confirmation behaviour do not create broker authority.
+
+An enforcing behavioural guardrail is capital-relevant. It may only affect actions routed through Zugrio and requires accepted deterministic policy/authority integration before production activation. This architecture does not authorize that integration by itself.
+
+Guardrail events (presentation, acknowledgement, trigger and any eventual enforcement result) should be durable and attributable to policy/version, user/account scope, supporting evidence and DecisionCase where relevant.
+
 ## 10. Control modes are authority envelopes
 
 Signal, Semi-Auto, Auto and Full Auto are not different intelligence engines. They are different **delegation envelopes** around the same validated decision path.
@@ -445,20 +513,26 @@ Signal, Semi-Auto, Auto and Full Auto are not different intelligence engines. Th
 
 - no broker order authority;
 - display/notify qualified decisions and reasons;
-- user acts independently.
+- user acts independently;
+- behavioural guardrails can advise and review, but cannot truthfully claim to block orders placed directly at the broker.
 
 ### SEMI_AUTO
 
 - Zugrio may prepare an executable intent;
 - explicit user approval is required before submission;
 - approval triggers freshness/risk/safety revalidation;
-- stale approval cannot revive an expired FIRE.
+- stale approval cannot revive an expired FIRE;
+- advisory/confirmation guardrails may require re-review inside Zugrio;
+- a new behaviour-based capital block is not production-authorized until its deterministic policy and authority precedence are accepted.
 
 ### AUTO
 
 - Zugrio may submit qualifying intents without per-trade approval;
 - only within an explicit user/account/strategy/instrument/risk mandate;
-- all normal risk, veto, broker safety and reconciliation requirements still apply.
+- all normal risk, veto, broker safety and reconciliation requirements still apply;
+- behavioural analytics attributes system action separately from user intervention;
+- inferred emotion never becomes execution authority;
+- any behaviour-derived execution constraint must be a separately admitted deterministic policy.
 
 ### FULL_AUTO
 
@@ -539,6 +613,10 @@ Stateless API/worker processes should be horizontally scalable. Capital-authorit
 
 ## 14. Reliability and failure semantics
 
+- Missing strategy operational admission where required → no Zugrio-generated strategy action for that scope.
+- Missing/stale strategy-health evidence → explicit unavailable/review state; do not fabricate reassurance.
+- Ambiguous user strategy → remain draft/structured-incomplete or monitor as a declared plan; do not invent rules.
+- Uncertain plan-to-broker matching → no authoritative behaviour-deviation claim.
 - Missing model applicability → no admitted conviction.
 - Missing required context → explicit unavailable/stale reason according to the governing policy; never fabricated context.
 - Market-data staleness → no new execution when freshness requirements fail.
@@ -588,6 +666,11 @@ The following must remain testable:
 10. Changing UI/brand cannot change capital semantics.
 11. Research Python cannot directly authorize capital.
 12. No duplicate sizing or order-submission authority exists outside the declared modules.
+13. Strategy representation does not imply strategy admission.
+14. A strategy-health assessment cannot overwrite process/execution/outcome records.
+15. A behaviour observation is reconstructable from recorded facts and does not convert inferred emotion into fact.
+16. Advisory/confirmation guardrails cannot claim authority over broker actions outside Zugrio's execution path.
+17. No LLM output creates strategy admission, model applicability, risk authority or execution authority.
 
 ## 17. Relationship to the frozen Signal Authority Architecture
 
