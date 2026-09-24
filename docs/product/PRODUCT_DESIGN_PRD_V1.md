@@ -154,6 +154,8 @@ Market-selection/marketing surfaces should distinguish:
 - **Planned expansion:** Crypto, Stocks/Equities, broader Commodities, traditional Indices, ETFs, Futures;
 - **Later specialist:** Options.
 
+Do not place the planned-market list beside the homepage hero. Keep it in roadmap/FAQ/readiness contexts so the initial FX · Gold · Synthetic Indices positioning remains precise.
+
 Planned-market treatment should be visually secondary and non-interactive unless a real preview workflow is intentionally provided. A "coming" treatment must never imply current data, analysis, strategy admission or execution support.
 
 Design must support market-specific intelligence.
@@ -891,12 +893,12 @@ The Strategy experience should feel serious and inspectable.
 
 The strategy library should be capable of showing the initial roadmap without implying equal readiness.
 
-Initial portfolio:
-- Zugrio Core;
-- Advanced Price Action;
-- Smart Money Concepts;
-- Trend Following;
-- Range / Mean Reversion.
+V1 strategy status:
+- **Zugrio Core** — first active strategy target, descended from the TTI APA lineage;
+- **SMC** — In validation;
+- **Trend Following** — In validation;
+- **Range / Mean Reversion** — In validation;
+- **APA preset** — do not show as a distinct live strategy until it is demonstrably distinct from Core.
 
 Each card/profile must expose a truthful readiness state such as:
 - **Available / admitted for stated scope**;
@@ -905,21 +907,19 @@ Each card/profile must expose a truthful readiness state such as:
 
 A planned or in-validation strategy must not present actionable Zugrio signals as though admission has cleared.
 
-Strategy choice must be substantive: changing the selected strategy changes applicable rules, evidence requirements, chart annotations, entry models and invalidation logic.
+V1 does not expose dynamic bundle selection. Each admitted Core scope uses one fixed TradeBundle.
 
 ### Strategy library detail
 
 Display:
 - strategy name;
-- source class (Zugrio Core / supported preset / custom);
+- source class;
 - exact version;
 - admitted markets/instruments/horizons;
-- permitted regimes;
-- setup models;
-- location/reference models;
-- entry models;
-- protection models;
-- exit/management models;
+- TradeBundle version;
+- RegimeModel/version and admitted states where applicable;
+- TimeframeMap/version;
+- setup/location/entry/order-route/protection/exit components as one bundle;
 - readiness/admission state;
 - last evidence review;
 - current use.
@@ -1209,7 +1209,8 @@ Show, where applicable:
 - outcome/expectancy evidence where valid;
 - drawdown/MAE/MFE;
 - session/regime/instrument segmentation;
-- setup/location/entry/protection/exit-management segmentation where statistically supportable;
+- TradeBundle-level evidence;
+- component comparisons only where the rest of the bundle is held fixed or another valid predeclared design exists;
 - robustness/sensitivity evidence;
 - evidence recency;
 - review reason if under review.
@@ -1224,10 +1225,12 @@ Avoid:
 
 ### User strategy creation
 
-The intended UX should support three main strategy sources:
+The long-term UX supports three strategy sources:
 - **Zugrio Core** — proprietary first-party strategy;
-- **Zugrio Presets** — admitted/supported strategy families such as APA, SMC, Trend Following and Range/Mean Reversion where their exact scope has cleared;
+- **Zugrio Presets** — supported strategy families where exact scope has cleared;
 - **Custom Strategy** — trader-defined structured strategy.
+
+For the first build, only Core is active. Presets remain in-validation and Custom Strategy is later.
 
 The Custom Strategy builder should be able to capture:
 - strategy thesis/name;
@@ -1245,11 +1248,13 @@ The Custom Strategy builder should be able to capture:
 
 AI may help structure natural language and identify missing definitions, but must not invent unresolved rules.
 
-If the trader allows Zugrio to choose among multiple approved entry/exit components inside a Custom Strategy, that adaptive option must show:
-- the bounded component set;
+Any future adaptive Custom Strategy routing must choose among whole pre-defined TradeBundles, not independent entry/exit components, and must show:
+- the bounded bundle set;
 - the selection-policy version;
 - where evidence is sufficient/insufficient;
-- that material changes create a new strategy version.
+- that material changes create a new strategy/bundle version.
+
+This is later, not V1.
 
 Before a structured strategy becomes eligible for Zugrio-generated signals/automation, the UI must show that evidence/admission remains a separate step.
 
