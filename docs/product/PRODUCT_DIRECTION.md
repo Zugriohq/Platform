@@ -88,6 +88,40 @@ Requirements:
 
 Do not invent unsupported entry archetypes merely to populate UI copy.
 
+### Strategy component stack
+
+The product must not collapse the following into one concept:
+
+```text
+Strategy
+  ↓
+Setup
+  ↓
+Location / reference
+  ↓
+Entry / trigger
+  ↓
+Broker order route
+  ↓
+Protection
+  ↓
+Exit / position management
+  ↓
+Risk
+  ↓
+Authority
+```
+
+Market, instrument, horizon, regime and context constrain the whole stack.
+
+A strategy may permit multiple entry and exit models. Zugrio may choose among those permitted components only through a versioned, evidenced StrategyComponentPolicy.
+
+Fibonacci/retracement is a location/measurement tool when a strategy uses it; it is not a standalone Zugrio strategy or universal signal.
+
+The same platform can represent many strategy families, but no strategy/component combination is assumed to work across every instrument/regime. Exact combinations require scope-specific evidence/admission.
+
+Detailed taxonomy: `docs/product/STRATEGY_EXECUTION_COMPONENT_TAXONOMY_V1.md`.
+
 ## 4. Method / strategy profiles
 
 A future-proof Zugrio 1.0 domain should include versioned Strategy/Method Profiles rather than assuming one universal method.
@@ -96,9 +130,14 @@ A profile may eventually bind:
 
 - market/product scope;
 - timeframe/horizon;
-- setup family;
+- setup models;
+- location/reference models;
 - admissible entry models;
-- required evidence/context;
+- entry-selection policy;
+- protection models;
+- exit/management models;
+- exit-selection policy;
+- required evidence/context and permitted regimes;
 - invalidation rules;
 - execution-control preferences;
 - risk/account policy references.
