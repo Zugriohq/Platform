@@ -883,9 +883,9 @@ Not merely:
 
 ---
 
-## 14. Method profile UX
+## 14. Strategy profile UX
 
-The Method experience should feel serious and inspectable.
+The Strategy experience should feel serious and inspectable.
 
 ### Strategy library
 
@@ -907,31 +907,41 @@ A planned or in-validation strategy must not present actionable Zugrio signals a
 
 Strategy choice must be substantive: changing the selected strategy changes applicable rules, evidence requirements, chart annotations, entry models and invalidation logic.
 
-### Method library
+### Strategy library detail
 
 Display:
-- name;
-- version;
-- markets;
-- setup families;
+- strategy name;
+- source class (Zugrio Core / supported preset / custom);
+- exact version;
+- admitted markets/instruments/horizons;
+- permitted regimes;
+- setup models;
+- location/reference models;
 - entry models;
-- horizons;
-- status;
-- last changed;
+- protection models;
+- exit/management models;
+- readiness/admission state;
+- last evidence review;
 - current use.
 
-### Method detail
+### Strategy detail
 
 Sections:
-- purpose;
+- purpose/thesis;
 - applicability;
-- setup conditions;
-- entry conditions/models;
-- required context;
-- invalidation;
+- setup models;
+- location/reference rules;
+- entry/trigger models;
+- allowed broker entry routes;
+- protection/invalidation;
+- exit/position-management models;
+- regime/context requirements;
 - risk-policy references;
 - execution modes permitted;
+- component-health evidence;
 - version history.
+
+The page must make clear that strategy, entry, exit and risk are separate layers.
 
 ### Editing
 
@@ -1199,6 +1209,7 @@ Show, where applicable:
 - outcome/expectancy evidence where valid;
 - drawdown/MAE/MFE;
 - session/regime/instrument segmentation;
+- setup/location/entry/protection/exit-management segmentation where statistically supportable;
 - robustness/sensitivity evidence;
 - evidence recency;
 - review reason if under review.
@@ -1213,13 +1224,32 @@ Avoid:
 
 ### User strategy creation
 
-The intended UX should support distinct paths:
-- start from a Zugrio first-party strategy where available;
-- start from an explicitly supported template;
-- describe/structure a user strategy;
-- record a discretionary plan.
+The intended UX should support three main strategy sources:
+- **Zugrio Core** — proprietary first-party strategy;
+- **Zugrio Presets** — admitted/supported strategy families such as APA, SMC, Trend Following and Range/Mean Reversion where their exact scope has cleared;
+- **Custom Strategy** — trader-defined structured strategy.
 
-AI may help structure natural language and identify missing definitions.
+The Custom Strategy builder should be able to capture:
+- strategy thesis/name;
+- market/instrument/horizon scope;
+- permitted regimes;
+- setup models/conditions;
+- location/reference logic, including optional Fibonacci/retracement rules where desired;
+- entry/trigger model(s);
+- broker entry-route preference;
+- protection/invalidation model;
+- exit/position-management model(s);
+- context/session/news constraints;
+- risk-policy references;
+- expiry and allowed control modes.
+
+AI may help structure natural language and identify missing definitions, but must not invent unresolved rules.
+
+If the trader allows Zugrio to choose among multiple approved entry/exit components inside a Custom Strategy, that adaptive option must show:
+- the bounded component set;
+- the selection-policy version;
+- where evidence is sufficient/insufficient;
+- that material changes create a new strategy version.
 
 Before a structured strategy becomes eligible for Zugrio-generated signals/automation, the UI must show that evidence/admission remains a separate step.
 
