@@ -25,16 +25,31 @@ Introduce separate concepts for:
 
 Advisory and confirmation experiences may exist without broker order authority.
 
-An enforcing guardrail may only prevent actions routed through Zugrio's own execution path and is not production-authorized by this ADR. Capital-blocking integration requires explicit authority-policy semantics, evidence, tests and acceptance.
+An enforcing guardrail may only prevent **new risk-increasing actions** routed through Zugrio's own execution path and is not production-authorized by this ADR. Capital-blocking integration requires explicit authority-policy semantics, evidence, tests and acceptance.
+
+### Risk-reduction precedence
+
+A behavioural guardrail must never be the blocking authority for a governed risk-reducing action.
+
+This includes, where the existing safety architecture classifies the action as risk-reducing:
+- close;
+- reduce;
+- cancel an unfilled risk-increasing order;
+- add/restore required protection;
+- other governed de-risking actions.
+
+Broker availability, reconciliation and protection rules still govern whether the action can actually complete. The invariant is narrower: behavioural friction or enforcement cannot delay/block risk reduction solely because a guardrail triggered, is stale, or is unavailable.
+
+Guardrails may preserve or narrow existing authority. They may never widen authority.
 
 No inferred emotion may become an authoritative guardrail condition.
 
 ## Mode truth
 
 - **Signal:** observe/warn/review; cannot claim to block external manual broker action.
-- **Semi-Auto:** warn/review/require confirmation inside Zugrio; future enforcement can block Zugrio submission only after authority integration.
-- **Auto:** system actions remain inside explicit authority; user interventions/overrides are separately attributable; future behavioural constraints require deterministic admitted policy.
-- **Full Auto:** same principle plus portfolio-level validation; remains release-gated.
+- **Semi-Auto:** warn/review/require confirmation inside Zugrio; future enforcement can block a new risk-increasing Zugrio submission only after authority integration; guardrails cannot obstruct governed risk reduction.
+- **Auto:** system actions remain inside explicit authority; user interventions/overrides are separately attributable; future behavioural constraints require deterministic admitted policy and may only narrow new risk-increasing action, never governed risk reduction.
+- **Full Auto:** same principle plus portfolio-level validation; remains release-gated; portfolio guardrails must preserve risk-reduction precedence.
 
 ## Consequences
 
