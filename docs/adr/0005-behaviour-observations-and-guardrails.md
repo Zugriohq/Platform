@@ -18,12 +18,16 @@ Hard behavioural blocking would also introduce a new capital-policy input and mu
 
 Introduce separate concepts for:
 
-1. **BehaviourObservation** — reconstructable fact about declared plan versus observed action.
-2. **BehaviourPatternAssessment** — evidence-backed cross-case pattern with scope, sample and matching uncertainty.
+1. **BehaviourObservation** — reconstructable derived projection from authoritative process/execution adherence records and their underlying events.
+2. **BehaviourPatternAssessment** — evidence-backed aggregation of BehaviourObservations with scope, sample and matching uncertainty.
 3. **GuardrailPolicy** — explicit user/account policy that determines whether a matched condition is advisory, requires confirmation, or may eventually be enforcing.
 4. **GuardrailEvent** — durable record of presentation, acknowledgement, trigger or enforcement outcome.
 
 Advisory and confirmation experiences may exist without broker order authority.
+
+BehaviourObservation does not run an independent compliance detector. ProcessAdherenceRecord and ExecutionAdherenceRecord remain the authoritative compliance records; behaviour projections and patterns derive from them.
+
+When a guardrail bypass also overrides a system recommendation, prepared action or governed system action, the GuardrailEvent references the corresponding OverrideRecord rather than creating a duplicate override truth.
 
 An enforcing guardrail may only prevent **new risk-increasing actions** routed through Zugrio's own execution path and is not production-authorized by this ADR. Capital-blocking integration requires explicit authority-policy semantics, evidence, tests and acceptance.
 
@@ -41,6 +45,8 @@ This includes, where the existing safety architecture classifies the action as r
 Broker availability, reconciliation and protection rules still govern whether the action can actually complete. The invariant is narrower: behavioural friction or enforcement cannot delay/block risk reduction solely because a guardrail triggered, is stale, or is unavailable.
 
 Guardrails may preserve or narrow existing authority. They may never widen authority.
+
+Once an Enforcing guardrail is production-admitted, stale or unknown guardrail state fails closed for **new risk-increasing actions within that guardrail's admitted scope**. Stale/unknown state never blocks governed risk-reducing actions.
 
 No inferred emotion may become an authoritative guardrail condition.
 
