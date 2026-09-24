@@ -54,6 +54,8 @@ This is a marketing hierarchy, not a product-scope hierarchy.
 
 Zugrio should be positioned as **strategy-aware and multi-strategy**, not as a one-strategy product.
 
+Strategy choice is not cosmetic: the selected strategy determines the permitted setup, location/retracement, entry, protection and exit/management logic. Zugrio may adapt among permitted components only where an evidence-backed, versioned policy supports that exact scope.
+
 The current product roadmap contains:
 
 **First-party baseline**
@@ -81,7 +83,7 @@ Do not say "choose any strategy." Do not advertise SMC, APA, Trend Following or 
 - Zugrio may monitor and review those conditions;
 - that does not convert the user's strategy into a Zugrio-admitted signal source.
 
-Breakout/retest, liquidity sweeps, FVGs, order blocks, pullbacks and similar concepts may be strategy-specific setup/entry components. Scalping/day/swing are horizons/styles, not separate strategy engines.
+Breakout/retest, liquidity sweeps, FVGs, order blocks, pullbacks and similar concepts may be strategy-specific setup/entry components. Fibonacci is a location/retracement tool rather than a standalone strategy. Scalping/day/swing are horizons/styles, not separate strategy engines.
 
 Order Flow remains a later candidate because suitable microstructure/feed data is a prerequisite. ICT should not be duplicated beside SMC as a public strategy without a deliberately distinct implementation and naming/IP review.
 
