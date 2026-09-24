@@ -55,7 +55,7 @@ No edge, calibration, threshold, execution assumption or cost model automaticall
 
 The product must not imply that entry logic is exhausted by examples such as retests, shallow pullbacks, breakouts or any other short list.
 
-Those may be examples of entry behavior, not the architecture's complete taxonomy.
+Those may be examples of entry behaviour, not the architecture's complete taxonomy.
 
 Zugrio should represent entry logic through explicit, versioned **entry-condition / entry-model contracts** that can support multiple strategy-specific entry archetypes without changing the authority architecture.
 
@@ -188,4 +188,4 @@ Advisory/confirmation guardrails may help a trader notice repeated deviations. A
 
 The current landing page is a migration-equivalence baseline, not approved permanent brand identity.
 
-Current colors, logo concepts, typography and taglines may be preserved during HTML → Next.js migration solely to prove behavioral/visual equivalence. Canonical brand tokens should only be created after deliberate founder approval and accessibility validation.
+Current colors, logo concepts, typography and taglines may be preserved during HTML → Next.js migration solely to prove behavioural/visual equivalence. Canonical brand tokens should only be created after deliberate founder approval and accessibility validation.
