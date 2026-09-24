@@ -308,10 +308,14 @@ User ── Workspace ── Subscription ── EntitlementSet
               │
               ├── DeviceSession
               ├── BrokerConnection ── TradingAccount ── ExecutionAuthorityManifest
+              ├── MethodProfile
+              │      ├── StrategyEvidenceBundle
+              │      ├── StrategyAdmissionRecord
+              │      └── StrategyHealthAssessment
               │
               └── DecisionCase
                      ├── CanonicalInstrument
-                     ├── MethodProfile → StrategyEvidence / Admission / Health
+                     ├── MethodProfile / StrategyAdmission reference
                      ├── DeclaredTradePlan
                      ├── Candidate
                      ├── Evidence / ContextFact
