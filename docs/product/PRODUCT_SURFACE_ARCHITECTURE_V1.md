@@ -265,7 +265,7 @@ Future:
 - exports;
 - team review.
 
-### L. Education / Academy — V1 shell, content staged
+### M. Education / Academy — V1 shell, content staged
 
 Purpose:
 help users understand Zugrio and trading concepts relevant to using the product safely, without turning the product into a generic trading-course marketplace.
@@ -317,7 +317,7 @@ Future:
 - user-defined alert rules;
 - notification digests.
 
-### N. Product updates / Announcements — V1 shell
+### O. Product updates / Announcements — V1 shell
 
 Features:
 - What's New;
@@ -332,7 +332,7 @@ Presentation:
 - optional lightweight modal/banner for genuinely important changes;
 - never promotional interruption inside a time-sensitive trading action.
 
-### O. Search / Command / Quick switch — V1 foundational
+### P. Search / Command / Quick switch — V1 foundational
 
 Search:
 - instruments;
@@ -355,7 +355,7 @@ Command palette:
 
 Capital actions must still obey confirmations/authority and should not become dangerously easy via keyboard.
 
-### P. Saved views / Workspace customization — V1 architecture, launch scope TBD
+### Q. Saved views / Workspace customization — V1 architecture, launch scope TBD
 
 Features:
 - saved workspace;
@@ -375,7 +375,7 @@ Future:
 - multi-window;
 - multi-monitor sync.
 
-### Q. Profile / Settings — V1 foundational
+### R. Profile / Settings — V1 foundational
 
 Groups:
 - personal profile;
@@ -395,7 +395,7 @@ Groups:
 
 Avoid a flat settings dump.
 
-### R. Billing / Subscription — V1 foundational
+### S. Billing / Subscription — V1 foundational
 
 Features:
 - current plan;
@@ -409,7 +409,7 @@ Features:
 Critical rule:
 entitlement must never look like execution authority.
 
-### S. Connections / Integrations — V1 foundational
+### T. Connections / Integrations — V1 foundational
 
 Features:
 - cTrader;
@@ -427,7 +427,7 @@ Future:
 - export integrations;
 - APIs/webhooks if offered.
 
-### T. Help / Support / Diagnostics — V1 foundational
+### U. Help / Support / Diagnostics — V1 foundational
 
 Features:
 - help center;
@@ -443,7 +443,7 @@ Future:
 - guided support assistant;
 - support ticket history.
 
-### U. Readiness / Coverage — V1 foundational
+### V. Readiness / Coverage — V1 foundational
 
 Features:
 - market/broker/mode availability;
@@ -457,7 +457,7 @@ Features:
 
 Public and authenticated detail levels may differ.
 
-### V. Labs / Experimental — optional V1 shell
+### W. Labs / Experimental — optional V1 shell
 
 Purpose:
 isolate research/experimental capabilities from released product.
@@ -471,7 +471,7 @@ Features:
 
 No experimental feature gets capital authority by appearing in Labs.
 
-### W. Reports / Export — V1 architecture, implementation staged
+### X. Reports / Export — V1 architecture, implementation staged
 
 Potential:
 - Decision Case export;
@@ -486,7 +486,7 @@ Future:
 - team reporting;
 - scheduled reports.
 
-### X. Team / Allocator — POST-V1 domain
+### Y. Team / Allocator — POST-V1 domain
 
 Future:
 - organization;
