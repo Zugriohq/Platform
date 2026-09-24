@@ -1,7 +1,7 @@
 # Zugrio 1.0 Product Requirements
 
 Status: **foundation PRD** for founder/engineering review.  
-Related: `docs/product/PRODUCT_DIRECTION.md`, `docs/architecture/SYSTEM_ARCHITECTURE_V1.md`, `docs/product/STRATEGY_BEHAVIOUR_HEALTH_V1.md`.
+Related: `docs/product/PRODUCT_DIRECTION.md`, `docs/architecture/SYSTEM_ARCHITECTURE_V1.md`, `docs/product/STRATEGY_BEHAVIOUR_HEALTH_V1.md`, `docs/product/STRATEGY_EXECUTION_COMPONENT_TAXONOMY_V1.md`, `docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md`.
 
 This document defines what Zugrio 1.0 must be capable of representing and governing. It does not claim that every capability is already implemented, validated or released.
 
