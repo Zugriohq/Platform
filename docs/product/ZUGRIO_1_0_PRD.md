@@ -51,9 +51,13 @@ Trading teams and allocators are an architectural expansion audience, not a clai
 
 ## 4. Requirement priority definitions
 
+In this PRD, **V1 means Zugrio 1.0 product/architecture scope, not the first shipped release**.
+
 - **V1-F** — foundational V1 requirement. Architecture/domain must support it in Zugrio 1.0.
 - **V1-LG** — V1 capability whose user activation is launch-gated by evidence, safety or integration readiness.
 - **POST-V1** — genuinely different product domain not required for the initial trader product.
+
+Release 1 build/ship scope is defined in `docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md`. Where the documents differ, the build-cut document governs Release 1 scope; this PRD governs Zugrio 1.0 architecture/product scope.
 
 “Incomplete today” does not make a requirement POST-V1.
 
