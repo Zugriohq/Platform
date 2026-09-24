@@ -449,7 +449,7 @@ The ledger supports:
 - user journal;
 - auditability;
 - debugging;
-- behavioral/process review;
+- behavioural/process review;
 - replay;
 - capital-team governance later;
 - model/strategy research without outcome-memory distortion.
@@ -503,7 +503,9 @@ Advisory and confirmation behaviour do not create broker authority.
 
 An enforcing behavioural guardrail is capital-relevant. It may only affect **new risk-increasing actions** routed through Zugrio and requires accepted deterministic policy/authority integration before production activation. This architecture does not authorize that integration by itself.
 
-Behavioral guardrails obey **risk-reduction precedence**: no guardrail may be the blocking authority for a governed close, reduce, cancel-risk, protection-restoration or other action already classified by the safety architecture as risk-reducing. Broker/reconciliation/safety constraints remain independently authoritative.
+Once such an Enforcing guardrail is production-admitted, stale or unknown guardrail state fails closed for new risk-increasing actions inside that admitted scope. It never blocks governed risk reduction.
+
+Behavioural guardrails obey **risk-reduction precedence**: no guardrail may be the blocking authority for a governed close, reduce, cancel-risk, protection-restoration or other action already classified by the safety architecture as risk-reducing. Broker/reconciliation/safety constraints remain independently authoritative.
 
 A guardrail may preserve or narrow an existing authority envelope. It may never widen authority.
 
@@ -527,7 +529,7 @@ Signal, Semi-Auto, Auto and Full Auto are not different intelligence engines. Th
 - approval triggers freshness/risk/safety revalidation;
 - stale approval cannot revive an expired FIRE;
 - advisory/confirmation guardrails may require re-review inside Zugrio for a new risk-increasing action;
-- behavioral friction must not obstruct governed risk-reducing action;
+- behavioural friction must not obstruct governed risk-reducing action;
 - a new behaviour-based capital block is not production-authorized until its deterministic policy and authority precedence are accepted.
 
 ### AUTO
