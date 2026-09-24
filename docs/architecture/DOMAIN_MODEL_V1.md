@@ -110,6 +110,37 @@ Key identity: `EntryModelId + version`.
 
 A Method Profile references allowed Entry Models; an Entry Model does not own capital authority.
 
+### StrategyEvidenceArtifact
+Immutable/reproducible evidence artifact for an exact strategy version and scope.
+
+May reference:
+- dataset/evaluation identity;
+- market/instrument/horizon;
+- cost/slippage assumptions;
+- observation period/sample;
+- historical/holdout/forward evidence;
+- outcome/distribution metrics;
+- limitations/exclusions.
+
+### StrategyAdmission
+Versioned governed admission of an exact strategy version for a stated scope and product/control use.
+
+Key properties include:
+- Strategy/Method Profile version;
+- market/instrument/horizon scope;
+- permitted control mode/use;
+- evidence/policy artifact references;
+- validity interval;
+- exclusions;
+- status.
+
+StrategyAdmission does not itself size capital or create ExecutionAuthorityManifest.
+
+### StrategyHealthAssessment
+Time-bounded assessment of what identified strategy evidence currently supports for an exact strategy version/scope.
+
+It is analytical by default and cannot silently widen capital authority.
+
 ## 6. Opportunity and decision domain
 
 ### Candidate
@@ -205,10 +236,34 @@ Financial/market outcome of the decision/position.
 ### ProcessAdherenceRecord
 Separate evaluation of whether declared method/risk/authority process was followed.
 
+### BehaviorObservation
+Factual observation or repeated pattern derived from recorded strategy/plan state plus user/system/broker events.
+
+Examples may include early entry, entry outside a declared zone, risk change, early exit, override or manual intervention.
+
+A BehaviorObservation records evidence and limitations; it does not prove an internal emotional state.
+
+### BehaviorGuardrail
+Versioned rule that may inform, require acknowledgement, or narrow a Zugrio-controlled execution path.
+
+References may include:
+- owner/source;
+- condition;
+- scope;
+- strength;
+- applicable control modes;
+- effective/expiry time;
+- governing policy.
+
+A BehaviorGuardrail cannot widen ExecutionAuthorityManifest or model/strategy admission.
+
+### BehaviorInterventionEvent
+Append-only record of a guardrail warning, acknowledgement requirement, enforced block, bypass or override.
+
 ### OverrideRecord
 Append-only record of user/manual deviation from system recommendation or prepared action.
 
-Outcome does not overwrite adherence. Override does not overwrite original system state.
+Outcome does not overwrite adherence. Strategy Health does not overwrite Outcome or ProcessAdherence. Override does not overwrite original system state.
 
 ## 10. Capability scope
 
