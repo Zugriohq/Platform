@@ -375,7 +375,7 @@ This does not imply Zugrio can block an external broker action.
 
 ### 10.3 Enforcing
 
-A deterministic user/account policy can prevent a prohibited action **through the Zugrio execution path**.
+A deterministic user/account policy may eventually prevent a prohibited **new risk-increasing action** through the Zugrio execution path.
 
 Enforcing behavioural guardrails are capital-relevant policy inputs. They are not authorized for production merely by this specification.
 
@@ -390,6 +390,22 @@ Before activation they require:
 - revocation/change semantics;
 - tests against frozen authority invariants;
 - launch evidence.
+
+### 10.4 Risk-reduction precedence
+
+A behavioural guardrail must never be the reason a user or system is prevented from reducing existing risk.
+
+Guardrail confirmation/friction/enforcement must not delay or block, solely because of the guardrail:
+
+- closing an existing position;
+- reducing position size/exposure;
+- adding or restoring required protective risk controls;
+- cancelling an unfilled risk-increasing order where cancellation is otherwise permitted;
+- other actions classified by the governing safety architecture as risk-reducing.
+
+Existing broker reality, reconciliation state, protection policy and safety rules still apply. This rule does not promise that a broker can always complete a risk-reducing command; it means behavioural guardrails cannot be the blocking authority.
+
+If guardrail state is stale, unavailable or conflicted, a future enforcing policy may fail closed for **new risk-increasing action**, but must not use that uncertainty to obstruct governed risk reduction.
 
 ## 11. Guardrails by control mode
 
@@ -418,7 +434,8 @@ Permitted behaviour:
 - advisory warnings before approval;
 - mandatory re-review/acknowledgement inside Zugrio;
 - invalidation of stale prepared intents under existing freshness/risk semantics;
-- future enforcing guardrails only after authority integration is accepted.
+- future enforcing guardrails only after authority integration is accepted;
+- guardrail friction must not obstruct governed close/reduce/protection actions.
 
 ### Auto
 
@@ -431,13 +448,17 @@ Behaviour analytics should distinguish:
 - risk/mode/authority changes;
 - manual exit or modification.
 
-Future behavioural constraints may influence automated action only when expressed as deterministic, admitted policy. No inferred emotion may become capital authority.
+Future behavioural constraints may influence new risk-increasing automated action only when expressed as deterministic, admitted policy. No inferred emotion may become capital authority.
+
+Behavioral constraints must not block governed risk-reducing position management.
 
 ### Full Auto
 
 The same principles apply, but portfolio selection/allocation/management introduces additional risk and governance requirements.
 
 Full Auto remains release-gated by the existing portfolio-validation boundary.
+
+Any future portfolio-level behavioral constraint must preserve risk-reduction precedence across close, reduce, hedge/protection-repair, and other actions already classified as risk-reducing by the governing safety architecture.
 
 ## 12. Four independent review questions
 
@@ -533,7 +554,7 @@ Changes append or supersede; historical conclusions remain reconstructable.
 - Missing/stale health evidence → show unavailable/stale, not a reassuring score.
 - Behaviour-to-plan match uncertain → mark unmatched/uncertain; do not assert deviation.
 - Read-only broker disconnected → behavioural observation coverage is incomplete.
-- Guardrail data stale → no hard enforcement unless the accepted policy explicitly defines safe semantics.
+- Guardrail data stale → no hard enforcement unless the accepted policy explicitly defines safe semantics; stale/unknown guardrail state must not obstruct governed risk-reducing actions.
 - User acts outside Zugrio path → observe later if possible; never claim Zugrio blocked it.
 - AI unavailable → deterministic product state remains usable; AI explanation is not required for authority.
 
@@ -572,7 +593,39 @@ Candidate product metrics, subject to later definition:
 
 Economic outcome improvement should be studied separately and only claimed when evidence supports it.
 
-## 19. Relationship to existing architecture
+## 19. Conformance and proof obligations
+
+Before an enforcing guardrail or strategy admission can affect production behavior, tests/evidence must demonstrate at minimum:
+
+### Strategy representation and admission
+- a recorded/structured user strategy without admission cannot produce a Zugrio-admitted capital signal;
+- Signal admission cannot silently create Semi-Auto, Auto or Full Auto admission;
+- strategy-version changes do not rewrite historical Decision Cases;
+- AI output cannot create/update strategy admission, model applicability or execution authority.
+
+### Behaviour observations
+- observations are reconstructable from recorded events;
+- uncertain broker-to-plan matching remains uncertain;
+- user, system and broker actions remain separately attributable;
+- no inferred emotion is promoted to deterministic fact.
+
+### Guardrails
+- Advisory never blocks;
+- Confirmation adds friction only inside a Zugrio-controlled workflow;
+- future Enforcing guardrails can preserve or narrow authority, never widen it;
+- guardrails can affect only the action classes explicitly admitted by policy;
+- **no behavioural guardrail blocks or delays a governed risk-reducing action**;
+- Signal mode never claims to prevent an independent broker action;
+- stale/expired guardrail state cannot authorize new risk;
+- bypass/override/presentation/enforcement events remain auditable.
+
+### Review separation
+- Strategy Health, Decision/Process Quality, Execution Quality and Financial Outcome remain independently reconstructable;
+- profit does not erase a process/execution violation;
+- a compliant losing outcome does not automatically become a process failure;
+- missing evidence remains missing rather than becoming a reassuring score.
+
+## 20. Relationship to existing architecture
 
 This specification extends the existing architecture without replacing these invariants:
 
