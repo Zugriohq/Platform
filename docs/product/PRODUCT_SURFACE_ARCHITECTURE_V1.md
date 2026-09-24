@@ -222,7 +222,27 @@ Future:
 - capital allocation;
 - team-level views.
 
-### K. Journal / Decision History — V1 foundational
+### K. Strategy Health / Behavior Health — V1 foundational
+
+Features:
+- strategy evidence status by version/scope;
+- evidence basis, sample/period and limitations;
+- admission status by control mode;
+- process-adherence trends;
+- factual behavior observations;
+- user-defined guardrails;
+- intervention/override history;
+- separation from financial Outcome.
+
+This surface may share navigation with Methods/Journal initially; it does not require a permanent top-level nav item.
+
+Future:
+- richer cohort/regime comparison;
+- validated degradation monitoring;
+- cross-account behavior trends;
+- strategy marketplace/licensing only after strategy-admission semantics mature.
+
+### L. Journal / Decision History — V1 foundational
 
 Features:
 - all Decision Cases;
@@ -272,7 +292,7 @@ Future:
 Design principle:
 education should be contextually reachable from product objects, not only a detached academy page.
 
-### M. Notifications / Inbox — V1 foundational
+### N. Notifications / Inbox — V1 foundational
 
 Classes:
 - opportunity;
@@ -458,6 +478,8 @@ Potential:
 - journal report;
 - account/risk report;
 - method adherence report;
+- strategy health/evidence report;
+- behavior/guardrail report;
 - CSV/PDF/shareable summary where safe.
 
 Future:
