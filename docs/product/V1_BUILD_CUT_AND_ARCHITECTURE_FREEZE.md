@@ -1,8 +1,20 @@
-# Zugrio V1 Build Cut and Architecture Freeze
+# Zugrio Release 1 Build Cut and Architecture Freeze
 
 Status: **Founder-directed build boundary**  
 Date: 2026-09-24  
 Applies after PR #27 is accepted/merged.
+
+## Definitions
+
+**Zugrio 1.0** = the full product scope defined in `docs/product/ZUGRIO_1_0_PRD.md`.
+
+**Release 1** = the first build and shipped release defined in this document.
+
+The PRD defines what the Zugrio 1.0 architecture must support. This document defines what Release 1 builds and ships. Where they differ, this document governs **build/release scope**; the PRD governs **architecture/product scope**.
+
+The existing PRD labels `V1-F` and `V1-LG` continue to mean Zugrio 1.0 foundation / gated Zugrio 1.0 capability. They do **not** mean every such requirement ships in Release 1.
+
+The filename is intentionally unchanged so existing links remain valid.
 
 ## 1. Why this exists
 
@@ -19,15 +31,15 @@ After this document is accepted:
 
 This freeze does not override the frozen Signal Authority Architecture or Gate process.
 
-## 2. V1 product cut
+## 2. Release 1 product cut
 
 ### Active strategy
 
 **Zugrio Core only.**
 
-Core V1 is the productized descendant of the strongest TTI Advanced Price Action research lineage.
+Core Release 1 is the productized descendant of the strongest TTI Advanced Price Action research lineage.
 
-It is not an empty proprietary label and it is not an adaptive strategy router in V1.
+It is not an empty proprietary label and it is not an adaptive strategy router in Release 1.
 
 ### Strategy status
 
@@ -40,7 +52,7 @@ It is not an empty proprietary label and it is not an adaptive strategy router i
 
 ### Markets
 
-V1 product scope remains:
+Release 1 product scope is:
 
 **FX · Gold · Synthetic Indices**
 
@@ -51,9 +63,23 @@ Admission is still granular:
 - Gold has its own bundle/evidence;
 - synthetic products may require different bundles by synthetic family/instrument rather than one generic synthetic bundle.
 
+### Release 1 launch criterion
+
+Release 1 does not ship merely because three market slices have been coded.
+
+To ship the three-market product claim, it requires at minimum:
+
+- at least **one admitted Core Signal scope in FX**;
+- at least **one admitted Core Signal scope in Gold**;
+- at least **one admitted Core Signal scope in one Synthetic Index family/instrument**.
+
+Gold and Synthetic Indices therefore remain initial Release 1 tracks, not "coming soon" markets.
+
+Semi-Auto admission is independent. Release 1 may claim Semi-Auto only for exact cTrader scopes that separately clear the relevant strategy, broker, execution, protection, reconciliation, safety and regulatory activation gates. At least one such admitted Semi-Auto scope is required before Semi-Auto is represented as released rather than validation-pending.
+
 ## 3. Fixed-bundle rule
 
-V1 uses **one frozen TradeBundle per admitted scope**.
+Release 1 uses **one frozen TradeBundle per admitted scope**.
 
 TradeBundle includes:
 - setup;
@@ -66,7 +92,7 @@ TradeBundle includes:
 - RegimeModel/version/state applicability;
 - context and fill/cost assumptions.
 
-No V1 dynamic component routing.
+No Release 1 dynamic component routing.
 
 No mixing an entry from one tested bundle with the exit from another.
 
@@ -74,39 +100,51 @@ If the fixed bundle does not qualify, Zugrio returns PASS / no qualifying setup.
 
 ## 4. Control modes
 
-### V1
+### Release 1
 - Signal
 - Semi-Auto
 
-### Later
+### Not Release 1
 - Auto
 - Full Auto
 
-The architecture may retain Auto/Full-Auto concepts, but first implementation and release work must not treat them as V1 delivery scope.
+Auto and Full Auto remain part of the Zugrio 1.0 architecture (`ZR-MODE-003`, `ZR-MODE-004`, `ZR-RSK-005`, and related Auto semantics such as the Auto portion of `ZR-STR-025`), but they are not Release 1 delivery scope.
 
 ## 5. Behaviour and health
 
-### V1
+### Release 1
 - Decision Case / journal history;
 - Strategy Health at strategy + TradeBundle + scope level where evidence is sufficient;
 - Decision/Process adherence;
 - Execution adherence where broker facts support it;
 - Financial Outcome;
 - factual BehaviourObservations;
-- Advisory guardrails only.
+- **Advisory guardrails only**.
 
-### Later
-- Confirmation guardrails where product flow supports them;
-- enforcing guardrails;
-- dynamic component-health optimization;
+### Zugrio 1.0 but not Release 1
+- Confirmation/friction guardrails;
+- Enforcing guardrails;
+- dynamic component-health optimisation;
 - automated strategy switching;
-- custom-strategy adaptive routing.
+- Custom Strategy Builder / AI strategy structuring;
+- custom-strategy adaptive routing;
+- StrategyComponentPolicy.
+
+This preserves the Zugrio 1.0 architecture in `ZR-BHV-004`, `ZR-BHV-007`, `ZR-AI-001`, `ZR-STR-023` and `ZR-STR-024` without making them Release 1 exit criteria.
 
 Component analysis in research is permitted, but a component claim must hold the rest of the bundle fixed or use another predeclared valid experimental design.
 
+### PRD §19 success-evidence clarification
+
+The Zugrio 1.0 Success Evidence list is broader than Release 1.
+
+In particular:
+- item **8** — user-authored strategy representation without false admission — is Zugrio 1.0 evidence, not a Release 1 exit criterion;
+- item **11** — advisory/confirmation guardrails stating their actual authority limits — is Zugrio 1.0 evidence, not a Release 1 exit criterion. Release 1 implements advisory guardrails only.
+
 ## 6. Market intelligence and chart
 
-V1 should still demonstrate the core product thesis:
+Release 1 should still demonstrate the core product thesis:
 
 - scan/identify relevant opportunities;
 - strategy-specific qualification;
@@ -118,14 +156,14 @@ V1 should still demonstrate the core product thesis:
 
 AI may explain structured state but does not create authoritative chart/trading state.
 
-## 7. No V1 strategy hopping
+## 7. No Release 1 strategy hopping
 
-V1 does not:
+Release 1 does not:
 - recommend another strategy because it currently has a setup;
 - automatically route between strategy families;
 - silently replace the selected strategy.
 
-A later strategy-discovery/routing feature requires separate evidence, opt-in, behavior safeguards and regulatory review.
+A later strategy-discovery/routing feature requires separate evidence, opt-in, behavioural safeguards and regulatory review.
 
 ## 8. Multi-strategy account boundary
 
@@ -136,7 +174,57 @@ Before automated portfolio aggregation exists:
 - Semi-Auto surfaces conflicts;
 - Auto multi-strategy execution is later and requires netting/hedging/correlation-aware aggregation.
 
-## 9. First implementation sequence
+## 9. Release 1 delivery decisions
+
+These are build-scope decisions, not changes to the broader Zugrio 1.0 architecture.
+
+### 9.1 First Semi-Auto broker — cTrader
+
+**cTrader is the first Release 1 Semi-Auto broker path.**
+
+Reasons:
+- existing cTrader lineage is stronger;
+- delegated/OAuth-style integration is compatible with the current product direction;
+- it avoids making the unproven MT5 no-VPS path a Release 1 blocker.
+
+MT5 remains a Zugrio 1.0 endpoint under `ZR-EXE-003`, sequenced after issue #21 establishes a verified capability matrix and proves the chosen no-Zugrio-VPS connector path.
+
+### 9.2 Client surface — Windows desktop first
+
+Release 1 ships:
+- **Windows desktop trading client** as the primary authenticated trading workspace;
+- **web** for public website, waitlist/invitation, account/authentication, entitlement/readiness status and desktop download/access.
+
+Release 1 does **not** require a full browser trading workspace.
+
+**Mobile is staged**, consistent with `ZR-ID-008`: identity/API contracts must support the later mobile surface without requiring a backend redesign, but a native mobile client is not a Release 1 exit criterion.
+
+macOS/Linux desktop packaging may follow after the Windows release path unless separately justified by evidence/customer demand.
+
+### 9.3 Billing — invite-only early access
+
+Release 1 uses **invite-only early access without live payment processing as a ship blocker**.
+
+Release 1 must still preserve:
+- account identity;
+- server-authoritative entitlement boundaries;
+- separation of commercial entitlement from execution authority.
+
+Billing/provider abstraction and verified billing-event semantics (`ZR-ID-010` / `ZR-ID-011`) remain Zugrio 1.0 requirements, but payment integration follows Release 1 rather than blocking first shipment.
+
+No early-access invitation or entitlement grants trading authority.
+
+### 9.4 Release status truth
+
+Every surface must distinguish:
+- admitted/released;
+- validation pending;
+- research only;
+- locked/later.
+
+A capability being part of Zugrio 1.0 architecture does not make it a Release 1 capability.
+
+## 10. First implementation sequence
 
 The implementation should be vertical, not broad.
 
@@ -173,10 +261,11 @@ Add one synthetic family/instrument using generator-appropriate semantics and nu
 - deterministic chart annotation;
 - alert;
 - decision history;
-- behavior observation/advisory.
+- behaviour observation/advisory.
 
-### Slice 6 — Semi-Auto
+### Slice 6 — Semi-Auto / cTrader
 Only after broker/readiness prerequisites:
+- cTrader connection path;
 - prepared intent;
 - revalidation;
 - same-symbol strategy conflict handling;
@@ -186,18 +275,18 @@ Only after broker/readiness prerequisites:
 
 This order may be adjusted when evidence dictates, but scope may not expand by default.
 
-## 10. Pre-implementation gates
+## 11. Pre-implementation gates
 
 Issue #21 remains the implementation prerequisite tracker.
 
 Before capital-path or authority-conformance implementation:
 - import/reference the actual frozen Signal Authority Architecture artifact; do not reconstruct it from summaries;
-- settle account-risk-policy ownership versus behavior observation;
+- settle account-risk-policy ownership versus behaviour observation;
 - establish verified broker read-only/event capability matrices.
 
 If the exact frozen authority artifact is unavailable, implementation must not guess its semantics.
 
-## 11. Definition of "done enough to build"
+## 12. Definition of "done enough to build"
 
 Architecture is "done enough" when:
 - the first Core bundle can be represented without ambiguity;
@@ -209,15 +298,15 @@ Architecture is "done enough" when:
 
 It does **not** require every future strategy, market, entry, exit or automation mode to be fully specified before coding begins.
 
-## 12. Freeze rule
+## 13. Freeze rule
 
 After PR #27:
 
 > **Build before broadening.**
 
-Any proposed new strategy, market, adaptive policy, score, AI behavior, automation mode or portfolio feature should default to backlog/research unless it is required to make the frozen V1 slice correct, safe or testable.
+Any proposed new strategy, market, adaptive policy, score, AI behaviour, automation mode or portfolio feature should default to backlog/research unless it is required to make the frozen Release 1 slice correct, safe or testable.
 
 Positioning may describe the broader thesis, but the product status layer must distinguish:
-- V1/current build;
+- Release 1/current build;
 - in validation;
 - planned/later.
