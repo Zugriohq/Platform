@@ -84,6 +84,8 @@ Every decision should be traceable to the exact strategy/method version that gov
 
 Manual overrides and deviations should be recordable so post-trade review can distinguish outcome from process adherence.
 
+User-authored strategies must not become Zugrio-admitted signal or automation sources merely because they can be represented. Strategy definition, evidence assessment and admission are separate. See `docs/product/STRATEGY_HEALTH_AND_BEHAVIOR_GUARDRAILS.md` and ADR-0004.
+
 ## 5. Context intelligence
 
 Context evidence is broader than news.
@@ -117,7 +119,10 @@ Examples:
 - macro/news/session context;
 - broker-neutral execution contracts;
 - signal / semi-auto / auto authority modes;
-- process-adherence review.
+- process-adherence review;
+- strategy evidence/admission status;
+- separate Strategy Health, Process / Behavior Health and financial Outcome;
+- factual behavioral observations and user-defined guardrails.
 
 ### B. V1 launch-readiness gate
 A foundational capability may exist in the V1 design but remain unavailable to users until evidence, safety or integration requirements are satisfied.
@@ -143,7 +148,26 @@ Expansion audience:
 
 Capital-team governance remains an architectural direction without implying released team, allocation, custody or AUM workflows.
 
-## 8. Product communication
+## 8. Strategy health and behavioral discipline
+
+Zugrio should help distinguish three separate questions:
+
+1. **Strategy Health** — what evidence supports this exact strategy version in this exact scope?
+2. **Process / Behavior Health** — did the trader/system follow the declared process, and what observable deviations recur?
+3. **Outcome** — what financially happened?
+
+These must remain separate. Profit does not validate a rule violation; loss does not by itself invalidate a compliant process or strategy.
+
+Behavioral intervention is mode-aware:
+- Signal can inform, explain and later compare broker-observed behavior but cannot claim to prevent independent broker actions;
+- Semi-Auto can add review/friction or block a prepared Zugrio intent under explicit governed rules;
+- Auto/Full Auto can enforce only inside delegated authority and cannot widen that authority.
+
+A user strategy may be recorded or monitored before it is admitted for Zugrio-generated signals. Admission requires evidence appropriate to the stated strategy/version/market/horizon/control use. Missing quantitative thresholds remain research questions rather than invented defaults.
+
+Detailed requirements: `docs/product/STRATEGY_HEALTH_AND_BEHAVIOR_GUARDRAILS.md`.
+
+## 9. Product communication
 
 External copy should lead with useful assistance, not only restriction:
 
@@ -155,7 +179,7 @@ The product should demonstrate both:
 
 Avoid presenting Zugrio as merely a denial engine, signal group, generic chatbot or infallible autonomous trader.
 
-## 9. Brand / engineering separation
+## 10. Brand / engineering separation
 
 The current landing page is a migration-equivalence baseline, not approved permanent brand identity.
 
