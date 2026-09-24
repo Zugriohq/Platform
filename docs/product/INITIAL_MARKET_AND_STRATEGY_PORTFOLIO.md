@@ -50,7 +50,7 @@ Public UI may show planned markets in a visually secondary "planned/coming" stat
 
 ## 3. Initial strategy portfolio
 
-Zugrio should not launch conceptually as a one-strategy system.
+Zugrio's architecture is multi-strategy, while the V1 active build is intentionally Core-only.
 
 ### V1 active strategy
 - **Zugrio Core** — proprietary first-party strategy.
