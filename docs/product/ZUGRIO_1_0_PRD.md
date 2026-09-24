@@ -354,6 +354,8 @@ Examples may include:
 
 ### ZR-BHV-003 — Cross-case pattern evidence — V1-F
 
+BehaviourObservation shall derive from authoritative ProcessAdherenceRecord and/or ExecutionAdherenceRecord plus underlying event references. It shall not independently recalculate a competing compliance verdict.
+
 A behaviour-pattern assessment shall expose:
 - definition/version;
 - sample/case count;
@@ -408,6 +410,16 @@ Acceptance:
 
 Full Auto remains subject to the existing portfolio-validation gate.
 
+### ZR-BHV-007B — Enforcing guardrail stale-state default — V1-LG
+
+Once an Enforcing guardrail is production-admitted, stale or unknown guardrail state shall fail closed for new risk-increasing actions within that guardrail's admitted scope.
+
+Acceptance:
+- stale/unknown guardrail state cannot authorize new risk;
+- stale/unknown guardrail state cannot block governed risk-reducing actions;
+- the affected scope and reason are explicit;
+- broker/reconciliation/safety policy remains independently authoritative.
+
 ### ZR-BHV-008 — Guardrail audit — V1-F
 
 Guardrail presentation, acknowledgement, trigger and any eventual enforcement outcome shall be durably attributable to:
@@ -416,6 +428,8 @@ Guardrail presentation, acknowledgement, trigger and any eventual enforcement ou
 - supporting evidence;
 - Decision Case where relevant;
 - time/effective state.
+
+When a guardrail bypass also overrides a system recommendation, prepared action or governed system action, the GuardrailEvent shall reference the corresponding OverrideRecord rather than create a second independent override record.
 
 ### ZR-BHV-009 — Outside-path limitation — V1-F
 
