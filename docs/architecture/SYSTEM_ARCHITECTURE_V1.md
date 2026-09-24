@@ -314,7 +314,7 @@ No unsourced LLM-generated narrative may become capital-authoritative context.
 
 Zugrio must not assume one universal trading method.
 
-A versioned immutable `MethodProfile` should define the method under which a candidate is being evaluated:
+A versioned immutable `MethodProfile` defines the selected strategy:
 
 ```text
 methodProfileId
@@ -323,98 +323,102 @@ name
 owner/scope
 market/product applicability
 instrument/venue scope
-timeframes/horizons
-permittedRegimes[]
-setupModelIds[]
-locationModelIds[]
-entryModelIds[]
-entrySelectionPolicyId
-protectionModelIds[]
-exitManagementModelIds[]
-exitSelectionPolicyId
+horizon
+timeframeMapId
+regimeModelId
+tradeBundleIds[]
 requiredEvidenceContracts[]
 contextRequirements[]
-invalidationRules[]
 riskPolicyRefs[]
 executionModePermissions[]
 createdAt
 supersedes
 ```
 
-A user may eventually author or customise methods, but an arbitrary public strategy-builder DSL is **not** required merely to satisfy this architecture. V1 may begin with system-defined and controlled configurable profiles.
+A decision always references the exact strategy version that governed it.
 
-A decision must always reference the exact method version that governed it.
+Changing the strategy creates a new version; historical Decision Cases are not rewritten.
 
-Changing the method creates a new version; it must not rewrite the historical method attached to an existing decision.
+A MethodProfile cannot widen model applicability, TradeBundle admission or capital authority.
 
-A Method Profile cannot widen model applicability. Enabling an Entry Model or market in a profile does not create calibrated inference for that scope; model admission remains separately governed.
+### 6.1 Trade Bundle is atomic
 
-## 7. Entry Model Contract
+A versioned `TradeBundleDefinition` binds setup, location, entry, broker order route, protection, exit/management, timeframe map and regime model into one evidence/admission identity.
 
-Retest, shallow pullback, breakout, liquidity sweep, FVG mitigation and similar labels are examples, not an exhaustive architecture.
+Entry and exit are not selected independently.
 
-An `EntryModel` must be versioned and strategy-aware.
+If any material component changes, the bundle version/evidence identity changes.
 
-It may define:
-- required setup/candidate state;
-- required evidence;
-- entry conditions;
-- timing/freshness rules;
-- geometry construction rules;
-- invalidation;
-- lifecycle transitions;
-- supported market/model scopes.
+V1 uses one fixed Core TradeBundle per admitted market-family/instrument scope.
 
-It may output candidate/entry evidence and geometry.
+### 6.2 Setup, location and entry
 
-It may **not**:
-- invent probability;
-- directly size capital;
-- bypass State Policy;
-- directly cause FIRE;
-- bypass execution-policy admission;
-- place broker orders.
+`SetupModel` defines the opportunity state.
 
-This keeps the entry taxonomy extensible without weakening authority boundaries.
+`LocationModel` defines the relevant price area/reference. Fibonacci/retracement is a location/measurement component, not a strategy or standalone signal.
 
-### 7.1 Setup and location are separate from entry
+`EntryModel` defines what must happen before the setup becomes actionable.
 
-A strategy may identify a setup before any entry route is valid.
+A setup can exist without an entry.
 
-A versioned `SetupModel` defines the opportunity pattern/state. A versioned `LocationModel` defines the price reference/zone used by the strategy or entry model.
+### 6.3 Broker order route
 
-Examples of LocationModels include structural levels, range boundaries, retracement/Fibonacci bands, imbalance/FVG zones, order-block/supply-demand zones and admitted volatility/moving references.
+`BrokerOrderRouteDefinition` defines how an already-valid intent is expressed to the broker.
 
-Fibonacci/retracement is therefore a location/measurement component, not automatically a strategy or signal.
+The route is part of TradeBundle evidence/admission because market, limit and stop routes have different fill/non-fill/adverse-selection/slippage behavior.
 
-### 7.2 Entry trigger and broker order route are separate
+Research may not assume theoretical zone touch equals live fill.
 
-An EntryModel defines when/where an entry becomes valid. The broker order route defines how a valid intent is expressed (for example market-on-confirmation, limit-at-zone or stop-entry) and remains subject to execution economics, broker capability, freshness and authority.
+### 6.4 Protection and exit/management
 
-No broker order type establishes strategy validity.
+`ProtectionModel` owns the protective stop / thesis risk boundary.
 
-### 7.3 Protection and exit/management models
+`ExitManagementModel` owns profit-taking and post-entry management.
 
-A versioned `ProtectionModel` defines the initial thesis/risk boundary. A versioned `ExitManagementModel` defines profit-taking, scale-out, break-even, trailing, time/state exits and other governed post-entry management.
+ExitManagement may request **tightening only** through the governed protection-change path. It cannot widen the protective stop.
 
-Protection is distinct from profit-taking so risk-reducing authority cannot be subordinated to a profit-management heuristic.
+Stop widening is a risk-increasing action and V1 does not authorize automatic widening.
 
-An ExitManagementModel may not:
-- loosen protection outside governed policy;
-- increase risk beyond the approved risk snapshot;
-- bypass reconciliation/protection requirements;
-- create a new strategy admission;
-- infer a reversal or exit merely from an LLM narrative.
+The frozen TradeBundle remains the governing plan after entry. A new regime label does not cause Zugrio to swap exit models mid-trade.
 
-### 7.4 Strategy component policy
+### 6.5 Multi-timeframe binding
 
-A versioned `StrategyComponentPolicy` may select among components already permitted by the exact MethodProfile version according to market, instrument, horizon, regime/context and admitted evidence.
+A versioned `TimeframeMapDefinition` binds component roles to timeframe(s), such as:
+- higher-timeframe context/bias;
+- setup formation;
+- location construction;
+- entry trigger;
+- management observation.
 
-It may return PASS / no compatible route.
+Evaluation/replay uses only information available at the relevant historical point in time on each timeframe.
 
-It must never invent or silently add a strategy/setup/location/entry/protection/exit component.
+### 6.6 Regime model
 
-A user-selected preset strategy cannot silently switch to another strategy family. Any future strategy-family router is a distinct first-party meta-strategy requiring separate evidence, admission and user authority.
+A versioned `RegimeModelDefinition` declares state taxonomy and point-in-time classification semantics.
+
+Research must not label historical regimes using future information.
+
+Unless an exact bundle is explicitly admitted for transition/uncertain state, `TRANSITION/UNCERTAIN` means PASS / no new risk.
+
+### 6.7 Future StrategyComponentPolicy
+
+A future `StrategyComponentPolicy` may select among **whole, pre-defined TradeBundles** already permitted by the selected strategy.
+
+It is V1-LG/later and not on the V1 execution path.
+
+Promotion requires a separate research policy for evidence pooling, nested out-of-sample/walk-forward selection, multiple-testing/false-discovery control, policy freeze and forward/shadow validation.
+
+It may return PASS.
+
+A user-selected strategy cannot silently switch to another strategy family.
+
+### 6.8 Multi-strategy account boundary
+
+Before automated multi-strategy portfolio aggregation exists, one active Zugrio strategy may own a given account + symbol for capital action at a time.
+
+Semi-Auto must surface same-symbol strategy conflicts before approval.
+
+Later automated multi-strategy execution requires explicit netting/hedging-aware exposure aggregation and attribution.
 
 Detailed taxonomy: `docs/product/STRATEGY_EXECUTION_COMPONENT_TAXONOMY_V1.md`.
 
@@ -427,24 +431,31 @@ A MethodProfile may exist without any operational admission. A user-authored or 
 A strategy evidence layer should preserve immutable/versioned evidence bundles capable of binding:
 
 - MethodProfile identity/version;
-- market/product/instrument/horizon scope;
+- TradeBundle identity/version;
+- RegimeModel/TimeframeMap identity/version;
+- BrokerOrderRoute identity/version;
+- market/product/instrument/horizon/session scope;
 - dataset/time-window identity;
 - in-sample/out-of-sample/forward-observation identity where applicable;
 - eligible/completed/unresolved case counts;
-- cost/slippage assumptions;
+- cost/slippage/fill assumptions;
 - outcome definition;
 - robustness/sensitivity evidence;
 - known exclusions;
 - artifact hashes/versions;
 - evidence-policy version.
 
-A separate StrategyAdmissionRecord binds an exact MethodProfile version and scope to an admitted governed product use, such as Zugrio-generated Signal, Semi-Auto or Auto. The record references the evidence and admission policy that justified the decision.
+A separate StrategyAdmissionRecord binds an exact MethodProfile + TradeBundle version and scope to an admitted governed product use, such as Zugrio-generated Signal or Semi-Auto. Its scope can include RegimeModel/version/state, TimeframeMap, BrokerOrderRoute, market/instrument/venue, horizon/session and control mode.
+
+V1 does not admit dynamic StrategyComponentPolicy routing.
 
 Declared-plan monitoring or strategy research/evaluation does not by itself require StrategyAdmission and must not be presented as Zugrio endorsement.
 
 No subscription, user preference, strategy name or LLM response creates admission.
 
-Strategy Health is analytical evidence about whether the strategy continues to be supported in its declared scope. It remains separate from process adherence, execution adherence and P/L.
+Strategy Health is analytical evidence about whether the strategy + TradeBundle continues to be supported in its declared scope. It remains separate from process adherence, execution adherence and P/L.
+
+Component-level conclusions are conditional: they must identify the rest of the bundle held fixed or remain bundle-level.
 
 No numeric health/admission threshold is defined by this architecture. Thresholds belong to versioned evidence/admission policy established through research and review.
 
