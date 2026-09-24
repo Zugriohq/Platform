@@ -1,88 +1,92 @@
 # Strategy and Execution Component Taxonomy v1
 
-Status: **founder-directed product/architecture specification for review**  
+Status: **founder-directed architecture; V1 cut constrained by review**  
 Issue: #26  
 Date: 2026-09-24
 
-This document defines how Zugrio separates strategy from setup, location, entry, protection, exit/management, risk and authority. It does not itself admit any strategy/component combination, establish profitability, define numeric thresholds or modify frozen capital authority.
+This document defines the long-term taxonomy for strategy, setup, location, entry, order route, protection, exit/management, risk and authority, while explicitly constraining the first product build.
 
-## 1. Why this separation is required
+It does **not** itself admit any strategy or bundle, establish profitability, invent numeric thresholds, or modify frozen capital authority.
+
+## 1. Core principle
 
 A trading strategy is not the same thing as an entry technique, exit technique, Fibonacci level, broker order type, risk rule or control mode.
 
-One strategy may support several entries and several exits. The same entry archetype may be useful inside multiple strategies. A tool such as Fibonacci may help locate a retracement or target without being a standalone strategy or signal.
+The full path is:
 
-Zugrio therefore needs a compositional model that can answer:
+```text
+Market / instrument / horizon
+        ↓
+Point-in-time regime + context
+        ↓
+Strategy
+        ↓
+Trade Bundle
+  ├─ setup
+  ├─ location/reference
+  ├─ entry/trigger
+  ├─ broker order route
+  ├─ protection
+  ├─ exit/position management
+  └─ component timeframe bindings
+        ↓
+Risk policy
+        ↓
+Authority / control mode
+        ↓
+Broker reality
+```
 
-- **What am I trying to exploit?** — strategy.
-- **What opportunity is forming?** — setup.
-- **Where is the relevant price area?** — location/reference.
-- **What must happen before entry is valid?** — entry/trigger.
-- **How is the order expressed to the broker?** — execution route/order style.
-- **What proves the idea wrong and protects capital?** — protection.
-- **How is an open winner/loss managed and exited?** — exit/management.
-- **How much risk is permitted?** — risk policy.
-- **Who/what may act?** — control/authority.
-- **Where/when does this combination apply?** — market, instrument, horizon, session, regime and context.
+The **Trade Bundle** is the unit of selection, evidence and admission.
 
-No one layer may silently substitute for another.
+Entries, protection and exits must not be selected independently because their geometry and measured outcomes depend on one another.
 
-## 2. Three product strategy sources
+## 2. Three strategy sources
 
 ### 2.1 Zugrio Core
 
 Zugrio's proprietary first-party strategy.
 
-Core may be a composite/adaptive strategy internally, but any component routing must be:
-- explicit in the exact Core version;
-- bounded to admitted market/instrument/horizon/regime scopes;
-- supported by evidence;
-- reconstructable after the fact;
-- unable to invent a new component during a live Decision Case.
+### V1 definition
 
-"Adaptive" must never mean unversioned self-modification.
+For V1, **Zugrio Core is the productionized descendant of the strongest existing TTI Advanced Price Action research lineage**, combined with Zugrio's market-family/context, decision-history, risk and authority architecture.
 
-### 2.2 Zugrio-supported preset strategies
+This does not mean the legacy APA experiment is already valid or profitable. It means the V1 engineering starting point is a known, inspectable lineage rather than an empty "Core" label.
 
-Initial roadmap:
+V1 Core is **not adaptive across multiple bundles**. For each admitted market-family scope it uses one frozen Trade Bundle version.
+
+A material change to Core or its bundle creates a new version and a new evidence/admission path.
+
+### 2.2 Zugrio-supported presets
+
+Longer-term roadmap:
 - Advanced Price Action (APA);
 - Smart Money Concepts (SMC);
 - Trend Following;
 - Range / Mean Reversion.
 
-Each preset is Zugrio's precise, versioned implementation of that family. Selecting a public label never imports an undefined internet/community interpretation.
+Each preset is Zugrio's exact versioned implementation of that family.
 
-Each preset defines:
-- its thesis/decision grammar;
-- setup families;
-- location/reference models;
-- allowed entry models;
-- allowed protection models;
-- allowed exit/management models;
-- context/regime requirements;
-- market/instrument/horizon applicability;
-- evidence/admission state.
+For V1 product status:
+- these presets are **In validation / later**, not simultaneously represented as live admitted alternatives to Core;
+- APA is also the principal research lineage underlying Core V1, so a separate public APA preset must not be presented as distinct from Core until a measurable semantic/behavioral distinction is demonstrated.
 
-### 2.3 User-defined custom strategy
+### 2.3 User-defined Custom Strategy
 
-A user may define a strategy using supported structured components plus explicit custom conditions where Zugrio can represent them.
+A user may eventually define a strategy using supported structured components and explicit custom conditions.
 
-A custom strategy may progress through:
-- draft;
-- structured;
-- evaluatable;
-- evidence-assessed;
-- shadow/forward-observed where required;
-- admitted for a stated use/scope;
-- review/suspended/superseded.
+Custom Strategy is **not in the first implementation slice**.
 
-Custom ownership remains visible. Monitoring does not equal Zugrio endorsement.
+Its lifecycle remains:
+draft → structured → evaluatable → evidence-assessed → forward/shadow observed where required → admitted by scope → review/suspend/supersede.
 
-## 3. Strategy Profile
+Monitoring does not equal Zugrio endorsement.
 
-The existing immutable/versioned `MethodProfile` remains the canonical strategy definition object for engineering compatibility. Public language uses **strategy**.
+## 3. MethodProfile
 
-A MethodProfile should reference:
+The existing immutable/versioned `MethodProfile` remains the canonical engineering strategy object. Public language uses **strategy**.
+
+A MethodProfile may reference:
 
 ```text
 methodProfileId
@@ -91,31 +95,53 @@ strategySourceClass
 strategyFamily
 market/product applicability
 instrument/venue scope
-timeframes/horizons
-permittedRegimes[]
-setupModelIds[]
-locationModelIds[]
-entryModelIds[]
-entrySelectionPolicyId
-protectionModelIds[]
-exitManagementModelIds[]
-exitSelectionPolicyId
+horizon
+timeframeMapId
+regimeModelId
+tradeBundleIds[]
 requiredEvidenceContracts[]
 contextRequirements[]
-invalidationRules[]
 riskPolicyRefs[]
 executionModePermissions[]
 createdAt
 supersedes
 ```
 
-The presence of a component ID means "permitted by this strategy version", not "admitted everywhere".
+For V1 Core, exactly one admitted Trade Bundle may be active for each admitted market-family/instrument scope.
 
-## 4. Setup model
+The presence of a Trade Bundle in a MethodProfile means it is defined/permitted, not automatically admitted.
 
-A setup describes the opportunity pattern/state that the strategy is interested in.
+## 4. TradeBundleDefinition
 
-Examples of normalized setup archetypes may include:
+A `TradeBundleDefinition` is immutable/versioned and is the smallest strategy-expression unit that may be independently evaluated/admitted.
+
+Key identity:
+`TradeBundleId + version`
+
+It binds together:
+
+- SetupModel/version;
+- LocationModel/version;
+- EntryModel/version;
+- BrokerOrderRoute/version;
+- ProtectionModel/version;
+- ExitManagementModel/version;
+- TimeframeMap/version;
+- RegimeModel/version or explicitly regime-agnostic status;
+- context requirements;
+- market/instrument/venue scope;
+- horizon/session scope;
+- cost/slippage/fill assumptions.
+
+A bundle is **atomic for evidence**. Replacing any material component creates a new bundle version/evidence identity.
+
+No system may combine an admitted entry from Bundle A with an admitted exit from Bundle B and call the combination admitted.
+
+## 5. Setup model
+
+A `SetupModelDefinition` describes the opportunity state the strategy is interested in.
+
+Potential normalized families include:
 - trend continuation;
 - structural reversal;
 - breakout/expansion;
@@ -125,394 +151,464 @@ Examples of normalized setup archetypes may include:
 - supply/demand or order-block reaction;
 - compression-to-expansion.
 
-These are a taxonomy, not automatic universal setups. A strategy may define a narrower or more specific version.
-
-A setup model must define:
-- required prior state;
-- formation conditions;
-- completion/qualification state;
+A setup contract defines:
+- prior state;
+- formation;
+- qualification;
 - invalidation;
 - expiry;
-- supported scope;
-- provenance.
+- point-in-time observability;
+- supported scope.
 
-## 5. Location / reference model
+A setup may exist without a valid entry.
 
-A LocationModel answers **where** an otherwise relevant opportunity becomes interesting.
+## 6. Location / reference model
+
+A `LocationModelDefinition` answers where a setup becomes relevant.
 
 Examples:
 - structural support/resistance or prior swing;
 - range boundary/equilibrium;
 - percentage/Fibonacci retracement band;
-- Fibonacci extension target;
+- Fibonacci extension reference;
 - FVG/imbalance zone;
 - order-block/supply-demand zone;
 - volatility-normalized band;
-- moving reference such as an admitted moving-average/VWAP-style reference where data/support exists.
+- admitted moving reference.
 
-### Fibonacci rule
+### Fibonacci
 
-Fibonacci is a **location/measurement model**, not a standalone strategy and not a standalone buy/sell signal.
+Fibonacci is a location/measurement component, not a strategy and not a standalone signal.
 
-A strategy may use Fibonacci:
-- to define a retracement band;
-- as confluence with other location evidence;
-- to help define stop/reference geometry;
-- to help define target/extension geometry.
+A bundle defines:
+- whether Fibonacci is used;
+- point-in-time anchor construction;
+- relevant bands/levels;
+- whether it is required or supporting;
+- whether it contributes to entry, protection or target geometry.
 
-The active strategy version determines:
-- whether Fibonacci is used at all;
-- which anchor construction is valid;
-- which levels/bands matter;
-- whether it is required or merely supporting evidence.
+The TTI APA 50–61.8% golden-zone hypothesis remains lineage-specific research, not a global Zugrio rule.
 
-The existing APA lineage's 50–61.8% "golden zone" is therefore an APA-specific research rule, not a global Zugrio truth.
+## 7. Entry model
 
-## 6. Entry model
+An `EntryModelDefinition` answers what must occur before a qualified setup becomes actionable.
 
-An EntryModel answers **what must happen before the setup becomes actionable**.
+Initial research archetypes may include:
+- break-and-go confirmation;
+- classic retest confirmation;
+- pullback/retracement confirmation;
+- sweep-and-reclaim;
+- zone mitigation/reaction;
+- range-edge rejection.
 
-Normalized initial entry archetypes should include:
+Legacy TTI routes such as BREAK_AND_GO, SHALLOW_PULLBACK, MEDIUM_PULLBACK, DEEP_RETRACEMENT and CLASSIC_RETEST remain research inputs only.
 
-1. **Break-and-go confirmation**
-   - fresh confirmed break/expansion;
-   - no required retest when the exact strategy permits this route.
+Retracement depth generally belongs to LocationModel; EntryModel owns trigger/timing.
 
-2. **Classic retest confirmation**
-   - break/level event;
-   - return to the relevant level/zone;
-   - strategy-defined confirmation/reclaim/reaction.
+## 8. Broker order route
 
-3. **Pullback / retracement entry**
-   - shallow, medium or deep location is supplied by a LocationModel;
-   - the EntryModel defines the confirmation/timing, not the percentage itself.
+The qualifying entry and the broker order route are different.
 
-4. **Sweep-and-reclaim entry**
-   - excursion beyond a strategy-defined level;
-   - close/reclaim/reaction according to the strategy contract.
-
-5. **Zone mitigation/reaction entry**
-   - return into an admitted FVG/imbalance/order-block/supply-demand zone;
-   - required reaction/confirmation depends on strategy.
-
-6. **Range-edge rejection entry**
-   - strategy-defined range/equilibrium state;
-   - test/rejection/reversion trigger at a boundary.
-
-This is an extensible catalog. New EntryModels require versioned contracts and evidence.
-
-### Legacy TTI mapping
-
-Legacy TTI research already contains candidate routes:
-- BREAK_AND_GO;
-- SHALLOW_PULLBACK;
-- MEDIUM_PULLBACK;
-- DEEP_RETRACEMENT;
-- CLASSIC_RETEST;
-- PASS.
-
-Those are research lineage inputs, not automatically admitted Zugrio EntryModels. Shallow/medium/deep should generally be represented as location/retracement bands combined with an entry/trigger contract rather than three unrelated top-level strategies.
-
-## 7. Trigger versus broker order route
-
-The event that validates an entry is separate from how the broker order is expressed.
-
-Examples of broker entry routes:
+A `BrokerOrderRouteDefinition` may describe:
 - market-on-confirmation;
-- limit order at a qualified zone;
-- stop order beyond a trigger/break level;
-- prepared intent requiring Semi-Auto approval.
+- limit-at-qualified-zone;
+- stop-entry beyond a trigger/break;
+- prepared Semi-Auto intent.
 
-Order route selection must account for:
+The **order route is part of the Trade Bundle and admission scope** because it materially affects realized trades.
+
+Research for a route must model, where applicable:
+- whether an order would have been fillable;
 - spread;
 - slippage;
-- minimum distance/order rules;
+- adverse selection;
+- limit non-fill;
+- stop-order gap/slippage;
 - quote freshness;
-- broker capabilities;
-- entry drift;
-- control mode.
+- broker minimum-distance/order rules;
+- latency/drift assumptions;
+- partial/failed fills where relevant.
 
-A strategy or EntryModel may restrict allowed order routes.
+A backtest may not assume "entry at zone" equals a guaranteed live fill.
 
-No broker order type proves that the strategy entry was valid.
+## 9. Protection model
 
-## 8. Protection model
+The `ProtectionModelDefinition` owns the protective stop / thesis risk boundary.
 
-Protection is separated from profit-taking because risk reduction must retain priority.
-
-A ProtectionModel defines the initial thesis/risk boundary, for example:
+Possible models include:
 - structural invalidation stop;
 - structural stop plus admitted volatility buffer;
 - volatility-derived stop where the strategy explicitly permits it;
-- maximum-risk failsafe/catastrophic boundary.
+- failsafe/catastrophic boundary.
 
-Protection may only be tightened/changed according to governed policy.
+### Stop ownership invariant
 
-A strategy must not use an arbitrary fixed stop merely to make reward/risk appear attractive.
+- ProtectionModel owns the stop.
+- ExitManagementModel may **request only a tightening** of protection through the governed protection-change path.
+- ExitManagementModel may not widen protection.
+- Any stop widening is a **risk-increasing action**, not ordinary exit management, and must pass whatever explicit risk/authority policy would govern such an action. V1 does not authorize automatic stop widening.
+- Risk-reducing close/reduce actions retain precedence.
 
-## 9. Exit / position-management model
+## 10. Exit / position-management model
 
-An ExitManagementModel defines how an open position is harvested, reduced or closed after entry while preserving the strategy thesis and safety rules.
+An `ExitManagementModelDefinition` owns profit-taking and post-entry management other than the underlying protective boundary.
 
-Initial normalized exit/management components should include:
-
-### Profit-target models
+Potential components:
 - fixed-R target;
-- structure target;
+- structural target;
 - opposing range boundary/equilibrium;
 - liquidity/reference target;
-- admitted extension target.
+- admitted extension target;
+- partial scale-out;
+- break-even request through ProtectionModel;
+- structural/volatility/broker trailing request through ProtectionModel;
+- time/session exit;
+- explicitly validated state exit;
+- governed risk/safety close/reduce.
 
-### Scale/management models
-- partial scale-out at a defined milestone;
-- break-even transition after a defined event;
-- structural trailing stop;
-- volatility/ATR trailing stop;
-- broker-side trailing stop where supported.
+The exit model is frozen as part of the Trade Bundle at entry.
 
-### State/time exits
-- thesis invalidation / hard stop;
-- time/session expiry;
-- opposite strategy-state exit only where explicitly validated;
-- risk/safety emergency reduction/close under governing safety policy.
+### No regime-driven mid-trade strategy rewrite
 
-One strategy may permit multiple exit models. The selected model must be known before or at entry according to policy and remain reconstructable.
+If regime classification changes after entry:
+- the original Trade Bundle remains the governing plan;
+- Zugrio does not swap to a different exit model because the new regime would have selected another bundle;
+- only predeclared, tested rules inside the frozen bundle may react to post-entry events.
 
-### Legacy TTI mapping
+## 11. Multi-timeframe map
 
-Legacy TTI/cTrader work contains a specific management policy:
-- hard broker-side SL/TP;
-- 50% partial at configurable 1.0R or 1.5R;
-- break-even only after partial confirmation;
-- broker-side trailing from 1.5R with a 0.75R distance;
-- structural invalidation before that progress.
+A single "timeframe" field is insufficient for strategies such as APA/SMC.
 
-This is useful engineering/research lineage. It is **not** a universal Zugrio exit model and must be separately validated per strategy/instrument/scope before reuse.
+A versioned `TimeframeMapDefinition` binds component roles, for example:
 
-## 10. Strategy component policy
+```text
+context / higher-timeframe bias: H4
+setup formation: H1
+location construction: M15
+entry trigger: M5
+management observation: M5
+```
 
-A strategy may permit several EntryModels and ExitManagementModels. Zugrio therefore needs a versioned StrategyComponentPolicy.
+The exact map is strategy/bundle-specific.
 
-The policy answers:
+Each component must identify the timeframe(s) it consumes.
 
-> Given the selected strategy, market, instrument, horizon, current regime/context and available evidence, which permitted component combination is applicable now?
+Research/replay must use only information that was available at the relevant point in time on each timeframe.
 
-It may select only from components already permitted by the exact MethodProfile version.
+Changing the timeframe map creates a new bundle/evidence identity.
 
-It must bind to:
-- exact MethodProfile version;
-- market family;
-- instrument/product/venue;
-- horizon/timeframe;
-- regime/context scope;
-- setup model;
-- location model;
-- entry model;
-- protection model;
-- exit/management model;
-- evidence/admission artifacts;
-- effective policy version.
+## 12. Regime model
 
-The policy may return **PASS / no compatible route**.
+Regime is a versioned input, not a free label.
 
-It must not invent a route because every permitted route currently fails.
+A `RegimeModelDefinition` must identify:
+- version/model identity;
+- market/instrument applicability;
+- input features;
+- timeframe;
+- state taxonomy;
+- point-in-time labeling semantics;
+- freshness;
+- transition/uncertain behavior;
+- provenance/evidence.
 
-## 11. Strategy selection versus component selection
+Potential states may include trending, ranging, expansion, compression, transition/uncertain and specialist market-family states, but exact semantics are model-specific.
 
-These are different user/system decisions.
+### Research anti-leakage rule
 
-### User selects a preset strategy
-Example: SMC.
+Regime labels used in evaluation must be generated point-in-time from information available then.
 
-Zugrio may choose among **SMC-permitted** entries/exits only where the SMC component policy is admitted for that scope.
+A full-sample classifier must not retrospectively label a historical bar "trending" using future observations and then be used to claim regime-conditioned performance.
 
-It may not silently switch the trader to Trend Following because the current market is trending.
+### Default uncertain state
 
-It may instead say:
-- no SMC setup qualifies;
-- SMC is not admitted in this scope/regime;
-- another supported strategy currently has an evidence-supported compatible state, if recommendation features are enabled.
+If the relevant regime is `TRANSITION/UNCERTAIN`, the default is **PASS / no new risk** unless the exact Trade Bundle has been specifically admitted for that state.
 
-### User selects Zugrio Core
-Core may internally route among Core's permitted components/market specialists because that adaptive routing is part of the proprietary strategy itself.
+## 13. V1 fixed-bundle rule
 
-### User selects Custom Strategy
-Zugrio follows the exact custom version. It may recommend a change, but it cannot silently rewrite the strategy. Accepting a material change creates a new version and new evidence path.
+V1 deliberately does **not** use dynamic StrategyComponentPolicy routing.
 
-### Future strategy-routing mode
+For each admitted market-family/instrument scope:
 
-If Zugrio later lets the system choose *between* whole strategy families, that capability is a distinct first-party meta-strategy / StrategyRouter, not an invisible behavior of ordinary strategy selection. It requires separate evidence, admission and user authority.
+- one Core strategy version;
+- one fixed Trade Bundle version;
+- one TimeframeMap;
+- one RegimeModel or explicitly regime-agnostic admission;
+- one broker order route policy;
+- one ProtectionModel;
+- one ExitManagementModel.
 
-## 12. Regime and contextual applicability
+If that bundle does not qualify, the result is PASS.
 
-Regime is an applicability input, not an after-the-fact explanation.
+### Synthetic scope
 
-Possible normalized regime concepts may include:
-- trending;
-- ranging;
-- expansion/high directional volatility;
-- compression/low volatility;
-- transition/uncertain;
-- event/discontinuity-sensitive;
-- specialist synthetic-family states.
+"Synthetic Indices" is not automatically one homogeneous bundle.
 
-Exact regime semantics are market/model specific and versioned.
+Where synthetic products belong to materially different generator/family behaviors, admission is by the appropriate synthetic family/instrument scope. No universal synthetic bundle is assumed.
 
-A strategy/component combination may be:
-- admitted in one regime;
-- unsupported in another;
-- under review in a third.
+## 14. Future StrategyComponentPolicy — V1-LG
 
-External evidence also supports the general principle that strategy type interacts with market condition: trend systems can suffer in choppy/range-bound markets while range systems can fail when ranges break. Zugrio must establish its own evidence for exact implementations rather than importing those general statements as performance claims.
+A future `StrategyComponentPolicy` may choose between **whole already-defined Trade Bundles**, never independent entries/exits/components.
 
-## 13. Market and instrument applicability
+It is not part of the V1 execution path.
 
-"Works in Zugrio" means **representable by the platform**, not profitable or admitted on every instrument.
+Before promotion it requires a separate research policy that defines:
 
-For every strategy/component combination, admission should be capable of binding:
+- how related evidence cells may or may not be pooled;
+- minimum evidence rules without arbitrary post-hoc selection;
+- nested out-of-sample / walk-forward selection;
+- holdout isolation;
+- multiple-comparison correction or equivalent false-discovery control;
+- policy freeze before final evaluation;
+- forward/shadow validation;
+- degradation/reselection rules.
+
+The selection problem itself must be evaluated. It is not enough that each candidate bundle looked good in isolation.
+
+A StrategyComponentPolicy may return PASS.
+
+## 15. Evidence and attribution
+
+### 15.1 Bundle is the performance unit
+
+Performance/health belongs first to:
+
+`Strategy version + Trade Bundle version + market/instrument/venue + horizon/session + RegimeModel/version + regime state + cost/fill assumptions`.
+
+### 15.2 Component analysis is conditional
+
+A component must not receive an unconditional performance claim such as:
+
+> Retest entry is degrading on Gold.
+
+A valid component comparison must identify what was held fixed, for example:
+
+> Retest entry with the same structural protection and structural-trail exit, on XAUUSD, under the same setup/location/timeframe/regime definition, showed weaker evidence than the comparison route.
+
+Where the rest of the bundle is not held fixed or a valid experimental/comparative design does not exist, the conclusion remains bundle-level.
+
+### 15.3 Sparse matrix problem
+
+Zugrio must not attempt to populate every combination of:
+strategy × entry × exit × protection × instrument × session × regime × horizon.
+
+Unsupported cells remain unsupported.
+
+Research should begin from deliberately specified bundles and only expand when there is a reason and enough data.
+
+## 16. Market/instrument admission
+
+Admission binds at least:
+
+- MethodProfile/version;
+- TradeBundle/version;
 - market family;
 - instrument/product;
 - venue/feed;
-- horizon;
-- session;
-- regime;
-- cost/slippage model;
-- EntryModel;
-- ProtectionModel;
-- ExitManagementModel.
+- horizon/session;
+- RegimeModel/version and admitted state(s), where applicable;
+- TimeframeMap/version;
+- BrokerOrderRoute/version;
+- cost/slippage/fill model;
+- evidence bundle/policy version;
+- permitted control mode.
 
-Examples of why this matters:
-- a trend-following strategy may be structurally inappropriate in a measured range state;
-- a range-reversion strategy may be inappropriate during an admitted expansion state;
-- Order Flow requires suitable microstructure/order-book evidence that may not exist for spot FX or a synthetic generator;
-- SMC language about institutional order flow/liquidity cannot simply be asserted for designed Synthetic Indices. Synthetic-specific implementations must use semantics/evidence appropriate to the generator/market family rather than fictional institutional causality.
+No chart resemblance transfers admission.
 
-No chart resemblance overrides these constraints.
+## 17. Synthetic-index null hypothesis
 
-## 14. Initial strategy/component hypotheses
+For a synthetic product whose generator/process is documented or can be represented by an accepted baseline model, apparent strategy edge must be compared against a generator-matched null/simulation after realistic costs.
 
-The following are **research starting mappings**, not admissions.
+Research must ask:
 
-| Strategy | Candidate setup/location/entry components | Candidate exit/management emphasis |
-| --- | --- | --- |
-| Zugrio Core | Proprietary market-/regime-specific component routing | Proprietary admitted management policy by scope |
-| APA | structure + displacement; FVG/causal zone; retracement; retest/reaction; possible break-and-go route | structural invalidation; structure/R targets; partial/trailing candidates |
-| SMC | structure/liquidity; sweep/reclaim; FVG/imbalance; order-block/mitigation; optional retracement confluence | structural invalidation; liquidity/structure targets; partial/trailing candidates |
-| Trend Following | trend continuation; pullback/retracement; break-and-go; breakout/retest | structural/volatility protection; trailing/scale-out; trend-state exit candidates |
-| Range / Mean Reversion | range/equilibrium; edge rejection; sweep/reclaim; overextension/reversion | boundary/equilibrium/opposite-edge targets; structural stop; time/failed-range exit |
+> Does the exact frozen bundle produce evidence beyond what the stated/baseline generating process would create by chance under the same sampling, execution and selection rules?
 
-Every row requires research by market/instrument/horizon/regime. No row is a profitability claim.
+A positive historical backtest alone is insufficient.
 
-## 15. Custom Strategy Builder
+If generator parameters/semantics are unavailable or uncertain, that limitation must be explicit and evidence/admission must remain appropriately conservative.
 
-The Custom Strategy experience should eventually allow a trader to define:
+Institutional-liquidity/SMC causal language must not be imported into designed synthetic products without defensible market-specific meaning.
+
+## 18. Multi-strategy account interaction
+
+Running multiple strategies on the same symbol/account can create:
+- doubled exposure;
+- offsetting/opposing intent;
+- correlation concentration;
+- netting-account merge behavior;
+- hedging-account position interaction;
+- ambiguous attribution.
+
+### V1 rule
+
+Before Auto or any automated multi-strategy capital path exists, **one active Zugrio strategy may own a given account + symbol at a time**.
+
+Signal-only observations may show multiple research cases, but they must remain separately attributable and must not imply simultaneous executable permission.
+
+Semi-Auto must surface conflicts before a second same-symbol strategy intent can be approved.
+
+### Later
+
+Multi-strategy automated execution requires an explicit portfolio/exposure aggregator that understands:
+- netting vs hedging account mode;
+- strategy attribution under netting;
+- correlated exposure;
+- existing manual/external positions;
+- aggregate risk.
+
+This is later work.
+
+## 19. Core, APA and SMC distinctness
+
+### Core V1
+
+Core V1 uses the TTI APA lineage as its starting strategy grammar, then freezes a specific production bundle per admitted scope.
+
+Core is not "adaptive proprietary routing" in V1.
+
+### Separate APA preset
+
+A separately selectable APA preset must not be advertised as a distinct live strategy while Core substantially represents the same strategy grammar.
+
+If a later APA preset is intended to differ from Core, that difference must be explicit and evidenced.
+
+### APA vs SMC breadth test
+
+Before APA and SMC are both marketed as distinct supported strategies:
+
+- run both exact frozen candidate detectors on the same point-in-time datasets/scopes;
+- measure candidate-set overlap and disagreement;
+- define the overlap/distinctness acceptance threshold **before** the final evaluation;
+- inspect whether differences come from actual governing rules rather than naming;
+- if overlap is above the predeclared distinctness threshold without material decision differences, do not present them as two independent supported strategies.
+
+No threshold is invented in this document.
+
+## 20. No V1 strategy-switch recommendation
+
+V1 does not recommend that a trader abandon the selected strategy because another strategy currently has a setup.
+
+Reasons:
+- it encourages strategy-hopping;
+- it conflicts with the product's process-discipline thesis;
+- personalized strategy-switch recommendations may have additional regulatory implications.
+
+A future strategy-discovery/routing feature requires:
+- explicit user opt-in/authority;
+- behavioral safeguards;
+- separate evidence;
+- regulatory review.
+
+## 21. Custom Strategy — later
+
+The long-term Custom Strategy builder may capture:
 
 - strategy thesis/name;
-- market/instrument/horizon scope;
-- permitted regimes;
-- setup conditions;
-- location/reference rules;
-- entry/trigger models;
-- broker entry-route preference;
-- invalidation/protection model;
-- target/exit-management model;
-- context/news/session rules;
-- risk-policy references;
-- expiry;
-- allowed control modes.
-
-AI may assist structuring and expose ambiguity but cannot invent missing rules.
-
-### Adaptive component option
-
-A custom-strategy author may eventually allow Zugrio to choose among a bounded list of user-approved entry/exit components.
-
-That option requires:
-- explicit user authorization;
-- exact component list;
-- deterministic/versioned selection policy;
-- evidence by scope;
-- no silent expansion of the component set.
-
-## 16. Continuous research and health
-
-Strategy Health should support drill-down by:
-- strategy version;
-- market;
-- instrument;
-- horizon;
-- session;
-- regime;
-- setup model;
-- location model;
-- entry model;
-- protection model;
-- exit/management model.
-
-This allows Zugrio to investigate questions such as:
-- whether a strategy remains supported overall;
-- whether one entry route degrades on a specific instrument;
-- whether one exit policy is overly sensitive to volatility/costs;
-- whether evidence is concentrated in one regime.
-
-The system must guard against false discovery from slicing the same data repeatedly. Component-level conclusions require versioned research policy, adequate evidence, out-of-sample/forward validation where appropriate and explicit multiple-testing/data-mining controls.
-
-A health finding does not silently rewrite a live strategy. Material changes create a new strategy/component-policy version and pass through the evidence/admission lifecycle.
-
-## 17. Decision Case continuity
-
-A Decision Case should be able to preserve references to:
-
 - market/instrument/horizon;
-- regime/context state;
+- TimeframeMap;
+- RegimeModel/applicable states;
+- Trade Bundle(s);
+- context/news/session constraints;
+- risk-policy references;
+- expiry/control modes.
+
+AI may structure and expose ambiguity but cannot invent missing rules.
+
+Dynamic custom bundle selection is later and subject to the same research constraints as StrategyComponentPolicy.
+
+## 22. Decision Case continuity
+
+A Decision Case must be capable of preserving:
+
+- market/instrument/venue;
+- horizon/session;
+- point-in-time RegimeModel/version + regime state;
 - MethodProfile/version;
 - StrategyAdmissionRecord;
-- StrategyComponentPolicy/version;
-- setup model/version;
-- location model/version;
+- TradeBundle/version;
+- SetupModel/version;
+- LocationModel/version;
 - EntryModel/version;
-- broker entry route;
+- BrokerOrderRoute/version;
 - ProtectionModel/version;
 - ExitManagementModel/version;
+- TimeframeMap/version;
 - risk snapshot/policy;
 - authority/control mode;
 - broker reality;
 - process/execution/outcome records.
 
-This gives Zugrio a complete answer to:
+This gives Zugrio a reconstructable answer to:
 
-> What strategy was being traded, why this setup qualified, where the entry came from, why this entry route was chosen, how the position was meant to be managed, what changed, and what actually happened?
+> What strategy and exact bundle was being traded, what information existed then, why the entry qualified, how a fill was supposed to occur, what protection/management was frozen, and what actually happened?
 
-## 18. Public/product language
+## 23. V1 build cut
+
+The architecture above is the long-term map. The first build is much smaller.
+
+### In V1
+- Zugrio Core only as the active/admitted strategy surface;
+- Core descended from the TTI APA lineage;
+- one frozen bundle per admitted FX/Gold/synthetic-family scope;
+- Signal mode;
+- Semi-Auto mode;
+- deterministic chart annotations from the frozen bundle state;
+- Decision Case / journal history;
+- Strategy Health at bundle/scope level where evidence supports it;
+- Process/Execution/Outcome separation;
+- Behaviour observations/advisory only;
+- broker read-only/reconciliation where available;
+- no automatic strategy switching.
+
+### In validation / visible but unavailable where useful
+- SMC;
+- Trend Following;
+- Range / Mean Reversion;
+- a separate APA preset only if/when it is demonstrably distinct from Core.
+
+### Later
+- StrategyComponentPolicy / adaptive bundle routing;
+- Custom Strategy builder;
+- component-level optimization/health claims beyond properly controlled bundle comparisons;
+- enforcing behavioral guardrails;
+- Auto;
+- Full Auto;
+- automated multi-strategy portfolio execution;
+- strategy-switch recommendations;
+- strategy marketplace/licensing.
+
+## 24. Public/product language
 
 Public copy may say:
-- choose a supported strategy;
-- use Zugrio Core;
-- bring/structure your own strategy;
-- Zugrio adapts analysis to the selected strategy and supported market context.
+- Zugrio is built to be strategy-aware;
+- Core is the first strategy being validated/released;
+- additional strategies are in validation where truthful;
+- FX, Gold and Synthetic Indices are initial market tracks;
+- analysis respects the selected strategy and market context;
+- Zugrio records what qualified, what changed and what happened.
 
 It must not say:
 - every strategy works everywhere;
-- Zugrio automatically finds the universally best strategy;
+- Zugrio dynamically picks the best entry/exit in V1;
+- every listed strategy is already supported;
+- Core and APA are separate live strategies if they share the same grammar;
 - Fibonacci predicts reversals;
 - SMC proves institutional orders exist at a chart zone;
-- a planned strategy/component is already admitted;
-- AI improvises entries/exits.
+- AI improvises entries/exits;
+- planned markets are available.
 
-## 19. Research decisions still required
+## 25. Research decisions still required
 
-Before implementation/admission:
-- finalize exact APA versus SMC semantic boundary;
-- define each normalized setup model;
-- define exact entry-model contracts;
-- define ProtectionModel contracts;
-- define ExitManagementModel contracts;
-- define regime taxonomy per market family;
-- define StrategyComponentPolicy selection semantics;
-- establish entry/exit component evidence requirements;
-- determine which management policies can transfer from legacy TTI only after replay/forward validation;
-- determine which components are valid for each synthetic family;
-- determine which feeds are sufficient for Order Flow or volume-dependent models;
-- determine how component-health multiple-testing is controlled.
+Before the first live-capital/adaptive promotions:
+- freeze the first Core Trade Bundle for each intended V1 scope;
+- define RegimeModel versions and point-in-time labeling;
+- validate fill models for order routes;
+- establish synthetic generator-matched/null testing;
+- decide exact Core vs future APA semantics;
+- define SMC distinctness and run the predeclared overlap test;
+- define evidence/admission thresholds;
+- define later bundle-pooling/nested-selection research policy;
+- verify broker account-mode/netting/hedging behavior;
+- resolve implementation prerequisites already tracked in issue #21.
 
 No implementation should fill these with arbitrary defaults.
