@@ -546,7 +546,7 @@ Signal, Semi-Auto, Auto and Full Auto are not different intelligence engines. Th
 
 - architecture-aware V1 mode;
 - may include broader portfolio-level selection/allocation/management authority;
-- **release-gated until portfolio construction and portfolio-risk behavior are validated**;
+- **release-gated until portfolio construction and portfolio-risk behaviour are validated**;
 - unavailable is a legitimate V1 runtime state, not a reason to omit the architecture.
 
 Every account must have an explicit `ExecutionAuthorityManifest`. Absence/invalidity fails closed for execution.
@@ -632,7 +632,7 @@ Stateless API/worker processes should be horizontally scalable. Capital-authorit
 - Selection-policy unavailable → candidates may remain, but no active selected plan.
 - Execution authority missing/revoked → no new execution.
 - Broker submission unknown → lock/reconcile; no blind resend.
-- Protection failure → invoke governed safety behavior.
+- Protection failure → invoke governed safety behaviour.
 - Audit/ledger persistence failure on a capital transition → fail closed where the transition cannot be durably reconstructed.
 - Duplicate/retried worker delivery → idempotent evaluation/event handling; it must not create duplicate FIRE or duplicate broker submission.
 - Material clock/source-time inconsistency → fail freshness checks rather than guess ordering.
@@ -700,4 +700,4 @@ Risk / Execution / Broker / Reconciliation
 Decision Case Ledger / Product Experience
 ```
 
-Any implementation change that alters the frozen authority graph, state semantics, identity preimages, provenance scopes or FIRE behavior must be reviewed as a separate architecture change with evidence. It must not be smuggled into the Zugrio 1.0 migration.
+Any implementation change that alters the frozen authority graph, state semantics, identity preimages, provenance scopes or FIRE behaviour must be reviewed as a separate architecture change with evidence. It must not be smuggled into the Zugrio 1.0 migration.
