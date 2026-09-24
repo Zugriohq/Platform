@@ -236,100 +236,188 @@ Acceptance:
 - product language distinguishes "your plan condition occurred" from "Zugrio independently qualified a strategy signal";
 - manual-plan monitoring does not create model applicability or strategy admission.
 
-### ZR-STR-014 — Initial multi-strategy portfolio — V1-F / V1-LG by admitted scope
+### ZR-STR-014 — Strategy portfolio and V1 status — V1-F
 
-The product architecture and strategy library shall support a first-party baseline plus multiple separately governed strategy families.
+The architecture shall support multiple separately governed strategy families.
 
-Initial roadmap:
+Roadmap:
 - Zugrio Core;
 - Advanced Price Action;
 - Smart Money Concepts;
 - Trend Following;
 - Range / Mean Reversion.
 
+V1 status:
+- Zugrio Core is the only active strategy target;
+- Core V1 descends from the TTI APA research lineage;
+- SMC, Trend Following and Range / Mean Reversion are in validation/later;
+- a separate APA preset is not presented as a distinct live strategy until it is demonstrably distinct from Core.
+
 Acceptance:
-- each strategy family is an exact versioned MethodProfile, not only a menu label;
-- each declares its own supported setup/evidence grammar and Entry Models;
-- evidence and StrategyAdmission remain independent by market/instrument/horizon/control mode;
-- selecting a strategy changes the applicable rules/annotations/qualification logic rather than only changing UI text;
-- absence of admission for one strategy or market does not prevent other admitted strategies/scopes from operating;
-- the UI exposes available/in-validation/planned status rather than representing roadmap entries as live support.
+- public/product readiness is truthful by strategy and scope;
+- first-party ownership does not bypass evidence/admission;
+- strategy labels do not create operational semantics.
 
-No claim is made by this requirement that any listed strategy is profitable or already admitted.
+### ZR-STR-015 — Atomic Trade Bundle — V1-F
 
-### ZR-STR-015 — Setup, location and entry separation — V1-F
+The system shall represent a versioned TradeBundle as the atomic strategy-expression, evidence and admission unit.
 
-The system shall distinguish:
-- the setup/opportunity state;
-- the location/reference model;
-- the entry/trigger model.
+A TradeBundle binds:
+- SetupModel;
+- LocationModel;
+- EntryModel;
+- BrokerOrderRoute;
+- ProtectionModel;
+- ExitManagementModel;
+- TimeframeMap;
+- RegimeModel/version/state applicability;
+- context and cost/fill assumptions.
+
+Acceptance:
+- entry and exit are not independently selected/admitted;
+- material component change creates a new bundle version/evidence identity;
+- historical Decision Cases retain the exact TradeBundle and component versions;
+- independently admitted components cannot be recombined into an untested admitted bundle.
+
+### ZR-STR-016 — Setup, location and entry separation — V1-F
+
+The system shall distinguish setup/opportunity, location/reference and entry/trigger.
 
 Acceptance:
 - a setup may exist without a valid entry;
-- a LocationModel such as Fibonacci/retracement, structure, range boundary or imbalance zone cannot by itself create a Zugrio signal;
-- retracement depth is represented as location evidence rather than silently creating separate strategies;
-- historical Decision Cases retain exact component versions.
+- Fibonacci/retracement, structure, range boundary or imbalance zone cannot by itself create a Zugrio signal;
+- retracement depth is represented as location evidence;
+- entry/trigger state is reconstructable from point-in-time evidence.
 
-### ZR-STR-016 — Entry trigger versus broker order route — V1-F / V1-LG for live execution
+### ZR-STR-017 — Broker order route is part of admission — V1-F / V1-LG for live execution
 
-Entry qualification shall be separate from how an order is submitted.
+Entry qualification shall be separate from broker order expression, but BrokerOrderRoute shall be part of the TradeBundle/admission scope.
 
 Acceptance:
-- a valid entry may map to market, limit, stop or prepared Semi-Auto intent only where the execution policy permits;
+- market, limit, stop or prepared Semi-Auto routes are separately identifiable;
 - broker order type cannot make an invalid strategy entry valid;
-- spread, slippage, quote freshness, drift, broker rules and control mode may block/change the order route without rewriting the original entry evidence.
+- research models route-specific fill/non-fill, spread, slippage, adverse-selection and broker-rule effects where applicable;
+- theoretical zone touch is not treated as guaranteed live fill;
+- route changes that materially alter execution create a new bundle/evidence identity.
 
-### ZR-STR-017 — Protection and exit-management models — V1-F / V1-LG for live execution
+### ZR-STR-018 — Protection owns the stop — V1-F / V1-LG for live execution
 
-The system shall represent initial protection separately from profit-taking/position management.
-
-Acceptance:
-- ProtectionModel identifies the thesis/risk boundary;
-- ExitManagementModel identifies target/partial/break-even/trailing/time/state management;
-- exit management cannot widen initial risk authority;
-- risk-reducing safety actions retain precedence over profit-management logic;
-- one strategy may permit multiple versioned exit-management models where explicitly evidenced.
-
-### ZR-STR-018 — Strategy component policy — V1-F / V1-LG by admitted scope
-
-A versioned StrategyComponentPolicy may select among components already permitted by the exact strategy version.
+ProtectionModel shall own the protective stop/thesis risk boundary.
 
 Acceptance:
-- inputs identify market/instrument/horizon and applicable regime/context;
-- output identifies the exact setup/location/entry/protection/exit bundle or PASS;
-- policy cannot select a component not permitted by the MethodProfile;
-- policy cannot silently switch strategy family;
-- policy can be reconstructed from the Decision Case;
-- component selection has explicit evidence/admission by scope.
+- ExitManagementModel may request only tighter protection through the governed protection-change path;
+- ExitManagementModel cannot widen the stop;
+- stop widening is classified as a risk-increasing action and is not ordinary exit management;
+- V1 does not authorize automatic stop widening;
+- risk-reducing close/reduce retains precedence.
 
-### ZR-STR-019 — No silent strategy switching — V1-F
+### ZR-STR-019 — Exit model frozen at entry — V1-F / V1-LG for live execution
 
-When the user selects a supported preset or Custom Strategy, Zugrio shall not silently replace it with another strategy family.
-
-Acceptance:
-- if the selected strategy is incompatible/unadmitted for the current state, the product may return no setup/no compatible route;
-- the product may recommend another supported strategy only as an explicit recommendation with evidence/status;
-- any future automatic strategy-family routing is represented as a distinct first-party meta-strategy and requires separate admission/user authority.
-
-### ZR-STR-020 — Component-level health evidence — V1-F
-
-Strategy-health analysis shall be capable of segmenting evidence by applicable component and scope without implying that every slice is statistically reliable.
-
-Potential dimensions include:
-- setup model;
-- LocationModel;
-- EntryModel;
-- ProtectionModel;
-- ExitManagementModel;
-- instrument;
-- horizon/session;
-- regime.
+The TradeBundle's ExitManagementModel shall be frozen when the position/approved intent becomes active according to policy.
 
 Acceptance:
-- component conclusions expose sample/evidence limitations;
-- repeated slicing/data mining does not create a positive claim by default;
-- material strategy/component-policy changes create a new version and evidence path;
-- degradation in one component/scope does not silently rewrite unrelated scopes.
+- a later regime-classification change does not swap exit models;
+- only predeclared rules inside the frozen bundle may react to post-entry events;
+- material exit-policy change creates a new bundle/version for future cases, not a rewrite of an open/historical case.
+
+### ZR-STR-020 — Multi-timeframe map — V1-F
+
+Strategies shall support a versioned TimeframeMap that binds component roles to source timeframes.
+
+Acceptance:
+- higher-timeframe context, setup, location, trigger and management may use different explicit timeframes;
+- every component can identify the timeframe(s) it consumes;
+- historical evaluation uses only information available at the historical point in time;
+- changing the timeframe map creates a new bundle/evidence identity.
+
+### ZR-STR-021 — Versioned regime model — V1-F
+
+Regime-dependent qualification shall reference a versioned RegimeModelDefinition.
+
+Acceptance:
+- regime model identity/version is preserved in research and Decision Cases;
+- historical regime labels are generated point-in-time without future leakage;
+- transition/uncertain state defaults to PASS/no new risk unless the exact TradeBundle is admitted for that state;
+- a regime change after entry does not replace the frozen TradeBundle/exit plan.
+
+### ZR-STR-022 — V1 fixed-bundle rule — V1-F
+
+V1 shall not dynamically choose among entry/exit combinations.
+
+Acceptance:
+- each admitted Core scope uses one fixed TradeBundle version;
+- if the fixed bundle does not qualify, the result is PASS;
+- Synthetic Indices may require separate fixed bundles by synthetic family/instrument rather than one universal synthetic bundle;
+- dynamic bundle selection is not on the V1 execution path.
+
+### ZR-STR-023 — StrategyComponentPolicy — V1-LG
+
+A future StrategyComponentPolicy may select among whole pre-defined TradeBundles, not independent components.
+
+Before activation, a research policy must define:
+- evidence pooling rules;
+- nested out-of-sample / walk-forward selection;
+- holdout isolation;
+- multiple-testing/false-discovery control;
+- policy freeze before final evaluation;
+- forward/shadow validation;
+- degradation/reselection semantics.
+
+Acceptance:
+- policy cannot create a new bundle from separately admitted components;
+- policy can return PASS;
+- selected bundle and policy version are reconstructable;
+- policy cannot silently switch strategy family.
+
+### ZR-STR-024 — Conditional component-health evidence — V1-LG
+
+Component-level analysis may be produced only with the rest of the TradeBundle held fixed or under another valid predeclared comparative design.
+
+Acceptance:
+- avoid unconditional claims such as "retest entry is degrading";
+- component statements identify the fixed bundle context and scope;
+- sparse/unsupported cells remain unsupported;
+- repeated slicing does not create a positive claim;
+- bundle-level evidence remains primary in V1.
+
+### ZR-STR-025 — Same-symbol multi-strategy boundary — V1-F / V1-LG for Auto
+
+Before a validated portfolio/exposure aggregator exists, one active Zugrio strategy may own a given account + symbol for capital action at a time.
+
+Acceptance:
+- Signal/research cases can remain separately observable;
+- Semi-Auto surfaces same-symbol strategy conflict before a second intent is approved;
+- automated multi-strategy execution is blocked until netting/hedging-aware aggregation and attribution exist;
+- later portfolio aggregation considers correlated exposure and external/manual positions.
+
+### ZR-STR-026 — Synthetic generator-matched null — V1-F research requirement
+
+For Synthetic Indices where a generator/process is documented or can be represented by an accepted baseline, strategy evidence shall be compared against a generator-matched null/simulation after realistic costs.
+
+Acceptance:
+- positive backtest alone is not sufficient;
+- selection/execution rules applied to the strategy are also applied appropriately to the null comparison;
+- generator uncertainty/limitations remain explicit;
+- institutional-liquidity causal claims are not imported without defensible synthetic-specific meaning.
+
+### ZR-STR-027 — Core / APA / SMC distinctness — V1-F research requirement
+
+Core V1 shall use the TTI APA lineage as its starting research grammar rather than remain an undefined proprietary label.
+
+Before a separate APA preset and SMC are both represented as distinct admitted strategies:
+- exact candidate detectors are frozen;
+- both are run on the same point-in-time datasets/scopes;
+- candidate overlap/disagreement is measured;
+- a distinctness threshold is declared before final evaluation;
+- differences must arise from governing rules, not naming.
+
+No numeric threshold is defined by this PRD.
+
+### ZR-STR-028 — No V1 strategy-switch recommendation — V1-F
+
+V1 shall not recommend switching to another strategy merely because another strategy has a current setup.
+
+Any future strategy-discovery/routing feature requires separate user opt-in, behavioral safeguards, evidence and regulatory review.
 
 Detailed taxonomy: `docs/product/STRATEGY_EXECUTION_COMPONENT_TAXONOMY_V1.md`.
 
