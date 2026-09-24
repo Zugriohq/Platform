@@ -365,7 +365,7 @@ A setup can exist without an entry.
 
 `BrokerOrderRouteDefinition` defines how an already-valid intent is expressed to the broker.
 
-The route is part of TradeBundle evidence/admission because market, limit and stop routes have different fill/non-fill/adverse-selection/slippage behavior.
+The route is part of TradeBundle evidence/admission because market, limit and stop routes have different fill/non-fill/adverse-selection/slippage behaviour.
 
 Research may not assume theoretical zone touch equals live fill.
 
