@@ -322,9 +322,16 @@ methodVersion
 name
 owner/scope
 market/product applicability
+instrument/venue scope
 timeframes/horizons
-setupFamilies[]
+permittedRegimes[]
+setupModelIds[]
+locationModelIds[]
 entryModelIds[]
+entrySelectionPolicyId
+protectionModelIds[]
+exitManagementModelIds[]
+exitSelectionPolicyId
 requiredEvidenceContracts[]
 contextRequirements[]
 invalidationRules[]
@@ -369,6 +376,47 @@ It may **not**:
 - place broker orders.
 
 This keeps the entry taxonomy extensible without weakening authority boundaries.
+
+### 7.1 Setup and location are separate from entry
+
+A strategy may identify a setup before any entry route is valid.
+
+A versioned `SetupModel` defines the opportunity pattern/state. A versioned `LocationModel` defines the price reference/zone used by the strategy or entry model.
+
+Examples of LocationModels include structural levels, range boundaries, retracement/Fibonacci bands, imbalance/FVG zones, order-block/supply-demand zones and admitted volatility/moving references.
+
+Fibonacci/retracement is therefore a location/measurement component, not automatically a strategy or signal.
+
+### 7.2 Entry trigger and broker order route are separate
+
+An EntryModel defines when/where an entry becomes valid. The broker order route defines how a valid intent is expressed (for example market-on-confirmation, limit-at-zone or stop-entry) and remains subject to execution economics, broker capability, freshness and authority.
+
+No broker order type establishes strategy validity.
+
+### 7.3 Protection and exit/management models
+
+A versioned `ProtectionModel` defines the initial thesis/risk boundary. A versioned `ExitManagementModel` defines profit-taking, scale-out, break-even, trailing, time/state exits and other governed post-entry management.
+
+Protection is distinct from profit-taking so risk-reducing authority cannot be subordinated to a profit-management heuristic.
+
+An ExitManagementModel may not:
+- loosen protection outside governed policy;
+- increase risk beyond the approved risk snapshot;
+- bypass reconciliation/protection requirements;
+- create a new strategy admission;
+- infer a reversal or exit merely from an LLM narrative.
+
+### 7.4 Strategy component policy
+
+A versioned `StrategyComponentPolicy` may select among components already permitted by the exact MethodProfile version according to market, instrument, horizon, regime/context and admitted evidence.
+
+It may return PASS / no compatible route.
+
+It must never invent or silently add a strategy/setup/location/entry/protection/exit component.
+
+A user-selected preset strategy cannot silently switch to another strategy family. Any future strategy-family router is a distinct first-party meta-strategy requiring separate evidence, admission and user authority.
+
+Detailed taxonomy: `docs/product/STRATEGY_EXECUTION_COMPONENT_TAXONOMY_V1.md`.
 
 ## 7A. Strategy evidence, health and admission
 
