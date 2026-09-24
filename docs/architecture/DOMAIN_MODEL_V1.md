@@ -118,7 +118,9 @@ Admission scope can bind market/instrument/venue, horizon/session, RegimeModel/v
 Representation/evaluatability does not create admission.
 
 ### StrategyHealthAssessment
-Versioned analytical assessment of current evidence for an exact strategy version/scope.
+Versioned analytical assessment of current evidence for an exact MethodProfile + TradeBundle + scope.
+
+V1 health is primarily bundle-level. Component-level statements require the rest of the bundle to be held fixed or another predeclared valid comparative design.
 
 It remains separate from trader process adherence, execution adherence and financial outcome.
 
@@ -242,6 +244,21 @@ Stable product-level lifecycle wrapper around a candidate/decision.
 Key identity: `DecisionCaseId`.
 
 A Decision Case is the user/audit/journal continuity object; it references rather than replaces the frozen authority identities.
+
+It must be able to preserve, where applicable:
+- MethodProfile/version;
+- StrategyAdmissionRecord;
+- TradeBundle/version;
+- SetupModel/version;
+- LocationModel/version;
+- EntryModel/version;
+- BrokerOrderRoute/version;
+- ProtectionModel/version;
+- ExitManagementModel/version;
+- TimeframeMap/version;
+- point-in-time RegimeModel/version + state;
+- market/instrument/venue/horizon/session;
+- risk/authority/broker snapshots and subsequent adherence/outcome records.
 
 ### EvidenceReference
 Reference to market/feature/structure evidence attached to a Decision Case.
