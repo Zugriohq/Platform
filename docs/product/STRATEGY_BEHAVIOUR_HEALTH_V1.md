@@ -182,7 +182,6 @@ A strategy may be represented/evaluated while remaining **not admitted** for any
 Admission must be capable of distinguishing, by exact scope:
 
 - not admitted;
-- admitted for informational/monitoring use;
 - admitted for Zugrio-generated Signal use;
 - admitted for Semi-Auto;
 - admitted for Auto;
@@ -202,6 +201,8 @@ Admission must reference:
 - effective time;
 - expiry/review time if applicable;
 - explicit limitations/exclusions.
+
+Monitoring/declared-plan use does not require StrategyAdmission. StrategyAdmission begins where Zugrio represents a strategy as independently admitted for a governed product use such as a Zugrio-generated Signal or higher control mode.
 
 No commercial subscription may create strategy admission.
 
@@ -338,6 +339,8 @@ Examples:
 
 An observation must reference evidence sufficient to reconstruct why it was recorded.
 
+A BehaviourObservation is a derived projection from the authoritative ProcessAdherenceRecord and/or ExecutionAdherenceRecord plus their underlying event references. It must not run a separate competing compliance detector that can disagree with those authoritative adherence records. BehaviourPatternAssessment aggregates BehaviourObservations; it does not recalculate adherence independently.
+
 ### 9.3 Behaviour pattern assessment
 
 Cross-case pattern assessments must expose:
@@ -452,7 +455,7 @@ Behaviour analytics should distinguish:
 
 Future behavioural constraints may influence new risk-increasing automated action only when expressed as deterministic, admitted policy. No inferred emotion may become capital authority.
 
-Behavioral constraints must not block governed risk-reducing position management.
+Behavioural constraints must not block governed risk-reducing position management.
 
 ### Full Auto
 
@@ -460,7 +463,7 @@ The same principles apply, but portfolio selection/allocation/management introdu
 
 Full Auto remains release-gated by the existing portfolio-validation boundary.
 
-Any future portfolio-level behavioral constraint must preserve risk-reduction precedence across close, reduce, hedge/protection-repair, and other actions already classified as risk-reducing by the governing safety architecture.
+Any future portfolio-level behavioural constraint must preserve risk-reduction precedence across close, reduce, hedge/protection-repair, and other actions already classified as risk-reducing by the governing safety architecture.
 
 ## 12. Four independent review questions
 
@@ -548,6 +551,8 @@ Required durable identities should include:
 
 Changes append or supersede; historical conclusions remain reconstructable.
 
+A guardrail bypass writes a GuardrailEvent. When the bypass also overrides a system recommendation, prepared action or governed system action, that GuardrailEvent references the corresponding OverrideRecord rather than creating a second independent override truth.
+
 ## 16. Failure semantics
 
 - Strategy description ambiguous → remain draft/structured-incomplete; no invented rule.
@@ -556,7 +561,7 @@ Changes append or supersede; historical conclusions remain reconstructable.
 - Missing/stale health evidence → show unavailable/stale, not a reassuring score.
 - Behaviour-to-plan match uncertain → mark unmatched/uncertain; do not assert deviation.
 - Read-only broker disconnected → behavioural observation coverage is incomplete.
-- Guardrail data stale → no hard enforcement unless the accepted policy explicitly defines safe semantics; stale/unknown guardrail state must not obstruct governed risk-reducing actions.
+- Guardrail data stale/unknown → once an Enforcing guardrail is production-admitted, fail closed for new risk-increasing actions within that guardrail's admitted scope; never use stale/unknown guardrail state to obstruct governed risk-reducing actions.
 - User acts outside Zugrio path → observe later if possible; never claim Zugrio blocked it.
 - AI unavailable → deterministic product state remains usable; AI explanation is not required for authority.
 
@@ -597,7 +602,7 @@ Economic outcome improvement should be studied separately and only claimed when 
 
 ## 19. Conformance and proof obligations
 
-Before an enforcing guardrail or strategy admission can affect production behavior, tests/evidence must demonstrate at minimum:
+Before an enforcing guardrail or strategy admission can affect production behaviour, tests/evidence must demonstrate at minimum:
 
 ### Strategy representation and admission
 - a recorded/structured user strategy without admission cannot produce a Zugrio-admitted capital signal;
