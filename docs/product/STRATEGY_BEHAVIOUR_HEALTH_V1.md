@@ -74,6 +74,8 @@ A broker connection may provide read-only data, delegated execution authority, o
 
 Zugrio can govern only actions that pass through authority it actually has. In Signal mode, or whenever a user acts directly in the broker outside Zugrio's execution path, Zugrio may observe and review the action where data access exists; it must not claim that it could have blocked the external broker action.
 
+Non-custodial architecture is a product/custody boundary, not a declaration that Zugrio is outside financial regulation. Regulatory classification depends on activity, control mode, market and jurisdiction and must be assessed separately.
+
 ### 2.5 AI is explanatory/structuring assistance, not evidence authority
 
 AI may help:
