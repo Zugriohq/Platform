@@ -131,13 +131,13 @@ This is architecturally accurate.
 
 In application, however, it asks a first-time retail visitor to understand too much conceptual structure too early.
 
-The current acquisition hero is:
+The current acquisition hero is now frozen as:
 
-> **Find your setup. Know what's next.**
+> **A good setup can become a bad entry.**
 
 Supporting copy:
 
-> **Zugrio scans your markets, tracks setups from FORMING to READY to TRIGGERED, and alerts you with the levels, reasoning and next step.**
+> **Zugrio finds setups that fit your strategy, evaluates each one in the market that produced it, and keeps rechecking what still qualifies — within your limits, with every decision on record.**
 
 This is not intended to replace **The chart is not the market** as the master brand thesis.
 
@@ -465,10 +465,10 @@ The current page is intended to communicate roughly this sequence:
 
 ### Hero
 
-> **Find your setup. Know what's next.**
+> **A good setup can become a bad entry.**
 
 Core comprehension:
-Zugrio scans, follows setups, alerts, explains and shows the next step.
+A signal is not frozen in time. Zugrio finds the setup, evaluates it in the right market, rechecks what still qualifies, applies the user's control limits and preserves the decision.
 
 ### Background scanning
 
@@ -612,15 +612,18 @@ The no-hidden-rule-drift concept remains in the supporting logic.
 Frozen:
 > If the facts change, the trade changes.
 
-Current:
+Current hero:
 > **A good setup can become a bad entry.**
+
+Supporting application:
+> **What qualified then may not qualify now.**
 
 and:
 
 > **The signal fired. The market kept moving.**
 
 Reason:
-these express the same dynamic-state idea through immediate trading consequences.
+these express the same dynamic-state idea through immediate trading consequences, with the strongest version now carrying the acquisition hero.
 
 ### MANDATE
 
@@ -878,3 +881,15 @@ And the current copy standard is:
 > **Striking enough to sell. Specific enough to believe. Short enough to keep reading.**
 
 That is the frame within which the next copy review should happen.
+
+
+---
+
+## 18. Hero freeze update — 24 September 2026
+
+After the review cycle, the hero was deliberately frozen to stop copy oscillation.
+
+Canonical decision:
+`docs/marketing/HERO_COPY_DECISION_2026-09-24.md`
+
+The hero should not be reopened on preference alone. Review evidence must show a product-truth, comprehension, distinctiveness, credibility or compliance problem.
