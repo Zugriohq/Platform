@@ -342,6 +342,12 @@ Changing the method creates a new version; it must not rewrite the historical me
 
 A Method Profile cannot widen model applicability. Enabling an Entry Model or market in a profile does not create calibrated inference for that scope; model admission remains separately governed.
 
+Strategy definition is also separate from **strategy admission**. A user-authored or AI-structured Method Profile may be recorded, monitored and researched without being admitted as a Zugrio signal or automated capital source.
+
+A versioned `StrategyAdmission` binds an exact strategy version to a stated scope/use and identified evidence/policy artifacts. Admission is dimensional and may differ by market, instrument, horizon and control mode. Signal admission does not imply automated execution admission.
+
+See ADR-0004 and `docs/product/STRATEGY_HEALTH_AND_BEHAVIOR_GUARDRAILS.md`.
+
 ## 7. Entry Model Contract
 
 Retest, shallow pullback, breakout, liquidity sweep, FVG mitigation and similar labels are examples, not an exhaustive architecture.
@@ -403,6 +409,9 @@ POSITION_MANAGEMENT_EVENT
 CLOSED
 OUTCOME_RECORDED
 PROCESS_ADHERENCE_EVALUATED
+STRATEGY_HEALTH_ASSESSED
+BEHAVIOR_OBSERVED
+BEHAVIOR_INTERVENTION_RECORDED
 ```
 
 Events reference immutable snapshots/artifact identities rather than duplicating mutable state.
@@ -420,20 +429,27 @@ The ledger supports:
 
 The operational database may maintain projections for fast reads; the append-only record remains the historical source for reconstruction.
 
-## 9. Outcome and process are separate
+## 9. Strategy evidence, process and outcome are separate
 
 Profit/loss is not a substitute for decision quality.
 
-Post-trade evaluation should keep at least two independent concepts:
+Review should keep at least three independent concepts:
 
+- **Strategy Health:** what the evidence currently supports for the exact strategy version and scope.
+- **Process adherence / behavior:** whether the declared method, evidence, risk and authority rules were followed and what observable deviations occurred.
 - **Outcome:** what financially happened.
-- **Process adherence:** whether the declared method, evidence, risk and authority rules were followed.
+
+Strategy Health is derived from identified evidence artifacts and is not capital-authoritative by default. Process/behavior analytics are observational by default. Neither may silently create a new permission edge in the frozen authority graph.
 
 A profitable rule violation must not be reclassified as a compliant decision merely because it made money.
 
 A losing compliant decision must not automatically be classified as bad process.
 
 Process-adherence evaluation is analytical/journal output. It does not retroactively modify the original capital decision.
+
+Strategy Health assessments do not rewrite the evidence artifacts or historical admission that governed an earlier Decision Case. A later deterioration/review state is a new fact.
+
+Behavior observations must remain factual and actor-aware. A broker record can support statements such as entry timing, risk change or override; it cannot prove an internal emotion.
 
 Where adherence can be evaluated from declared rules/events, the authoritative adherence result should be deterministic and versioned. LLM-generated coaching or narrative may explain the record, but it must remain advisory and must not rewrite the adherence result.
 
@@ -445,20 +461,26 @@ Signal, Semi-Auto, Auto and Full Auto are not different intelligence engines. Th
 
 - no broker order authority;
 - display/notify qualified decisions and reasons;
-- user acts independently.
+- user acts independently;
+- behavioral guardrails may inform or request acknowledgement inside Zugrio, but cannot claim to prevent an independently placed broker order;
+- supported read-only broker facts may be used later for factual process/behavior review.
 
 ### SEMI_AUTO
 
 - Zugrio may prepare an executable intent;
 - explicit user approval is required before submission;
 - approval triggers freshness/risk/safety revalidation;
-- stale approval cannot revive an expired FIRE.
+- stale approval cannot revive an expired FIRE;
+- governed Confirm/Enforce guardrails may add review friction or block/expire the prepared Zugrio intent;
+- those guardrails do not imply control over manual broker actions outside Zugrio.
 
 ### AUTO
 
 - Zugrio may submit qualifying intents without per-trade approval;
 - only within an explicit user/account/strategy/instrument/risk mandate;
-- all normal risk, veto, broker safety and reconciliation requirements still apply.
+- all normal risk, veto, broker safety and reconciliation requirements still apply;
+- a behavioral guardrail may narrow new risk-increasing action only when explicitly consumed by governed policy;
+- a behavioral guardrail cannot widen authority or substitute for strategy/model admission.
 
 ### FULL_AUTO
 
