@@ -390,7 +390,9 @@ A strategy evidence layer should preserve immutable/versioned evidence bundles c
 - artifact hashes/versions;
 - evidence-policy version.
 
-A separate StrategyAdmissionRecord binds an exact MethodProfile version and scope to an admitted product use, such as informational monitoring, Signal, Semi-Auto or Auto. The record references the evidence and admission policy that justified the decision.
+A separate StrategyAdmissionRecord binds an exact MethodProfile version and scope to an admitted governed product use, such as Zugrio-generated Signal, Semi-Auto or Auto. The record references the evidence and admission policy that justified the decision.
+
+Declared-plan monitoring or strategy research/evaluation does not by itself require StrategyAdmission and must not be presented as Zugrio endorsement.
 
 No subscription, user preference, strategy name or LLM response creates admission.
 

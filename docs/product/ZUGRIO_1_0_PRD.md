@@ -590,6 +590,15 @@ Where useful, the UI shall communicate that an instrument is being evaluated und
 
 The product shall support real-time/updated visualisation of relevant market structure and decision geometry without making chart drawings the sole explanation of the decision.
 
+Authoritative chart annotations shall reflect deterministic/versioned strategy, Entry Model, Decision Case or provenance-bound market/context state. They shall not be generated from free-form AI narration.
+
+Acceptance:
+- an annotation such as "break confirmed" or "awaiting retest" appears only when the governing strategy/Entry Model defines a reconstructable condition/state that supports that label;
+- every authoritative annotation can be traced to the relevant strategy/Entry Model version and source evidence/state;
+- AI may explain an annotation or current case in a separately identified explanatory surface, but AI explanation cannot create, promote, invalidate or rewrite the authoritative chart state;
+- stale/missing evidence cannot be rendered as current confirmation;
+- illustrative marketing demos must be labeled as illustrative unless backed by a real product state.
+
 ### ZR-UX-004 — Decision journal — V1-F
 
 The journal shall preserve original reasoning, material evidence changes, action/override, execution result and outcome/process review.
