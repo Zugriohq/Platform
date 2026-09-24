@@ -2,6 +2,8 @@
 
 Status: **founder-directed product scope for Zugrio 1.0**. This document describes the intended product surface and sequencing. It does not itself claim implementation, validation or release readiness.
 
+**Build boundary:** `docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md` governs what is actually built first.
+
 ## 1. Product spine
 
 Zugrio should carry a trading method through the full decision lifecycle:
