@@ -4,6 +4,7 @@
 - **Date:** 2026-09-24
 - **Decision owners:** Founder / Product Lead; Engineering
 - **Related issue:** #15
+- **Related ADR:** ADR-0003 — Strategy and entry contracts
 - **Supersedes:** none
 
 ## Context
@@ -11,6 +12,8 @@
 Zugrio supports first-party, supported and user-defined strategy directions. A strategy being represented or machine-evaluable does not establish that it has a positive edge, that its evidence transfers across markets, or that it is suitable for live Signal/automation.
 
 The existing architecture already separates Method Profiles from model applicability and capital authority. The product now also needs an explicit evidence/admission layer so a user-authored strategy cannot silently borrow Zugrio's credibility.
+
+This ADR **extends ADR-0003** by adding provenance classes and allowing user-authored structured MethodProfiles to exist as versioned, inspectable strategy definitions. ADR-0003's rejection of arbitrary user scripts with direct capital authority still stands. A structured user MethodProfile is not an executable script and gains no Signal or capital authority without the separate evidence/admission path defined here.
 
 ## Decision
 
