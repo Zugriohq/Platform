@@ -779,13 +779,17 @@ The hierarchy must remain obvious.
 
 The chart is a critical surface, not the whole product.
 
+Authoritative chart annotations must visualise deterministic/versioned strategy, Entry Model, Decision Case or provenance-bound market/context state. Do not let an LLM invent the chart's trading state. AI explanation may sit beside the chart as clearly identified explanation, but it must consume rather than create the authoritative state.
+
+Labels such as "break confirmed", "awaiting retest", "confirmation missing" or equivalent are only valid when the governing strategy/Entry Model formally defines the corresponding condition. Marketing examples must not outrun the implemented state model.
+
 ### Must support
 
 - real-time/updateable market structure;
 - BOS / CHOCH / relevant structure as actually supported;
 - decision geometry;
 - entry/stop/targets when legitimately available;
-- liquidity/FVG/other method-specific overlays where relevant;
+- liquidity/FVG/other strategy-specific overlays where relevant;
 - frozen geometry vs current executable conditions;
 - macro/context markers;
 - execution/fill markers;
@@ -1320,6 +1324,8 @@ Never maintain a manually optimistic marketing status separate from product trut
 ---
 
 ## 20. Public website requirements
+
+> **Positioning/copy status:** The hero, section names and example marketing copy in this design PRD predate the current Strategy Health / Admission architecture and the 24 September 2026 positioning reset. They are layout/history references, not approved public copy. Public-facing language should use **strategy** rather than **Method**. "The chart is not the market" is not an approved acquisition hero for the next pass. The forthcoming positioning work supersedes these copy examples.
 
 The website is not a disconnected marketing skin.
 
