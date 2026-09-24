@@ -168,7 +168,7 @@ Features:
 - declared discretionary plans.
 
 Staged product direction:
-- structured strategy builder;
+- structured strategy builder (later, not first implementation slice);
 - AI-assisted natural-language-to-draft structuring with explicit user review;
 - supported templates;
 - monitored discretionary plans;
