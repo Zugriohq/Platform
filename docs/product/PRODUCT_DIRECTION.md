@@ -9,6 +9,8 @@ Zugrio should carry a trading method through the full decision lifecycle:
 ```text
 METHOD / STRATEGY PROFILE
         ↓
+STRATEGY EVIDENCE / ADMISSION
+        ↓
 OPPORTUNITY DISCOVERY
         ↓
 STRUCTURE + EVIDENCE
@@ -26,8 +28,11 @@ ACT / WAIT / PASS
 PROTECTION + RECONCILIATION
         ↓
 REVIEW
-   ├── outcome
-   └── process / method adherence
+   ├── strategy health
+   ├── decision / process adherence
+   ├── execution adherence
+   ├── behaviour health
+   └── financial outcome
 ```
 
 The reason for a trade must remain connected to the decision to act as facts change.
@@ -84,6 +89,17 @@ Every decision should be traceable to the exact strategy/method version that gov
 
 Manual overrides and deviations should be recordable so post-trade review can distinguish outcome from process adherence.
 
+Strategy representation, evidence, admission and health are separate concepts. A strategy being user-authored, machine-readable or historically testable does not make it admitted for Zugrio-generated signals or automation. First-party strategies do not bypass evidence requirements.
+
+Zugrio 1.0 should support four product truths without collapsing them:
+
+- **strategy health** — what evidence supports the exact strategy version in the declared scope;
+- **decision/process adherence** — whether the declared decision process was followed;
+- **execution adherence** — whether actual broker action matched the planned/approved action;
+- **financial outcome** — what happened economically.
+
+Detailed direction: `docs/product/STRATEGY_BEHAVIOUR_HEALTH_V1.md`.
+
 ## 5. Context intelligence
 
 Context evidence is broader than news.
@@ -117,7 +133,10 @@ Examples:
 - macro/news/session context;
 - broker-neutral execution contracts;
 - signal / semi-auto / auto authority modes;
-- process-adherence review.
+- process-adherence review;
+- strategy evidence/admission and strategy-health representation;
+- behaviour-health analytics and advisory/confirmation guardrails;
+- monitored declared plans for discretionary traders where the thesis itself is not independently validated.
 
 ### B. V1 launch-readiness gate
 A foundational capability may exist in the V1 design but remain unavailable to users until evidence, safety or integration requirements are satisfied.
@@ -154,6 +173,16 @@ The product should demonstrate both:
 - a setup being held, invalidated or blocked when facts no longer support action.
 
 Avoid presenting Zugrio as merely a denial engine, signal group, generic chatbot or infallible autonomous trader.
+
+Behaviour analytics must remain factual and evidence-backed. Zugrio may identify observable deviations from a declared plan, but it must not present inferred emotions as facts.
+
+A user-defined strategy may be monitored and evaluated without borrowing Zugrio's credibility. Public/product language must distinguish:
+- the user's own plan or strategy conditions;
+- Zugrio-supported/admitted strategy logic;
+- current strategy-health evidence;
+- execution authority.
+
+Advisory/confirmation guardrails may help a trader notice repeated deviations. Any behavioural rule that can block a capital action through Zugrio is a capital-relevant policy and remains launch-gated until explicitly integrated and accepted.
 
 ## 9. Brand / engineering separation
 
