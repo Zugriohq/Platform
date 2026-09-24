@@ -239,7 +239,9 @@ Cross-case assessment referencing observation definition/version, supporting cas
 ### GuardrailPolicy
 Versioned user/account-scoped policy describing advisory, confirmation or (where separately admitted) enforcing behaviour for a deterministic condition.
 
-Guardrail policy is not broker authority by itself.
+A GuardrailPolicy must declare its action class/effect scope. Enforcing policy may narrow **new risk-increasing action** only.
+
+Guardrail policy is not broker authority by itself and cannot block a governed risk-reducing action.
 
 ### GuardrailEvent
 Durable record of guardrail presentation, acknowledgement, trigger and any eventual enforcement outcome.
@@ -341,4 +343,5 @@ Do not let ORM convenience collapse:
 - strategy representation into strategy admission;
 - strategy health into trade outcome;
 - behaviour observation into inferred emotion;
-- advisory guardrail into broker execution authority.
+- advisory guardrail into broker execution authority;
+- behavioral guardrail into a blocker of governed risk-reducing action.
