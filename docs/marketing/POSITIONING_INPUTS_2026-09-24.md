@@ -42,50 +42,38 @@ Recommended positioning pattern:
 - Immediate scope line: **FX · Gold · Synthetic Indices**.
 - Do not visually style Gold or Synthetic Indices as "coming soon"; all three are initial product tracks.
 - Market section: explain that each market is separately scoped/validated and that logic/evidence does not transfer merely because charts look similar.
-- A separate secondary roadmap row may show **Crypto · Stocks · Commodities · Indices · ETFs · Futures** as planned expansion, with **Options** later.
+- Planned markets such as Crypto, Stocks/Equities, broader Commodities, traditional Indices, ETFs, Futures and later Options belong in a roadmap/FAQ/status area, **not beside the homepage hero**.
 
 This is a marketing hierarchy, not a product-scope hierarchy.
 
 "Planned" does not imply a launch date or current market support.
 
-## 4. Initial strategy portfolio
+## 4. Strategy portfolio and V1 truth
 
-### Founder direction
+Zugrio is **strategy-aware and designed for multiple strategies**, but the first build must not imply breadth that has not been proven.
 
-Zugrio should be positioned as **strategy-aware and multi-strategy**, not as a one-strategy product.
+### V1
+- **Zugrio Core** is the only active strategy target.
+- Core V1 is the productized descendant of the strongest TTI Advanced Price Action lineage.
+- Core uses one fixed TradeBundle per admitted market-family/instrument scope.
+- If a bundle does not qualify, Zugrio passes; it does not dynamically choose another entry/exit combination.
 
-Strategy choice is not cosmetic: the selected strategy determines the permitted setup, location/retracement, entry, protection and exit/management logic. Zugrio may adapt among permitted components only where an evidence-backed, versioned policy supports that exact scope.
+### In validation / later
+- Smart Money Concepts;
+- Trend Following;
+- Range / Mean Reversion;
+- a separately selectable Advanced Price Action preset only if it is demonstrated to be meaningfully distinct from Core.
 
-The current product roadmap contains:
+Public surfaces may show these as **In validation** where useful, but not as selectable live/admitted alternatives until their exact scope clears.
 
-**First-party baseline**
-- **Zugrio Core**
+### Custom Strategy
+Custom Strategy remains a later product direction. "Bring your own plan" can still mean declare/monitor/review a plan, but the V1 website must not imply a full custom strategy builder or adaptive execution engine is already available.
 
-**Four initial selectable strategy families**
-1. **Advanced Price Action (APA)**
-2. **Smart Money Concepts (SMC)**
-3. **Trend Following**
-4. **Range / Mean Reversion**
-
-This is an implementation/admission target, not permission to claim all four are already supported.
-
-### Public-claim rule
-
-A strategy may appear as:
-- **available/admitted** only after the exact version/scope clears implementation, evidence and StrategyAdmission;
-- **in validation** while evidence/admission work remains;
-- **planned** while it is only on the roadmap.
-
-Do not say "choose any strategy." Do not advertise SMC, APA, Trend Following or Range/Mean Reversion as live/admitted until their actual status supports that claim.
-
-**Bring your own plan** remains separate:
-- the trader can declare/structure conditions, invalidation, risk and horizon;
-- Zugrio may monitor and review those conditions;
-- that does not convert the user's strategy into a Zugrio-admitted signal source.
-
-Breakout/retest, liquidity sweeps, FVGs, order blocks, pullbacks and similar concepts may be strategy-specific setup/entry components. Fibonacci is a location/retracement tool rather than a standalone strategy. Scalping/day/swing are horizons/styles, not separate strategy engines.
-
-Order Flow remains a later candidate because suitable microstructure/feed data is a prerequisite. ICT should not be duplicated beside SMC as a public strategy without a deliberately distinct implementation and naming/IP review.
+### Strategy language
+- Strategy choice changes the governing rules; it is not cosmetic.
+- Fibonacci is a location/retracement tool, not a strategy.
+- Entry and exit are evaluated as part of a complete TradeBundle, not as independently proven modules.
+- Zugrio does not recommend switching strategies in V1 merely because another strategy has a current setup.
 
 ## 5. Chart annotation boundary
 
@@ -117,7 +105,9 @@ The next positioning pass should not be built around:
 - free-form AI chart narration;
 - "The chart is not the market" as a preselected hero.
 
-The positioning process should start from the full current product truth and may produce new language for:
+The positioning process should start from the full product thesis while preserving a visible **status layer** that distinguishes live/V1, in-validation and future capabilities.
+
+The positioning process may produce new language for:
 - the core problem;
 - category/descriptor;
 - hero/headline;
