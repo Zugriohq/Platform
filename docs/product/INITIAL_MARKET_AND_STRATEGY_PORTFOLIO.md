@@ -21,7 +21,7 @@ Every track retains independent:
 - data requirements;
 - context requirements;
 - cost model;
-- instrument behavior;
+- instrument behaviour;
 - model applicability;
 - strategy evidence;
 - StrategyAdmission;
@@ -50,32 +50,33 @@ Public UI may show planned markets in a visually secondary "planned/coming" stat
 
 ## 3. Initial strategy portfolio
 
-Zugrio should not launch conceptually as a one-strategy system.
+Zugrio's architecture is multi-strategy, while the V1 active build is intentionally Core-only.
 
-### First-party baseline
-- **Zugrio Core** — proprietary first-party baseline. First-party ownership does not bypass evidence/admission.
+### V1 active strategy
+- **Zugrio Core** — proprietary first-party strategy.
+- Core V1 is built from the strongest TTI Advanced Price Action research lineage plus the Zugrio context/risk/decision architecture.
+- Core V1 uses one fixed TradeBundle per admitted market-family/instrument scope.
+- First-party ownership does not bypass evidence/admission.
 
-### Four initial selectable strategy families
+### In-validation strategy roadmap
 
 1. **Advanced Price Action (APA)**
-   - Existing TTI lineage provides the strongest current specification.
-   - Current experimental grammar includes structure, BOS/CHoCH, displacement, FVG/causal origin, retracement/location, retest/reaction and invalidation.
-   - The legacy implementation remains evidence/research input; it is not automatically a Zugrio-admitted production strategy.
+   - APA is also the principal research lineage beneath Core V1.
+   - A separate selectable APA preset must not be marketed as distinct from Core until an explicit rule/behaviour distinction is demonstrated.
 
 2. **Smart Money Concepts (SMC)**
-   - Separate, precise Zugrio implementation required.
-   - May consume structure, liquidity, order-block/imbalance and session concepts, but must not merely rename APA.
-   - Exact rule contract must identify how it differs from APA.
+   - Separate precise implementation required.
+   - Must pass a predeclared candidate-overlap/distinctness test against APA/Core lineage before both are represented as independent supported strategies.
 
 3. **Trend Following**
    - Distinct strategy family based on persistent directional state, pullback/continuation or trend-resumption logic.
-   - Requires explicit trend definition, entry timing, invalidation, regime applicability and cost/evidence policy.
+   - Requires its own frozen bundles and evidence.
 
 4. **Range / Mean Reversion**
-   - Distinct strategy family for equilibrium/range/reversion behavior.
-   - Requires explicit range/equilibrium definition, overextension/reversion conditions, invalidation and regime applicability.
+   - Distinct strategy family for equilibrium/range/reversion behaviour.
+   - Requires its own frozen bundles and evidence.
 
-These four were selected as an initial roadmap because they are recognizable retail strategy families and, more importantly, represent materially different decision grammars rather than four overlapping setup labels.
+These remain roadmap/in-validation families, not V1 live alternatives.
 
 ## 4. What is not a separate launch strategy family
 
@@ -92,26 +93,34 @@ The following may be important but should not automatically become top-level str
 
 A public strategy label has zero operational meaning until Zugrio defines an exact versioned implementation.
 
-For every selectable strategy:
+For every strategy intended for admission:
 - create a MethodProfile/version;
-- define supported setup/evidence grammar;
-- define Entry Model contracts;
+- define one or more complete TradeBundle versions;
+- bind Setup, Location, Entry, BrokerOrderRoute, Protection and ExitManagement models inside each bundle;
+- define a TimeframeMap and RegimeModel where applicable;
 - define invalidation/expiry;
-- define market/instrument/horizon applicability;
+- define market/instrument/horizon/session/regime applicability;
 - define context dependencies;
+- model route-specific fill/cost assumptions;
 - produce evidence bundles;
 - complete StrategyAdmission by exact scope;
 - expose evidence/readiness honestly in the UI.
 
-The same strategy family may be admitted in Forex but unavailable in Gold or Synthetics until separate evidence clears.
+V1 Core uses one fixed bundle per admitted scope. Dynamic bundle routing is later.
+
+Detailed component taxonomy: `docs/product/STRATEGY_EXECUTION_COMPONENT_TAXONOMY_V1.md`.
+
+The same strategy family may be admitted in Forex but unavailable in Gold or Synthetics until separate evidence clears. Likewise, one Entry/Exit component combination may be admitted for EURUSD in a trend regime while another combination remains research-only.
+
+Platform representability must never be described as proof that every strategy works on every market or regime.
 
 ## 6. Launch positioning rule
 
 Target product story:
 
-> Zugrio is strategy-aware, beginning with Zugrio Core plus four defined strategy families: Advanced Price Action, Smart Money Concepts, Trend Following and Range/Mean Reversion.
+> Zugrio is strategy-aware. Core is the first strategy being built from the TTI APA lineage; additional strategies are in validation.
 
-This becomes a public support claim only for strategies and scopes that have actually cleared implementation/evidence/admission.
+Do not present Core + four as five currently selectable/admitted strategies.
 
 Before that point, copy should distinguish:
 - **available/admitted**;

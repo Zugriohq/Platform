@@ -2,6 +2,8 @@
 
 Status: **founder-directed product scope for Zugrio 1.0**. This document describes the intended product surface and sequencing. It does not itself claim implementation, validation or release readiness.
 
+**Build boundary:** `docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md` governs what is actually built first.
+
 ## 1. Product spine
 
 Zugrio should carry a trading method through the full decision lifecycle:
@@ -88,6 +90,42 @@ Requirements:
 
 Do not invent unsupported entry archetypes merely to populate UI copy.
 
+### Strategy component stack
+
+The product must not collapse the following into one concept:
+
+```text
+Strategy
+  ↓
+Setup
+  ↓
+Location / reference
+  ↓
+Entry / trigger
+  ↓
+Broker order route
+  ↓
+Protection
+  ↓
+Exit / position management
+  ↓
+Risk
+  ↓
+Authority
+```
+
+Market, instrument, horizon, regime and context constrain the whole stack.
+
+A strategy may eventually define multiple TradeBundles, but **V1 does not dynamically mix or select entry/exit components**. The unit of evidence/admission is a complete frozen TradeBundle: setup + location + entry + broker route + protection + exit/management + timeframe map + regime model.
+
+Fibonacci/retracement is a location/measurement tool when a strategy uses it; it is not a standalone Zugrio strategy or universal signal.
+
+The same platform can represent many strategy families, but no strategy/bundle is assumed to work across every instrument/regime. Exact frozen bundles require scope-specific evidence/admission.
+
+A future StrategyComponentPolicy may choose only among whole pre-defined bundles and is V1-LG after a dedicated anti-overfitting research policy.
+
+Detailed taxonomy: `docs/product/STRATEGY_EXECUTION_COMPONENT_TAXONOMY_V1.md`.
+
 ## 4. Method / strategy profiles
 
 A future-proof Zugrio 1.0 domain should include versioned Strategy/Method Profiles rather than assuming one universal method.
@@ -95,9 +133,10 @@ A future-proof Zugrio 1.0 domain should include versioned Strategy/Method Profil
 A profile may eventually bind:
 
 - market/product scope;
-- timeframe/horizon;
-- setup family;
-- admissible entry models;
+- horizon;
+- timeframe map;
+- regime model;
+- permitted TradeBundle versions;
 - required evidence/context;
 - invalidation rules;
 - execution-control preferences;
@@ -120,14 +159,16 @@ Zugrio 1.0 should support four product truths without collapsing them:
 
 Zugrio should not be positioned as a one-strategy product.
 
-Alongside the proprietary first-party **Zugrio Core** baseline, the initial selectable-strategy roadmap prioritises four strategy families:
+The longer-term strategy roadmap retains **Zugrio Core** plus four named strategy families:
 
 1. **Advanced Price Action (APA)**;
 2. **Smart Money Concepts (SMC)**;
 3. **Trend Following**;
 4. **Range / Mean Reversion**.
 
-These are roadmap targets, not automatic launch/admission claims. Each requires its own exact MethodProfile/version, Entry Model contracts, market/horizon scope, evidence and StrategyAdmission.
+V1 activates **Zugrio Core only**, using the strongest TTI APA lineage as the starting strategy grammar and one fixed TradeBundle per admitted scope. SMC, Trend Following and Range / Mean Reversion remain in validation; a separate APA preset is not presented as distinct from Core until distinctness is demonstrated.
+
+Each future preset requires its own exact MethodProfile/version, frozen TradeBundle(s), market/horizon/regime scope, evidence and StrategyAdmission.
 
 Breakout/retest, liquidity sweeps, FVGs, pullbacks and similar concepts should remain setup/evidence/entry archetypes where they cut across strategy families rather than being duplicated as top-level strategies without distinct governing logic.
 
