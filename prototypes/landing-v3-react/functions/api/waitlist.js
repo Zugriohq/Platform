@@ -1,5 +1,3 @@
-import { createProfileToken } from "../_lib/waitlist-profile-token.js";
-
 const ALLOWED = {
   role: new Set(["independent_trader","prop_trader","trading_team","researcher","broker_partner","investor"]),
   market: new Set(["fx","gold","synthetics","stocks","crypto","multiple"]),
@@ -68,9 +66,9 @@ async function sendBrevoWelcome(env, profile) {
     to: [{ email: profile.email }],
     templateId,
     params: {
-      MARKET: profile.market || "Not specified",
-      HORIZON: profile.horizon || "Not specified",
-      MODE: profile.mode || "Not specified",
+      MARKET: profile.market,
+      HORIZON: profile.horizon,
+      MODE: profile.mode,
     },
   };
 
@@ -219,18 +217,16 @@ export async function onRequestPost(context) {
   const discovery = clean(body.discovery);
   const token = clean(body.token, 2048);
 
-  const validOptional = (set, value) => !value || set.has(value);
-
   if (
     !isEmail(email) ||
-    !validOptional(ALLOWED.role, role) ||
-    !validOptional(ALLOWED.market, market) ||
-    !validOptional(ALLOWED.horizon, horizon) ||
-    !validOptional(ALLOWED.mode, mode) ||
-    !validOptional(ALLOWED.strategy, strategy) ||
-    !validOptional(ALLOWED.platform, platform) ||
-    (country && country.length < 2) ||
-    !validOptional(ALLOWED.discovery, discovery) ||
+    !ALLOWED.role.has(role) ||
+    !ALLOWED.market.has(market) ||
+    !ALLOWED.horizon.has(horizon) ||
+    !ALLOWED.mode.has(mode) ||
+    !ALLOWED.strategy.has(strategy) ||
+    !ALLOWED.platform.has(platform) ||
+    country.length < 2 ||
+    !ALLOWED.discovery.has(discovery) ||
     body.consent !== true ||
     !token
   ) {
@@ -246,7 +242,7 @@ export async function onRequestPost(context) {
   const expires = new Date(now);
   expires.setUTCFullYear(expires.getUTCFullYear() + 1);
 
-  const source = optionalText(body.source, 80) || "landing-v5";
+  const source = optionalText(body.source, 80) || "landing-v4";
   const referrer = optionalText(body.referrer, 500);
   const utmSource = optionalText(body.utm_source, 100);
   const utmMedium = optionalText(body.utm_medium, 100);
@@ -293,10 +289,8 @@ export async function onRequestPost(context) {
     return json({ ok: false, status: "unavailable" }, 503);
   }
 
-  // Return the same accepted shape for first-time and duplicate emails.
-  // The short-lived token permits optional preference enrichment without exposing row existence.
-  const profileToken = await createProfileToken(env, email);
-  return json({ ok: true, status: "accepted", profileToken }, 200);
+  // Deliberately return the same accepted response for first-time and duplicate emails.
+  return json({ ok: true, status: "accepted" }, 200);
 }
 
 export async function onRequest(context) {
