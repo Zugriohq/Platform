@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - "prototypes/landing-v3-react/**"
+      - "config/capability-scope-manifest.v1.json"
+      - "config/capability-scope-manifest.v1.json"
       - ".github/workflows/landing-prototype.yml"
   push:
     branches: [chore/engineering-foundation]
