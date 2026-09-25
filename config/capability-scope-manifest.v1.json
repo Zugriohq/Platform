@@ -337,6 +337,32 @@
         "docs/product/PRODUCT_DIRECTION.md",
         "docs/product/ZUGRIO_1_0_PRD.md"
       ]
+    },
+    {
+      "id": "intelligence.background_scanning",
+      "public_name": "Background Scanning",
+      "category": "strategy_intelligence",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "Background market scanning for strategy-relevant opportunities is a product target under validation; no released public scope claimed.",
+      "source_refs": [
+        "docs/product/PRODUCT_DIRECTION.md",
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md",
+        "docs/product/ZUGRIO_1_0_PRD.md"
+      ]
+    },
+    {
+      "id": "intelligence.instrument_behaviour",
+      "public_name": "Instrument Behaviour",
+      "category": "market_intelligence",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "Instrument-specific behaviour, costs and applicable market characteristics are part of market-aware evaluation under validation; no released public scope claimed.",
+      "source_refs": [
+        "docs/product/PRODUCT_DIRECTION.md",
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md",
+        "docs/product/ZUGRIO_1_0_PRD.md"
+      ]
     }
   ]
 }
