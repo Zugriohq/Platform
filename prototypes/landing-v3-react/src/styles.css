@@ -1149,7 +1149,6 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
   opacity:.055;transition:opacity .24s ease
 }
 .silver-reveal.is-active .silver-spotlight{opacity:.94}
-.silver-word{position:relative;isolation:isolate}
 .silver-base{position:relative;isolation:isolate}
 .silver-base:after{
   content:"ZUGRIO";position:absolute;inset:0;color:transparent;pointer-events:none;
@@ -1372,7 +1371,6 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
 .silver-spotlight .brand-wordmark{
   filter:brightness(1.2) drop-shadow(0 0 14px rgba(235,240,244,.12))
 }
-.silver-word{display:none!important}
 
 /* Motion tokens tuned for a slower, more considered financial-product rhythm. */
 @keyframes zugrioIntroSoft{
