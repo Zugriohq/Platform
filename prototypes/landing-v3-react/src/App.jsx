@@ -338,31 +338,28 @@ export default function App() {
             className="hero-copy"
           >
             <motion.div variants={{ hidden:{opacity:0,y:10},show:{opacity:1,y:0} }} className="eyebrow">
-              <i/> MARKET-AWARE TRADING INTELLIGENCE · PRIVATE BUILD
+              <i/> MARKET-AWARE TRADING INTELLIGENCE
             </motion.div>
 
-            <h1 aria-label="See the setup before it becomes a signal.">
-              {heroWords.map((word, i) => (
+            <h1 className="hero-headline" aria-label={HERO_HEADLINES[0]}>
+              <AnimatePresence mode="wait" initial={false}>
                 <motion.span
+                  key={headlineIndex}
                   aria-hidden="true"
-                  key={word + i}
-                  variants={{
-                    hidden: { opacity: 0, y: 28, filter: "blur(10px)" },
-                    show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: .78, ease: [0.16,1,0.3,1] } }
-                  }}
+                  className="hero-headline-frame"
+                  initial={prefersReduced ? false : { opacity: 0, y: 18, filter: "blur(7px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  exit={prefersReduced ? undefined : { opacity: 0, y: -16, filter: "blur(6px)" }}
+                  transition={{ duration: .78, ease: [0.16,1,0.3,1] }}
                 >
-                  {word}{i < heroWords.length - 1 ? " " : ""}
+                  {HERO_HEADLINES[headlineIndex]}
                 </motion.span>
-              ))}
+              </AnimatePresence>
             </h1>
 
             <motion.p variants={{ hidden:{opacity:0,y:14},show:{opacity:1,y:0} }}>
-              Zugrio scans your markets, tracks setups from FORMING to READY to TRIGGERED, and alerts you with the levels, reasoning and next step.
+              Zugrio scans FX, Gold and Synthetic Indices for opportunities that fit your strategy — then keeps checking the trade as price, costs, context and execution conditions change.
             </motion.p>
-
-            <motion.div variants={{ hidden:{opacity:0,y:12},show:{opacity:1,y:0} }}>
-              <RollingDescriptors />
-            </motion.div>
 
             <motion.div variants={{ hidden:{opacity:0,y:12},show:{opacity:1,y:0} }} className="hero-actions">
               <a className="primary" href="#early-access">Join the early-access waitlist <ArrowRight size={17}/></a>
