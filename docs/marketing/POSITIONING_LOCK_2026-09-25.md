@@ -5,6 +5,17 @@ Date: 2026-09-25
 
 This document governs homepage positioning and information architecture. It does not change product architecture, Release 1 scope, or capability readiness.
 
+### Precedence
+
+For homepage positioning, hero testing, readiness language and the next landing-page copy pass, this document supersedes:
+- older landing-page copy documents;
+- the application-test wording block in `docs/brand/BRAND_PROPOSITION_V2_2_CANDIDATE.md`;
+- `docs/marketing/POSITIONING_INPUTS_2026-09-24.md` where that document conflicts with this lock.
+
+Product/architecture truth still has higher authority than this marketing lock.
+
+The master thesis **"The chart is not the market."** remains reserved for the later/closing brand signature unless trader-test evidence materially changes that decision.
+
 A wording candidate may change during testing. The method and the seven locked decisions below do not change unless product truth or test evidence materially disproves them.
 
 ## 1. Category and descriptor
