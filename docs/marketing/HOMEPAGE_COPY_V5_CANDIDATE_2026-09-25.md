@@ -167,7 +167,7 @@ No permitted trade qualifies. PASS is a decision, not another setup state.
 
 `{{status:chart.annotations}}`
 
-Where the active strategy defines them, Zugrio can show structure, relevant locations, confirmations, missing conditions and invalidation directly on the chart.
+Where your strategy defines them, Zugrio can show structure, relevant locations, confirmations, missing conditions and invalidation directly on the chart.
 
 Those annotations come from defined, versioned system logic and evidence — not from free-form AI narration.
 
@@ -282,7 +282,7 @@ Zugrio keeps the original trade available for review: the strategy state, releva
 
 `{{status:decision.replay}}`
 
-Replay is designed to show what was knowable at the time rather than rebuilding the trade from information that only became obvious later.
+Replay shows what was knowable at the time rather than rebuilding the trade from information that only became obvious later.
 
 ---
 
@@ -406,7 +406,7 @@ FX, Gold and Synthetic Indices. Each market and instrument scope is evaluated se
 
 ### Which strategies will Zugrio support?
 
-Zugrio is built to support multiple strategy families. Zugrio Core is the first-party strategy. Smart Money Concepts, Trend Following and Range / Mean Reversion are being validated, while Custom Strategy comes later.
+Zugrio supports a wider strategy direction that includes Zugrio Core, Smart Money Concepts, Trend Following, Range / Mean Reversion and Custom Strategy. Their current status is shown beside them on the page.
 
 ### Does AI decide the trade?
 
