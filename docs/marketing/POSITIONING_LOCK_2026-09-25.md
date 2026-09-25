@@ -254,7 +254,7 @@ A visitor arriving on either frame must receive a complete, meaningful Zugrio cl
 
 - static descriptor: **MARKET-AWARE TRADING INTELLIGENCE**;
 - Frame 1 visible first;
-- approximately 8 seconds visible per frame;
+- approximately 5 seconds visible per frame;
 - restrained crossfade plus slight vertical movement;
 - fixed-height headline container so layout does not jump;
 - no typing effect;
