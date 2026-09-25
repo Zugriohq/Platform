@@ -1638,12 +1638,7 @@ img,svg,canvas,iframe{max-width:100%}
 }
 .closing-field-line-a{top:31%}
 .closing-field-line-b{bottom:24%;opacity:.55}
-.closing-field-light{
-  pointer-events:none;position:absolute;left:-32%;top:18%;width:24%;height:64%;
-  background:linear-gradient(102deg,transparent,rgba(255,255,255,.018),rgba(255,255,255,.11),rgba(208,216,223,.025),transparent);
-  filter:blur(13px);transform:skewX(-13deg);mix-blend-mode:screen;
-  animation:none;opacity:.12;left:57%
-}
+.closing-field-light{display:none}
 .closing-thesis{
   top:8%;width:min(92vw,1160px);text-align:left
 }
@@ -1789,10 +1784,9 @@ img,svg,canvas,iframe{max-width:100%}
   padding:0 30px 6px;overflow:hidden
 }
 .waitlist-stage:before{
-  content:"";position:absolute;left:37%;top:0;width:24%;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),rgba(203,211,219,.22),transparent);
-  filter:drop-shadow(0 0 5px rgba(255,255,255,.12));
-  animation:none;opacity:.34
+  content:"";position:absolute;left:0;right:0;top:0;height:1px;
+  background:linear-gradient(90deg,transparent 0%,rgba(196,204,212,.12) 22%,rgba(241,244,247,.34) 50%,rgba(196,204,212,.12) 78%,transparent 100%);
+  opacity:.62;pointer-events:none
 }
 .waitlist-stage:after{
   content:"ACCESS PROFILE";position:absolute;right:30px;top:20px;
