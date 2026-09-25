@@ -9,7 +9,12 @@ import SilverReveal from "./SilverReveal.jsx";
 import BrandWordmark from "./BrandWordmark.jsx";
 import BrandIntro from "./BrandIntro.jsx";
 import MarketTopography from "./MarketTopography.jsx";
-import CapabilityStatus, { StoryCapabilityStatus } from "./CapabilityStatus.jsx";
+import {
+  StoryCapabilityStatus,
+  ReadinessCapability,
+  ReadinessMeta,
+  ReadinessLegend,
+} from "./CapabilityStatus.jsx";
 
 const MARKETS = {
   FX: {
@@ -112,6 +117,87 @@ const PROBLEM_CHAIN = [
   ["04", "PROCESS DEVIATION", "A good plan can break down in execution."],
   ["05", "EXECUTION MISMATCH", "Execution can differ from the plan."],
   ["06", "MISLEADING CONCLUSION", "After the position closes, P&L alone cannot tell you which part actually failed."],
+];
+
+const FAQ_ITEMS = [
+  {
+    code: "ACCESS",
+    question: "What can I use today?",
+    answer: "Zugrio is in private validation. The first release starts invite-only on Windows desktop, with Zugrio Core, Signal and Semi-Auto on cTrader. Public trading access is not open yet.",
+    capabilities: ["client.windows_desktop", "strategy.zugrio_core", "mode.signal", "mode.semi_auto_ctrader", "broker.ctrader"],
+  },
+  {
+    code: "MARKETS",
+    question: "Which markets is Zugrio built around first?",
+    answer: "FX, Gold and Synthetic Indices. Each market and instrument scope is evaluated separately rather than inheriting assumptions from another market.",
+    capabilities: ["market.fx", "market.gold", "market.synthetic_indices"],
+  },
+  {
+    code: "STRATEGY",
+    question: "Which strategies will Zugrio support?",
+    answer: "Zugrio supports a wider strategy direction that includes Zugrio Core, Smart Money Concepts, Trend Following, Range / Mean Reversion and Custom Strategy.",
+    capabilities: ["strategy.zugrio_core", "strategy.smc", "strategy.trend_following", "strategy.range_mean_reversion", "strategy.custom_builder"],
+  },
+  {
+    code: "AI",
+    question: "Does AI decide the trade?",
+    answer: "AI may help explain structured product state. Authoritative strategy state, chart annotations, risk rules and trading permissions come from defined, versioned system logic and evidence.",
+    capabilities: [],
+  },
+  {
+    code: "CONTROL",
+    question: "How does automation work?",
+    answer: "Zugrio separates analysis from permission. Signal keeps execution with you. Semi-Auto acts only after you approve. Auto and Full Auto add deeper delegation within limits you set, with their current availability shown here.",
+    capabilities: ["mode.signal", "mode.semi_auto_ctrader", "mode.auto", "mode.full_auto"],
+  },
+  {
+    code: "BROKER",
+    question: "Which broker comes first for Semi-Auto?",
+    answer: "cTrader is the first Semi-Auto broker path planned for the first release. Its current availability is shown here.",
+    capabilities: ["broker.ctrader"],
+  },
+  {
+    code: "CLIENTS",
+    question: "Where will I use Zugrio?",
+    answer: "The first release is Windows-desktop first, with web for account and access workflows. Mobile follows later.",
+    capabilities: ["client.windows_desktop", "client.web", "client.mobile"],
+  },
+  {
+    code: "CUSTOM",
+    question: "Can I use my own strategy?",
+    answer: "Custom Strategy is part of the broader Zugrio direction, but it is not part of the first release.",
+    capabilities: ["strategy.custom_builder"],
+  },
+  {
+    code: "PASS",
+    question: "What happens when nothing qualifies?",
+    answer: "Zugrio can return PASS. No trade is a valid decision.",
+    capabilities: [],
+  },
+  {
+    code: "REPLAY",
+    question: "Can I review a trade afterward?",
+    answer: "Decision history and replay preserve what was known at the time and what happened afterward. Current availability is shown here.",
+    capabilities: ["decision.replay"],
+  },
+  {
+    code: "CUSTODY",
+    question: "Does Zugrio hold my money?",
+    answer: "No. Capital remains with the broker. Custody, product access and permission to submit a trade are separate.",
+    capabilities: [],
+  },
+  {
+    code: "RISK",
+    question: "Does Zugrio guarantee profitable trades?",
+    answer: "No. Markets are uncertain. Zugrio does not guarantee returns, win rates or profitable outcomes.",
+    capabilities: [],
+  },
+  {
+    code: "EARLY ACCESS",
+    question: "What happens after I join early access?",
+    answer: "You will receive meaningful build updates and invitations as eligible capabilities and scopes open. Joining does not connect a broker or authorise trading.",
+    capabilities: [],
+  },
 ];
 
 const sectionReveal = {
@@ -352,6 +438,7 @@ export default function App() {
   const [caseKey, setCaseKey] = useState("valid");
   const [activeStep, setActiveStep] = useState("market");
   const [headlineIndex, setHeadlineIndex] = useState(0);
+  const [faqIndex, setFaqIndex] = useState(0);
 
   useEffect(() => {
     if (prefersReduced) {
@@ -598,41 +685,138 @@ export default function App() {
           <p className="dq-close">Know what actually needs improving.</p>
         </motion.section>
 
-        <motion.section className="status-board" id="status" {...sectionReveal}>
-          <div className="status-copy">
-            <div className="kicker">READINESS, WITHOUT GUESSWORK</div>
-            <h2>Know what’s live.</h2>
-            <p>Every market, broker connection and control mode carries a clear status.</p>
+        <motion.section className="readiness" id="status" {...sectionReveal}>
+          <div className="readiness-intro">
+            <div>
+              <div className="kicker">READINESS, WITHOUT GUESSWORK</div>
+              <h2>Know what’s live. And what isn’t.</h2>
+            </div>
+            <div>
+              <p>The Zugrio proposition is larger than the first capabilities that become available. That does not make every capability usable today.</p>
+              <ReadinessMeta />
+            </div>
           </div>
-          <div className="status-list">
-            {[
-              "strategy.zugrio_core",
-              "mode.signal",
-              "mode.semi_auto_ctrader",
-              "mode.full_auto",
-            ].map((capabilityId, i) => (
-              <CapabilityStatus key={capabilityId} capabilityId={capabilityId} index={i} />
-            ))}
-            <small>Status is sourced from Zugrio&apos;s canonical capability manifest. Zugrio is currently in private validation.</small>
+
+          <div className="readiness-console" aria-label="Zugrio capability readiness">
+            <div className="readiness-console-head">
+              <span>CAPABILITY READINESS</span>
+              <b>ONE PUBLISHED SOURCE</b>
+            </div>
+
+            <div className="readiness-group">
+              <div className="readiness-group-title"><span>01</span><b>CORE DECISION</b></div>
+              <div className="readiness-grid">
+                {[
+                  "strategy.zugrio_core",
+                  "intelligence.market_drivers",
+                  "intelligence.current_entry_recheck",
+                  "chart.annotations",
+                  "decision.replay",
+                  "intelligence.strategy_health",
+                  "behaviour.observations",
+                ].map((capabilityId) => (
+                  <ReadinessCapability key={capabilityId} capabilityId={capabilityId} />
+                ))}
+              </div>
+            </div>
+
+            <div className="readiness-group">
+              <div className="readiness-group-title"><span>02</span><b>CONTROL</b></div>
+              <div className="readiness-grid">
+                {[
+                  "mode.signal",
+                  "mode.semi_auto_ctrader",
+                  "mode.auto",
+                  "mode.full_auto",
+                ].map((capabilityId) => (
+                  <ReadinessCapability key={capabilityId} capabilityId={capabilityId} />
+                ))}
+              </div>
+            </div>
+
+            <div className="readiness-group">
+              <div className="readiness-group-title"><span>03</span><b>CLIENTS</b></div>
+              <div className="readiness-grid">
+                {[
+                  "client.windows_desktop",
+                  "client.web",
+                  "client.mobile",
+                ].map((capabilityId) => (
+                  <ReadinessCapability key={capabilityId} capabilityId={capabilityId} />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="readiness-meaning">
+            <div>
+              <div className="kicker">STATUS LANGUAGE</div>
+              <h3>One label should answer one question: can I use this now?</h3>
+              <p>Every status on this page comes from one published readiness list, with the date it was last checked.</p>
+            </div>
+            <ReadinessLegend />
           </div>
         </motion.section>
 
-        <motion.section className="faq" {...sectionReveal}>
-          <div className="kicker">QUESTIONS</div>
-          <h2>What to know before joining.</h2>
-          {[
-            ["What can I use today?","The site is a product preview and waitlist. Zugrio remains in private validation; public trading access is not yet open."],
-            ["Which markets are first?","FX, Gold and Synthetic Indices. Each is validated separately."],
-            ["Does Zugrio use one trading strategy?","Zugrio Core is the default starting strategy under validation. Other supported strategies keep their own rules and market scope."],
-            ["How does automation work?","Signal keeps execution with you. Semi-Auto, Auto and Full Auto add control only inside the rules, limits and permissions you choose."],
-            ["What does behavioral analytics show?","With read-only broker data, Zugrio compares the plan with observable actions — timing, entry, risk changes, exits and overrides — without pretending to infer emotions."],
-            ["Can I use my own discretionary plan?","Yes. Record the conditions, invalidation and risk, then review adherence even when Zugrio does not automate the strategy."],
-            ["What happens when there is no setup?","No setup is a valid answer. Zugrio shows when nothing qualifies, evidence is stale, or a setup expires or invalidates."],
-            ["Can I review a past decision?","Replay shows what was known at the time. Passed and missed cases stay reviewable, and strategy health stays separated by market and version."],
-            ["How does desktop and mobile fit together?","Desktop is the fuller workspace. Mobile keeps alerts, the current case and the next step accessible. The same history follows you."],
-            ["Does Zugrio guarantee profitable trades?","No. Zugrio improves consistency and decision review; it does not promise returns, win rate or profitable outcomes."],
-            ["What happens after I join?","You’ll receive build updates and early-access invitations. Joining does not connect a broker or authorise trading."],
-          ].map(([q,a]) => <details key={q}><summary>{q}<ChevronRight size={16}/></summary><p>{a}</p></details>)}
+        <motion.section className="trust-faq" id="faq" {...sectionReveal}>
+          <div className="trust-faq-head">
+            <div className="kicker">QUESTIONS / TRUST</div>
+            <h2>What to know before joining.</h2>
+          </div>
+
+          <div className="trust-dossier">
+            <div className="trust-index" role="tablist" aria-label="Zugrio questions">
+              {FAQ_ITEMS.map((item, index) => (
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={faqIndex === index}
+                  className={faqIndex === index ? "active" : ""}
+                  onClick={() => setFaqIndex(index)}
+                  key={item.question}
+                >
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <b>{item.question}</b>
+                  <em>{item.code}</em>
+                </button>
+              ))}
+            </div>
+
+            <div className="trust-answer-wrap">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.article
+                  className="trust-answer"
+                  key={faqIndex}
+                  role="tabpanel"
+                  initial={{ opacity: 0, y: 12, filter: "blur(5px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, y: -8, filter: "blur(4px)" }}
+                  transition={{ duration: .34, ease: [0.16,1,0.3,1] }}
+                >
+                  <div className="trust-answer-meta">
+                    <span>{String(faqIndex + 1).padStart(2, "0")} / {String(FAQ_ITEMS.length).padStart(2, "0")}</span>
+                    <b>{FAQ_ITEMS[faqIndex].code}</b>
+                  </div>
+
+                  <h3>{FAQ_ITEMS[faqIndex].question}</h3>
+                  <p>{FAQ_ITEMS[faqIndex].answer}</p>
+
+                  {FAQ_ITEMS[faqIndex].capabilities.length > 0 && (
+                    <div className="trust-answer-readiness">
+                      {FAQ_ITEMS[faqIndex].capabilities.map((capabilityId) => (
+                        <ReadinessCapability key={capabilityId} capabilityId={capabilityId} />
+                      ))}
+                    </div>
+                  )}
+                </motion.article>
+              </AnimatePresence>
+
+              <div className="trust-principle">
+                <span>TRUST PRINCIPLE</span>
+                <b>Access, custody and trading authority remain separate.</b>
+              </div>
+            </div>
+          </div>
         </motion.section>
 
         <SilverReveal />
