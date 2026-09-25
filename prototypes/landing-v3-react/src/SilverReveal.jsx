@@ -42,10 +42,7 @@ export default function SilverReveal() {
           <span>And the signal is not the whole decision.</span>
         </h2>
 
-        <p>
-          Zugrio follows the trade beyond the alert — from the conditions that formed it,
-          through the decision to act, to what actually happened afterward.
-        </p>
+        <p>Zugrio keeps rechecking the trade from the first setup to the final review.</p>
       </div>
 
       <div className="closing-mark" aria-hidden="true">

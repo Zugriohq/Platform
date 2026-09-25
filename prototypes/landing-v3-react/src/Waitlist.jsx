@@ -314,8 +314,8 @@ export default function Waitlist() {
     <section className="waitlist" id="early-access">
       <div className="waitlist-copy">
         <div className="kicker">EARLY ACCESS</div>
-        <h2>Get closer to Zugrio.</h2>
-        <p>Join the early-access list for meaningful product milestones, validation updates and invitations as eligible capabilities and scopes open.</p>
+        <h2>Be first in when Zugrio opens.</h2>
+        <p>Join for build updates and invitations as each market, strategy and control level opens.</p>
 
         <div className="journey">
           <span><b>01</b> Join the list</span>
