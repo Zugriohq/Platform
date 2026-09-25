@@ -93,6 +93,11 @@ const HERO_HEADLINES = [
   "Don’t trade the signal. Trade what’s still true.",
 ];
 
+const HERO_MOBILE_LINES = [
+  ["The market changes.", "Your decision should", "keep up."],
+  ["Don’t trade the signal.", "Trade what’s still", "true."],
+];
+
 const TICKER = [
   "Strategy-aware scanning",
   "FORMING → READY → TRIGGERED",
@@ -352,7 +357,12 @@ export default function App() {
                   exit={prefersReduced ? undefined : { opacity: 0, y: -16, filter: "blur(6px)" }}
                   transition={{ duration: .78, ease: [0.16,1,0.3,1] }}
                 >
-                  {HERO_HEADLINES[headlineIndex]}
+                  <span className="hero-headline-desktop">{HERO_HEADLINES[headlineIndex]}</span>
+                  <span className="hero-headline-mobile">
+                    {HERO_MOBILE_LINES[headlineIndex].map((line) => (
+                      <span className="hero-headline-mobile-line" key={line}>{line}</span>
+                    ))}
+                  </span>
                 </motion.span>
               </AnimatePresence>
             </h1>
