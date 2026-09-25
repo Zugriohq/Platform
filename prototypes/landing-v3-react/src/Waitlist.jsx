@@ -314,8 +314,8 @@ export default function Waitlist() {
     <section className="waitlist" id="early-access">
       <div className="waitlist-copy">
         <div className="kicker">EARLY ACCESS</div>
-        <h2>See the market. Keep your strategy. Stay in control.</h2>
-        <p>Join the waitlist for product previews, build updates and invitations as Zugrio opens access.</p>
+        <h2>Get closer to Zugrio.</h2>
+        <p>Join the early-access list for meaningful product milestones, validation updates and invitations as eligible capabilities and scopes open.</p>
 
         <div className="journey">
           <span><b>01</b> Join the list</span>
@@ -367,15 +367,15 @@ export default function Waitlist() {
                 </svg>
               </div>
 
-              <div className="success-kicker">EARLY ACCESS · REGISTERED</div>
-              <h3>You’re on the inside.</h3>
-              <p>Your early-access profile is now part of the build. We’ll use what you shared to make future product previews, testing groups and invitations more relevant as access opens.</p>
+              <div className="success-kicker">EARLY ACCESS / REGISTERED</div>
+              <h3>You’re on the list.</h3>
+              <p>We’ll write when there is something meaningful to show you. Your trader profile is already captured for more relevant testing and invitations as access opens.</p>
 
               <div className="success-profile" aria-label="Your early-access profile">
                 <span>{optionLabel("market", successProfile.market)}</span>
-                <i />
+                <span className="profile-separator" aria-hidden="true" />
                 <span>{optionLabel("horizon", successProfile.horizon)}</span>
-                <i />
+                <span className="profile-separator" aria-hidden="true" />
                 <span>{optionLabel("mode", successProfile.mode)}</span>
               </div>
 
@@ -442,7 +442,7 @@ export default function Waitlist() {
                   <ZugrioSelect label="Preferred Zugrio access" name="platform" required value={fields.platform} onChange={setField} options={PLATFORM_OPTIONS} />
 
                   <label className="profile-text-field">
-                    <span>Country / region <i aria-hidden="true">·</i></span>
+                    <span>Country / region <small className="required-word">REQUIRED</small></span>
                     <input
                       name="country"
                       type="text"
