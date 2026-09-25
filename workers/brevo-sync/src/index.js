@@ -29,7 +29,8 @@ async function providerError(response) {
           text += new TextDecoder().decode(bytes);
           size += bytes.length;
         }
-      } finally { await reader.cancel(); }
+      } catch { /* Diagnostics must not mask the known authentication status. */ }
+      finally { await reader.cancel().catch(() => {}); }
     }
     if (/ip address|unauthori[sz]ed ip|unrecogni[sz]ed ip/i.test(text)) reason = 'ip_blocked';
     else if (/key not found|invalid.*key|key.*invalid|api.?key.*missing/i.test(text)) reason = 'invalid_key';

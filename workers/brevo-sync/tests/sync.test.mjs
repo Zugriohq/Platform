@@ -114,3 +114,13 @@ test('authentication diagnosis records only a safe category', async () => {
     assert.equal(env.DB.sql.prepare('SELECT last_error FROM brevo_contact_sync').get().last_error, 'brevo_http_401:' + expected);
   }
 });
+
+test('interrupted auth response body still stops the batch on HTTP 401', async () => {
+  const env = fixture(); add(env, 1); add(env, 2); let calls = 0;
+  await mock(async () => {
+    calls++;
+    return new Response(new ReadableStream({ start(controller) { controller.error(new Error('interrupted')); } }), { status: 401 });
+  }, async () => assert.equal((await runSync(env)).failed, 1));
+  assert.equal(calls, 1);
+  assert.equal(env.DB.sql.prepare('SELECT last_error FROM brevo_contact_sync').get().last_error, 'brevo_http_401');
+});
