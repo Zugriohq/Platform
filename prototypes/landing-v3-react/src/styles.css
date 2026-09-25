@@ -1723,3 +1723,169 @@ img,svg,canvas,iframe{max-width:100%}
   .closing-field-light{animation:none!important;display:none}
   .closing-signature .silver-spotlight{opacity:.52}
 }
+
+
+/* ── EARLY ACCESS / PREMIUM CONVERSION SURFACE ────────────────────────────
+   Visual-only pass. The production Waitlist component contract, fields,
+   validation, consent, Turnstile, payload and success behaviour stay intact.
+   ───────────────────────────────────────────────────────────────────────── */
+.waitlist{
+  position:relative;max-width:none;margin:0;padding:150px max(24px,calc((100vw - 1332px)/2)) 164px;
+  grid-template-columns:minmax(0,.72fr) minmax(560px,1.28fr);gap:clamp(72px,8vw,126px);
+  background:
+    radial-gradient(ellipse 38% 36% at 73% 48%,rgba(235,239,243,.026),transparent 72%),
+    linear-gradient(180deg,#06080b 0%,#080a0d 46%,#07090c 100%);
+  border-top:1px solid rgba(255,255,255,.075);overflow:hidden;isolation:isolate
+}
+.waitlist:before{
+  content:"";position:absolute;left:max(24px,calc((100vw - 1332px)/2));right:max(24px,calc((100vw - 1332px)/2));top:86px;height:1px;
+  background:linear-gradient(90deg,rgba(202,209,216,.18),rgba(255,255,255,.035) 31%,rgba(255,255,255,.035) 69%,rgba(202,209,216,.18))
+}
+.waitlist:after{
+  content:"EARLY ACCESS / PRIVATE VALIDATION";position:absolute;top:61px;
+  left:max(24px,calc((100vw - 1332px)/2));color:#59636e;
+  font-size:7px;font-weight:700;letter-spacing:.14em
+}
+.waitlist-copy{position:relative;z-index:2;padding-top:26px}
+.waitlist-copy .kicker{color:#858e98}
+.waitlist-copy h2{
+  max-width:600px;margin:20px 0 22px;
+  font-size:clamp(48px,5.15vw,74px);line-height:.95;letter-spacing:-.064em
+}
+.waitlist-copy>p{
+  max-width:560px;color:#818b95;font-size:14px;line-height:1.82
+}
+.journey{
+  margin-top:44px;border-top:1px solid rgba(255,255,255,.075);
+  border-bottom:1px solid rgba(255,255,255,.075)
+}
+.journey span{
+  min-height:50px;display:grid;grid-template-columns:34px 1fr;align-items:center;gap:13px;
+  color:#89939e;font-size:10px;border-bottom:1px solid rgba(255,255,255,.05)
+}
+.journey span:last-child{border-bottom:0}
+.journey span b{
+  color:#505b66;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:8px;font-weight:600;letter-spacing:.08em
+}
+.instagram-link{
+  margin-top:28px;color:#68737e;font-size:9px;letter-spacing:.01em
+}
+.instagram-link:hover{color:#dfe4e8}
+
+.waitlist-stage{
+  position:relative;z-index:2;align-self:start;min-width:0;
+  border:1px solid rgba(193,201,209,.14);border-radius:18px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.022),rgba(255,255,255,.004) 22%,transparent 52%),
+    #090c10;
+  box-shadow:
+    0 28px 90px rgba(0,0,0,.34),
+    inset 0 1px 0 rgba(255,255,255,.025);
+  padding:0 30px 6px;overflow:hidden
+}
+.waitlist-stage:before{
+  content:"";position:absolute;left:-28%;top:0;width:26%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),rgba(203,211,219,.22),transparent);
+  filter:drop-shadow(0 0 6px rgba(255,255,255,.18));
+  animation:earlyAccessEdgePass 8.5s cubic-bezier(.16,1,.3,1) 1.2s infinite
+}
+.waitlist-stage:after{
+  content:"ACCESS PROFILE";position:absolute;right:30px;top:20px;
+  color:#4e5964;font-size:6.5px;font-weight:700;letter-spacing:.14em
+}
+.waitlist-stage form{padding:54px 0 28px}
+.waitlist form>label[for="email"]{
+  color:#8e98a2;font-size:8px;font-weight:700;letter-spacing:.11em;text-transform:uppercase
+}
+.form-row{gap:9px;margin-top:10px}
+.form-row input{
+  min-height:50px;background:linear-gradient(180deg,#0d1116,#0a0e13);
+  border:1px solid #2e3741;border-radius:10px;padding:0 14px;
+  font-size:12px;transition:border-color .2s ease,box-shadow .2s ease,background .2s ease
+}
+.form-row input:hover{border-color:#3b4651}
+.form-row input:focus{
+  background:#0d1116;border-color:#67727e;
+  box-shadow:0 0 0 3px rgba(232,237,241,.055),inset 0 1px 0 rgba(255,255,255,.018)
+}
+.form-row button,.profile-submit-bottom{
+  min-height:50px;border-radius:10px;border:1px solid rgba(240,243,246,.88);
+  background:linear-gradient(180deg,#f0f3f5,#dfe5ea);
+  color:#080b0f;box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 8px 26px rgba(0,0,0,.22)
+}
+.form-row button:hover,.profile-submit-bottom:hover{
+  filter:none;background:linear-gradient(180deg,#f5f7f8,#e5eaee)
+}
+.required-profile{
+  margin-top:14px;border:1px solid #252e38;border-radius:11px;
+  background:linear-gradient(180deg,rgba(16,20,26,.92),rgba(10,14,19,.92))
+}
+.required-profile summary{min-height:54px;padding:13px 15px}
+.required-profile summary b{color:#dbe0e4;font-size:10px;font-weight:640}
+.required-profile summary small{color:#626d78;font-size:8px}
+.profile-grid{gap:11px;padding:2px 15px 16px}
+.profile-text-field>span,.zugrio-select>label{
+  color:#77828d;font-size:8px;letter-spacing:.025em
+}
+.required-word{color:#56616c;font-size:6px}
+.profile-text-field input,.zugrio-select-native-shell select{
+  min-height:46px;border-color:#29333d;background:linear-gradient(180deg,#10151b,#0c1015);
+  border-radius:9px;font-size:10.5px
+}
+.profile-text-field input:hover,.zugrio-select-native-shell select:hover{border-color:#3a4651}
+.consent{
+  margin-top:17px;padding-top:16px;border-top:1px solid rgba(255,255,255,.055);
+  color:#77818b;font-size:9px;line-height:1.6
+}
+.turnstile-host{margin-top:17px}
+.form-status{
+  min-height:16px;margin-top:14px!important;padding-left:10px;border-left:1px solid #39434e;
+  color:#717b86!important;font-size:9px!important;line-height:1.55
+}
+.form-status.attention{border-left-color:#8d744f}
+.form-status.error{border-left-color:#8c5156}
+.form-fine{
+  margin-top:14px!important;padding-top:13px;border-top:1px solid rgba(255,255,255,.05);
+  color:#58636e!important;font-size:8px!important;line-height:1.62!important
+}
+.privacy-mini{margin-top:12px;padding-top:10px;border-top:0}
+.privacy-mini summary{color:#59646f;font-size:8px;letter-spacing:.015em}
+.profile-submit-bottom{margin-top:17px;font-size:11px}
+.waitlist-success{
+  position:relative;padding:74px 0 38px!important;background:transparent!important
+}
+.success-kicker{letter-spacing:.12em}
+.success-profile,.success-meta{border-color:#29323c}
+@keyframes earlyAccessEdgePass{
+  0%,24%{left:-28%;opacity:0}
+  34%{opacity:.88}
+  64%{left:105%;opacity:.18}
+  100%{left:105%;opacity:0}
+}
+@media(max-width:1050px){
+  .waitlist{
+    grid-template-columns:1fr;gap:56px;padding-left:24px;padding-right:24px
+  }
+  .waitlist:before{left:24px;right:24px}
+  .waitlist:after{left:24px}
+  .waitlist-copy{max-width:720px}
+  .waitlist-stage{width:100%;max-width:820px}
+}
+@media(max-width:720px){
+  .waitlist{padding:112px 16px 92px;gap:42px}
+  .waitlist:before{top:60px;left:16px;right:16px}
+  .waitlist:after{top:38px;left:16px;font-size:6.5px}
+  .waitlist-copy{padding-top:8px}
+  .waitlist-copy h2{font-size:clamp(42px,13vw,58px)}
+  .waitlist-copy>p{font-size:12px;line-height:1.72}
+  .journey{margin-top:32px}
+  .waitlist-stage{padding:0 16px 4px;border-radius:14px}
+  .waitlist-stage:after{right:16px;top:17px}
+  .waitlist-stage form{padding-top:47px}
+  .form-row{grid-template-columns:1fr}
+  .form-row button{width:100%;justify-content:center}
+}
+@media(prefers-reduced-motion:reduce){
+  .waitlist-stage:before{animation:none!important;display:none}
+}
