@@ -507,7 +507,7 @@ export default function App() {
                   <strong>STRATEGY HEALTH</strong>
                   <p>Is there real evidence behind this strategy in this market?</p>
                 </div>
-                <StoryCapabilityStatus capabilityId="intelligence.strategy_health" className="dq-readiness" />
+                <StoryCapabilityStatus capabilityId="intelligence.strategy_health" className="dq-readiness" hideName />
               </div>
 
               <div className="dq-axis">
