@@ -10,7 +10,8 @@
     "readiness:sync": "node scripts/sync-readiness.mjs",
     "readiness:check": "node scripts/check-readiness.mjs",
     "predev": "npm run readiness:sync",
-    "prebuild": "npm run readiness:sync && npm run readiness:check"
+    "prebuild": "npm run readiness:sync && npm run readiness:check && npm run visual:check",
+    "visual:check": "node scripts/check-visual-integrity.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.4",
