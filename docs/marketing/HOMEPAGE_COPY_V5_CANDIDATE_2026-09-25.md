@@ -15,7 +15,7 @@ Any notation in the form:
 
 means the site must render the public name/status/scope from the Capability Scope Manifest. Do not replace it with a manually maintained status string.
 
-The homepage may describe the wider Zugrio proposition in body copy. Capability availability is communicated separately through manifest-backed status treatment.
+The homepage may describe the wider Zugrio proposition in body copy. Capability availability is communicated separately through the canonical readiness source.
 
 ---
 
@@ -158,7 +158,9 @@ The required pre-trigger conditions are present.
 **TRIGGERED**  
 The defined trigger occurred and the signal is recorded.
 
-### No setup is a valid answer too.
+### Decision outcome
+
+**No setup is a valid answer too.**
 
 **PASS**  
 No permitted trade qualifies. PASS is a decision, not another setup state.
