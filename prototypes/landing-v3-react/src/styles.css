@@ -700,22 +700,15 @@ button{color:inherit}
   max-width:560px;margin:0;color:var(--muted);font-size:15px;line-height:1.8
 }
 
-.access-principles>div{
-  display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:center;
-  min-height:48px;border-bottom:1px solid var(--line)
-}
-.access-principles span{
-  color:var(--subtle);font:8px ui-monospace,SFMono-Regular,Menlo,monospace
-}
-.access-principles b{
-  color:#cfd5da;font-size:8px;letter-spacing:.11em;font-weight:650
-}
+
+
+
 .waitlist-stage{align-self:start;min-width:0;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)}
 .waitlist-stage form{
   width:100%;padding:30px 0 26px;background:transparent;border:0;border-radius:0
 }
 
-.access-form-head b{color:var(--state-neutral);font-weight:650}
+
 .waitlist form>label[for="email"]{
   display:block;color:var(--muted);font-size:9px;font-weight:620;letter-spacing:.035em
 }
@@ -1039,7 +1032,7 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
   .silver-scope{justify-content:flex-start;flex-wrap:wrap}
   .silver-scope i{width:16px}
   
-  .segment-options button:nth-child(odd){border-right:0}
+  
   .waitlist-success{min-height:480px;padding:30px 0}
   .silver-spotlight{
     opacity:.86;
@@ -1102,20 +1095,13 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
   position:relative;z-index:4;margin:0;max-width:540px;color:var(--muted);font-size:13px;line-height:1.7
 }
 
-.segment-prompt>span{
-  display:block;color:var(--subtle);font-size:7px;letter-spacing:.11em;margin-bottom:8px
-}
-.segment-prompt>strong{display:block;color:#dbe0e4;font-size:11px;font-weight:620}
-.segment-options{
-  display:grid;grid-template-columns:1fr 1fr;margin-top:14px;border-top:1px solid var(--line)
-}
-.segment-options button{
-  min-height:44px;border:0;border-bottom:1px solid var(--line);background:transparent;
-  color:#818b96;font-size:9px;text-align:left;padding:0 12px 0 0;cursor:pointer
-}
+
+
+
+
 .segment-options button:nth-child(odd){border-right:1px solid var(--line)}
-.segment-options button.selected{color:#f0f3f5;background:linear-gradient(90deg,rgba(255,255,255,.035),transparent)}
-.segment-prompt small{display:block;margin-top:10px;color:var(--subtle);font-size:8px}
+
+
 .success-actions{
   position:relative;z-index:4;display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-top:28px
 }
