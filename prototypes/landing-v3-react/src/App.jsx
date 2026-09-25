@@ -94,12 +94,12 @@ const HERO_HEADLINES = [
 ];
 
 const PROBLEM_CHAIN = [
-  ["01", "MISSED OPPORTUNITY", "The opportunity forms while your attention is somewhere else."],
-  ["02", "STALE ENTRY", "The setup was valid, but the price available now is no longer the trade you planned."],
-  ["03", "CHANGING CONTEXT", "The market changes between the signal and the action."],
-  ["04", "PROCESS DEVIATION", "The plan is clear, but the action drifts from it."],
-  ["05", "EXECUTION MISMATCH", "What reaches the broker can differ from what you intended or approved."],
-  ["06", "FALSE CONCLUSION", "P&L can make the wrong part of the decision look right — or the right process look wrong."],
+  ["01", "MISSED OPPORTUNITY", "You can miss the opportunity."],
+  ["02", "STALE ENTRY", "You can find the right setup after the best entry has gone."],
+  ["03", "CHANGING CONTEXT", "The market can change between the signal and the trade."],
+  ["04", "PROCESS DEVIATION", "A good plan can break down in execution."],
+  ["05", "EXECUTION MISMATCH", "Execution can differ from the plan."],
+  ["06", "MISLEADING CONCLUSION", "After the position closes, P&L alone cannot tell you which part actually failed."],
 ];
 
 const sectionReveal = {
@@ -378,7 +378,7 @@ export default function App() {
             <div className="kicker">THE SIGNAL ISN’T THE WHOLE TRADE</div>
             <h2>Trading breaks in more than one place.</h2>
             <p>
-              A trade can fail before the signal, after it, in execution, or in the lesson you take from the outcome.
+              The signal alone is not enough to tell you whether the trade still makes sense, whether the plan was followed, or what actually failed.
             </p>
           </div>
 
