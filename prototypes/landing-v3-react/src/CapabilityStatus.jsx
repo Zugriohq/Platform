@@ -1,8 +1,9 @@
 import React from "react";
 import { motion } from "motion/react";
+import { LockKeyhole } from "lucide-react";
 import manifest from "./generated/capability-scope-manifest.json";
 
-const STATUS_LABELS = {
+export const STATUS_LABELS = {
   released: "Released",
   early_access: "Early access",
   validation: "Validation",
@@ -21,6 +22,22 @@ export function getCapability(capabilityId) {
   return capability;
 }
 
+export function StoryCapabilityStatus({ capabilityId }) {
+  const capability = getCapability(capabilityId);
+  const statusLabel = STATUS_LABELS[capability.status];
+
+  return (
+    <span
+      className="story-capability"
+      data-capability-id={capability.id}
+      data-capability-status={capability.status}
+    >
+      <b>{capability.public_name}</b>
+      <em>{capability.status === "locked" && <LockKeyhole size={11} aria-hidden="true" />}{statusLabel}</em>
+    </span>
+  );
+}
+
 export default function CapabilityStatus({ capabilityId, index = 0 }) {
   const capability = getCapability(capabilityId);
   const statusLabel = STATUS_LABELS[capability.status];
@@ -36,7 +53,7 @@ export default function CapabilityStatus({ capabilityId, index = 0 }) {
     >
       <b>{capability.public_name}</b>
       <span>{capability.scope}</span>
-      <em>{statusLabel}</em>
+      <em>{capability.status === "locked" && <LockKeyhole size={11} aria-hidden="true" />}{statusLabel}</em>
     </motion.div>
   );
 }
