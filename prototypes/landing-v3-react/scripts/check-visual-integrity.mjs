@@ -31,10 +31,17 @@ requireText(
   'aria-expanded={menu}',
   "The mobile navigation button must expose its expanded state."
 );
+requireText(
+  css,
+  "font-size:clamp(31px,10.2vw,40px)",
+  "The mobile hero must retain the tested fluid type scale for 320–420px widths."
+);
 
 forbidText(css, "WHOLE-PAGE INTEGRATION PASS", "Do not restore the deprecated late integration override layer.");
 forbidText(css, "max-width:1380px", "A 1380px content rail would reintroduce section-edge drift.");
 forbidText(css, "max-width:1340px", "A 1340px content rail would reintroduce section-edge drift.");
+forbidText(css, "font-size:39px;line-height:.96", "Do not force the mobile hero to a fixed 39px size; it overflows narrow phones.");
+forbidText(css, ".waitlist-stage:before{width:24%", "Do not freeze the old Early Access sweep as a short bright edge fragment.");
 forbidText(css, "--max:1220px", "The old 1220px content rail must not return.");
 forbidText(css, ".hero-headline-frame{align-items:flex-start}", "The mobile hero must not switch to left alignment.");
 forbidText(css, "closingSilverPass 13.5s", "The Closing Signature must not restore the perpetual silver sweep.");
