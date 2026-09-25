@@ -10,7 +10,31 @@ function settings(env) {
 }
 
 class ProviderError extends Error {
-  constructor(status) { super(`brevo_http_${status}`); this.status = status; }
+  constructor(status, reason = '') { super(`brevo_http_${status}${reason ? ':' + reason : ''}`); this.status = status; }
+}
+
+async function providerError(response) {
+  let reason = '';
+  if ([401, 403].includes(response.status)) {
+    // Inspect only a bounded auth error; never persist its text, IPs or credentials.
+    const reader = response.body?.getReader();
+    let text = '';
+    if (reader) {
+      try {
+        let size = 0;
+        while (size < 4096) {
+          const part = await reader.read();
+          if (part.done) break;
+          const bytes = part.value.subarray(0, 4096 - size);
+          text += new TextDecoder().decode(bytes);
+          size += bytes.length;
+        }
+      } finally { await reader.cancel(); }
+    }
+    if (/ip address|unauthori[sz]ed ip|unrecogni[sz]ed ip/i.test(text)) reason = 'ip_blocked';
+    else if (/key not found|invalid.*key|key.*invalid|api.?key.*missing/i.test(text)) reason = 'invalid_key';
+  } else { await response.body?.cancel(); }
+  return new ProviderError(response.status, reason);
 }
 
 async function request(env, path, init = {}) {
@@ -18,7 +42,7 @@ async function request(env, path, init = {}) {
   try {
     response = await fetch(API + path, {
       ...init,
-      headers: { 'api-key': env.BREVO_API_KEY, accept: 'application/json', 'content-type': 'application/json' },
+      headers: { 'api-key': env.BREVO_API_KEY.trim(), accept: 'application/json', 'content-type': 'application/json' },
       signal: AbortSignal.timeout(8000),
     });
   } catch { throw new Error('brevo_network_error'); }
@@ -32,8 +56,7 @@ export async function syncContact(env, email, listId) {
     if (contact.emailBlacklisted || contact.listUnsubscribed?.includes(listId)) return 'suppressed';
     if (contact.listIds?.includes(listId)) return 'synced';
   } else if (lookup.status !== 404) {
-    await lookup.body?.cancel();
-    throw new ProviderError(lookup.status);
+    throw await providerError(lookup);
   } else { await lookup.body?.cancel(); }
 
   // Never clear suppression, replace other lists, or send a message.
@@ -41,8 +64,8 @@ export async function syncContact(env, email, listId) {
     method: 'POST',
     body: JSON.stringify({ email, listIds: [listId], updateEnabled: true }),
   });
+  if (!result.ok) throw await providerError(result);
   await result.body?.cancel();
-  if (!result.ok) throw new ProviderError(result.status);
   return 'synced';
 }
 

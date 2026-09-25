@@ -101,3 +101,16 @@ test('health reveals no credentials and exposes no public sync action', async ()
   assert.equal((await worker.fetch(new Request('https://example.test/sync'), env)).status, 404);
   assert.equal((await worker.fetch(new Request('https://example.test/health', { method: 'POST' }), env)).status, 405);
 });
+
+test('authentication diagnosis records only a safe category', async () => {
+  for (const [message, expected] of [
+    ['We have detected an unrecognised IP address 192.0.2.1', 'ip_blocked'],
+    ['Key not found secret-value', 'invalid_key'],
+  ]) {
+    const env = fixture(); add(env);
+    await mock(async () => Response.json({ message }, { status: 401 }), async () => {
+      assert.equal((await runSync(env)).failed, 1);
+    });
+    assert.equal(env.DB.sql.prepare('SELECT last_error FROM brevo_contact_sync').get().last_error, 'brevo_http_401:' + expected);
+  }
+});
