@@ -180,6 +180,137 @@
       "source_refs": [
         "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md"
       ]
+    },
+    {
+      "id": "intelligence.strategy_health",
+      "public_name": "Strategy Health",
+      "category": "decision_quality",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "Bundle/scope-level Strategy Health is a Release 1 build target where evidence is sufficient; no released public scope claimed.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md",
+        "docs/product/STRATEGY_BEHAVIOUR_HEALTH_V1.md"
+      ]
+    },
+    {
+      "id": "behaviour.observations",
+      "public_name": "Behaviour Observations",
+      "category": "decision_quality",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "Release 1 target is factual, evidence-backed observations/advisory only; no emotion inference and no released scope claimed.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md",
+        "docs/product/STRATEGY_BEHAVIOUR_HEALTH_V1.md"
+      ]
+    },
+    {
+      "id": "behaviour.health",
+      "public_name": "Behaviour Health",
+      "category": "decision_quality",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "Broader behaviour-health analytics are represented in Zugrio 1.0; Release 1 is limited to factual observations/advisory treatment.",
+      "source_refs": [
+        "docs/product/PRODUCT_DIRECTION.md",
+        "docs/product/STRATEGY_BEHAVIOUR_HEALTH_V1.md",
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md"
+      ]
+    },
+    {
+      "id": "guardrail.advisory",
+      "public_name": "Advisory Guardrails",
+      "category": "guardrail",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "Release 1 guardrail target; advisory only and cannot block capital actions.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md",
+        "docs/product/STRATEGY_BEHAVIOUR_HEALTH_V1.md"
+      ]
+    },
+    {
+      "id": "guardrail.confirmation",
+      "public_name": "Confirmation Guardrails",
+      "category": "guardrail",
+      "status": "planned",
+      "public_visible": true,
+      "scope": "Zugrio 1.0 capability but not Release 1; adds friction only inside a Zugrio-controlled workflow when eventually admitted.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md",
+        "docs/product/STRATEGY_BEHAVIOUR_HEALTH_V1.md"
+      ]
+    },
+    {
+      "id": "guardrail.enforcing",
+      "public_name": "Enforcing Guardrails",
+      "category": "guardrail",
+      "status": "locked",
+      "public_visible": true,
+      "scope": "Capital-relevant capability deliberately unavailable pending explicit integration, deterministic policy, tests and launch evidence; never blocks governed risk reduction.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md",
+        "docs/product/STRATEGY_BEHAVIOUR_HEALTH_V1.md"
+      ]
+    },
+    {
+      "id": "decision.replay",
+      "public_name": "Decision Replay",
+      "category": "decision_history",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "Decision Case/journal history and point-in-time replay are Release 1 build targets; no released public scope claimed.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md",
+        "docs/product/ZUGRIO_1_0_PRD.md"
+      ]
+    },
+    {
+      "id": "chart.annotations",
+      "public_name": "Live Chart State",
+      "category": "chart",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "Release 1 target for deterministic/versioned annotations from frozen bundle state; AI explanation cannot create authoritative chart state.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md",
+        "docs/marketing/POSITIONING_INPUTS_2026-09-24.md"
+      ]
+    },
+    {
+      "id": "client.windows_desktop",
+      "public_name": "Windows Desktop",
+      "category": "client",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "Primary Release 1 authenticated trading client target; no public released client claimed.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md"
+      ]
+    },
+    {
+      "id": "client.web",
+      "public_name": "Web",
+      "category": "client",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "Release 1 web surface target covers public site, account/authentication, entitlement/readiness and desktop access/download; not a full browser trading workspace.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md"
+      ]
+    },
+    {
+      "id": "client.mobile",
+      "public_name": "Mobile",
+      "category": "client",
+      "status": "planned",
+      "public_visible": true,
+      "scope": "Staged after Release 1; shared identity/API architecture must support it without backend redesign.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md",
+        "docs/product/ZUGRIO_1_0_PRD.md"
+      ]
     }
   ]
 }
