@@ -1099,7 +1099,7 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
 
 
 
-.segment-options button:nth-child(odd){border-right:1px solid var(--line)}
+
 
 
 .success-actions{
@@ -1420,224 +1420,84 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
 }
 
 
-/* ── CLOSING THESIS V5 ───────────────────────────────────────────────────
-   The configured waitlist/form system above remains untouched.
-   This block only adapts the SilverReveal component to the frozen closing copy.
+/* ── WAITLIST FORM RELIABILITY + RESPONSIVE HARDENING ────────────────────
+   The production form contract remains unchanged. Dropdowns use native
+   browser/OS selection under Zugrio styling for maximum cross-device reliability.
    ───────────────────────────────────────────────────────────────────────── */
 
-.silver-thesis{
-  position:absolute;z-index:6;top:8.5%;left:50%;transform:translateX(-50%);
-  width:min(92vw,1180px);text-align:center;pointer-events:none
+html,body,#root{width:100%;max-width:100%;overflow-x:hidden}
+@supports (overflow:clip){
+  html,body,#root{overflow-x:clip}
 }
-.silver-thesis>span{
-  color:#68727d;font-size:8px;letter-spacing:.16em;font-weight:700
+main,section,header,footer,
+.hero,.hero-copy,.hero-product,.problem,.story,.story-wrap,.story-copy,.story-visual,
+.decision-quality,.readiness,.trust-faq,.waitlist,.waitlist-copy,.waitlist-stage{
+  min-width:0;max-width:100%
 }
-.silver-thesis h2{
-  max-width:980px;margin:20px auto 0;color:#eff2f4;
-  font-size:clamp(48px,6.2vw,88px);line-height:.96;letter-spacing:-.064em
-}
-.silver-thesis strong{
-  display:block;margin:17px auto 0;color:#aab2bb;
-  font-size:clamp(17px,2vw,28px);line-height:1.15;font-weight:540;letter-spacing:-.025em
-}
-.silver-thesis p{
-  max-width:660px;margin:24px auto 0;color:#727d88;font-size:12px;line-height:1.75
-}
-
-.silver-reveal{min-height:clamp(680px,68vw,900px)}
-.silver-reveal .silver-base,
-.silver-reveal .silver-spotlight .brand-wordmark{margin-top:150px}
-
-.silver-action{
-  position:absolute;z-index:7;bottom:8.5%;left:50%;transform:translateX(-50%);
-  width:min(92vw,1180px);display:flex;align-items:center;justify-content:space-between;gap:30px
-}
-.silver-action>a{
-  display:inline-flex;align-items:center;gap:10px;padding:10px 0 8px;
-  color:#e4e8eb;font-size:10px;font-weight:650;border-bottom:1px solid #5b6570
-}
-.silver-action>a:hover{border-color:#e4e8eb}
-.silver-scope{
-  display:flex;align-items:center;justify-content:flex-end;gap:11px;
-  color:#65707b;font-size:7px;letter-spacing:.105em
-}
-.silver-scope i{
-  width:24px;height:1px;background:linear-gradient(90deg,transparent,#58626d,transparent)
-}
-.silver-hint{
-  bottom:2.8%;display:flex;align-items:center;gap:9px;color:#4f5862;
-  font-size:7px;letter-spacing:.13em
-}
-.silver-hint i{
-  width:34px;height:1px;background:linear-gradient(90deg,transparent,#57616b,transparent)
-}
-.silver-hint b{font-weight:600;color:#68717b}
-
-@media(max-width:720px){
-  .silver-reveal{min-height:660px}
-  .silver-thesis{top:7.5%;width:calc(100% - 32px)}
-  .silver-thesis h2{font-size:clamp(42px,13vw,62px)}
-  .silver-thesis strong{font-size:clamp(16px,5vw,22px)}
-  .silver-thesis p{font-size:11px}
-  .silver-reveal .silver-base,
-  .silver-reveal .silver-spotlight .brand-wordmark{margin-top:122px}
-  .silver-action{
-    bottom:7%;width:calc(100% - 32px);align-items:flex-start;
-    flex-direction:column;gap:18px
-  }
-  .silver-scope{justify-content:flex-start;flex-wrap:wrap}
-  .silver-scope i{width:16px}
-}
-
-
-/* ── CONFIGURED FULL-FORM RESTORATION ────────────────────────────────────
-   Restores the production signup controls and validation UI. These selectors
-   deliberately sit after the earlier email-only experiment so the configured
-   form wins without altering the page's newer product/brand work.
-   ───────────────────────────────────────────────────────────────────────── */
-.waitlist{
-  max-width:var(--max);margin:0 auto;padding:130px 24px 150px;border-top:1px solid var(--line);
-  display:grid;grid-template-columns:1fr 1fr;gap:80px
-}
-.journey{display:flex;gap:18px;flex-wrap:wrap;margin-top:30px}
-.journey span{font-size:11px;color:var(--muted)}
-.journey b{color:var(--text);margin-right:6px}
-.waitlist form{
-  align-self:center;border:1px solid var(--line2);border-radius:16px;background:var(--panel);padding:22px
-}
-.waitlist form>label:first-child{font-size:11px;font-weight:650}
-.form-row{display:flex;gap:8px;margin-top:8px}
-.form-row input{
-  flex:1;min-width:0;background:#0b0e12;border:1px solid var(--line2);
-  border-radius:10px;padding:13px;color:var(--text);outline:none
-}
-.form-row input:focus{border-color:#68727f}
-.form-row button{
-  border:0;border-radius:10px;background:var(--accent);color:var(--accent-ink);
-  font-weight:750;padding:0 16px;display:flex;align-items:center;gap:8px
-}
-.consent{
-  display:flex;align-items:flex-start;gap:9px;margin-top:13px;color:var(--muted);font-size:10px
-}
-.consent input{margin-top:2px}
-.form-status{
-  font-size:10px!important;margin:11px 0 0!important;color:var(--subtle)!important
-}
-.form-status.success{color:var(--good)!important}
-.form-status.unavailable{color:var(--warn)!important}
+img,svg,canvas,iframe{max-width:100%}
 
 .required-profile{
-  margin-top:14px;border:1px solid var(--line);border-radius:12px;background:#0b0e12
+  margin-top:14px;border:1px solid var(--line);border-radius:11px;
+  background:linear-gradient(180deg,#0d1116,#0a0e13)
 }
 .required-profile summary{
   list-style:none;display:flex;align-items:center;justify-content:space-between;gap:14px;
   padding:13px 14px;cursor:pointer
 }
 .required-profile summary::-webkit-details-marker{display:none}
-.required-profile summary span{display:flex;flex-direction:column;gap:2px}
+.required-profile summary span{display:flex;flex-direction:column;gap:2px;min-width:0}
 .required-profile summary b{font-size:11px}
 .required-profile summary small{font-size:9px;color:var(--subtle);font-weight:500}
 .required-profile[open] summary svg{transform:rotate(180deg)}
+
 .profile-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px 14px
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:10px;padding:0 14px 14px;min-width:0
 }
-.profile-grid label{font-size:9px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
-.profile-grid select{
-  width:100%;background:#0d1116;color:var(--text);border:1px solid var(--line2);
-  border-radius:9px;padding:10px 11px;outline:none;font-size:11px
-}
-.profile-grid select:focus{border-color:#68727f}
-.turnstile-host{margin-top:14px;min-height:0}
-.form-fine{font-size:9px!important;line-height:1.55!important;margin:9px 0 0!important;color:var(--subtle)!important}
-.form-status.attention{color:var(--warn)!important}
-.form-status.error{color:var(--bad)!important}
-.form-status.preview{color:var(--muted)!important}
-.instagram-link{
-  display:inline-flex;align-items:center;gap:8px;margin-top:28px;color:var(--muted);
-  font-size:11px;padding-bottom:3px;border-bottom:1px solid transparent
-}
-.instagram-link:hover{color:var(--text);border-color:var(--line2)}
-.instagram-link b{color:var(--text)}
-
-
-.profile-grid input{
-  width:100%;background:#0d1116;color:var(--text);border:1px solid var(--line2);
-  border-radius:9px;padding:10px 11px;outline:none;font-size:11px
-}
-.profile-grid input:focus{border-color:#68727f}
-.honeypot{
-  position:absolute!important;width:1px!important;height:1px!important;
-  overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important
-}
-.privacy-mini{margin-top:11px;border-top:1px solid var(--line);padding-top:10px}
-.privacy-mini summary{cursor:pointer;color:var(--subtle);font-size:9px}
-.privacy-mini p{font-size:9px!important;line-height:1.55!important;margin:8px 0 0!important;color:var(--subtle)!important}
-.privacy-mini a{color:var(--text);text-decoration:underline;text-underline-offset:2px}
-
-
-/* ──────────────────────────────────────────────────────────────────────────
-   V3.3 precision pass — softer silver reveal, native-control replacement,
-   and premium waitlist confirmation.
-   ────────────────────────────────────────────────────────────────────────── */
-
-.waitlist-stage{align-self:center;min-width:0}
-.waitlist-stage form{width:100%}
-
-/* Custom Zugrio select */
-.zugrio-select{position:relative;min-width:0}
-.zugrio-select>label,
-.profile-text-field>span{
-  display:flex;align-items:center;gap:4px;margin-bottom:6px;
+.profile-grid>*{min-width:0}
+.profile-text-field{display:flex;flex-direction:column;gap:0;min-width:0}
+.profile-text-field>span,
+.zugrio-select>label{
+  display:flex;align-items:center;gap:6px;margin-bottom:6px;
   color:var(--muted);font-size:9px;line-height:1.25
 }
-.required-dot,.profile-text-field>span i{color:#d7dce1;font-style:normal}
-.zugrio-select-trigger{
-  width:100%;min-height:39px;display:flex;align-items:center;justify-content:space-between;gap:12px;
-  border:1px solid var(--line2);border-radius:9px;padding:9px 10px 9px 11px;
-  background:linear-gradient(180deg,#10141a,#0c1015);color:var(--text);
-  outline:none;text-align:left;font-size:11px;cursor:pointer;
-  transition:border-color .18s ease,background .18s ease,box-shadow .18s ease
+.required-word{
+  margin-left:auto;color:#7d8792;font-size:6px;font-weight:700;letter-spacing:.1em
 }
-.zugrio-select-trigger:hover{border-color:#454e59;background:linear-gradient(180deg,#12171e,#0d1116)}
-.zugrio-select-trigger:focus-visible{
+.profile-text-field input{
+  width:100%;min-width:0;min-height:42px;
+  background:linear-gradient(180deg,#10141a,#0c1015);
+  color:var(--text);border:1px solid var(--line2);border-radius:9px;
+  padding:10px 11px;outline:none;font-size:11px
+}
+.profile-text-field input:focus-visible{
   border-color:#68727f;box-shadow:0 0 0 3px rgba(232,237,241,.07)
 }
-.zugrio-select-trigger .placeholder{color:#66717d}
-.zugrio-select-trigger .has-value{color:#eef1f4}
-.zugrio-select-trigger svg{flex:0 0 auto;color:#77818c;transition:transform .2s cubic-bezier(.16,1,.3,1)}
-.zugrio-select.is-open .zugrio-select-trigger svg{transform:rotate(180deg)}
 
-.zugrio-select-menu{
-  position:absolute;left:0;right:0;z-index:90;max-height:286px;overflow:auto;
-  padding:6px;border:1px solid #353e49;border-radius:11px;
-  background:rgba(10,13,17,.975);box-shadow:
-    0 22px 55px rgba(0,0,0,.56),
-    0 1px 0 rgba(255,255,255,.045) inset;
-  backdrop-filter:blur(18px);scrollbar-width:thin;scrollbar-color:#39424d transparent;
-  animation:zugrioSelectIn .17s cubic-bezier(.16,1,.3,1)
+.zugrio-select{position:relative;min-width:0}
+.zugrio-select-native-shell{position:relative;min-width:0}
+.zugrio-select-native-shell select{
+  display:block;width:100%;min-width:0;min-height:42px;
+  appearance:none;-webkit-appearance:none;
+  border:1px solid var(--line2);border-radius:9px;
+  padding:10px 36px 10px 11px;
+  background:linear-gradient(180deg,#10141a,#0c1015);
+  color:#eef1f4;font:inherit;font-size:11px;line-height:1.25;
+  outline:none;cursor:pointer;touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent
 }
-.zugrio-select.opens-down .zugrio-select-menu{top:calc(100% + 7px);transform-origin:top}
-.zugrio-select.opens-up .zugrio-select-menu{bottom:calc(100% + 7px);transform-origin:bottom}
-.zugrio-select-sheen{
-  position:sticky;top:-6px;height:1px;margin:-6px -6px 5px;z-index:2;pointer-events:none;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent)
+.zugrio-select-native-shell select.placeholder{color:#66717d}
+.zugrio-select-native-shell select.has-value{color:#eef1f4}
+.zugrio-select-native-shell select:hover{border-color:#454e59}
+.zugrio-select-native-shell select:focus-visible{
+  border-color:#68727f;box-shadow:0 0 0 3px rgba(232,237,241,.07)
 }
-.zugrio-select-option{
-  min-height:38px;display:flex;align-items:center;justify-content:space-between;gap:12px;
-  padding:9px 10px;border-radius:7px;color:#9da6b0;font-size:11px;cursor:pointer;
-  transition:background .12s ease,color .12s ease,transform .12s ease
-}
-.zugrio-select-option svg{opacity:0;color:#f4f6f8;transform:scale(.75);transition:opacity .12s ease,transform .12s ease}
-.zugrio-select-option.is-active{background:#151a21;color:#f0f3f5}
-.zugrio-select-option.is-active:not(.is-selected){transform:translateX(2px)}
-.zugrio-select-option.is-selected{background:#181d24;color:#fff}
-.zugrio-select-option.is-selected svg{opacity:1;transform:scale(1)}
-.profile-text-field{display:flex;flex-direction:column;gap:0}
-.profile-text-field input{
-  min-height:39px;background:linear-gradient(180deg,#10141a,#0c1015)!important
+.zugrio-select-native-shell select option{background:#0d1116;color:#eef1f4}
+.zugrio-select-native-shell svg{
+  position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  pointer-events:none;color:#77818c
 }
 
-/* Keep the profile reveal elegant instead of opening as a block of form chrome. */
 .required-profile[open] .profile-grid>*{
   animation:profileFieldIn .28s cubic-bezier(.16,1,.3,1) both
 }
@@ -1649,100 +1509,10 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
 .required-profile[open] .profile-grid>*:nth-child(7){animation-delay:.15s}
 .required-profile[open] .profile-grid>*:nth-child(8){animation-delay:.175s}
 
-/* Native checkbox was the last browser-default control left in the conversion surface. */
-.consent input{
-  appearance:none;-webkit-appearance:none;width:15px;height:15px;min-width:15px;margin:0!important;
-  border:1px solid #46505b;border-radius:4px;background:#0c1015;cursor:pointer;
-  transition:background .16s ease,border-color .16s ease,box-shadow .16s ease
-}
-.consent input:checked{
-  border-color:#e8edf1;background-color:#e8edf1;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.2 8.4 6.3 11.3 12.8 4.8' fill='none' stroke='%23090c10' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
-}
-.consent input:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(232,237,241,.09)}
-
-/* Success is a product moment, not a generic form message. */
-.waitlist-success{
-  position:relative;overflow:hidden;min-height:440px;
-  display:flex;flex-direction:column;justify-content:center;
-  border:1px solid var(--line2);border-radius:16px;padding:34px;
-  background:
-    radial-gradient(circle at 18% 16%,rgba(255,255,255,.055),transparent 24%),
-    linear-gradient(145deg,#141920,#0c1015 58%,#0a0d11);
-  box-shadow:0 24px 70px rgba(0,0,0,.3),0 1px 0 rgba(255,255,255,.035) inset
-}
-.waitlist-success:before{
-  content:"";position:absolute;inset:0;pointer-events:none;opacity:.45;
-  background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px);
-  background-size:100% 34px;mask-image:linear-gradient(to bottom,#000,transparent 82%)
-}
-.success-scan{
-  position:absolute;z-index:3;top:0;bottom:0;left:-8%;width:22%;pointer-events:none;
-  background:linear-gradient(105deg,transparent,rgba(255,255,255,.035),rgba(255,255,255,.14),rgba(255,255,255,.025),transparent);
-  filter:blur(9px);transform:skewX(-10deg);mix-blend-mode:screen
-}
-.success-mark{
-  position:relative;z-index:4;width:48px;height:48px;margin-bottom:22px;
-  filter:drop-shadow(0 0 22px rgba(235,240,244,.12))
-}
-.success-mark svg{width:48px;height:48px;overflow:visible}
-.success-mark circle,.success-mark path{fill:none;stroke:#edf1f4;stroke-width:1.6}
-.success-mark path{stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.success-kicker{
-  position:relative;z-index:4;color:#89939e;font-size:9px;font-weight:750;letter-spacing:.15em
-}
-.waitlist-success h3{
-  position:relative;z-index:4;margin:11px 0 13px;
-  font-size:clamp(34px,4vw,50px);line-height:.98;letter-spacing:-.052em
-}
-.waitlist-success>p{
-  position:relative;z-index:4;margin:0;max-width:540px;color:var(--muted);
-  font-size:13px;line-height:1.7
-}
-.success-profile{
-  position:relative;z-index:4;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-  margin-top:24px;color:#e7ebef;font-size:11px;font-weight:630
-}
-.success-profile i{width:3px;height:3px;border-radius:50%;background:#65707b}
-.success-meta{
-  position:relative;z-index:4;display:flex;gap:8px;flex-wrap:wrap;margin-top:12px
-}
-.success-meta span{
-  border:1px solid #2f3842;border-radius:999px;padding:6px 9px;
-  color:#858f9a;background:#0c1015;font-size:9px;letter-spacing:.05em;text-transform:uppercase
-}
-.success-actions{
-  position:relative;z-index:4;display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:25px
-}
-.success-actions a{
-  display:inline-flex;align-items:center;gap:8px;border:1px solid #343d48;border-radius:999px;
-  padding:9px 12px;color:#c8cfd6;font-size:10px;transition:background .16s ease,color .16s ease,border-color .16s ease
-}
-.success-actions a:hover{background:#171c23;color:#fff;border-color:#4a5561}
-.waitlist-success>small{
-  position:relative;z-index:4;margin-top:17px;color:#67727e;font-size:9px;line-height:1.5
-}
-
-
-@keyframes zugrioSelectIn{
-  from{opacity:0;transform:translateY(6px) scale(.99);filter:blur(3px)}
-  to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
-}
-.zugrio-select.opens-up .zugrio-select-menu{animation-name:zugrioSelectInUp}
-@keyframes zugrioSelectInUp{
-  from{opacity:0;transform:translateY(-6px) scale(.99);filter:blur(3px)}
-  to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
-}
-@keyframes profileFieldIn{
-  from{opacity:0;transform:translateY(5px)}
-  to{opacity:1;transform:translateY(0)}
-}
-
 .profile-submit-bottom{
   width:100%;min-height:48px;margin-top:15px;border:0;border-radius:10px;
   display:flex;align-items:center;justify-content:center;gap:9px;
-  background:var(--accent);color:var(--accent-ink);font-weight:760;font-size:12px;
-  cursor:pointer
+  background:var(--accent);color:var(--accent-ink);font-weight:760;font-size:12px;cursor:pointer
 }
 .profile-submit-bottom:hover{filter:brightness(1.04)}
 .profile-submit-bottom:focus-visible{
@@ -1750,56 +1520,96 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
 }
 .profile-submit-bottom:disabled{opacity:.64;cursor:wait}
 
+.honeypot{
+  position:absolute!important;width:1px!important;height:1px!important;
+  overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important
+}
+.privacy-mini{margin-top:11px;border-top:1px solid var(--line);padding-top:10px}
+.privacy-mini summary{cursor:pointer;color:var(--subtle);font-size:9px}
+.privacy-mini p{
+  font-size:9px!important;line-height:1.55!important;margin:8px 0 0!important;color:var(--subtle)!important
+}
+.privacy-mini a{color:var(--text);text-decoration:underline;text-underline-offset:2px}
 
-
-/* Full-form premium refinements — structure and behavior remain unchanged. */
-.waitlist{
-  max-width:1380px;padding:145px 24px 155px;
-  grid-template-columns:minmax(0,.76fr) minmax(0,1.24fr);gap:110px;align-items:start
+.success-profile{
+  position:relative;z-index:4;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin-top:24px;color:#e7ebef;font-size:11px;font-weight:630
 }
-.waitlist-copy h2{
-  max-width:560px;margin:18px 0;
-  font-size:clamp(42px,4.8vw,68px);line-height:.99;letter-spacing:-.058em
-}
-.waitlist-copy>p{max-width:560px;font-size:15px;line-height:1.8}
-.waitlist-stage{align-self:start}
-.waitlist-stage form{
-  position:relative;border-radius:14px;border-color:#2f3741;
-  background:linear-gradient(180deg,rgba(18,23,30,.9),rgba(10,14,19,.96));
-  box-shadow:0 28px 80px rgba(0,0,0,.28),0 1px 0 rgba(255,255,255,.025) inset
-}
-.required-profile{
-  border-radius:10px;background:linear-gradient(180deg,#0d1116,#0a0e13)
-}
-.required-word{
-  margin-left:6px;color:#7d8792;font-size:6px;font-weight:700;letter-spacing:.1em
-}
-.profile-text-field>span{display:flex;align-items:center}
 .success-profile .profile-separator{
-  width:22px;height:1px;display:inline-block;
+  width:22px;height:1px;display:inline-block;flex:0 0 22px;
   background:linear-gradient(90deg,transparent,#5c6671,transparent)
 }
-.required-dot{display:none}
-.form-status.success{color:var(--state-neutral)!important}
-.form-status.attention{color:var(--caution)!important}
-.form-status.error{color:var(--adverse)!important}
+.success-meta{
+  position:relative;z-index:4;display:flex;gap:8px;flex-wrap:wrap;margin-top:12px
+}
+.success-meta span{
+  border:1px solid #2f3842;border-radius:999px;padding:6px 9px;
+  color:#858f9a;background:#0c1015;font-size:9px;letter-spacing:.05em;text-transform:uppercase
+}
+
+.turnstile-host{max-width:100%;overflow:hidden}
+.turnstile-host iframe{max-width:100%!important}
+
+@keyframes profileFieldIn{
+  from{opacity:0;transform:translateY(5px)}
+  to{opacity:1;transform:translateY(0)}
+}
 
 @media(max-width:1050px){
   .waitlist{grid-template-columns:1fr;gap:48px}
 }
+
 @media(max-width:720px){
-  .waitlist{padding:90px 16px;gap:38px}
-  .profile-grid{grid-template-columns:1fr}
-  .zugrio-select-menu{
-    position:fixed!important;left:12px!important;right:12px!important;top:auto!important;bottom:12px!important;
-    z-index:210;max-height:min(52vh,340px);border-radius:15px;padding:8px;
-    transform-origin:bottom!important;animation-name:zugrioSelectInUp!important
+  .hero h1 .hero-headline-part{
+    display:block;white-space:normal;max-width:100%;overflow-wrap:normal
   }
-  .zugrio-select-option{min-height:46px;padding:12px;font-size:12px}
-  .waitlist-success{min-height:400px;padding:26px 20px}
-  .success-actions{align-items:stretch;flex-direction:column}
-  .success-actions a{justify-content:center}
+  .hero-headline-frame{width:100%;max-width:100%}
+  .scope{flex-wrap:wrap}
+  .product-shell,.case-grid,.chart-panel,.inspector{min-width:0;max-width:100%}
+  .shell-top{gap:10px;padding-left:12px;padding-right:12px}
+  .shell-brand{min-width:0}
+  .shell-brand>span:last-child{
+    min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+  }
+  .readiness-capability{grid-template-columns:minmax(0,1fr) auto;gap:10px}
+  .readiness-capability b{
+    min-width:0;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere
+  }
+  .trust-index button{min-width:min(240px,84vw)}
+  .profile-grid{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .form-row button{width:100%;justify-content:center}
+  .waitlist-stage,.waitlist-stage form{min-width:0;max-width:100%}
+  .success-profile{gap:8px}
 }
+
+@media(max-width:420px){
+  .readiness-legend-row{
+    grid-template-columns:24px minmax(0,1fr) auto;gap:8px 10px
+  }
+  .readiness-legend-row>p{grid-column:2/4}
+  .dq-observation-ledger>div{
+    grid-template-columns:28px minmax(0,1fr);gap:8px 12px
+  }
+  .dq-observation-ledger>div>em{grid-column:2}
+  .current-recheck>div,.market-lens>div{
+    grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:10px
+  }
+  .current-recheck b,.market-lens b{min-width:0;overflow-wrap:anywhere}
+  .readiness-meta{flex-wrap:wrap;justify-content:flex-start}
+  .readiness-meta i{display:none}
+}
+
+@media(max-width:360px){
+  .hero h1{font-size:clamp(27px,8.4vw,31px);letter-spacing:-.045em}
+  .eyebrow{font-size:9px;letter-spacing:.11em;padding:8px 11px}
+  .scope{font-size:10px;gap:8px}
+  .shell-freshness{padding-left:8px;gap:5px}
+  .shell-freshness span{font-size:7px}
+  .trust-index button{min-width:82vw}
+  .silver-scope{font-size:6.5px}
+}
+
 @media(prefers-reduced-motion:reduce){
-  .zugrio-select-menu,.required-profile[open] .profile-grid>*{animation:none!important}
+  .required-profile[open] .profile-grid>*{animation:none!important}
 }
