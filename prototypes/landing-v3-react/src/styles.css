@@ -886,21 +886,6 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
 .ambient-two{right:-22vw;top:42vh;background:#8b929a;animation:ambientFloatB 32s ease-in-out infinite}
 
 .hero h1 span{display:inline-block}
-.rolling-descriptor{
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  margin:18px auto 0;color:var(--muted);font-size:12px;min-height:24px
-}
-.rolling-prefix{color:var(--subtle)}
-.rolling-window{
-  display:inline-grid;place-items:center start;min-width:210px;overflow:hidden;height:24px
-}
-.rolling-window strong{grid-area:1/1;color:var(--text);font-weight:650;white-space:nowrap}
-
-
-.market-context-pill{
-  margin-left:auto;display:flex;align-items:center;gap:6px;color:var(--subtle);
-  font-size:9px;text-transform:uppercase;letter-spacing:.09em;padding:7px 9px
-}
 
 /* Candlestick system */
 .candlestick-wrap{position:relative;margin-top:12px}
@@ -1052,7 +1037,6 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
 @keyframes ambientFloatB{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(-8vw,-5vh,0) scale(.92)}}
 
 @media(max-width:1050px){
-  .market-context-pill{display:none}
   .story-step{padding-left:30px}.story-index{left:0}
 }
 @media(max-width:720px){
@@ -1195,19 +1179,6 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
   animation:wordSpecular 11.5s cubic-bezier(.16,1,.3,1) infinite
 }
 
-@keyframes zugrioSelectIn{
-  from{opacity:0;transform:translateY(6px) scale(.99);filter:blur(3px)}
-  to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
-}
-.zugrio-select.opens-up .zugrio-select-menu{animation-name:zugrioSelectInUp}
-@keyframes zugrioSelectInUp{
-  from{opacity:0;transform:translateY(-6px) scale(.99);filter:blur(3px)}
-  to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
-}
-@keyframes profileFieldIn{
-  from{opacity:0;transform:translateY(5px)}
-  to{opacity:1;transform:translateY(0)}
-}
 @keyframes wordSpecular{
   0%,22%{background-position:140% 0;opacity:0}
   27%{opacity:.85}
@@ -1233,7 +1204,7 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
 }
 
 @media(prefers-reduced-motion:reduce){
-  .zugrio-select-menu,.required-profile[open] .profile-grid>*,.silver-base:after{animation:none!important}
+  .silver-base:after{animation:none!important}
   .silver-base:after{display:none}
   .silver-spotlight{
     opacity:.55;
@@ -1261,17 +1232,6 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
   color:#c3cad1;font-size:11px;line-height:1.65;letter-spacing:.005em
 }
 
-.profile-submit-bottom{
-  width:100%;min-height:48px;margin-top:15px;border:0;border-radius:10px;
-  display:flex;align-items:center;justify-content:center;gap:9px;
-  background:var(--accent);color:var(--accent-ink);font-weight:760;font-size:12px;
-  cursor:pointer
-}
-.profile-submit-bottom:hover{filter:brightness(1.04)}
-.profile-submit-bottom:focus-visible{
-  outline:none;box-shadow:0 0 0 3px rgba(232,237,241,.09)
-}
-.profile-submit-bottom:disabled{opacity:.64;cursor:wait}
 
 @media(max-width:1050px){
 }
@@ -1430,15 +1390,7 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
 .silver-spotlight .brand-wordmark{
   filter:brightness(1.2) drop-shadow(0 0 14px rgba(235,240,244,.12))
 }
-.silver-copy strong{font-weight:700;letter-spacing:.15em}
 .silver-word{display:none!important}
-
-/* Waitlist: the expanded flow has one final action at its natural endpoint. */
-.form-continue{white-space:nowrap}
-.required-profile[open]{border-color:#303843}
-.profile-submit-bottom{
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 8px 22px rgba(0,0,0,.18)
-}
 
 /* Motion tokens tuned for a slower, more considered financial-product rhythm. */
 @keyframes zugrioIntroSoft{
