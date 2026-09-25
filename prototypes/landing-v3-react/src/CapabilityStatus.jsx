@@ -22,13 +22,13 @@ export function getCapability(capabilityId) {
   return capability;
 }
 
-export function StoryCapabilityStatus({ capabilityId }) {
+export function StoryCapabilityStatus({ capabilityId, className = "" }) {
   const capability = getCapability(capabilityId);
   const statusLabel = STATUS_LABELS[capability.status];
 
   return (
     <span
-      className="story-capability"
+      className={["story-capability", className].filter(Boolean).join(" ")}
       data-capability-id={capability.id}
       data-capability-status={capability.status}
     >
