@@ -1884,9 +1884,6 @@ img,svg,canvas,iframe{max-width:100%}
   .form-row{grid-template-columns:1fr}
   .form-row button{width:100%;justify-content:center}
 }
-@media(prefers-reduced-motion:reduce){
-  .waitlist-stage:before{animation:none!important;display:none}
-}
 
 
 /* ── FOOTER / QUIET SYSTEM ENDPOINT ─────────────────────────────────────── */
