@@ -266,6 +266,8 @@ Add one synthetic family/instrument using generator-appropriate semantics and nu
 ### Slice 6 — Semi-Auto / cTrader
 Only after broker/readiness prerequisites:
 - cTrader connection path;
+- least-privilege OAuth scope: `accounts` for read-only Signal observation, explicit `trading` authorization for trading-capable Semi-Auto;
+- active disconnect/revocation that disables the connection, invalidates stale intents/approvals and destroys stored access/refresh tokens;
 - prepared intent;
 - revalidation;
 - same-symbol strategy conflict handling;
