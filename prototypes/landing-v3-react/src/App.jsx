@@ -369,7 +369,7 @@ export default function App() {
   const nav = useMemo(() => [
     ["Product", "#product"],
     ["How it works", "#how"],
-    ["Decision quality", "#journal"],
+    ["Decision quality", "#decision-quality"],
     ["Readiness", "#status"],
   ], []);
 
@@ -487,24 +487,115 @@ export default function App() {
 
         <Story {...{ activeStep, setActiveStep, marketKey, setMarketKey, caseKey, setCaseKey }} />
 
-        <motion.section className="journal" id="journal" {...sectionReveal}>
-          <div>
-            <div className="kicker">BEHAVIORAL ANALYTICS</div>
-            <h2>Your P&amp;L tells you what happened. Zugrio shows how you traded.</h2>
-            <p>With read-only broker data, Zugrio spots patterns in how you trade — early entries, chased price, risk changes, early exits and overrides. System actions and your interventions stay separate.</p>
+        <motion.section className="decision-quality" id="decision-quality" {...sectionReveal}>
+          <div className="dq-intro">
+            <div className="kicker">NOT ONE SCORE</div>
+            <h2>Your P&amp;L tells you the outcome. It doesn’t tell you what needs fixing.</h2>
+            <p>Zugrio separates the trade into four questions rather than collapsing everything into win or loss.</p>
           </div>
-          <motion.div
-            className="record-card"
-            initial={{ opacity:0, rotateX:8, y:24 }}
-            whileInView={{ opacity:1, rotateX:0, y:0 }}
-            viewport={{ once:true, amount:.4 }}
-            transition={{ duration:.82, ease:[0.16,1,0.3,1] }}
-          >
-            <div><span>SYSTEM</span><b>PASS</b></div>
-            <div><span>USER</span><b>OVERRIDE</b></div>
-            <div><span>OUTCOME</span><b>PROFIT</b></div>
-            <div><span>PROCESS</span><b className="warn-text">STRATEGY RULE BROKEN</b></div>
-          </motion.div>
+
+          <div className="dq-audit" aria-label="Illustrative four-part decision audit">
+            <div className="dq-audit-head">
+              <span>ILLUSTRATIVE DECISION AUDIT</span>
+              <b>ONE TRADE / FOUR VERDICTS</b>
+            </div>
+
+            <div className="dq-axis-stack">
+              <div className="dq-axis">
+                <span className="dq-axis-index">01</span>
+                <div>
+                  <strong>STRATEGY HEALTH</strong>
+                  <p>Is there real evidence behind this strategy in this market?</p>
+                </div>
+                <StoryCapabilityStatus capabilityId="intelligence.strategy_health" className="dq-readiness" />
+              </div>
+
+              <div className="dq-axis">
+                <span className="dq-axis-index">02</span>
+                <div>
+                  <strong>PROCESS</strong>
+                  <p>Did you follow the strategy, plan, risk and approval process?</p>
+                </div>
+                <b className="dq-verdict adverse">RULE VIOLATION</b>
+              </div>
+
+              <div className="dq-axis">
+                <span className="dq-axis-index">03</span>
+                <div>
+                  <strong>EXECUTION</strong>
+                  <p>Did the real order, fill and protection match what you approved?</p>
+                </div>
+                <b className="dq-verdict neutral">FILLED AS SENT</b>
+              </div>
+
+              <div className="dq-axis">
+                <span className="dq-axis-index">04</span>
+                <div>
+                  <strong>OUTCOME</strong>
+                  <p>What happened financially?</p>
+                </div>
+                <b className="dq-verdict outcome">PROFIT</b>
+              </div>
+            </div>
+
+            <div className="dq-case-ledger">
+              <div><span>SYSTEM DECISION</span><b>PASS</b></div>
+              <i aria-hidden="true" />
+              <div><span>YOUR ACTION</span><b>OVERRIDE</b></div>
+              <i aria-hidden="true" />
+              <div><span>OUTCOME</span><b>PROFIT</b></div>
+              <i aria-hidden="true" />
+              <div><span>PROCESS</span><b className="adverse-text">RULE VIOLATION</b></div>
+            </div>
+
+            <div className="dq-rule">
+              <strong>A winning violation remains a violation.</strong>
+              <span>A compliant loss does not automatically mean the process failed.</span>
+            </div>
+          </div>
+
+          <div className="dq-behaviour">
+            <div className="dq-layer-copy">
+              <div className="kicker">BEHAVIOUR HEALTH</div>
+              <h3>Observe the action. Don’t invent the emotion.</h3>
+              <p>Where supported by broker data, Zugrio can surface observable deviations such as entering early, chasing price, changing risk, exiting early or overriding the system state.</p>
+              <div className="dq-layer-status">
+                <StoryCapabilityStatus capabilityId="behaviour.health" className="dq-readiness" />
+                <StoryCapabilityStatus capabilityId="behaviour.observations" className="dq-readiness" />
+              </div>
+            </div>
+
+            <div className="dq-observation-ledger" aria-label="Examples of factual behaviour observations">
+              {[
+                ["01","EARLY ENTRY"],
+                ["02","CHASED PRICE"],
+                ["03","RISK CHANGE"],
+                ["04","EARLY EXIT"],
+                ["05","OVERRIDE"],
+              ].map(([index,label]) => (
+                <div key={label}><span>{index}</span><b>{label}</b><em>OBSERVABLE</em></div>
+              ))}
+              <small>Evidence-backed observations only · no emotion inference</small>
+            </div>
+          </div>
+
+          <div className="dq-guardrails">
+            <div className="dq-guardrail-copy">
+              <div className="kicker">GUARDRAILS</div>
+              <h3>Make the rule visible before the moment tests it.</h3>
+              <p>Set your own guardrails. Zugrio can flag a broken rule, ask you to confirm, or enforce it — while safe risk reduction always remains available.</p>
+            </div>
+
+            <div className="dq-guardrail-rail" aria-label="Guardrail readiness">
+              <StoryCapabilityStatus capabilityId="guardrail.advisory" className="dq-guardrail-status" />
+              <span className="dq-guardrail-line" aria-hidden="true" />
+              <StoryCapabilityStatus capabilityId="guardrail.confirmation" className="dq-guardrail-status" />
+              <span className="dq-guardrail-line" aria-hidden="true" />
+              <StoryCapabilityStatus capabilityId="guardrail.enforcing" className="dq-guardrail-status" />
+            </div>
+          </div>
+
+          <p className="dq-close">Know what actually needs improving.</p>
         </motion.section>
 
         <motion.section className="status-board" id="status" {...sectionReveal}>
