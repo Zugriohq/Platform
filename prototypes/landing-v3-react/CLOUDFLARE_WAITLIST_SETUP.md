@@ -6,7 +6,8 @@ This prototype now has a real Cloudflare Pages Functions contract:
 - `POST /api/waitlist`
 - D1 persistence
 - server-side Turnstile validation
-- required trader-profile fields
+- email-first signup with consent + server-side Turnstile validation
+- optional post-signup market segmentation
 - duplicate-safe signup behavior
 
 ## 1. Cloudflare Pages build
@@ -44,6 +45,7 @@ Configure these Pages variables/secrets:
 - `TURNSTILE_SITE_KEY` — public widget site key
 - `TURNSTILE_SECRET` — secret; server only
 - `TURNSTILE_HOSTNAMES` — comma-separated production/preview hostnames you want to accept
+- `WAITLIST_PROFILE_SECRET` — optional dedicated HMAC secret for short-lived post-signup preference tokens; when absent, the server falls back to `TURNSTILE_SECRET`
 - `PRIVACY_CONTACT` — currently `privacy@zugrio.xyz`
 
 Do not put `TURNSTILE_SECRET` in Vite variables or client code.
@@ -64,12 +66,9 @@ That migration preserves prior rows and adds the new profile, attribution, conse
 
 The table stores:
 - normalized email
-- role
-- primary market
-- horizon
-- preferred control mode
-- strategy/method interest
-- primary platform
+- optional role/profile fields retained for compatibility
+- optional primary-market preference
+- optional horizon/control/strategy/platform enrichment
 - consent timestamp
 - acquisition source/UTMs
 - created/updated time
@@ -77,21 +76,32 @@ The table stores:
 
 It intentionally does not store the visitor IP.
 
-## 5. Required signup profile
+## 5. Signup contract
 
-The compact accordion is visually secondary but operationally required.
+Primary early-access signup is deliberately minimal.
 
-A signup cannot be submitted until the visitor supplies:
-- role
-- primary market
-- trading horizon
-- preferred control
-- strategy/method interest
-- primary platform
-- consent
-- a valid Turnstile token
+Required:
+- valid email;
+- explicit consent;
+- valid Turnstile token.
 
-Server-side validation repeats these requirements; hiding or bypassing the browser controls does not bypass the API.
+The previous trader-profile fields remain accepted by the API for backward compatibility, but they are optional and the current homepage does not require them before signup.
+
+After a successful signup, the page may ask one optional segmentation question:
+
+**What do you trade most?**
+- FX
+- Gold
+- Synthetic Indices
+- More than one
+
+That preference is submitted to:
+
+`POST /api/waitlist-segment`
+
+using the short-lived profile token returned by the accepted signup response.
+
+The preference endpoint returns the same accepted shape whether or not the email row exists, avoiding an account-enumeration signal.
 
 ## 6. Duplicate behavior
 
@@ -120,7 +130,9 @@ Before publishing:
 - test first-time signup
 - test duplicate signup
 - test expired Turnstile token
-- test malformed/omitted required profile
+- test email-only signup
+- test optional post-signup market segmentation
+- test invalid/expired profile token
 - test database unavailable state
 - verify no secret appears in browser source/network responses
 
