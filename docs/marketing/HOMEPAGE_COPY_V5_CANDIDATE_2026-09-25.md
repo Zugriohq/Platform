@@ -37,7 +37,7 @@ The two approved headlines alternate in the same hero position.
 
 # Don’t trade the signal. Trade what’s still true.
 
-Frame 1 appears first. Each frame remains visible for about 8 seconds before a restrained crossfade/vertical transition. The rotation continues while the hero is active.
+Frame 1 appears first. Each frame remains visible for about 5 seconds before a restrained crossfade/vertical transition. The rotation continues while the hero is active.
 
 For reduced-motion users, show Frame 1 only.
 
