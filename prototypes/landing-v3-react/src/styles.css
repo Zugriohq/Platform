@@ -1613,3 +1613,113 @@ img,svg,canvas,iframe{max-width:100%}
 @media(prefers-reduced-motion:reduce){
   .required-profile[open] .profile-grid>*{animation:none!important}
 }
+
+
+/* ── CLOSING SIGNATURE / PREMIUM PASS ─────────────────────────────────────
+   Replaces the generic grid/hint treatment with a quieter signature field.
+   One canonical mark, restrained metallic movement, no decorative status dots.
+   ───────────────────────────────────────────────────────────────────────── */
+.closing-signature{
+  min-height:clamp(720px,70vw,940px);
+  background:
+    radial-gradient(ellipse 56% 34% at 50% 54%,rgba(230,235,239,.038),transparent 70%),
+    radial-gradient(ellipse 34% 24% at 74% 38%,rgba(255,255,255,.016),transparent 76%),
+    linear-gradient(180deg,#07090c 0%,#05070a 58%,#06080b 100%);
+}
+.closing-signature .silver-grid,.closing-signature .silver-hint{display:none!important}
+.closing-field{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.closing-field-line{
+  position:absolute;left:50%;width:min(1120px,84vw);height:1px;transform:translateX(-50%);
+  background:linear-gradient(90deg,transparent 0%,rgba(154,164,174,.08) 18%,rgba(222,227,232,.2) 50%,rgba(154,164,174,.08) 82%,transparent 100%)
+}
+.closing-field-line-a{top:31%}
+.closing-field-line-b{bottom:24%;opacity:.55}
+.closing-field-light{
+  position:absolute;left:-32%;top:18%;width:24%;height:64%;
+  background:linear-gradient(102deg,transparent,rgba(255,255,255,.018),rgba(255,255,255,.11),rgba(208,216,223,.025),transparent);
+  filter:blur(13px);transform:skewX(-13deg);mix-blend-mode:screen;
+  animation:closingSilverPass 13.5s cubic-bezier(.16,1,.3,1) 1.4s infinite
+}
+.closing-thesis{
+  top:8%;width:min(92vw,1160px);text-align:left
+}
+.closing-overline{
+  display:flex;align-items:center;justify-content:space-between;gap:24px;
+  padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.07)
+}
+.closing-overline span,.closing-overline b{
+  color:#737d87;font-size:7px;line-height:1.3;letter-spacing:.13em;font-weight:700
+}
+.closing-overline b{color:#4f5964;font-weight:620}
+.closing-thesis h2{
+  max-width:1040px;margin:26px 0 0;
+  font-size:clamp(48px,6.2vw,88px);line-height:.94;letter-spacing:-.064em
+}
+.closing-thesis h2 span{
+  display:block;margin-top:7px;color:#929ba5;font-size:.52em;line-height:1.03;letter-spacing:-.045em;font-weight:520
+}
+.closing-thesis p{
+  max-width:650px;margin:26px 0 0;color:#707a85;font-size:12px;line-height:1.8
+}
+.closing-mark{
+  position:absolute;z-index:3;inset:0;display:grid;place-items:center;pointer-events:none
+}
+.closing-signature .silver-base{
+  margin-top:120px;width:min(84vw,1080px);opacity:.03
+}
+.closing-signature .silver-spotlight{
+  margin:0;opacity:.025;
+  -webkit-mask-image:radial-gradient(circle 164px at var(--spot-x) var(--spot-y),#000 0%,rgba(0,0,0,.94) 22%,rgba(0,0,0,.46) 58%,transparent 80%);
+  mask-image:radial-gradient(circle 164px at var(--spot-x) var(--spot-y),#000 0%,rgba(0,0,0,.94) 22%,rgba(0,0,0,.46) 58%,transparent 80%);
+  transition:opacity .34s cubic-bezier(.16,1,.3,1)
+}
+.closing-signature .silver-spotlight .brand-wordmark{margin-top:120px}
+.closing-signature.is-active .silver-spotlight{opacity:.86}
+.closing-action{
+  bottom:8%;width:min(92vw,1160px);padding-top:16px;border-top:1px solid rgba(255,255,255,.07)
+}
+.closing-action>a{
+  position:relative;overflow:hidden;border-bottom:0;padding:9px 0;color:#e9edf0
+}
+.closing-action>a:after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:linear-gradient(90deg,#5e6873,#dfe4e8,#5e6873);
+  background-size:220% 100%;background-position:100% 0;
+  transition:background-position .65s cubic-bezier(.16,1,.3,1)
+}
+.closing-action>a:hover:after{background-position:0 0}
+.closing-availability{
+  display:flex;align-items:center;justify-content:flex-end;gap:12px;
+  color:#65707b;font-size:7px;letter-spacing:.105em
+}
+.closing-availability b{
+  width:26px;height:1px;display:block;flex:0 0 26px;
+  background:linear-gradient(90deg,transparent,#56616c,transparent)
+}
+@keyframes closingSilverPass{
+  0%,22%{left:-32%;opacity:0}
+  31%{opacity:.62}
+  58%{opacity:.22}
+  69%,100%{left:112%;opacity:0}
+}
+@media(max-width:720px){
+  .closing-signature{min-height:690px}
+  .closing-thesis{top:7%;width:calc(100% - 32px)}
+  .closing-overline{align-items:flex-start;flex-direction:column;gap:7px;padding-bottom:12px}
+  .closing-thesis h2{font-size:clamp(40px,12vw,58px)}
+  .closing-thesis h2 span{font-size:.54em;margin-top:9px}
+  .closing-thesis p{font-size:11px;line-height:1.72}
+  .closing-field-line-a{top:34%}
+  .closing-field-line-b{bottom:26%}
+  .closing-signature .silver-base,.closing-signature .silver-base>.brand-wordmark,.closing-signature .silver-spotlight>.brand-wordmark{
+    width:min(91vw,760px)
+  }
+  .closing-signature .silver-base,.closing-signature .silver-spotlight .brand-wordmark{margin-top:106px}
+  .closing-action{bottom:7%;width:calc(100% - 32px);gap:17px}
+  .closing-availability{justify-content:flex-start;flex-wrap:wrap;gap:9px}
+  .closing-availability b{width:16px;flex-basis:16px}
+}
+@media(prefers-reduced-motion:reduce){
+  .closing-field-light{animation:none!important;display:none}
+  .closing-signature .silver-spotlight{opacity:.52}
+}
