@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "readiness:sync": "node scripts/sync-readiness.mjs",
+    "readiness:check": "node scripts/check-readiness.mjs",
+    "predev": "npm run readiness:sync",
+    "prebuild": "npm run readiness:sync && npm run readiness:check"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.4",
