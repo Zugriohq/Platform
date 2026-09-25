@@ -454,11 +454,11 @@ export default function App() {
         <a className="brand" href="#top" aria-label="Zugrio home">
           <BrandWordmark variant="silver" className="header-wordmark" decorative eager />
         </a>
-        <nav className={menu ? "nav-links open" : "nav-links"}>
+        <nav id="primary-navigation" className={menu ? "nav-links open" : "nav-links"}>
           {nav.map(([label, href]) => <a key={href} href={href} onClick={() => setMenu(false)}>{label}</a>)}
         </nav>
         <a className="header-cta" href="#early-access">Join early access</a>
-        <button className="menu" aria-label="Toggle menu" onClick={() => setMenu(v => !v)}>{menu ? <X/> : <Menu/>}</button>
+        <button className="menu" aria-label="Toggle menu" aria-expanded={menu} aria-controls="primary-navigation" onClick={() => setMenu(v => !v)}>{menu ? <X/> : <Menu/>}</button>
       </header>
 
       <main id="top">
