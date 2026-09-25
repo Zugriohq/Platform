@@ -1,11 +1,10 @@
-import React, { useMemo, useState } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import React, { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import {
   ArrowRight, Check, ChevronRight, CircleAlert, LockKeyhole,
   Menu, X, Zap, Activity, Layers3, Radio
 } from "lucide-react";
 import CandlestickChart from "./CandlestickChart.jsx";
-import RollingDescriptors from "./RollingDescriptors.jsx";
 import Waitlist from "./Waitlist.jsx";
 import SilverReveal from "./SilverReveal.jsx";
 import BrandWordmark from "./BrandWordmark.jsx";
@@ -87,6 +86,11 @@ const STORY = [
     title: "See what happened — not just whether you won.",
     body: "Setup, changes, actions and outcome stay connected. Replay shows what was known then — not what hindsight says now.",
   },
+];
+
+const HERO_HEADLINES = [
+  "The market changes. Your decision should keep up.",
+  "Don’t trade the signal. Trade what’s still true.",
 ];
 
 const TICKER = [
@@ -279,6 +283,20 @@ export default function App() {
   const [marketKey, setMarketKey] = useState("FX");
   const [caseKey, setCaseKey] = useState("valid");
   const [activeStep, setActiveStep] = useState("market");
+  const [headlineIndex, setHeadlineIndex] = useState(0);
+
+  useEffect(() => {
+    if (prefersReduced) {
+      setHeadlineIndex(0);
+      return undefined;
+    }
+
+    const timer = window.setInterval(() => {
+      setHeadlineIndex((current) => (current + 1) % HERO_HEADLINES.length);
+    }, 8000);
+
+    return () => window.clearInterval(timer);
+  }, [prefersReduced]);
 
   const nav = useMemo(() => [
     ["Product", "#product"],
@@ -288,8 +306,6 @@ export default function App() {
     ["Review", "#journal"],
     ["Readiness", "#status"],
   ], []);
-
-  const heroWords = ["See", "the", "setup", "before", "it", "becomes", "a", "signal."];
 
   return (
     <>
@@ -354,14 +370,14 @@ export default function App() {
             </motion.div>
 
             <motion.div variants={{ hidden:{opacity:0},show:{opacity:1} }} className="hero-trust">
-              Your money stays in your broker account. Signal mode leaves execution with you. Automation only acts inside limits you set.
+              Your capital stays with your broker. Joining or paying never gives Zugrio permission to trade your account — you grant that separately.
             </motion.div>
 
             <motion.div variants={{ hidden:{opacity:0},show:{opacity:1} }} className="scope">
               FX <span/> Gold <span/> Synthetic Indices
             </motion.div>
             <motion.small variants={{ hidden:{opacity:0},show:{opacity:1} }}>
-              Private build. Zugrio Core and other product capabilities are under validation. No public trading access yet. No performance claim.
+              Private validation. No public trading access yet. No performance claim.
             </motion.small>
           </motion.div>
 
