@@ -293,7 +293,7 @@ export default function App() {
 
     const timer = window.setInterval(() => {
       setHeadlineIndex((current) => (current + 1) % HERO_HEADLINES.length);
-    }, 8000);
+    }, 5000);
 
     return () => window.clearInterval(timer);
   }, [prefersReduced]);
