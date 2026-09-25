@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import manifest from "./generated/capability-scope-manifest.json";
 
-const STATUS_LABELS = {
+export const STATUS_LABELS = {
   released: "Released",
   early_access: "Early access",
   validation: "Validation",
@@ -19,6 +19,22 @@ export function getCapability(capabilityId) {
     throw new Error("Unknown capability id: " + capabilityId);
   }
   return capability;
+}
+
+export function StoryCapabilityStatus({ capabilityId }) {
+  const capability = getCapability(capabilityId);
+  const statusLabel = STATUS_LABELS[capability.status];
+
+  return (
+    <span
+      className="story-capability"
+      data-capability-id={capability.id}
+      data-capability-status={capability.status}
+    >
+      <b>{capability.public_name}</b>
+      <em>{statusLabel}</em>
+    </span>
+  );
 }
 
 export default function CapabilityStatus({ capabilityId, index = 0 }) {
