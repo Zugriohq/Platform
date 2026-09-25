@@ -19,49 +19,60 @@ export default function SilverReveal() {
   return (
     <section
       ref={ref}
-      className={"silver-reveal " + (inside ? "is-active" : "")}
+      className={"silver-reveal closing-signature " + (inside ? "is-active" : "")}
       onPointerEnter={() => setInside(true)}
       onPointerLeave={() => setInside(false)}
       onPointerMove={move}
       aria-labelledby="closing-thesis"
     >
-      <div className="silver-grid" aria-hidden="true" />
-
-      <div className="silver-thesis">
-        <span>THE ZUGRIO PRINCIPLE</span>
-        <h2 id="closing-thesis">The chart is not the market.</h2>
-        <strong>And the signal is not the whole decision.</strong>
-        <p>Zugrio follows the trade beyond the alert — from the first setup to the final review.</p>
+      <div className="closing-field" aria-hidden="true">
+        <div className="closing-field-line closing-field-line-a" />
+        <div className="closing-field-line closing-field-line-b" />
+        <div className="closing-field-light" />
       </div>
 
-      <div className="silver-base" aria-hidden="true">
-        <BrandWordmark variant="silver" decorative />
+      <div className="silver-thesis closing-thesis">
+        <div className="closing-overline">
+          <span>THE ZUGRIO PRINCIPLE</span>
+          <b>DECISION INTELLIGENCE / END TO END</b>
+        </div>
+
+        <h2 id="closing-thesis">
+          The chart is not the market.
+          <span>And the signal is not the whole decision.</span>
+        </h2>
+
+        <p>
+          Zugrio follows the trade beyond the alert — from the conditions that formed it,
+          through the decision to act, to what actually happened afterward.
+        </p>
       </div>
 
-      <div className="silver-spotlight" aria-hidden="true">
-        <BrandWordmark variant="silver" decorative />
+      <div className="closing-mark" aria-hidden="true">
+        <div className="silver-base">
+          <BrandWordmark variant="silver" decorative />
+        </div>
+        <div className="silver-spotlight">
+          <BrandWordmark variant="silver" decorative />
+        </div>
       </div>
 
-      <div className="silver-action">
-        <a href="#early-access">Join early access <ArrowRight size={15}/></a>
-        <div className="silver-scope">
+      <div className="silver-action closing-action">
+        <a href="#early-access">
+          Join early access
+          <ArrowRight size={15}/>
+        </a>
+
+        <div className="closing-availability" aria-label="Zugrio current scope">
           <span>PRIVATE VALIDATION</span>
-          <i aria-hidden="true" />
+          <b aria-hidden="true" />
           <span>FX</span>
-          <i aria-hidden="true" />
+          <b aria-hidden="true" />
           <span>GOLD</span>
-          <i aria-hidden="true" />
+          <b aria-hidden="true" />
           <span>SYNTHETIC INDICES</span>
         </div>
       </div>
-
-      {!reduced && (
-        <div className="silver-hint">
-          <span>MOVE THROUGH THE FIELD</span>
-          <i aria-hidden="true" />
-          <b>REVEAL ZUGRIO</b>
-        </div>
-      )}
     </section>
   );
 }
