@@ -51,6 +51,8 @@ button{color:inherit}
 .eyebrow{display:inline-flex;align-items:center;gap:9px;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#0d1116}
 .eyebrow i{width:5px;height:5px;background:var(--accent);border-radius:50%}
 .hero h1{font-size:clamp(54px,8vw,112px);line-height:.94;letter-spacing:-.075em;margin:28px 0 26px;font-weight:720}
+.hero-headline{display:grid;place-items:center;min-height:1.95em;overflow:hidden}
+.hero-headline-frame{grid-area:1/1;display:block;max-width:100%;text-wrap:balance}
 .hero-copy>p{max-width:760px;margin:0 auto;color:var(--muted);font-size:18px;line-height:1.7}
 .hero-actions{display:flex;justify-content:center;gap:10px;margin:30px 0 20px;flex-wrap:wrap}
 .hero-actions a{display:inline-flex;gap:12px;align-items:center;padding:13px 18px;border-radius:999px;font-weight:700;font-size:13px}
@@ -394,6 +396,7 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
   .story-step{padding-left:30px}.story-index{left:0}
 }
 @media(max-width:720px){
+  .hero-headline{min-height:2.85em}
   .rolling-descriptor{flex-direction:column;gap:3px;margin-top:16px}
   .rolling-window{min-width:0;width:100%;place-items:center;height:22px}
   .signal-ticker-track{gap:28px}

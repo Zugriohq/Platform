@@ -1,11 +1,10 @@
-import React, { useMemo, useState } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import React, { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import {
   ArrowRight, Check, ChevronRight, CircleAlert, LockKeyhole,
   Menu, X, Zap, Activity, Layers3, Radio
 } from "lucide-react";
 import CandlestickChart from "./CandlestickChart.jsx";
-import RollingDescriptors from "./RollingDescriptors.jsx";
 import Waitlist from "./Waitlist.jsx";
 import SilverReveal from "./SilverReveal.jsx";
 import BrandWordmark from "./BrandWordmark.jsx";
@@ -87,6 +86,11 @@ const STORY = [
     title: "See what happened — not just whether you won.",
     body: "Setup, changes, actions and outcome stay connected. Replay shows what was known then — not what hindsight says now.",
   },
+];
+
+const HERO_HEADLINES = [
+  "The market changes. Your decision should keep up.",
+  "Don’t trade the signal. Trade what’s still true.",
 ];
 
 const TICKER = [
@@ -279,6 +283,20 @@ export default function App() {
   const [marketKey, setMarketKey] = useState("FX");
   const [caseKey, setCaseKey] = useState("valid");
   const [activeStep, setActiveStep] = useState("market");
+  const [headlineIndex, setHeadlineIndex] = useState(0);
+
+  useEffect(() => {
+    if (prefersReduced) {
+      setHeadlineIndex(0);
+      return undefined;
+    }
+
+    const timer = window.setInterval(() => {
+      setHeadlineIndex((current) => (current + 1) % HERO_HEADLINES.length);
+    }, 5000);
+
+    return () => window.clearInterval(timer);
+  }, [prefersReduced]);
 
   const nav = useMemo(() => [
     ["Product", "#product"],
@@ -288,8 +306,6 @@ export default function App() {
     ["Review", "#journal"],
     ["Readiness", "#status"],
   ], []);
-
-  const heroWords = ["See", "the", "setup", "before", "it", "becomes", "a", "signal."];
 
   return (
     <>
@@ -322,31 +338,28 @@ export default function App() {
             className="hero-copy"
           >
             <motion.div variants={{ hidden:{opacity:0,y:10},show:{opacity:1,y:0} }} className="eyebrow">
-              <i/> MARKET-AWARE TRADING INTELLIGENCE · PRIVATE BUILD
+              <i/> MARKET-AWARE TRADING INTELLIGENCE
             </motion.div>
 
-            <h1 aria-label="See the setup before it becomes a signal.">
-              {heroWords.map((word, i) => (
+            <h1 className="hero-headline" aria-label={HERO_HEADLINES[0]}>
+              <AnimatePresence mode="wait" initial={false}>
                 <motion.span
+                  key={headlineIndex}
                   aria-hidden="true"
-                  key={word + i}
-                  variants={{
-                    hidden: { opacity: 0, y: 28, filter: "blur(10px)" },
-                    show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: .78, ease: [0.16,1,0.3,1] } }
-                  }}
+                  className="hero-headline-frame"
+                  initial={prefersReduced ? false : { opacity: 0, y: 18, filter: "blur(7px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  exit={prefersReduced ? undefined : { opacity: 0, y: -16, filter: "blur(6px)" }}
+                  transition={{ duration: .78, ease: [0.16,1,0.3,1] }}
                 >
-                  {word}{i < heroWords.length - 1 ? " " : ""}
+                  {HERO_HEADLINES[headlineIndex]}
                 </motion.span>
-              ))}
+              </AnimatePresence>
             </h1>
 
             <motion.p variants={{ hidden:{opacity:0,y:14},show:{opacity:1,y:0} }}>
-              Zugrio scans your markets, tracks setups from FORMING to READY to TRIGGERED, and alerts you with the levels, reasoning and next step.
+              Zugrio scans FX, Gold and Synthetic Indices for opportunities that fit your strategy — then keeps checking the trade as price, costs, context and execution conditions change.
             </motion.p>
-
-            <motion.div variants={{ hidden:{opacity:0,y:12},show:{opacity:1,y:0} }}>
-              <RollingDescriptors />
-            </motion.div>
 
             <motion.div variants={{ hidden:{opacity:0,y:12},show:{opacity:1,y:0} }} className="hero-actions">
               <a className="primary" href="#early-access">Join the early-access waitlist <ArrowRight size={17}/></a>
@@ -354,14 +367,14 @@ export default function App() {
             </motion.div>
 
             <motion.div variants={{ hidden:{opacity:0},show:{opacity:1} }} className="hero-trust">
-              Your money stays in your broker account. Signal mode leaves execution with you. Automation only acts inside limits you set.
+              Your capital stays with your broker. Joining or paying never gives Zugrio permission to trade your account — you grant that separately.
             </motion.div>
 
             <motion.div variants={{ hidden:{opacity:0},show:{opacity:1} }} className="scope">
               FX <span/> Gold <span/> Synthetic Indices
             </motion.div>
             <motion.small variants={{ hidden:{opacity:0},show:{opacity:1} }}>
-              Private build. Zugrio Core and other product capabilities are under validation. No public trading access yet. No performance claim.
+              Private validation. No public trading access yet. No performance claim.
             </motion.small>
           </motion.div>
 

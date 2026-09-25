@@ -25,21 +25,23 @@ The homepage may describe the wider Zugrio proposition in body copy. Capability 
 
 **MARKET-AWARE TRADING INTELLIGENCE**
 
-## Canonical headline test variants
+## Slow rolling headline
 
-Only one variant is shown to a participant/site test at a time.
+The two approved headlines alternate in the same hero position.
 
-### Variant A
+### Frame 1
 
 # The market changes. Your decision should keep up.
 
-### Variant B
+### Frame 2
 
 # Don’t trade the signal. Trade what’s still true.
 
-These are equally provisional until the predeclared trader test selects one.
+Frame 1 appears first. Each frame remains visible for about 5 seconds before a restrained crossfade/vertical transition. The rotation continues while the hero is active.
 
-Do not add rolling secondary headline frames until the canonical H1 clears the headline test.
+For reduced-motion users, show Frame 1 only.
+
+Do not add additional headline frames without a separate positioning review.
 
 ## Shared supporting copy
 
@@ -546,7 +548,7 @@ Their strongest proof elements move into:
 ## Main visual redesign targets
 
 Without changing the visual identity, the next visual pass should concentrate on:
-1. hero hierarchy and eventual slow headline rotation;
+1. hero hierarchy and the approved slow two-frame headline rotation;
 2. richer five-step product-shell state changes;
 3. four-part Decision Quality visual;
 4. manifest-driven Readiness UI;

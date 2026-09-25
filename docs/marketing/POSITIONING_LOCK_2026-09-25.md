@@ -71,19 +71,19 @@ The enemy is:
 
 Zugrio should not be reduced to a signal service, charting platform, generic bot, AI chart chatbot, journal or psychology tool.
 
-### Headline candidates for test
+### Rolling hero headlines — founder decision
 
-No acquisition headline is frozen before trader testing.
+The hero uses both approved lines as a slow rolling headline:
 
-**Candidate A**
+**Frame 1**
 > The market changes. Your decision should keep up.
 
-**Candidate B**
+**Frame 2**
 > Don't trade the signal. Trade what's still true.
 
-These are test candidates, not approved final copy.
+The page no longer selects one of these as the sole visible acquisition headline. They alternate in the same headline position and express the same central proposition from different angles.
 
-The test decides which mental model is stronger. Neither wins by internal preference.
+Frame 1 is the semantic/reduced-motion fallback for accessibility and metadata consistency; this does not make it the marketing "winner."
 
 ### Public-wording constraint
 
@@ -229,46 +229,38 @@ The global site may state **private validation** as an overall product lifecycle
 
 **MARKET-AWARE TRADING INTELLIGENCE**
 
-### Canonical H1
+### Semantic H1 and rolling treatment
 
-The final canonical H1 is selected by the predeclared trader test in section 7.
+The visual hero alternates between the two approved frames in section 2.
 
-Until that test is complete, Candidate A and Candidate B remain equally provisional.
+For accessibility, reduced motion and stable metadata:
+- Frame 1 is the semantic H1/fallback;
+- Frame 2 is a visual alternate in the same headline slot;
+- both remain part of the approved public hero.
 
-For each test variant, the displayed first/canonical line is also the semantic H1 for that variant.
+### Rolling requirements
 
-### Slow rolling treatment
-
-A slow rolling hero is permitted because an evolving decision is conceptually appropriate to Zugrio.
-
-It must pass two independent tests.
+The rolling hero remains subject to two tests.
 
 #### Same-claim test
 
-Every frame expresses the same central proposition from a different angle or moment.
-
-The frames may not rotate among unrelated propositions such as scanning, psychology and automation.
+Every frame must express the same central proposition from a different angle. The rotation may not expand into unrelated propositions such as scanning, psychology or automation.
 
 #### Any-frame test
 
-A visitor arriving on any individual frame must receive a complete, meaningful Zugrio claim.
-
-No frame may depend on having seen the previous or next frame.
-
-Weak fragments such as "A setup appears" or "The market keeps moving" fail this test even if the sequence eventually makes sense.
+A visitor arriving on either frame must receive a complete, meaningful Zugrio claim. Neither frame may depend on having seen the other.
 
 ### Implementation rules
 
-- one canonical semantic H1;
-- visual rolling alternatives may be `aria-hidden`;
-- approximately 7–9 seconds visible per frame;
-- restrained transition;
-- fixed-height headline container;
+- static descriptor: **MARKET-AWARE TRADING INTELLIGENCE**;
+- Frame 1 visible first;
+- approximately 5 seconds visible per frame;
+- restrained crossfade plus slight vertical movement;
+- fixed-height headline container so layout does not jump;
 - no typing effect;
 - no carousel controls;
-- `prefers-reduced-motion` shows the canonical H1 only.
-
-The actual rolling lines are written during the homepage-copy pass after the canonical claim test, not inside this lock.
+- no second rolling descriptor below the headline;
+- `prefers-reduced-motion` shows Frame 1 only.
 
 ## 6. Homepage architecture
 
@@ -396,53 +388,41 @@ Do not select copy by asking which version participants "like."
 
 Choose the version that produces the intended mental model with the fewest material misunderstandings.
 
-### Stage A — Canonical-headline comparison
+### Stage A — Rolling-frame comprehension
 
 Use **12 serious self-directed traders** from the target audience.
 
-Exclude people who have previously used TTI/Zugrio, participated materially in its design, or already know the intended positioning. Familiarity would inflate comprehension scores.
+Exclude people who have previously used TTI/Zugrio, participated materially in its design, or already know the intended positioning.
 
-Randomly assign first exposure:
-- 6 see Candidate A first;
-- 6 see Candidate B first.
+Randomise which frame each participant sees first:
+- 6 see Frame 1 first;
+- 6 see Frame 2 first.
 
-Each participant may later see the other candidate, but **only answers from first exposure count toward the initial headline comparison**.
+Only first-exposure answers count toward the frame check.
 
-For each six-person first-exposure group, the candidate advances only if:
-- at least **4 of 6** describe Zugrio as doing more than delivering signals and capture the idea that the decision/opportunity is re-evaluated as conditions change;
-- at least **4 of 6** answer "What seems different?" with at least one of the six flagship proofs, rather than only "better signals", "AI" or "easier trading";
-- no more than **1 of 6** classify it primarily as only a signal service, generic bot, charting platform, journal or AI chatbot.
+Ask:
+1. What do you think this product does?
+2. What seems different about it?
+3. What kind of product do you think it is?
 
-If neither candidate advances, revise both and test them with a fresh first-exposure cohort. Nothing moves to Stage B until at least one candidate passes Stage A.
+Each frame passes only if, among its six first exposures:
+- at least **4 of 6** describe Zugrio as doing more than delivering signals and capture continuing re-evaluation as conditions change;
+- at least **4 of 6** identify at least one flagship proof rather than only "better signals", "AI" or "easier trading";
+- no more than **1 of 6** classify Zugrio primarily as only a signal service, generic bot, charting platform, journal or AI chatbot.
 
-If only one candidate advances, it becomes the confirmation candidate.
+If one frame fails, revise that frame without changing the rolling mechanism and retest it with a fresh first-exposure cohort.
 
-If both advance, compare:
-1. number of correct first-exposure mental models;
-2. distinctiveness responses;
-3. severity of misunderstandings.
+### Stage B — Full rolling-hero confirmation
 
-Do not resolve a tie by taste. Run an additional first-exposure cohort.
-
-### Stage B — Winner confirmation
-
-Test the winning headline/hero with **10 additional target traders** who did not participate in Stage A.
+After both frames pass independently, show the actual slow rotation to **10 additional target traders**.
 
 Pass requires:
 - at least **7 of 10** describe Zugrio as doing more than delivering signals and capture continuing re-evaluation as conditions change;
 - at least **6 of 10** spontaneously identify at least one governing dimension such as market-specific intelligence, strategy/rules, current-entry recheck or controlled execution;
-- at least **6 of 10** answer "What seems different?" with one or more of the six flagship proofs rather than generic "better signals", "AI" or "easier";
+- at least **6 of 10** answer "What seems different?" with one or more flagship proofs rather than generic "better signals", "AI" or "easier";
 - no more than **2 of 10** primarily classify Zugrio as a signal service, generic bot, charting platform, journal or AI chatbot.
 
-If these fail, revise the headline/hero. Do not explain the intended meaning to participants.
-
-### Stage C — Rolling-frame test
-
-After the canonical H1 passes, test the proposed rolling frames with **10 target traders**, randomising the first frame seen.
-
-Every frame must independently communicate the central proposition.
-
-Any frame producing repeated materially weaker classifications is removed or rewritten even if the full sequence works.
+Do not ask which headline participants prefer. The purpose is to verify that both frames and the rotating treatment preserve the intended mental model.
 
 ### Stage D — Descriptor comprehension
 
