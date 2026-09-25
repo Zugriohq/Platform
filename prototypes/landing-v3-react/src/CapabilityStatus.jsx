@@ -22,17 +22,17 @@ export function getCapability(capabilityId) {
   return capability;
 }
 
-export function StoryCapabilityStatus({ capabilityId }) {
+export function StoryCapabilityStatus({ capabilityId, className = "", hideName = false }) {
   const capability = getCapability(capabilityId);
   const statusLabel = STATUS_LABELS[capability.status];
 
   return (
     <span
-      className="story-capability"
+      className={["story-capability", className].filter(Boolean).join(" ")}
       data-capability-id={capability.id}
       data-capability-status={capability.status}
     >
-      <b>{capability.public_name}</b>
+      {!hideName && <b>{capability.public_name}</b>}
       <em>{capability.status === "locked" && <LockKeyhole size={11} aria-hidden="true" />}{statusLabel}</em>
     </span>
   );
