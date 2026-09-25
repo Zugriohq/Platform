@@ -89,11 +89,6 @@ const STORY = [
 ];
 
 const HERO_HEADLINES = [
-  "The market changes. Your decision should keep up.",
-  "Don’t trade the signal. Trade what’s still true.",
-];
-
-const HERO_MOBILE_LINES = [
   ["The market changes.", "Your decision should", "keep up."],
   ["Don’t trade the signal.", "Trade what’s still", "true."],
 ];
@@ -346,7 +341,7 @@ export default function App() {
               <i/> MARKET-AWARE TRADING INTELLIGENCE
             </motion.div>
 
-            <h1 className="hero-headline" aria-label={HERO_HEADLINES[0]}>
+            <h1 className="hero-headline" aria-label={HERO_HEADLINES[0].join(" ")}>
               <AnimatePresence mode="wait" initial={false}>
                 <motion.span
                   key={headlineIndex}
@@ -357,12 +352,11 @@ export default function App() {
                   exit={prefersReduced ? undefined : { opacity: 0, y: -16, filter: "blur(6px)" }}
                   transition={{ duration: .78, ease: [0.16,1,0.3,1] }}
                 >
-                  <span className="hero-headline-desktop">{HERO_HEADLINES[headlineIndex]}</span>
-                  <span className="hero-headline-mobile">
-                    {HERO_MOBILE_LINES[headlineIndex].map((line) => (
-                      <span className="hero-headline-mobile-line" key={line}>{line}</span>
-                    ))}
-                  </span>
+                  {HERO_HEADLINES[headlineIndex].map((part, index) => (
+                    <span className="hero-headline-part" key={part}>
+                      {part}{index < HERO_HEADLINES[headlineIndex].length - 1 ? " " : ""}
+                    </span>
+                  ))}
                 </motion.span>
               </AnimatePresence>
             </h1>
