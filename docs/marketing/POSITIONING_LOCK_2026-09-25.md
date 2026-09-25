@@ -400,6 +400,8 @@ Choose the version that produces the intended mental model with the fewest mater
 
 Use **12 serious self-directed traders** from the target audience.
 
+Exclude people who have previously used TTI/Zugrio, participated materially in its design, or already know the intended positioning. Familiarity would inflate comprehension scores.
+
 Randomly assign first exposure:
 - 6 see Candidate A first;
 - 6 see Candidate B first.
@@ -410,6 +412,8 @@ For each six-person first-exposure group, the candidate advances only if:
 - at least **4 of 6** describe Zugrio as doing more than delivering signals and capture the idea that the decision/opportunity is re-evaluated as conditions change;
 - at least **4 of 6** answer "What seems different?" with at least one of the six flagship proofs, rather than only "better signals", "AI" or "easier trading";
 - no more than **1 of 6** classify it primarily as only a signal service, generic bot, charting platform, journal or AI chatbot.
+
+If neither candidate advances, revise both and test them with a fresh first-exposure cohort. Nothing moves to Stage B until at least one candidate passes Stage A.
 
 If only one candidate advances, it becomes the confirmation candidate.
 
