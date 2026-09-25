@@ -765,12 +765,11 @@ export default function App() {
           </div>
 
           <div className="trust-dossier">
-            <div className="trust-index" role="tablist" aria-label="Zugrio questions">
+            <div className="trust-index" aria-label="Zugrio questions">
               {FAQ_ITEMS.map((item, index) => (
                 <button
                   type="button"
-                  role="tab"
-                  aria-selected={faqIndex === index}
+                  aria-pressed={faqIndex === index}
                   className={faqIndex === index ? "active" : ""}
                   onClick={() => setFaqIndex(index)}
                   key={item.question}
@@ -787,7 +786,7 @@ export default function App() {
                 <motion.article
                   className="trust-answer"
                   key={faqIndex}
-                  role="tabpanel"
+                  aria-live="polite"
                   initial={{ opacity: 0, y: 12, filter: "blur(5px)" }}
                   animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                   exit={{ opacity: 0, y: -8, filter: "blur(4px)" }}
