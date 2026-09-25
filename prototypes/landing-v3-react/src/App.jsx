@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import {
   ArrowRight, ChevronRight, LockKeyhole, Menu, X
@@ -105,10 +105,7 @@ const STORY = [
   },
 ];
 
-const HERO_HEADLINES = [
-  ["The market changes.", "Your decision should", "keep up."],
-  ["Don’t trade the signal.", "Trade what’s still", "true."],
-];
+const HERO_HEADLINE = ["Don’t trade the signal.", "Trade what’s still true."];
 
 const PROBLEM_CHAIN = [
   ["01", "MISSED OPPORTUNITY", "You can miss the opportunity."],
@@ -437,21 +434,7 @@ export default function App() {
   const [marketKey, setMarketKey] = useState("FX");
   const [caseKey, setCaseKey] = useState("valid");
   const [activeStep, setActiveStep] = useState("market");
-  const [headlineIndex, setHeadlineIndex] = useState(0);
   const [faqIndex, setFaqIndex] = useState(0);
-
-  useEffect(() => {
-    if (prefersReduced) {
-      setHeadlineIndex(0);
-      return undefined;
-    }
-
-    const timer = window.setInterval(() => {
-      setHeadlineIndex((current) => (current + 1) % HERO_HEADLINES.length);
-    }, 5000);
-
-    return () => window.clearInterval(timer);
-  }, [prefersReduced]);
 
   const nav = useMemo(() => [
     ["Product", "#product"],
@@ -494,44 +477,37 @@ export default function App() {
               <span>MARKET-AWARE TRADING INTELLIGENCE</span>
             </motion.div>
 
-            <h1 className="hero-headline" aria-label={HERO_HEADLINES[0].join(" ")}>
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.span
-                  key={headlineIndex}
-                  aria-hidden="true"
-                  className="hero-headline-frame"
-                  initial={prefersReduced ? false : { opacity: 0, y: 18, filter: "blur(7px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  exit={prefersReduced ? undefined : { opacity: 0, y: -16, filter: "blur(6px)" }}
-                  transition={{ duration: .78, ease: [0.16,1,0.3,1] }}
-                >
-                  {HERO_HEADLINES[headlineIndex].map((part, index) => (
-                    <span className="hero-headline-part" key={part}>
-                      {part}{index < HERO_HEADLINES[headlineIndex].length - 1 ? " " : ""}
-                    </span>
-                  ))}
-                </motion.span>
-              </AnimatePresence>
-            </h1>
+            <motion.h1
+              className="hero-headline"
+              aria-label={HERO_HEADLINE.join(" ")}
+              variants={{ hidden:{opacity:0,y:18,filter:"blur(7px)"},show:{opacity:1,y:0,filter:"blur(0px)"} }}
+              transition={{ duration: .78, ease: [0.16,1,0.3,1] }}
+            >
+              <span className="hero-headline-frame" aria-hidden="true">
+                {HERO_HEADLINE.map((part) => (
+                  <span className="hero-headline-part" key={part}>{part}</span>
+                ))}
+              </span>
+            </motion.h1>
 
             <motion.p variants={{ hidden:{opacity:0,y:14},show:{opacity:1,y:0} }}>
-              Zugrio scans FX, Gold and Synthetic Indices for opportunities that fit your strategy — then keeps checking the trade as price, costs, context and execution conditions change.
+              Zugrio finds setups for your strategy, reads each one in the market it comes from, and rechecks the entry until you act — within your limits, on the record.
             </motion.p>
 
             <motion.div variants={{ hidden:{opacity:0,y:12},show:{opacity:1,y:0} }} className="hero-actions">
-              <a className="primary" href="#early-access">Join the early-access waitlist <ArrowRight size={17}/></a>
-              <a className="secondary" href="#how">Explore the trading workspace <ChevronRight size={17}/></a>
+              <a className="primary" href="#early-access">Join early access <ArrowRight size={17}/></a>
+              <a className="secondary" href="#how">See how Zugrio works <ChevronRight size={17}/></a>
             </motion.div>
 
             <motion.div variants={{ hidden:{opacity:0},show:{opacity:1} }} className="hero-trust">
-              Your capital stays with your broker. Joining or paying never gives Zugrio permission to trade your account — you grant that separately.
+              Your capital stays with your broker. You decide how much Zugrio may do, from alerts only to trading within the limits you set.
             </motion.div>
 
             <motion.div variants={{ hidden:{opacity:0},show:{opacity:1} }} className="scope">
-              FX <span/> Gold <span/> Synthetic Indices
+              <b>Starting with</b> FX <span/> Gold <span/> Synthetic Indices
             </motion.div>
             <motion.small variants={{ hidden:{opacity:0},show:{opacity:1} }}>
-              Private validation. No public trading access yet. No performance claim.
+              Private validation · No public trading access or performance claims yet.
             </motion.small>
           </motion.div>
 
