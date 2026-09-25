@@ -241,9 +241,9 @@ function Shell({ activeStep, marketKey, setMarketKey, caseKey, setCaseKey }) {
 
               {activeStep === "control" && (
                 <>
-                  <div className="control-readiness">
-                    {["mode.signal","mode.semi_auto_ctrader","mode.auto","mode.full_auto"].map((capabilityId) => (
-                      <StoryCapabilityStatus key={capabilityId} capabilityId={capabilityId} />
+                  <div className="control-ladder" aria-label="Control modes">
+                    {["Signal", "Semi-Auto", "Auto", "Full Auto"].map((mode) => (
+                      <span className={mode === "Semi-Auto" ? "selected" : ""} key={mode}>{mode}</span>
                     ))}
                   </div>
                   <div className="authority-band">
