@@ -651,6 +651,21 @@ Broker Adapter Contract responsibilities include:
 
 Broker-specific symbol semantics never define canonical instrument identity.
 
+### 12.1 Broker authorization scope is not execution authority
+
+Broker credential capability and Zugrio execution authority are separate layers.
+
+For cTrader:
+- read-only Signal observation uses OAuth `accounts` scope where broker observation is needed;
+- a trading-capable Semi-Auto connection uses OAuth `trading` scope only after explicit user authorization;
+- `trading` scope is a broad broker transport permission and does not bypass ExecutionAuthorityManifest, strategy admission, risk, freshness, user approval or reconciliation.
+
+A mode upgrade that needs a wider broker scope requires explicit re-authorization. Zugrio must not silently widen an existing read-only connection.
+
+Revoking/disconnecting a BrokerConnection immediately disables it server-side, invalidates incompatible intents/approvals and destroys stored active/refresh credential material. Reconnection establishes a new authorization epoch; stale devices or jobs cannot restore the old authority.
+
+Where supported, the product should also direct the user to the broker's own authorized-app controls so broker-side authorization can be independently removed.
+
 ## 13. Scalability without premature distributed complexity
 
 Initial runtime: modular monolith + independent workers where required.
@@ -712,7 +727,9 @@ Freshness and causal order are capital-relevant.
 ## 15. Security boundaries
 
 - Customer broker credentials remain separated by account/tenant.
-- cTrader should use delegated OAuth/Open API authorization.
+- cTrader should use delegated OAuth/Open API authorization with least-privilege scope selection by control mode.
+- Signal/read-only cTrader connections should use `accounts` scope; trading-capable modes request `trading` only after explicit authorization.
+- broker access and refresh tokens are server-side secrets; disconnect/revoke destroys stored credential material immediately rather than waiting for expiry.
 - MT5 design should avoid central storage of customer master passwords where possible.
 - Execution intents are signed, short-lived, account-bound and replay-protected where crossing connector trust boundaries.
 - Crypto integrations, when introduced, receive no withdrawal authority.
