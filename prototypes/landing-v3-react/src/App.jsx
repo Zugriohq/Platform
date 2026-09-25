@@ -802,7 +802,7 @@ export default function App() {
         <a className="brand" href="#top" aria-label="Zugrio home">
           <BrandWordmark variant="silver" className="footer-wordmark" decorative />
         </a>
-        <p>Zugrio is in development and private validation. Product screens, prices, scenarios and readiness examples may be illustrative unless explicitly identified otherwise. They are not investment recommendations, live signals or performance claims. Trading involves risk of loss.</p>
+        <p>Zugrio is in development and private validation. Product screens, prices, trade cases and readiness examples may be illustrative unless stated otherwise. They are not investment recommendations, live signals or performance claims. Trading involves risk of loss.</p>
         <div>
           <a href="#status">Product status</a>
           <a href="#early-access">Early access</a>
