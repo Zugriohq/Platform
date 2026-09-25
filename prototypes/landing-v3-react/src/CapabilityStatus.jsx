@@ -12,6 +12,20 @@ export const STATUS_LABELS = {
   locked: "Locked",
 };
 
+const STATUS_DESCRIPTIONS = {
+  released: "Available in the stated scope.",
+  early_access: "Available to a limited invited group.",
+  validation: "Being tested; not released.",
+  research_only: "Evidence and research work; not available for trading use.",
+  planned: "Part of the product direction; not yet available.",
+  locked: "Deliberately unavailable until separate gates clear.",
+};
+
+export const READINESS_META = {
+  lifecycleState: manifest.lifecycle_state,
+  lastVerifiedDate: manifest.last_verified_date,
+};
+
 const byId = new Map(manifest.capabilities.map((capability) => [capability.id, capability]));
 
 export function getCapability(capabilityId) {
@@ -35,6 +49,54 @@ export function StoryCapabilityStatus({ capabilityId, className = "", hideName =
       {!hideName && <b>{capability.public_name}</b>}
       <em>{capability.status === "locked" && <LockKeyhole size={11} aria-hidden="true" />}{statusLabel}</em>
     </span>
+  );
+}
+
+export function ReadinessCapability({ capabilityId, className = "" }) {
+  const capability = getCapability(capabilityId);
+  const statusLabel = STATUS_LABELS[capability.status];
+
+  return (
+    <div
+      className={["readiness-capability", className].filter(Boolean).join(" ")}
+      data-capability-id={capability.id}
+      data-capability-status={capability.status}
+    >
+      <b>{capability.public_name}</b>
+      <em>{capability.status === "locked" && <LockKeyhole size={11} aria-hidden="true" />}{statusLabel}</em>
+    </div>
+  );
+}
+
+export function ReadinessMeta() {
+  const date = new Date(READINESS_META.lastVerifiedDate + "T00:00:00");
+  const checked = new Intl.DateTimeFormat("en", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+
+  return (
+    <div className="readiness-meta" aria-label="Zugrio readiness lifecycle">
+      <span>PRIVATE VALIDATION</span>
+      <i aria-hidden="true" />
+      <b>LAST CHECKED {checked.toUpperCase()}</b>
+    </div>
+  );
+}
+
+export function ReadinessLegend() {
+  return (
+    <div className="readiness-legend" aria-label="Readiness status meanings">
+      {Object.entries(STATUS_LABELS).map(([status, label], index) => (
+        <div className="readiness-legend-row" data-readiness-status={status} key={status}>
+          <span>{String(index + 1).padStart(2, "0")}</span>
+          <b>{label}</b>
+          <p>{STATUS_DESCRIPTIONS[status]}</p>
+          {status === "locked" && <LockKeyhole size={11} aria-hidden="true" />}
+        </div>
+      ))}
+    </div>
   );
 }
 
