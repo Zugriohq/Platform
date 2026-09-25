@@ -1023,7 +1023,6 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
   .story-step{padding-left:30px}.story-index{left:0}
 }
 @media(max-width:720px){
-  .hero-headline{min-height:3em}
   .hero h1 .hero-headline-part{display:block;white-space:nowrap}
   .silver-reveal{min-height:660px}
   .silver-thesis{top:8%;width:calc(100% - 32px)}
@@ -1401,7 +1400,7 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
   .footer-wordmark{width:112px}
   .brand-intro-inner{width:90vw;gap:17px}
   .brand-intro-stage{width:88vw}
-  .brand-intro-descriptor{font-size:7.5px;letter-spacing:.16em;text-align:center}
+  .brand-intro-descriptor{font-size:8.5px;letter-spacing:.15em;text-align:center}
   .market-topography{top:470px;width:190vw;opacity:.38}
   .market-topography-graze{display:none}
   .silver-base,.silver-base>.brand-wordmark,.silver-spotlight>.brand-wordmark{width:min(91vw,760px)}
@@ -1711,7 +1710,7 @@ img,svg,canvas,iframe{max-width:100%}
   .closing-signature{min-height:690px}
   .closing-thesis{top:7%;width:calc(100% - 32px)}
   .closing-overline{align-items:flex-start;flex-direction:column;gap:7px;padding-bottom:12px}
-  .closing-thesis h2{font-size:clamp(40px,12vw,58px)}
+  .closing-thesis h2{font-size:clamp(38px,11.2vw,54px);line-height:.97}
   .closing-thesis h2 span{font-size:.54em;margin-top:9px}
   .closing-thesis p{font-size:11px;line-height:1.72}
   .closing-field-line-a{top:34%}
@@ -1882,7 +1881,7 @@ img,svg,canvas,iframe{max-width:100%}
   .waitlist:before{top:60px;left:16px;right:16px}
   .waitlist:after{top:38px;left:16px;font-size:6.5px}
   .waitlist-copy{padding-top:8px}
-  .waitlist-copy h2{font-size:clamp(42px,13vw,58px)}
+  .waitlist-copy h2{font-size:clamp(38px,11.2vw,52px);line-height:.98}
   .waitlist-copy>p{font-size:12px;line-height:1.72}
   .journey{margin-top:32px}
   .waitlist-stage{padding:0 16px 4px;border-radius:14px}
@@ -1931,8 +1930,8 @@ footer>div a:hover:after{width:100%}
 @media(max-width:520px){
   footer{padding:34px 16px 38px;gap:20px}
   footer:before{left:16px;font-size:6px}
-  footer p{font-size:8.5px}
-  footer>div{grid-template-columns:1fr 1fr;gap:9px 14px;font-size:7.5px}
+  footer p{font-size:9.5px;line-height:1.72}
+  footer>div{grid-template-columns:1fr 1fr;gap:10px 14px;font-size:9px}
 }
 
 
@@ -1956,7 +1955,6 @@ footer>div a:hover:after{width:100%}
   footer:before{
     font-size:8px!important
   }
-  footer>div{font-size:8.5px}
 }
 
 @media(prefers-reduced-motion:reduce){
