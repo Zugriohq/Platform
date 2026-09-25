@@ -740,6 +740,32 @@ Unknown submission state shall trigger reconciliation/lock behaviour rather than
 
 Live execution shall verify broker-side protective state according to the governing execution policy.
 
+### ZR-EXE-007 — Mode-appropriate broker scope — V1-F
+
+Broker authorization shall request the least scope required by the active control mode.
+
+For cTrader:
+- Signal/read-only observation shall use the `accounts` scope where broker observation is needed;
+- Semi-Auto may request `trading` scope only after explicit user authorization of a trading-capable connection;
+- enabling product access or changing commercial entitlement shall not silently widen broker OAuth scope;
+- upgrading from read-only to trading-capable access requires an explicit re-authorization flow.
+
+Broker OAuth scope does not replace Zugrio ExecutionAuthorityManifest/risk/strategy admission.
+
+### ZR-EXE-008 — Active broker credential revocation — V1-F
+
+Revoking/disconnecting a broker connection shall take effect immediately inside Zugrio.
+
+The system shall:
+- mark the BrokerConnection revoked/disabled server-side;
+- reject new risk-increasing submissions;
+- delete or cryptographically destroy stored access/refresh tokens for that connection;
+- stop token-refresh/reconnect jobs;
+- invalidate incompatible prepared intents/approvals under the old authorization epoch;
+- provide broker-side revocation guidance where the broker supports user-managed app authorization.
+
+Zugrio shall not rely on access-token expiry as the revocation mechanism.
+
 ## 13. Market/data freshness
 
 ### ZR-DATA-001 — Closed-source-event discipline — V1-F
