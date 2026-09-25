@@ -11,6 +11,7 @@ import SilverReveal from "./SilverReveal.jsx";
 import BrandWordmark from "./BrandWordmark.jsx";
 import BrandIntro from "./BrandIntro.jsx";
 import MarketTopography from "./MarketTopography.jsx";
+import CapabilityStatus from "./CapabilityStatus.jsx";
 
 const MARKETS = {
   FX: {
@@ -467,22 +468,14 @@ export default function App() {
           </div>
           <div className="status-list">
             {[
-              ["Released","Available in its stated scope","LIVE"],
-              ["Early access","Invitation only","LIMITED"],
-              ["Validation","Not released","TESTING"],
-              ["Locked","Unavailable","LOCKED"],
-            ].map(([name,scope,state], i) => (
-              <motion.div
-                key={name}
-                initial={{ opacity:0, x:22 }}
-                whileInView={{ opacity:1, x:0 }}
-                viewport={{ once:true }}
-                transition={{ duration:.56, delay:i*.065, ease:[0.16,1,0.3,1] }}
-              >
-                <b>{name}</b><span>{scope}</span><em>{state}</em>
-              </motion.div>
+              "strategy.zugrio_core",
+              "mode.signal",
+              "mode.semi_auto_ctrader",
+              "mode.full_auto",
+            ].map((capabilityId, i) => (
+              <CapabilityStatus key={capabilityId} capabilityId={capabilityId} index={i} />
             ))}
-            <small>Example status language. Zugrio is currently a private build.</small>
+            <small>Status is sourced from Zugrio&apos;s canonical capability manifest. Zugrio is currently in private validation.</small>
           </div>
         </motion.section>
 
