@@ -161,7 +161,7 @@ export default function Waitlist() {
           "error-callback": () => {
             setToken("");
             setStatus("attention");
-            setMessage("The security check could not load. Refresh and try again.");
+            setMessage("The security check could not load. Refresh the page; if it persists, allow challenges.cloudflare.com in your browser or content blocker and try again.");
           },
         });
 
