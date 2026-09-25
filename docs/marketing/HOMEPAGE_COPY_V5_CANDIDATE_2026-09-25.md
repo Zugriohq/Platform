@@ -43,9 +43,7 @@ Do not add rolling secondary headline frames until the canonical H1 clears the h
 
 ## Shared supporting copy
 
-Zugrio scans FX, Gold and Synthetic Indices for opportunities that fit the active strategy — then keeps checking the trade case as price, costs, context and execution conditions change.
-
-It helps you see what qualifies, what changed, what still holds and what happens next — without treating a signal as the end of the decision.
+Zugrio scans FX, Gold and Synthetic Indices for opportunities that fit your strategy — then keeps checking the trade as price, costs, context and execution conditions change.
 
 **FX · GOLD · SYNTHETIC INDICES**
 
@@ -56,7 +54,7 @@ Join early access
 See how Zugrio works
 
 **Trust line**  
-Your capital stays with your broker. Finding a trade and having permission to act are separate.
+Your capital stays with your broker. Joining or paying never gives Zugrio permission to trade your account — you grant that separately.
 
 **Lifecycle line**  
 Private validation · No public trading access or performance claims yet.
@@ -97,15 +95,17 @@ The product workspace stays visually present while the narrative advances throug
 **Kicker**  
 01 · MARKET
 
-# The same chart pattern can mean something different in a different market.
+# Same pattern. Different market. Different answer.
 
 Zugrio does not treat FX, Gold and Synthetic Indices as interchangeable price charts.
 
 It evaluates the opportunity inside the market and instrument that produced it — including the behaviour, costs and context that actually apply there.
 
-### Product proof — Instrument behaviour
+### Product proof — Instrument Behaviour
 
-Volatility, active and quiet periods, trading costs and other instrument-specific characteristics remain part of the case.
+`{{status:intelligence.instrument_behaviour}}`
+
+Volatility, active and quiet periods, trading costs and other instrument-specific characteristics remain part of the trade.
 
 ### Product proof — Market Drivers
 
@@ -139,9 +139,13 @@ Do not show a large future-market roadmap inside this step.
 
 The same market can produce different answers under different strategies.
 
-Zugrio uses the active strategy to decide what qualifies as a setup, which price areas matter, what must confirm the entry and what invalidates the case.
+Zugrio uses your strategy to decide what qualifies as a setup, which price areas matter, what must confirm the entry and what invalidates the trade.
 
-It scans in the background and brings attention back to the cases that matter.
+### Background Scanning
+
+`{{status:intelligence.background_scanning}}`
+
+Zugrio scans in the background and brings your attention back to the setups that matter.
 
 ### Opportunity progression
 
@@ -154,10 +158,10 @@ The required pre-trigger conditions are present.
 **TRIGGERED**  
 The defined trigger occurred and the signal is recorded.
 
-**PASS**  
-No permitted trade qualifies. No setup is a valid answer.
+### No setup is a valid answer too.
 
-PASS is shown separately from the opportunity-state progression.
+**PASS**  
+No permitted trade qualifies. PASS is a decision, not another setup state.
 
 ### Live chart state
 
@@ -203,8 +207,8 @@ The recheck can account for current price, costs, freshness, entry geometry and 
 
 ### Illustrative product treatment
 
-**SIGNAL RECORDED**  
-09:24
+**SIGNAL**  
+Still valid
 
 **SIGNAL ENTRY**  
 1.08342
@@ -212,8 +216,13 @@ The recheck can account for current price, costs, freshness, entry geometry and 
 **CURRENT PRICE**  
 1.08411
 
-**ENTRY QUALITY**  
-Re-evaluated now
+**CURRENT ENTRY**  
+No longer qualifies
+
+**REWARD-TO-RISK**  
+2.0R → 0.7R
+
+*Illustrative scenario — not a live signal or performance result.*
 
 **Supporting line**  
 What qualified then is not automatically what qualifies now.
@@ -229,31 +238,31 @@ What qualified then is not automatically what qualifies now.
 
 Finding an opportunity, approving a trade and allowing software to act are different decisions.
 
-Zugrio is designed around explicit levels of control so the trader can decide how much execution is delegated.
+You choose how much execution authority to delegate.
 
 ### Signal
 
 `{{status:mode.signal}}`
 
-Zugrio finds and follows the trade case. Execution stays with the trader.
+Zugrio finds and follows the trade. Execution stays with you.
 
 ### Semi-Auto
 
 `{{status:mode.semi_auto_ctrader}}`
 
-Zugrio can prepare an eligible trade intent, recheck the required conditions and submit only after the required user approval and controls.
+Zugrio prepares an eligible trade, rechecks the required conditions and sends it only after you approve.
 
 ### Auto
 
 `{{status:mode.auto}}`
 
-The wider architecture allows bounded automatic execution only inside explicit delegated authority and admitted scope.
+Zugrio places trades within the rules, markets and risk limits you set — and you can revoke that authority.
 
 ### Full Auto
 
 `{{status:mode.full_auto}}`
 
-Portfolio-level automation remains separately gated and cannot be implied by access to the product.
+Zugrio manages a portfolio of strategies within the limits you set.
 
 **Supporting line**  
 More automation should never mean less clarity about who is allowed to act.
@@ -267,31 +276,13 @@ More automation should never mean less clarity about who is allowed to act.
 
 # Hindsight doesn’t get to rewrite the trade.
 
-Zugrio keeps the original trade case available for review: the strategy state, relevant evidence, what changed, the intended action, what the trader or system did, what the broker actually did and what happened afterward.
+Zugrio keeps the original trade available for review: the strategy state, relevant evidence, what changed, the intended action, what you or the system did, what the broker actually did and what happened afterward.
 
 ### Decision Replay
 
 `{{status:decision.replay}}`
 
 Replay is designed to show what was knowable at the time rather than rebuilding the trade from information that only became obvious later.
-
-### Illustrative case
-
-**SYSTEM DECISION**  
-PASS
-
-**TRADER ACTION**  
-Override
-
-**OUTCOME**  
-Profit
-
-**PROCESS**  
-Rule violation
-
-A winning violation remains a violation.
-
-A compliant loss does not automatically mean the process failed.
 
 ---
 
@@ -308,38 +299,55 @@ Zugrio separates the trade into four questions rather than collapsing everything
 
 `{{status:intelligence.strategy_health}}`
 
-What evidence supports the exact strategy, trade bundle and market scope being used?
+Is there real evidence behind this strategy in this market?
 
 ## PROCESS
 
-Did the trader follow the strategy, plan, risk and approval process that governed the case?
+Did you follow the strategy, plan, risk and approval process?
 
 ## EXECUTION
 
-Did the real order, fill, protection and position behaviour match the approved intent?
+Did the real order, fill and protection match what you approved?
 
 ## OUTCOME
 
 What happened financially?
 
-### Behaviour layer
+### Illustrative diagnosis
 
+**SYSTEM DECISION**  
+PASS
+
+**YOUR ACTION**  
+Override
+
+**OUTCOME**  
+Profit
+
+**PROCESS**  
+Rule violation
+
+A winning violation remains a violation. A compliant loss does not automatically mean the process failed.
+
+### Behaviour Health
+
+`{{status:behaviour.health}}`  
 `{{status:behaviour.observations}}`
 
 Where supported by broker data, Zugrio can surface observable deviations such as entering early, chasing price, changing risk, exiting early or overriding the system state.
 
-It records observable behaviour without pretending to know what the trader was feeling.
+It records observable behaviour without pretending to know what you were feeling.
 
 ### Guardrails
 
-The wider Zugrio direction is designed to progress from visibility to stronger workflow guardrails without letting behaviour logic override safe risk reduction.
+Set your own guardrails. Zugrio can flag a broken rule, ask you to confirm, or enforce it — while safe risk reduction always remains available.
 
 `{{status:guardrail.advisory}}`  
 `{{status:guardrail.confirmation}}`  
 `{{status:guardrail.enforcing}}`
 
 **Supporting line**  
-Four questions. Better diagnosis.
+Know what actually needs improving.
 
 ---
 
@@ -354,7 +362,7 @@ The Zugrio proposition is larger than the first capabilities that become availab
 
 That does not make every capability usable today.
 
-Every readiness label on this site is sourced from Zugrio’s versioned Capability Scope Manifest.
+Every status on this page comes from one published readiness list, with the date it was last checked.
 
 **Status vocabulary**
 
@@ -367,7 +375,7 @@ Every readiness label on this site is sourced from Zugrio’s versioned Capabili
 
 ### Suggested Readiness snapshot
 
-Render these directly from the manifest:
+Render these from the published readiness source:
 
 `{{status:strategy.zugrio_core}}`  
 `{{status:intelligence.market_drivers}}`  
@@ -390,7 +398,7 @@ The homepage does not need to display every manifest entry at once. Use progress
 
 ### What can I use today?
 
-Zugrio is currently in private validation. The website is a product preview and early-access list. Public trading access is not yet open.
+Zugrio is in private validation. The first release starts invite-only on Windows desktop, with Zugrio Core, Signal and Semi-Auto on cTrader. Public trading access is not open yet.
 
 ### Which markets is Zugrio built around first?
 
@@ -398,7 +406,7 @@ FX, Gold and Synthetic Indices. Each market and instrument scope is evaluated se
 
 ### Which strategies will Zugrio support?
 
-Zugrio is built to support multiple strategy families. Zugrio Core is the first-party strategy. Smart Money Concepts, Trend Following, Range / Mean Reversion and Custom Strategy each carry their own manifest-backed readiness status.
+Zugrio is built to support multiple strategy families. Zugrio Core is the first-party strategy. Smart Money Concepts, Trend Following and Range / Mean Reversion are being validated, while Custom Strategy comes later.
 
 ### Does AI decide the trade?
 
@@ -406,19 +414,19 @@ AI may help explain structured product state. Authoritative strategy state, char
 
 ### How does automation work?
 
-Zugrio separates analysis from permission. Signal, Semi-Auto, Auto and Full Auto are distinct control levels, and each carries its own manifest-backed readiness status.
+Zugrio separates analysis from permission. Signal keeps execution with you. Semi-Auto acts only after you approve. Auto and Full Auto add deeper delegation within limits you set, with their current availability shown on the page.
 
 ### Which broker comes first for Semi-Auto?
 
-cTrader is the first planned Semi-Auto broker path for the initial release sequence. Its current availability is shown by the manifest-backed status on the site.
+cTrader is the first Semi-Auto broker path planned for the first release. Its current availability is shown on the page.
 
 ### Where will I use Zugrio?
 
-Zugrio is designed across desktop, web and later mobile surfaces, with the current readiness of each client shown explicitly.
+The first release is Windows-desktop first, with web for account and access workflows. Mobile follows later.
 
 ### Can I use my own strategy?
 
-Custom Strategy is part of the broader Zugrio direction. Its current readiness must be taken from the manifest rather than inferred from the product vision.
+Custom Strategy is part of the broader Zugrio direction, but it is not part of the first release.
 
 ### What happens when nothing qualifies?
 
@@ -426,7 +434,7 @@ Zugrio can return PASS. No trade is a valid decision.
 
 ### Can I review a trade afterward?
 
-Decision history and replay are designed to preserve what was known and what happened throughout the case. Their current readiness is shown separately.
+Decision history and replay preserve what was known at the time and what happened afterward. Their current availability is shown on the page.
 
 ### Does Zugrio hold my money?
 
@@ -448,7 +456,7 @@ You will receive meaningful build updates and invitations as eligible capabiliti
 
 ## And the signal is not the whole decision.
 
-Zugrio is being built to follow the trade beyond the alert — through the market, the strategy, the trade available now, the level of control you choose and the evidence left behind afterward.
+Zugrio follows the trade beyond the alert — from the first setup to the final review.
 
 **Primary CTA**  
 Join early access
