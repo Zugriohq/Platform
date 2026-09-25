@@ -1,0 +1,185 @@
+{
+  "schema_version": "1.0",
+  "manifest_id": "zugrio-capability-scope-manifest",
+  "effective_date": "2026-09-25",
+  "last_verified_date": "2026-09-25",
+  "lifecycle_state": "private_validation",
+  "status_vocabulary": [
+    "released",
+    "early_access",
+    "validation",
+    "research_only",
+    "planned",
+    "locked"
+  ],
+  "invariants": [
+    "No public trading capability is represented as released unless an exact scope is explicitly marked released in this manifest.",
+    "Release 1 is a delivery plan, not a readiness status.",
+    "Capability status does not create strategy admission, broker authority, execution authority, or entitlement.",
+    "A capability absent from this manifest must not receive a public readiness chip."
+  ],
+  "capabilities": [
+    {
+      "id": "strategy.zugrio_core",
+      "public_name": "Zugrio Core",
+      "category": "strategy",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "First-party strategy; Release 1 build target. Exact market/instrument admissions remain scope-specific.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md",
+        "docs/product/INITIAL_MARKET_AND_STRATEGY_PORTFOLIO.md"
+      ]
+    },
+    {
+      "id": "strategy.smc",
+      "public_name": "Smart Money Concepts",
+      "category": "strategy",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "Strategy-family roadmap under validation; no public admitted trading scope claimed.",
+      "source_refs": [
+        "docs/product/INITIAL_MARKET_AND_STRATEGY_PORTFOLIO.md"
+      ]
+    },
+    {
+      "id": "strategy.trend_following",
+      "public_name": "Trend Following",
+      "category": "strategy",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "Strategy-family roadmap under validation; no public admitted trading scope claimed.",
+      "source_refs": [
+        "docs/product/INITIAL_MARKET_AND_STRATEGY_PORTFOLIO.md"
+      ]
+    },
+    {
+      "id": "strategy.range_mean_reversion",
+      "public_name": "Range / Mean Reversion",
+      "category": "strategy",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "Strategy-family roadmap under validation; no public admitted trading scope claimed.",
+      "source_refs": [
+        "docs/product/INITIAL_MARKET_AND_STRATEGY_PORTFOLIO.md"
+      ]
+    },
+    {
+      "id": "strategy.custom_builder",
+      "public_name": "Custom Strategy",
+      "category": "strategy",
+      "status": "planned",
+      "public_visible": true,
+      "scope": "Broader Zugrio 1.0 direction; not Release 1.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md",
+        "docs/product/STRATEGY_EXECUTION_COMPONENT_TAXONOMY_V1.md"
+      ]
+    },
+    {
+      "id": "mode.signal",
+      "public_name": "Signal",
+      "category": "control_mode",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "Release 1 control-mode target. No public released scope is claimed by this manifest.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md",
+        "docs/product/ZUGRIO_1_0_PRD.md"
+      ]
+    },
+    {
+      "id": "mode.semi_auto_ctrader",
+      "public_name": "Semi-Auto · cTrader",
+      "category": "control_mode",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "First Release 1 Semi-Auto broker path. Activation remains exact-scope gated.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md"
+      ]
+    },
+    {
+      "id": "mode.auto",
+      "public_name": "Auto",
+      "category": "control_mode",
+      "status": "planned",
+      "public_visible": true,
+      "scope": "Part of the broader Zugrio 1.0 architecture; not Release 1.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md",
+        "docs/product/ZUGRIO_1_0_PRD.md"
+      ]
+    },
+    {
+      "id": "mode.full_auto",
+      "public_name": "Full Auto",
+      "category": "control_mode",
+      "status": "locked",
+      "public_visible": true,
+      "scope": "Architecturally represented but deliberately unavailable pending portfolio-level validation and other gates.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md",
+        "docs/product/ZUGRIO_1_0_PRD.md"
+      ]
+    },
+    {
+      "id": "market.fx",
+      "public_name": "FX",
+      "category": "market",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "Parallel initial market track; exact strategy/instrument scopes require separate admission.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md",
+        "docs/product/PRODUCT_DIRECTION.md"
+      ]
+    },
+    {
+      "id": "market.gold",
+      "public_name": "Gold",
+      "category": "market",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "Parallel initial market track; exact strategy/instrument scopes require separate admission.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md",
+        "docs/product/PRODUCT_DIRECTION.md"
+      ]
+    },
+    {
+      "id": "market.synthetic_indices",
+      "public_name": "Synthetic Indices",
+      "category": "market",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "Parallel initial market track. Synthetic-family/instrument evidence remains separately scoped.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md",
+        "docs/product/PRODUCT_DIRECTION.md"
+      ]
+    },
+    {
+      "id": "broker.ctrader",
+      "public_name": "cTrader",
+      "category": "broker_integration",
+      "status": "validation",
+      "public_visible": true,
+      "scope": "First Semi-Auto broker path; capability matrix and exact activation scope remain gated.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md"
+      ]
+    },
+    {
+      "id": "broker.mt5",
+      "public_name": "MT5",
+      "category": "broker_integration",
+      "status": "planned",
+      "public_visible": true,
+      "scope": "Zugrio 1.0 endpoint sequenced after the verified capability/no-Zugrio-VPS connector path.",
+      "source_refs": [
+        "docs/product/V1_BUILD_CUT_AND_ARCHITECTURE_FREEZE.md"
+      ]
+    }
+  ]
+}
