@@ -33,7 +33,7 @@ requireText(
 );
 requireText(
   css,
-  "font-size:clamp(31px,10.2vw,40px)",
+  "font-size:clamp(31px,9.8vw,40px)",
   "The mobile hero must retain the tested fluid type scale for 320–420px widths."
 );
 
