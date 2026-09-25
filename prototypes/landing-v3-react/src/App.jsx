@@ -93,14 +93,13 @@ const HERO_HEADLINES = [
   ["Don’t trade the signal.", "Trade what’s still", "true."],
 ];
 
-const TICKER = [
-  "Strategy-aware scanning",
-  "FORMING → READY → TRIGGERED",
-  "Background alerts",
-  "Live chart reasoning",
-  "Behavioral analytics",
-  "Your control stays explicit",
-  "FX · Gold · Synthetic Indices",
+const PROBLEM_CHAIN = [
+  ["01", "MISSED OPPORTUNITY", "The opportunity forms while your attention is somewhere else."],
+  ["02", "STALE ENTRY", "The setup was valid, but the price available now is no longer the trade you planned."],
+  ["03", "CHANGING CONTEXT", "The market changes between the signal and the action."],
+  ["04", "PROCESS DEVIATION", "The plan is clear, but the action drifts from it."],
+  ["05", "EXECUTION MISMATCH", "What reaches the broker can differ from what you intended or approved."],
+  ["06", "FALSE CONCLUSION", "P&L can make the wrong part of the decision look right — or the right process look wrong."],
 ];
 
 const sectionReveal = {
@@ -112,19 +111,6 @@ const sectionReveal = {
 
 function fmt(priceSpec, value) {
   return (priceSpec.base + value * priceSpec.unit).toFixed(priceSpec.digits);
-}
-
-function SignalTicker() {
-  const doubled = [...TICKER, ...TICKER];
-  return (
-    <div className="signal-ticker" aria-label="Zugrio product descriptors">
-      <div className="signal-ticker-track">
-        {doubled.map((text, i) => (
-          <span key={text + i}><i /> {text}</span>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 function Shell({ activeStep, marketKey, setMarketKey, caseKey, setCaseKey }) {
@@ -338,7 +324,7 @@ export default function App() {
             className="hero-copy"
           >
             <motion.div variants={{ hidden:{opacity:0,y:10},show:{opacity:1,y:0} }} className="eyebrow">
-              <i/> MARKET-AWARE TRADING INTELLIGENCE
+              <span>MARKET-AWARE TRADING INTELLIGENCE</span>
             </motion.div>
 
             <h1 className="hero-headline" aria-label={HERO_HEADLINES[0].join(" ")}>
@@ -387,26 +373,36 @@ export default function App() {
           </motion.div>
         </section>
 
-        <SignalTicker />
-
-        <motion.section className="bridge" {...sectionReveal}>
-          <div className="kicker">SCAN IN THE BACKGROUND · STEP IN WHEN IT MATTERS</div>
-          <h2>You don’t need to stare at every chart all day.</h2>
-          <p>Zugrio scans in the background and brings you back when a setup forms, triggers, changes or expires — with the reason and next step attached.</p>
-        </motion.section>
-
-        <motion.section className="annotation" {...sectionReveal}>
-          <div>
-            <div className="kicker">OPPORTUNITY PROGRESSION</div>
-            <h2>Every state tells you what changed.</h2>
-            <p>FORMING. READY. TRIGGERED. Zugrio marks what is confirmed, what is missing and what invalidates the setup — live on the chart.</p>
+        <motion.section className="problem" id="problem" {...sectionReveal}>
+          <div className="problem-intro">
+            <div className="kicker">THE SIGNAL ISN’T THE WHOLE TRADE</div>
+            <h2>Trading breaks in more than one place.</h2>
+            <p>
+              A trade can fail before the signal, after it, in execution, or in the lesson you take from the outcome.
+            </p>
           </div>
-          <div className="annotation-sequence" aria-label="Illustrative live annotation sequence">
-            <span><b>09:18</b><strong>FORMING</strong><small>Setup developing</small></span>
-            <span><b>09:21</b><strong>READY</strong><small>Conditions met · waiting for trigger</small></span>
-            <span><b>09:24</b><strong>TRIGGERED</strong><small>Trigger hit · signal fired</small></span>
-            <em>Illustrative progression — not a live signal.</em>
+
+          <div className="problem-chain" role="list" aria-label="Where trading decisions can break down">
+            {PROBLEM_CHAIN.map(([index, label, copy], itemIndex) => (
+              <motion.div
+                className="problem-chain-row"
+                role="listitem"
+                key={label}
+                initial={prefersReduced ? false : { opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: .72 }}
+                transition={{ duration: .52, delay: prefersReduced ? 0 : itemIndex * .045, ease: [0.16,1,0.3,1] }}
+              >
+                <span className="problem-index">{index}</span>
+                <strong>{label}</strong>
+                <p>{copy}</p>
+              </motion.div>
+            ))}
           </div>
+
+          <p className="problem-close">
+            Zugrio is built around the whole decision — before the signal, after it, and through review.
+          </p>
         </motion.section>
 
         <Story {...{ activeStep, setActiveStep, marketKey, setMarketKey, caseKey, setCaseKey }} />
