@@ -2106,7 +2106,7 @@ footer>div a{color:#78838d}
   .eyebrow{font-size:9px;letter-spacing:.12em;padding:9px 11px;border-radius:10px}
   .hero h1{
     margin:24px auto 20px;
-    font-size:clamp(31px,10.2vw,40px);line-height:.97;letter-spacing:-.052em
+    font-size:clamp(31px,9.8vw,40px);line-height:.97;letter-spacing:-.052em
   }
   .hero-headline-frame{align-items:center;gap:.08em}
   .hero h1 .hero-headline-part{white-space:normal;text-align:center;overflow-wrap:normal}
