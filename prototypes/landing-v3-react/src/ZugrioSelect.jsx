@@ -22,6 +22,7 @@ export default function ZugrioSelect({
 
       <div className="zugrio-select-native-shell">
         <select
+          className={value ? "has-value" : "placeholder"}
           id={selectId}
           name={name}
           value={value}
