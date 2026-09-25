@@ -1,15 +1,91 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { ArrowRight, Instagram } from "lucide-react";
+import { ArrowRight, ChevronDown, Instagram } from "lucide-react";
+import ZugrioSelect from "./ZugrioSelect.jsx";
 
 const API_BASE = import.meta.env.VITE_WAITLIST_API_BASE || "";
 
-const SEGMENT_OPTIONS = [
-  { value: "fx", label: "FX" },
-  { value: "gold", label: "Gold" },
-  { value: "synthetics", label: "Synthetic Indices" },
-  { value: "multiple", label: "More than one" },
+const ROLE_OPTIONS = [
+  { value: "independent_trader", label: "Independent trader" },
+  { value: "prop_trader", label: "Prop trader" },
+  { value: "trading_team", label: "Trading team / allocator" },
+  { value: "researcher", label: "Researcher / builder" },
+  { value: "broker_partner", label: "Broker / partner" },
+  { value: "investor", label: "Investor" },
 ];
+
+const MARKET_OPTIONS = [
+  { value: "fx", label: "FX" },
+  { value: "gold", label: "Gold / Commodities" },
+  { value: "synthetics", label: "Synthetic Indices" },
+  { value: "stocks", label: "Stocks / Equities" },
+  { value: "crypto", label: "Crypto" },
+  { value: "multiple", label: "Multiple" },
+];
+
+const HORIZON_OPTIONS = [
+  { value: "scalping", label: "Scalping" },
+  { value: "intraday", label: "Intraday" },
+  { value: "swing", label: "Swing" },
+  { value: "multiple", label: "Multiple" },
+];
+
+const MODE_OPTIONS = [
+  { value: "signal", label: "Signal" },
+  { value: "semi_auto", label: "Semi-Auto" },
+  { value: "auto", label: "Auto" },
+  { value: "full_auto_interest", label: "Full Auto interest" },
+];
+
+const STRATEGY_OPTIONS = [
+  { value: "price_action_structure", label: "Price action / market structure" },
+  { value: "smc", label: "Smart-money concepts" },
+  { value: "supply_demand", label: "Supply & demand" },
+  { value: "breakout_momentum", label: "Breakout / momentum" },
+  { value: "other", label: "Other / custom" },
+];
+
+const PLATFORM_OPTIONS = [
+  { value: "desktop", label: "Desktop" },
+  { value: "mobile", label: "Mobile" },
+  { value: "both", label: "Desktop + mobile" },
+];
+
+const DISCOVERY_OPTIONS = [
+  { value: "instagram", label: "Instagram" },
+  { value: "x", label: "X / Twitter" },
+  { value: "linkedin", label: "LinkedIn" },
+  { value: "friend", label: "Friend / colleague" },
+  { value: "community", label: "Trading community" },
+  { value: "search", label: "Search" },
+  { value: "other", label: "Other" },
+];
+
+const optionSets = {
+  role: ROLE_OPTIONS,
+  market: MARKET_OPTIONS,
+  horizon: HORIZON_OPTIONS,
+  mode: MODE_OPTIONS,
+  strategy: STRATEGY_OPTIONS,
+  platform: PLATFORM_OPTIONS,
+  discovery: DISCOVERY_OPTIONS,
+};
+
+const initialFields = {
+  email: "",
+  role: "",
+  market: "",
+  horizon: "",
+  mode: "",
+  strategy: "",
+  platform: "",
+  country: "",
+  discovery: "",
+};
+
+function optionLabel(field, value) {
+  return optionSets[field]?.find(option => option.value === value)?.label || value;
+}
 
 function loadTurnstileScript() {
   return new Promise((resolve, reject) => {
@@ -36,14 +112,13 @@ export default function Waitlist() {
   const reducedMotion = useReducedMotion();
   const [status, setStatus] = useState("checking");
   const [message, setMessage] = useState("Checking signup availability…");
-  const [email, setEmail] = useState("");
+  const [fields, setFields] = useState(initialFields);
   const [consent, setConsent] = useState(false);
   const [config, setConfig] = useState(null);
   const [token, setToken] = useState("");
-  const [successEmail, setSuccessEmail] = useState("");
-  const [profileToken, setProfileToken] = useState("");
-  const [segment, setSegment] = useState("");
-  const [segmentState, setSegmentState] = useState("idle");
+  const [successProfile, setSuccessProfile] = useState(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const detailsRef = useRef(null);
   const challengeRef = useRef(null);
   const widgetRef = useRef(null);
 
@@ -76,7 +151,7 @@ export default function Waitlist() {
           callback: value => {
             setToken(value);
             setStatus("ready");
-            setMessage("Security check complete. Join when ready.");
+            setMessage("Security check complete. Add your details and join when ready.");
           },
           "expired-callback": () => {
             setToken("");
@@ -91,7 +166,7 @@ export default function Waitlist() {
         });
 
         setStatus("attention");
-        setMessage("Complete the security check, then join early access.");
+        setMessage("Complete the security check, then add your details.");
       } catch {
         if (cancelled) return;
         setStatus("preview");
@@ -115,14 +190,47 @@ export default function Waitlist() {
     };
   }, []);
 
+  function setField(name, value) {
+    setFields(current => ({ ...current, [name]: value }));
+  }
+
+  function missingProfileFields() {
+    return ["role","market","horizon","mode","strategy","platform","country","discovery"].filter(key => !fields[key].trim());
+  }
+
+  function openProfile() {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.trim())) {
+      setStatus("attention");
+      setMessage("Enter a valid email address, then continue to the trader profile.");
+      document.getElementById("email")?.focus();
+      return;
+    }
+
+    if (detailsRef.current) detailsRef.current.open = true;
+    setProfileOpen(true);
+    setMessage("Complete the short trader profile, then submit from the bottom.");
+    requestAnimationFrame(() => {
+      detailsRef.current?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "nearest" });
+    });
+  }
+
   async function submit(event) {
     event.preventDefault();
-    const normalizedEmail = email.trim().toLowerCase();
+    const missing = missingProfileFields();
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.trim())) {
       setStatus("attention");
       setMessage("Enter a valid email address before joining.");
       document.getElementById("email")?.focus();
+      return;
+    }
+
+    if (missing.length) {
+      if (detailsRef.current) detailsRef.current.open = true;
+      setProfileOpen(true);
+      setStatus("attention");
+      setMessage("Complete the short trader profile before joining.");
+      requestAnimationFrame(() => document.querySelector('[data-field="' + missing[0] + '"] button, [name="' + missing[0] + '"]')?.focus());
       return;
     }
 
@@ -134,20 +242,23 @@ export default function Waitlist() {
 
     if (!config || !token) {
       setStatus("attention");
-      setMessage(config ? "Complete the security check before joining." : "The signup service is not connected in this preview.");
+      setMessage(config ? "Complete the security check before joining." : "The Cloudflare signup service is not connected in this local preview.");
       return;
     }
 
+    const submitted = { ...fields };
     setStatus("submitting");
-    setMessage("Registering early access…");
+    setMessage("Registering your early-access profile…");
 
     const params = new URLSearchParams(location.search);
     const payload = {
-      email: normalizedEmail,
+      ...submitted,
+      email: submitted.email.trim(),
+      country: submitted.country.trim(),
       consent: true,
       token,
       company: String(new FormData(event.currentTarget).get("company") || ""),
-      source: "landing-v5",
+      source: "landing-v4",
       referrer: document.referrer || "",
       utm_source: params.get("utm_source") || "",
       utm_medium: params.get("utm_medium") || "",
@@ -171,7 +282,7 @@ export default function Waitlist() {
       if (!response.ok || !body || body.ok !== true || body.status !== "accepted") {
         throw new Error(
           response.status === 429 ? "Too many attempts. Wait a few minutes and try again." :
-          response.status === 400 ? "Check your email and complete a fresh security check." :
+          response.status === 400 ? "Check your details and complete a fresh security check." :
           "We could not confirm your signup. Please try again."
         );
       }
@@ -181,13 +292,14 @@ export default function Waitlist() {
         widgetRef.current = null;
       }
 
-      setSuccessEmail(normalizedEmail);
-      setProfileToken(String(body.profileToken || ""));
+      setSuccessProfile(submitted);
       setStatus("success");
-      setMessage("You’re on the list.");
-      setEmail("");
+      setMessage("Early-access profile registered.");
+      setFields(initialFields);
       setConsent(false);
       setToken("");
+      if (detailsRef.current) detailsRef.current.open = false;
+      setProfileOpen(false);
     } catch (error) {
       setStatus("error");
       setMessage(error.name === "AbortError" ? "Confirmation timed out. Please retry." : error.message);
@@ -198,29 +310,6 @@ export default function Waitlist() {
     }
   }
 
-  async function saveSegment(value) {
-    setSegment(value);
-    if (!profileToken) {
-      setSegmentState("unavailable");
-      return;
-    }
-
-    setSegmentState("saving");
-    try {
-      const response = await fetch(API_BASE + "/api/waitlist-segment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        cache: "no-store",
-        body: JSON.stringify({ profileToken, market: value }),
-      });
-      const body = await response.json().catch(() => null);
-      setSegmentState(response.ok && body?.ok === true ? "saved" : "unavailable");
-    } catch {
-      setSegmentState("unavailable");
-    }
-  }
-
   return (
     <section className="waitlist" id="early-access">
       <div className="waitlist-copy">
@@ -228,10 +317,10 @@ export default function Waitlist() {
         <h2>Get closer to Zugrio.</h2>
         <p>Join the early-access list for meaningful product milestones, validation updates and invitations as eligible capabilities and scopes open.</p>
 
-        <div className="access-principles" aria-label="Early access principles">
-          <div><span>01</span><b>NO PAYMENT</b></div>
-          <div><span>02</span><b>NO PASSWORD</b></div>
-          <div><span>03</span><b>NO BROKER DETAILS</b></div>
+        <div className="journey">
+          <span><b>01</b> Join the list</span>
+          <span><b>02</b> Get invited</span>
+          <span><b>03</b> Create your account</span>
         </div>
 
         <a className="instagram-link" href="https://www.instagram.com/zugriohq/" target="_blank" rel="noreferrer">
@@ -241,7 +330,7 @@ export default function Waitlist() {
 
       <div className="waitlist-stage">
         <AnimatePresence mode="wait">
-          {status === "success" && successEmail ? (
+          {status === "success" && successProfile ? (
             <motion.div
               key="success"
               className="waitlist-success"
@@ -280,26 +369,19 @@ export default function Waitlist() {
 
               <div className="success-kicker">EARLY ACCESS / REGISTERED</div>
               <h3>You’re on the list.</h3>
-              <p>We’ll write when there is something meaningful to show you.</p>
+              <p>We’ll write when there is something meaningful to show you. Your trader profile is already captured for more relevant testing and invitations as access opens.</p>
 
-              <div className="segment-prompt">
-                <span>OPTIONAL</span>
-                <strong>What do you trade most?</strong>
-                <div className="segment-options">
-                  {SEGMENT_OPTIONS.map(option => (
-                    <button
-                      type="button"
-                      className={segment === option.value ? "selected" : ""}
-                      onClick={() => saveSegment(option.value)}
-                      key={option.value}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-                {segmentState === "saved" && <small>Preference saved.</small>}
-                {segmentState === "unavailable" && <small>Your signup is complete. Preference saving is temporarily unavailable.</small>}
-                {segmentState === "saving" && <small>Saving preference…</small>}
+              <div className="success-profile" aria-label="Your early-access profile">
+                <span>{optionLabel("market", successProfile.market)}</span>
+                <span className="profile-separator" aria-hidden="true" />
+                <span>{optionLabel("horizon", successProfile.horizon)}</span>
+                <span className="profile-separator" aria-hidden="true" />
+                <span>{optionLabel("mode", successProfile.mode)}</span>
+              </div>
+
+              <div className="success-meta">
+                <span>Profile captured</span>
+                <span>Updates enabled</span>
               </div>
 
               <div className="success-actions">
@@ -309,7 +391,7 @@ export default function Waitlist() {
                 <a href="#product">Back to the product <ArrowRight size={14}/></a>
               </div>
 
-              <small>Joining does not connect a broker or grant trading authority.</small>
+              <small>Joining the waitlist does not guarantee access or authorise trading.</small>
             </motion.div>
           ) : (
             <motion.form
@@ -320,12 +402,7 @@ export default function Waitlist() {
               exit={reducedMotion ? undefined : { opacity: 0, y: -12, filter: "blur(5px)" }}
               transition={{ duration: .28 }}
             >
-              <div className="access-form-head">
-                <span>REQUEST ACCESS</span>
-                <b>EMAIL ONLY</b>
-              </div>
-
-              <label htmlFor="email">Email address</label>
+              <label htmlFor="email">Email</label>
               <div className="form-row">
                 <input
                   id="email"
@@ -334,15 +411,53 @@ export default function Waitlist() {
                   autoComplete="email"
                   maxLength="254"
                   required
-                  value={email}
-                  onChange={event => setEmail(event.target.value)}
+                  value={fields.email}
+                  onChange={event => setField("email", event.target.value)}
                   placeholder="you@example.com"
                 />
-                <button type="submit" disabled={status === "submitting"}>
-                  {status === "submitting" ? "Joining…" : "Join early access"}
-                  <ArrowRight size={16}/>
-                </button>
+                {!profileOpen && (
+                  <button type="button" className="form-continue" onClick={openProfile} disabled={status === "submitting"}>
+                    Continue
+                    <ArrowRight size={16}/>
+                  </button>
+                )}
               </div>
+
+              <details
+                className="required-profile"
+                ref={detailsRef}
+                onToggle={event => setProfileOpen(event.currentTarget.open)}
+              >
+                <summary>
+                  <span><b>Tell us how you trade</b><small>Required · about 30 seconds</small></span>
+                  <ChevronDown size={16}/>
+                </summary>
+
+                <div className="profile-grid">
+                  <ZugrioSelect label="Your role" name="role" required value={fields.role} onChange={setField} options={ROLE_OPTIONS} />
+                  <ZugrioSelect label="Primary market" name="market" required value={fields.market} onChange={setField} options={MARKET_OPTIONS} />
+                  <ZugrioSelect label="Trading horizon" name="horizon" required value={fields.horizon} onChange={setField} options={HORIZON_OPTIONS} />
+                  <ZugrioSelect label="Preferred control" name="mode" required value={fields.mode} onChange={setField} options={MODE_OPTIONS} />
+                  <ZugrioSelect label="Strategy interest" name="strategy" required value={fields.strategy} onChange={setField} options={STRATEGY_OPTIONS} />
+                  <ZugrioSelect label="Preferred Zugrio access" name="platform" required value={fields.platform} onChange={setField} options={PLATFORM_OPTIONS} />
+
+                  <label className="profile-text-field">
+                    <span>Country / region <small className="required-word">REQUIRED</small></span>
+                    <input
+                      name="country"
+                      type="text"
+                      autoComplete="country-name"
+                      maxLength="80"
+                      required
+                      value={fields.country}
+                      onChange={event => setField("country", event.target.value)}
+                      placeholder="e.g. Nigeria"
+                    />
+                  </label>
+
+                  <ZugrioSelect label="How did you hear about Zugrio?" name="discovery" required value={fields.discovery} onChange={setField} options={DISCOVERY_OPTIONS} />
+                </div>
+              </details>
 
               <div className="honeypot" aria-hidden="true">
                 <label>Company<input name="company" tabIndex="-1" autoComplete="off" /></label>
@@ -355,12 +470,19 @@ export default function Waitlist() {
                 <span>Send me Zugrio product updates and early-access invitations. I can withdraw at any time.</span>
               </label>
 
+              {profileOpen && (
+                <button className="profile-submit-bottom" type="submit" disabled={status === "submitting"}>
+                  {status === "submitting" ? "Registering…" : "Join the early-access waitlist"}
+                  <ArrowRight size={16}/>
+                </button>
+              )}
+
               <p className={"form-status " + status} role="status" aria-live="polite">{message}</p>
-              <p className="form-fine">No payment, password or broker details required. Joining does not connect a broker or grant trading authority.</p>
+              <p className="form-fine">No payment, password or broker credentials required. Joining does not create a trading account or authorise trading.</p>
 
               <details className="privacy-mini">
-                <summary>Privacy &amp; data use</summary>
-                <p>We use your email to manage early access and send the updates you consent to receive. Waitlist records are scheduled for deletion after 12 months unless you withdraw earlier.</p>
+                <summary>Privacy & data use</summary>
+                <p>We use your email and trader profile to manage early access, understand product demand and send the updates you consent to receive. Waitlist records are scheduled for deletion after 12 months unless you withdraw earlier.</p>
                 {config?.privacyContact && <p>Questions, access, correction or deletion: <a href={"mailto:" + config.privacyContact}>{config.privacyContact}</a></p>}
               </details>
             </motion.form>
