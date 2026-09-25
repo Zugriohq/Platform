@@ -1042,7 +1042,6 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
 @media(max-width:720px){
   .hero-headline{min-height:3em}
   .hero h1 .hero-headline-part{display:block;white-space:nowrap}
-  .rolling-descriptor{flex-direction:column;gap:3px;margin-top:16px}
   .rolling-window{min-width:0;width:100%;place-items:center;height:22px}
   .silver-reveal{min-height:660px}
   .silver-thesis{top:8%;width:calc(100% - 32px)}
@@ -1187,12 +1186,6 @@ footer>div{display:flex;gap:16px;font-size:10px;color:var(--muted)}
 }
 
 @media(max-width:720px){
-  .zugrio-select-menu{
-    position:fixed!important;left:12px!important;right:12px!important;top:auto!important;bottom:12px!important;
-    z-index:210;max-height:min(52vh,340px);border-radius:15px;padding:8px;
-    transform-origin:bottom!important;animation-name:zugrioSelectInUp!important
-  }
-  .zugrio-select-option{min-height:46px;padding:12px;font-size:12px}
   .waitlist-success{min-height:400px;padding:26px 20px}
   .success-actions{align-items:stretch;flex-direction:column}
   .success-actions a{justify-content:center}
