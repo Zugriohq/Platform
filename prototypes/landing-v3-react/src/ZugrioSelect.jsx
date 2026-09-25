@@ -127,7 +127,7 @@ export default function ZugrioSelect({
         if (!rootRef.current?.contains(document.activeElement)) setOpen(false);
       })}
     >
-      <label id={listId + "-label"}>{label}{required && <span className="required-dot" aria-hidden="true">·</span>}</label>
+      <label id={listId + "-label"}>{label}{required && <span className="required-word" aria-hidden="true">REQUIRED</span>}</label>
       <button
         ref={triggerRef}
         type="button"
