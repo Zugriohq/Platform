@@ -169,6 +169,79 @@ Quality comes from proportion, typography, material, spacing and judgment—not 
 
 ---
 
+
+## 5A. Premium operating standard
+
+**Premium is not a campaign adjective. It is a non-negotiable product standard.**
+
+Zugrio should benchmark itself against the best product companies in the world for:
+- visual precision;
+- interaction quality;
+- product coherence;
+- responsiveness;
+- speed;
+- reliability;
+- language;
+- onboarding;
+- email;
+- installation;
+- support;
+- error handling;
+- trust.
+
+The internal ambition is **category-leading, top-tier execution**. The standard is not "better than most competitors." The standard is that every consequential touchpoint should be able to stand beside the strongest contemporary technology products without looking unfinished, generic or second-rate.
+
+### Prestige
+
+Zugrio should earn prestige through:
+- coherence;
+- restraint;
+- consistency;
+- craft;
+- technical confidence;
+- reliability;
+- distinctiveness;
+- trust accumulated across many small interactions.
+
+Prestige must never come from:
+- fake scarcity;
+- wealth signalling;
+- unsupported exclusivity;
+- imitating luxury brands;
+- pretending to have funding, clients or institutional status that Zugrio does not have.
+
+### Quality bar
+
+"Good enough" is not an approval criterion for public-facing Zugrio work.
+
+A public asset or product surface should not ship if it is:
+- obviously generic;
+- visually inconsistent;
+- awkward at a common breakpoint;
+- technically fragile;
+- linguistically careless;
+- using placeholder-quality copy or artwork;
+- dependent on decorative effects to feel premium;
+- materially below the quality of the surrounding Zugrio system.
+
+### Competitive ambition
+
+Internally, Zugrio should strive to become the **reference-quality product in its category**.
+
+Externally, do not claim "number one," "best," "unbeatable," "top 1%" or similar superiority unless there is credible evidence that supports the specific claim.
+
+The ambition may be absolute. The public claim must remain evidential.
+
+### Premium acceptance question
+
+Before approval, ask:
+
+> If the logo were hidden, would this still feel like a top-tier product built by a company with exceptional standards?
+
+If not, it is not finished.
+
+---
+
 ## 6. Voice
 
 ### Voice attributes
