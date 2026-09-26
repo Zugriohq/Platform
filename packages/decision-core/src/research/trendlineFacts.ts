@@ -227,6 +227,7 @@ export function assessTrendlineInteraction(
       side,
       knownAt:bar.knownAt,
       definitionId:definition.definitionId,
+      sourceFactIds:[trendline.factId],
       sourceEvidenceIds:[...new Set([...trendline.sourceEvidenceIds,bar.evidenceId])],
       geometry:{type:"POINT",time:bar.sourceClosedAt,price:linePrice},
       label,
