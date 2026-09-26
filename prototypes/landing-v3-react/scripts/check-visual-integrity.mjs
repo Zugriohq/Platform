@@ -16,6 +16,7 @@ function forbidText(source, needle, message) {
 }
 
 requireText(css, "--max:1332px", "The landing page must keep the shared 1332px content rail.");
+requireText(css, "white-space:nowrap", "Headline lines must stay locked to one visual line each.");
 requireText(
   css,
   ".hero-headline-window",
@@ -33,7 +34,7 @@ requireText(
 );
 requireText(
   app,
-  '["The market changes.", "Your decision should keep up."]',
+  '["The market changes.", "Your decision should too."]',
   "The secondary rolling hero claim changed or was removed."
 );
 requireText(
