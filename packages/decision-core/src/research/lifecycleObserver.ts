@@ -2,6 +2,7 @@ import type { StructuralLifecycle } from "../types.js";
 
 export type ResearchLifecycleRoute = "RETEST" | "CONTINUATION";
 export type ResearchLifecycleTerminal = "INVALIDATED" | "EXPIRED";
+export type ResearchObservedLifecycle = Exclude<StructuralLifecycle, "CANDIDATE_IDENTIFIED">;
 export type ResearchDataStatus = "FRESH_COMPLETE" | "INCOMPLETE" | "STALE" | "GAP";
 
 export type ResearchLifecycleReasonCode =
@@ -69,8 +70,8 @@ export interface ResearchLifecycleTraceEvent {
   readonly knownAt: string;
   readonly action: "OBSERVE" | "ADVANCE" | "IGNORE" | "TERMINATE";
   readonly reasonCode: ResearchLifecycleReasonCode;
-  readonly from: StructuralLifecycle | ResearchLifecycleTerminal;
-  readonly to: StructuralLifecycle | ResearchLifecycleTerminal;
+  readonly from: ResearchObservedLifecycle | ResearchLifecycleTerminal;
+  readonly to: ResearchObservedLifecycle | ResearchLifecycleTerminal;
   readonly route: ResearchLifecycleRoute | null;
 }
 
@@ -79,7 +80,7 @@ export interface ResearchLifecycleResult {
   readonly setupIdentity: string;
   readonly setupType: string;
   readonly side: "BUY" | "SELL";
-  readonly lifecycle: StructuralLifecycle | ResearchLifecycleTerminal;
+  readonly lifecycle: ResearchObservedLifecycle | ResearchLifecycleTerminal;
   readonly terminal: ResearchLifecycleTerminal | null;
   readonly confirmedRoute: ResearchLifecycleRoute | null;
   readonly routeState: {
@@ -107,7 +108,7 @@ function lifecycleFromRouteState(
   confirmedRoute: ResearchLifecycleRoute | null,
   retest: "BREAK_CONFIRMED" | "RETEST_TOUCHED" | "RETEST_HELD",
   continuation: "DISABLED" | "BREAK_CONFIRMED" | "CONTINUATION_HELD",
-): StructuralLifecycle | ResearchLifecycleTerminal {
+): ResearchObservedLifecycle | ResearchLifecycleTerminal {
   if (terminal) return terminal;
   if (confirmedRoute) return "LIFECYCLE_CONFIRMED";
   if (retest === "RETEST_HELD") return "RETEST_HELD";
@@ -178,8 +179,8 @@ export function observeStructuralLifecycle(
     observation: ResearchLifecycleObservation,
     action: ResearchLifecycleTraceEvent["action"],
     reasonCode: ResearchLifecycleReasonCode,
-    from: StructuralLifecycle | ResearchLifecycleTerminal,
-    to: StructuralLifecycle | ResearchLifecycleTerminal,
+    from: ResearchObservedLifecycle | ResearchLifecycleTerminal,
+    to: ResearchObservedLifecycle | ResearchLifecycleTerminal,
     route: ResearchLifecycleRoute | null = null,
   ) => {
     trace.push({
