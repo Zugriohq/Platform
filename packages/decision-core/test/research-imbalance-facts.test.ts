@@ -55,6 +55,19 @@ describe("research FVG geometry and revisit state", () => {
     expect(fact?.authorityEffect).toBe("NONE");
   });
 
+  it("cannot become knowable before the latest source evidence is known", () => {
+    const first = {
+      ...bar("a",0,1.1000,1.1004,1.0996,1.1002),
+      knownAt:"2026-09-24T08:20:00Z",
+    };
+    const middle=bar("b",1,1.1002,1.1016,1.1001,1.1014);
+    const third=bar("c",2,1.1014,1.1020,1.1008,1.1018);
+
+    const fact=detectThreeBarFvg("M5",first,middle,third,fvgDefinition);
+    expect(fact?.knownAt).toBe(first.knownAt);
+    expect(Date.parse(fact!.knownAt)).toBeGreaterThan(Date.parse(third.knownAt));
+  });
+
   it("mirrors bearish FVG geometry symmetrically", () => {
     const first=bar("a",0,1.1020,1.1024,1.1016,1.1018);
     const middle=bar("b",1,1.1018,1.1019,1.1002,1.1004);
