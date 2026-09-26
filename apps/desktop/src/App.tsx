@@ -1,27 +1,38 @@
 import { Fragment, useMemo, useState } from "react";
-import { alphaScenarios, buildDecisionCase, type ReplayScenario } from "@zugrio/decision-core";
+import {
+  alphaScenarios,
+  buildDecisionCase,
+  type ReplayScenario,
+  type StructuralLifecycle,
+  type StructuralState,
+} from "@zugrio/decision-core";
+
+const STATE_LABELS: Record<StructuralState, string> = {
+  STRUCTURAL_CANDIDATE: "STRUCTURAL CANDIDATE",
+  STRUCTURAL_WATCH: "STRUCTURAL WATCH",
+  STRUCTURAL_READY: "STRUCTURAL READY",
+  INVALIDATED: "INVALIDATED",
+};
 
 const CHANGE_LABELS = {
-  setupQualified: "SETUP",
-  locationQualified: "LOCATION",
-  retestObserved: "RETEST",
-  triggerQualified: "TRIGGER",
-  currentConditionsValid: "RECHECK",
-  invalidated: "INVALIDATED",
+  lifecycle: "LIFECYCLE",
+  entryEventObserved: "ENTRY EVENT",
+  currentEntryStatus: "CURRENT ENTRY",
 } as const;
 
-function EvidenceRow({
-  label,
-  value,
-  trueLabel = "QUALIFIES",
-  falseLabel = "NOT YET",
-}: {
-  label: string;
-  value: boolean;
-  trueLabel?: string;
-  falseLabel?: string;
-}) {
-  return <div className="evidence-row"><span>{label}</span><strong>{value ? trueLabel : falseLabel}</strong></div>;
+function lifecycleAtLeastRetest(lifecycle: StructuralLifecycle): boolean {
+  return lifecycle === "RETEST_TOUCHED" ||
+    lifecycle === "RETEST_HELD" ||
+    lifecycle === "LIFECYCLE_CONFIRMED";
+}
+
+function formatValue(value: string | boolean): string {
+  if (typeof value === "boolean") return value ? "OBSERVED" : "NOT OBSERVED";
+  return value.replaceAll("_", " ");
+}
+
+function EvidenceRow({ label, value }: { label: string; value: string }) {
+  return <div className="evidence-row"><span>{label}</span><strong>{value}</strong></div>;
 }
 
 function PriceField({ scenario, frame }: { scenario: ReplayScenario; frame: number }) {
@@ -36,6 +47,7 @@ function PriceField({ scenario, frame }: { scenario: ReplayScenario; frame: numb
     return `${x},${y}`;
   });
   const current = points[points.length - 1];
+  const retestObserved = current ? lifecycleAtLeastRetest(current.lifecycle) : false;
 
   return <div className="chart-shell">
     <div className="chart-grid" />
@@ -48,9 +60,11 @@ function PriceField({ scenario, frame }: { scenario: ReplayScenario; frame: numb
     </svg>
     <div className="chart-watermark">REPLAY / NOT LIVE DATA</div>
     <div className="chart-evidence" aria-label="Current replay evidence">
-      <span className={current?.retestObserved ? "evidence-chip on" : "evidence-chip"}>RETEST</span>
-      <span className={current?.triggerQualified ? "evidence-chip on" : "evidence-chip"}>TRIGGER</span>
-      <span className={current?.currentConditionsValid ? "evidence-chip on" : "evidence-chip stale"}>RECHECK</span>
+      <span className={retestObserved ? "evidence-chip on" : "evidence-chip"}>RETEST</span>
+      <span className={current?.entryEventObserved ? "evidence-chip on" : "evidence-chip"}>ENTRY EVENT</span>
+      <span className={current?.currentEntryStatus === "CURRENT" ? "evidence-chip on" : current?.currentEntryStatus === "STALE" ? "evidence-chip stale" : "evidence-chip"}>
+        {current?.currentEntryStatus === "STALE" ? "ENTRY STALE" : "ENTRY CURRENT"}
+      </span>
     </div>
   </div>;
 }
@@ -66,13 +80,18 @@ export function App() {
     setFrame(0);
   }
 
+  const rail: readonly StructuralState[] = [
+    "STRUCTURAL_CANDIDATE",
+    "STRUCTURAL_WATCH",
+    "STRUCTURAL_READY",
+    "INVALIDATED",
+  ];
+
   return <main className="app-shell">
     <header className="topbar">
-      <div className="brand">
-        <img src="./brand/zugrio-wordmark-flat-white.svg" alt="Zugrio" />
-      </div>
+      <div className="brand"><img src="./brand/zugrio-wordmark-flat-white.svg" alt="Zugrio" /></div>
       <div className="release-chip">PRIVATE VALIDATION / ALPHA</div>
-      <div className="topbar-right">NO LIVE CAPITAL</div>
+      <div className="topbar-right">STRUCTURAL ONLY · NO LIVE CAPITAL</div>
     </header>
 
     <aside className="sidebar">
@@ -82,7 +101,7 @@ export function App() {
         <strong>{item.title}</strong>
         <small>{item.bundle.strategy} · VALIDATION ONLY</small>
       </button>)}
-      <div className="sidebar-foot"><span>BUILD</span><strong>0.1.0-alpha.1</strong></div>
+      <div className="sidebar-foot"><span>BUILD</span><strong>0.1.0-alpha.2</strong></div>
     </aside>
 
     <section className="workspace">
@@ -93,16 +112,21 @@ export function App() {
           <p>{scenario.description}</p>
         </div>
         <div className={"decision-state state-" + decision.state.toLowerCase()}>
-          <span>CURRENT STATE</span><strong>{decision.state}</strong>
+          <span>CURRENT STRUCTURAL STATE</span><strong>{STATE_LABELS[decision.state]}</strong>
         </div>
       </div>
 
       <div className="state-rail">
-        {(["FORMING","READY","TRIGGERED","PASS"] as const).map((state,index) => <Fragment key={state}>
-          <span className={decision.state === state ? "state-mark active" : "state-mark"}>{state}</span>
-          {index < 3 ? <i /> : null}
+        {rail.map((state,index) => <Fragment key={state}>
+          <span className={decision.state === state ? "state-mark active" : "state-mark"}>{STATE_LABELS[state]}</span>
+          {index < rail.length - 1 ? <i /> : null}
         </Fragment>)}
       </div>
+
+      {decision.state === "STRUCTURAL_READY" ? <div className="structural-banner">
+        <strong>STRUCTURAL READY · NOT MODEL-SCORED</strong>
+        <span>Valid structure and trade geometry. No validated pWin/EV is available for this setup.</span>
+      </div> : null}
 
       <PriceField scenario={scenario} frame={frame} />
 
@@ -116,12 +140,11 @@ export function App() {
       <div className="lower-grid">
         <section className="panel">
           <div className="panel-kicker">WHAT IS STILL TRUE?</div>
-          <h2>{decision.reason}</h2>
-          <EvidenceRow label="Setup" value={decision.current.setupQualified}/>
-          <EvidenceRow label="Location" value={decision.current.locationQualified}/>
-          <EvidenceRow label="Retest observation" value={decision.current.retestObserved} trueLabel="OBSERVED" falseLabel="NOT SEEN"/>
-          <EvidenceRow label="Entry trigger" value={decision.current.triggerQualified}/>
-          <EvidenceRow label="Current conditions" value={decision.current.currentConditionsValid} trueLabel="CURRENT" falseLabel="STALE"/>
+          <h2>{decision.entryReason}</h2>
+          <EvidenceRow label="Lifecycle" value={formatValue(decision.current.lifecycle)}/>
+          <EvidenceRow label="Retest" value={lifecycleAtLeastRetest(decision.current.lifecycle) ? "OBSERVED" : "NOT YET"}/>
+          <EvidenceRow label="Entry event" value={decision.current.entryEventObserved ? "FIXTURE OBSERVED" : "NOT OBSERVED"}/>
+          <EvidenceRow label="Current entry" value={formatValue(decision.current.currentEntryStatus)}/>
           <div className="current-note">{decision.current.note}</div>
         </section>
 
@@ -130,12 +153,12 @@ export function App() {
           <div className="timeline">
             {decision.history.map((event,index)=><div className="timeline-row" key={event.timestamp+index}>
               <time>{new Date(event.timestamp).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}</time>
-              <span className="mini-state">{event.state}</span>
+              <span className="mini-state">{STATE_LABELS[event.state]}</span>
               <div className="event-copy">
-                <p>{event.reason}</p>
+                <p>{event.entryReason}</p>
                 {event.changes.length > 0 ? <div className="event-changes">
-                  {event.changes.map(change => <span key={change.field + String(change.to)} className={change.to ? "event-change on" : "event-change off"}>
-                    {CHANGE_LABELS[change.field]} {change.to ? "ON" : "OFF"}
+                  {event.changes.map(change => <span key={change.field + String(change.to)} className="event-change on">
+                    {CHANGE_LABELS[change.field]} → {formatValue(change.to)}
                   </span>)}
                 </div> : null}
               </div>
@@ -144,7 +167,9 @@ export function App() {
         </section>
       </div>
 
-      <footer className="validation-foot"><strong>Validation fixture.</strong> Retest is recorded as evidence, not permission. No live market data, performance claim, trading permission or broker execution is present in this build.</footer>
+      <footer className="validation-foot">
+        <strong>Validation fixture.</strong> Structural lifecycle and current-entry evidence only. No admitted inference, model-scored READY, FIRE, live market data, trading permission or broker execution is present in this build.
+      </footer>
     </section>
   </main>;
 }

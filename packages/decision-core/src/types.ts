@@ -1,22 +1,28 @@
-export type OpportunityState = "FORMING" | "READY" | "TRIGGERED" | "PASS";
+export type StructuralState =
+  | "STRUCTURAL_CANDIDATE"
+  | "STRUCTURAL_WATCH"
+  | "STRUCTURAL_READY"
+  | "INVALIDATED";
 
-export type EvidenceField =
-  | "setupQualified"
-  | "locationQualified"
-  | "retestObserved"
-  | "triggerQualified"
-  | "currentConditionsValid"
-  | "invalidated";
+export type StructuralLifecycle =
+  | "CANDIDATE_IDENTIFIED"
+  | "BREAK_CONFIRMED"
+  | "RETEST_TOUCHED"
+  | "RETEST_HELD"
+  | "LIFECYCLE_CONFIRMED"
+  | "INVALIDATED";
+
+export type CurrentEntryStatus = "NOT_AVAILABLE" | "CURRENT" | "STALE";
+
+export type EvidenceField = "lifecycle" | "entryEventObserved" | "currentEntryStatus";
+export type EvidenceValue = StructuralLifecycle | CurrentEntryStatus | boolean;
 
 export interface EvidenceSnapshot {
   readonly timestamp: string;
   readonly price: number;
-  readonly setupQualified: boolean;
-  readonly locationQualified: boolean;
-  readonly retestObserved: boolean;
-  readonly triggerQualified: boolean;
-  readonly currentConditionsValid: boolean;
-  readonly invalidated: boolean;
+  readonly lifecycle: StructuralLifecycle;
+  readonly entryEventObserved: boolean;
+  readonly currentEntryStatus: CurrentEntryStatus;
   readonly note: string;
 }
 
@@ -32,14 +38,15 @@ export interface AlphaTradeBundle {
 
 export interface EvidenceChange {
   readonly field: EvidenceField;
-  readonly from: boolean;
-  readonly to: boolean;
+  readonly from: EvidenceValue;
+  readonly to: EvidenceValue;
 }
 
 export interface DecisionEvent {
   readonly timestamp: string;
-  readonly state: OpportunityState;
+  readonly state: StructuralState;
   readonly reason: string;
+  readonly entryReason: string;
   readonly price: number;
   readonly changes: readonly EvidenceChange[];
 }
@@ -48,10 +55,13 @@ export interface DecisionCase {
   readonly caseId: string;
   readonly bundle: AlphaTradeBundle;
   readonly current: EvidenceSnapshot;
-  readonly state: OpportunityState;
+  readonly state: StructuralState;
   readonly reason: string;
+  readonly entryReason: string;
   readonly history: readonly DecisionEvent[];
   readonly authority: "NO_LIVE_CAPITAL";
+  readonly authorityClass: "STRUCTURAL_ONLY";
+  readonly modelScored: false;
 }
 
 export interface ReplayScenario {
