@@ -211,7 +211,7 @@ export function App() {
       if (cancelled) return;
 
       const failed = frameResults.find(result => result.status !== "ok");
-      if (failed && failed.status !== "ok") {
+      if (failed) {
         setCloudStatus({
           status: failed.status === "not-configured" ? "error" : failed.status,
           reason: failed.reason,
