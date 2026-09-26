@@ -52,6 +52,15 @@ export interface EngineChartPrimitive {
   readonly authorityEffect: "NONE";
 }
 
+export interface EngineChartRegimeContext {
+  readonly status: "CLASSIFIED" | "UNCERTAIN" | "UNAVAILABLE";
+  readonly measurementId: string | null;
+  readonly profileId: string | null;
+  readonly profileVersion: string | null;
+  readonly matchingRuleIds: readonly string[];
+  readonly reasons: readonly string[];
+}
+
 export interface EngineChartRouteContext {
   readonly status: "UNAVAILABLE" | "ROUTES_AVAILABLE" | "NO_DECLARED_ROUTE";
   readonly families: readonly ResearchEntryRouteFamily[];
@@ -69,6 +78,7 @@ export interface EngineChartScene {
   readonly regimeEvidenceId: string | null;
   readonly regimeDefinitionId: string | null;
   readonly regimeKnownAt: string | null;
+  readonly regimeContext: EngineChartRegimeContext;
   readonly routeContext: EngineChartRouteContext;
   readonly primitives: readonly EngineChartPrimitive[];
   readonly authority: "RESEARCH_ONLY";
@@ -174,6 +184,14 @@ export function projectMarketMapToChartScene(
     families: [],
     calibrationStatus: null,
   },
+  regimeContext: EngineChartRegimeContext = {
+    status: marketMap.regime ? "CLASSIFIED" : "UNAVAILABLE",
+    measurementId: null,
+    profileId: null,
+    profileVersion: null,
+    matchingRuleIds: [],
+    reasons: marketMap.regime ? ["REGIME_FACT_PRESENT"] : ["REGIME_UNAVAILABLE"],
+  },
 ): EngineChartScene {
   const primitives: EngineChartPrimitive[] = marketMap.facts.map((fact) => ({
     primitiveId: `primitive:${fact.factId}`,
@@ -223,6 +241,7 @@ export function projectMarketMapToChartScene(
     regimeEvidenceId: marketMap.regime?.evidenceId ?? null,
     regimeDefinitionId: marketMap.regime?.definitionId ?? null,
     regimeKnownAt: marketMap.regime?.knownAt ?? null,
+    regimeContext,
     routeContext,
     primitives,
     authority: "RESEARCH_ONLY",

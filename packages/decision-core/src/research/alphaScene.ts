@@ -77,6 +77,14 @@ export function buildReplayChartScene(
     regimeEvidenceId: null,
     regimeDefinitionId: null,
     regimeKnownAt: null,
+    regimeContext: {
+      status: "UNAVAILABLE",
+      measurementId: null,
+      profileId: null,
+      profileVersion: null,
+      matchingRuleIds: [],
+      reasons: ["LEGACY_FIXTURE_HAS_NO_CANONICAL_REGIME"],
+    },
     routeContext: {
       status: "UNAVAILABLE",
       families: [],
