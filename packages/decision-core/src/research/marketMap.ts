@@ -107,6 +107,11 @@ export interface ResearchMarketStructureFact {
   readonly side: "BUY" | "SELL" | "NEUTRAL";
   readonly knownAt: string;
   readonly definitionId: string;
+  /**
+   * Upstream market-fact lineage when this fact is derived from already-known
+   * facts. Raw OHLC-derived facts may omit it and rely on sourceEvidenceIds.
+   */
+  readonly sourceFactIds?: readonly string[];
   readonly sourceEvidenceIds: readonly string[];
   readonly geometry: MarketMapGeometry;
   readonly label: string;
@@ -460,6 +465,7 @@ export function confirmTrendlineWithPivot(
       ? candidate.knownAt
       : confirmingPivot.knownAt,
     definitionId: definition.definitionId,
+    sourceFactIds: [...candidate.anchorFactIds, confirmingPivot.factId],
     sourceEvidenceIds: [...new Set([...candidate.anchorEvidenceIds, ...confirmingPivot.sourceEvidenceIds])],
     geometry: {
       type: "PATH",
