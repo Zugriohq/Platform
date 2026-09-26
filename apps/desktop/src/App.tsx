@@ -52,9 +52,12 @@ function PriceField({
   frame: number;
   decision: DecisionCase;
 }) {
-  const snapshots = scenario.frames
+  const decisions = scenario.frames
     .slice(0, frame + 1)
-    .map((_, index) => buildDecisionCase(scenario, index).current)
+    .map((_, index) => buildDecisionCase(scenario, index));
+
+  const snapshots = decisions
+    .map((item) => item.current)
     .filter((snapshot) => snapshot.price !== null);
 
   const prices = snapshots.map((snapshot) => snapshot.price as number);
@@ -88,7 +91,36 @@ function PriceField({
       <polyline points={coords.join(" ")} fill="none" stroke="currentColor" strokeWidth="2.2" vectorEffect="non-scaling-stroke" />
       {coords.map((pair, index) => {
         const [x,y] = pair.split(",");
-        return <circle key={pair + index} cx={x} cy={y} r={index === coords.length - 1 ? 4.5 : 2.4} fill="currentColor" />;
+        const item = decisions[index];
+        const labels = item?.annotations.map(annotation => annotation.label) ?? [];
+        const meaningful = labels.filter(label =>
+          label.includes("BREAK") ||
+          label.includes("RETEST") ||
+          label.includes("LIFECYCLE CONFIRMED") ||
+          label.includes("ENTRY CURRENT") ||
+          label.includes("ENTRY STALE")
+        );
+        return <g key={pair + index}>
+          <circle cx={x} cy={y} r={index === coords.length - 1 ? 4.5 : 2.4} fill="currentColor" />
+          {meaningful.map((label, labelIndex) => <g key={label}>
+            <line x1={x} y1={Number(y) - 8} x2={x} y2={Number(y) - 29 - labelIndex * 19} className="annotation-line" />
+            <rect
+              x={Math.max(4, Math.min(620, Number(x) - 42))}
+              y={Number(y) - 47 - labelIndex * 19}
+              width="118"
+              height="16"
+              rx="8"
+              className="annotation-badge"
+            />
+            <text
+              x={Math.max(12, Math.min(628, Number(x) - 34))}
+              y={Number(y) - 36 - labelIndex * 19}
+              className="annotation-text"
+            >
+              {label}
+            </text>
+          </g>)}
+        </g>;
       })}
     </svg>
     <div className="chart-watermark">POINT-IN-TIME REPLAY / NOT LIVE DATA</div>
