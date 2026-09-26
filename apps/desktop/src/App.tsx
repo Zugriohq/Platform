@@ -398,8 +398,9 @@ export function App({ apiClient: injectedClient }: AppProps = {}) {
           <i />
           <div>
             <span>CANONICAL REGIME</span>
-            <strong>{scene?.regimeLabel ?? "UNAVAILABLE"}</strong>
+            <strong>{scene?.regimeLabel ?? scene?.regimeContext.status ?? "UNAVAILABLE"}</strong>
             {scene?.regimeDefinitionId ? <small>{scene.regimeDefinitionId}</small> : null}
+            {scene?.regimeContext.profileId ? <small>{scene.regimeContext.profileId} · v{scene.regimeContext.profileVersion}</small> : null}
           </div>
           <i />
           <div className="market-context-routes">
