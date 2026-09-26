@@ -222,6 +222,7 @@ export const schemas = {
     "regimeEvidenceId",
     "regimeDefinitionId",
     "regimeKnownAt",
+    "regimeContext",
     "routeContext",
     "primitives",
     "authority",
@@ -232,6 +233,18 @@ export const schemas = {
     regimeEvidenceId: { type: "string", nullable: true },
     regimeDefinitionId: { type: "string", nullable: true },
     regimeKnownAt: { type: "string", format: "date-time", nullable: true },
+    regimeContext: {
+      type: "object",
+      required: ["status", "measurementId", "profileId", "profileVersion", "matchingRuleIds", "reasons"],
+      properties: {
+        status: { type: "string", enum: ["CLASSIFIED", "UNCERTAIN", "UNAVAILABLE"] },
+        measurementId: { type: "string", nullable: true },
+        profileId: { type: "string", nullable: true },
+        profileVersion: { type: "string", nullable: true },
+        matchingRuleIds: { type: "array", items: { type: "string" } },
+        reasons: { type: "array", items: { type: "string" } },
+      },
+    },
     routeContext: {
       type: "object",
       required: ["status", "families", "calibrationStatus"],
