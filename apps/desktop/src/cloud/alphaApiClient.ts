@@ -128,13 +128,61 @@ function isEngineChartScenePayload(value: unknown): value is EngineChartScene {
     !isNonEmptyString(value.timeframe) ||
     !isIsoTime(value.evaluatedAt) ||
     !isNonEmptyString(value.strategyId) ||
+    !isNonEmptyString(value.strategyVersion) ||
     !(value.regimeLabel === null || typeof value.regimeLabel === "string") ||
+    !(value.regimeEvidenceId === null || isNonEmptyString(value.regimeEvidenceId)) ||
+    !(value.regimeDefinitionId === null || isNonEmptyString(value.regimeDefinitionId)) ||
+    !(value.regimeKnownAt === null || isIsoTime(value.regimeKnownAt)) ||
+    !isRecord(value.routeContext) ||
     !Array.isArray(value.primitives)
   ) {
     return false;
   }
 
   const sceneTime = Date.parse(value.evaluatedAt);
+  const routeStatuses = ["UNAVAILABLE","ROUTES_AVAILABLE","NO_DECLARED_ROUTE"] as const;
+  const routeFamilies = [
+    "BREAKOUT_CONTINUATION","BREAKOUT_RETEST","BOS_RETEST","CHOCH_RETEST","MSS_RETEST",
+    "LIQUIDITY_SWEEP_REVERSAL","FAKEOUT_REVERSAL","FVG_MITIGATION","TREND_CONTINUATION",
+    "RANGE_MEAN_REVERSION","COMPRESSION_BREAKOUT_WATCH",
+  ] as const;
+
+  if (
+    !oneOf(value.routeContext.status, routeStatuses) ||
+    !Array.isArray(value.routeContext.families) ||
+    !value.routeContext.families.every(family => oneOf(family, routeFamilies)) ||
+    !(value.routeContext.calibrationStatus === null ||
+      value.routeContext.calibrationStatus === "UNVALIDATED_CANDIDATE_SET")
+  ) {
+    return false;
+  }
+
+  const hasRegime = value.regimeLabel !== null;
+  const hasCompleteRegimeProvenance =
+    value.regimeEvidenceId !== null &&
+    value.regimeDefinitionId !== null &&
+    value.regimeKnownAt !== null;
+  if (hasRegime !== hasCompleteRegimeProvenance) return false;
+  if (value.regimeKnownAt !== null && Date.parse(value.regimeKnownAt) > sceneTime) return false;
+
+  if (!hasRegime) {
+    if (
+      value.routeContext.status !== "UNAVAILABLE" ||
+      value.routeContext.families.length !== 0 ||
+      value.routeContext.calibrationStatus !== null
+    ) return false;
+  } else if (value.routeContext.status === "ROUTES_AVAILABLE") {
+    if (
+      value.routeContext.families.length === 0 ||
+      value.routeContext.calibrationStatus !== "UNVALIDATED_CANDIDATE_SET"
+    ) return false;
+  } else if (value.routeContext.status === "NO_DECLARED_ROUTE") {
+    if (
+      value.routeContext.families.length !== 0 ||
+      value.routeContext.calibrationStatus !== "UNVALIDATED_CANDIDATE_SET"
+    ) return false;
+  }
+
   const layers = ["REGIME","STRUCTURE","LIQUIDITY","IMBALANCE","SETUP","PATTERN","ENTRY","INVALIDATION","OBJECTIVE","DIAGNOSTIC","ADVISORY"] as const;
   const maturities = ["DETERMINISTIC_FACT","MORPHOLOGY_ONLY","RESEARCH_DERIVED","ADVISORY_ONLY"] as const;
   const scales = ["INTERNAL","INTERMEDIATE","EXTERNAL"] as const;
