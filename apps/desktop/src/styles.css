@@ -4,3 +4,10 @@
 .evidence-chip{border:1px solid #26303a;border-radius:999px;padding:5px 8px;color:#58636e;background:rgba(7,9,12,.78);font:700 8px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.1em;backdrop-filter:blur(8px)}
 .evidence-chip.on{color:#d5dbe0;border-color:#4a5560;background:rgba(16,21,27,.9)}
 .evidence-chip.stale{color:#a0a8b0;border-color:#343c45}
+
+.event-copy{min-width:0}
+.event-copy p{margin:0;color:#8c96a0;font-size:12px;line-height:1.5}
+.event-changes{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.event-change{border:1px solid #28313a;border-radius:999px;padding:4px 6px;color:#6f7a84;background:#0b0f14;font:700 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em}
+.event-change.on{color:#cfd5da;border-color:#46515c}
+.event-change.off{color:#858f98;border-color:#303841}

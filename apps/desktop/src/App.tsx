@@ -1,6 +1,15 @@
 import { Fragment, useMemo, useState } from "react";
 import { alphaScenarios, buildDecisionCase, type ReplayScenario } from "@zugrio/decision-core";
 
+const CHANGE_LABELS = {
+  setupQualified: "SETUP",
+  locationQualified: "LOCATION",
+  retestObserved: "RETEST",
+  triggerQualified: "TRIGGER",
+  currentConditionsValid: "RECHECK",
+  invalidated: "INVALIDATED",
+} as const;
+
 function EvidenceRow({
   label,
   value,
@@ -122,7 +131,14 @@ export function App() {
             {decision.history.map((event,index)=><div className="timeline-row" key={event.timestamp+index}>
               <time>{new Date(event.timestamp).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}</time>
               <span className="mini-state">{event.state}</span>
-              <p>{event.reason}</p>
+              <div className="event-copy">
+                <p>{event.reason}</p>
+                {event.changes.length > 0 ? <div className="event-changes">
+                  {event.changes.map(change => <span key={change.field + String(change.to)} className={change.to ? "event-change on" : "event-change off"}>
+                    {CHANGE_LABELS[change.field]} {change.to ? "ON" : "OFF"}
+                  </span>)}
+                </div> : null}
+              </div>
             </div>)}
           </div>
         </section>
