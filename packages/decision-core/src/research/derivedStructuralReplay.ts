@@ -6,7 +6,23 @@ import {
   type ResearchStrategyLens,
   type ResearchStructureBar,
 } from "./marketMap.js";
-import { projectMarketMapToChartScene, type EngineChartScene } from "./chartScene.js";
+import {
+  projectMarketMapToChartScene,
+  type EngineChartRouteContext,
+  type EngineChartScene,
+} from "./chartScene.js";
+import {
+  classifyCanonicalRegime,
+  computeRegimeMeasurements,
+  type ResearchCanonicalRegimeResult,
+  type ResearchRegimeClassificationDefinition,
+  type ResearchRegimeMeasurementDefinition,
+} from "./regimeEvidence.js";
+import {
+  resolveResearchRoutes,
+  type ResolvedResearchRouteSet,
+  type ResearchStrategyRegimePlaybook,
+} from "./strategyRegimePlaybook.js";
 import {
   classifyStructuralBreak,
   detectStructuralBreak,
@@ -156,6 +172,38 @@ const retestDefinition: ResearchRetestDefinition = {
   holdTiming: "LATER_BAR_REQUIRED",
 };
 
+const regimeMeasurementDefinition: ResearchRegimeMeasurementDefinition = {
+  definitionId: "derived-alpha:regime-measurements:v1",
+  lookbackBars: 3,
+  baselineBars: 2,
+};
+
+const regimeClassificationDefinition: ResearchRegimeClassificationDefinition = {
+  definitionId: "derived-alpha:canonical-regime:v1",
+  profileId: "zugrio-core-derived-alpha",
+  profileVersion: "0.1.0",
+  rules: [
+    {
+      ruleId: "directional-trending-fixture",
+      regime: "TRENDING",
+      predicates: [
+        {
+          measurement: "CLOSE_EFFICIENCY",
+          operator: "GTE",
+          threshold: 0.8,
+          thresholdProvenanceId: "derived-alpha:fixture-threshold:close-efficiency:v1",
+        },
+        {
+          measurement: "SIGNED_CLOSE_MOVE",
+          operator: "GT",
+          threshold: 0.0008,
+          thresholdProvenanceId: "derived-alpha:fixture-threshold:signed-move:v1",
+        },
+      ],
+    },
+  ],
+};
+
 const lens: ResearchStrategyLens = {
   strategyId: "zugrio-core-derived-alpha",
   version: "0.1.0",
@@ -166,6 +214,37 @@ const lens: ResearchStrategyLens = {
   objectiveFamilies: ["NEAREST_CREDIBLE_STRUCTURE", "OPPOSING_LIQUIDITY"],
   invalidationPolicyRef: "derived-alpha:structural-invalidation:v1",
   authority: "RESEARCH_ONLY",
+};
+
+const playbook: ResearchStrategyRegimePlaybook = {
+  playbookId: "zugrio-core-derived-alpha:playbook:v1",
+  strategyId: lens.strategyId,
+  strategyVersion: lens.version,
+  authority: "RESEARCH_ONLY",
+  routes: [
+    {
+      routeId: "derived-alpha:bos-retest",
+      family: "BOS_RETEST",
+      compatibleRegimes: ["TRENDING"],
+      requiredConceptGroups: [["BOS"], ["RETEST"]],
+      optionalContextConcepts: ["FVG", "EQUAL_HIGHS", "LIQUIDITY_SWEEP"],
+      objectiveFamilies: ["NEAREST_CREDIBLE_STRUCTURE", "OPPOSING_LIQUIDITY"],
+      invalidationPolicyRef: lens.invalidationPolicyRef,
+      managementPolicyRef: null,
+      authority: "RESEARCH_ONLY",
+    },
+    {
+      routeId: "derived-alpha:breakout-retest",
+      family: "BREAKOUT_RETEST",
+      compatibleRegimes: ["BREAKOUT", "EXPANSION"],
+      requiredConceptGroups: [["BREAKOUT"], ["RETEST"]],
+      optionalContextConcepts: ["FVG"],
+      objectiveFamilies: ["NEAREST_CREDIBLE_STRUCTURE", "OPPOSING_LIQUIDITY"],
+      invalidationPolicyRef: lens.invalidationPolicyRef,
+      managementPolicyRef: null,
+      authority: "RESEARCH_ONLY",
+    },
+  ],
 };
 
 const priorBias: ResearchStructuralBiasEvidence = {
@@ -193,6 +272,46 @@ function epoch(value: string): number {
 function barsKnownBy(evaluatedAt: string): ResearchStructureBar[] {
   const cutoff = epoch(evaluatedAt);
   return bars.filter(bar => epoch(bar.knownAt) <= cutoff);
+}
+
+function regimeAt(evaluatedAt: string): ResearchCanonicalRegimeResult {
+  return classifyCanonicalRegime({
+    assessment: computeRegimeMeasurements({
+      timeframe: TIMEFRAME,
+      evaluatedAt,
+      bars,
+      definition: regimeMeasurementDefinition,
+    }),
+    definition: regimeClassificationDefinition,
+  });
+}
+
+function routeContextFor(
+  regime: ResearchCanonicalRegimeResult,
+): {
+  resolved: ResolvedResearchRouteSet | null;
+  scene: EngineChartRouteContext;
+} {
+  if (regime.status !== "CLASSIFIED" || regime.regime === null) {
+    return {
+      resolved: null,
+      scene: {
+        status: "UNAVAILABLE",
+        families: [],
+        calibrationStatus: null,
+      },
+    };
+  }
+
+  const resolved = resolveResearchRoutes(playbook, regime.regime);
+  return {
+    resolved,
+    scene: {
+      status: resolved.status,
+      families: resolved.routes.map(route => route.family),
+      calibrationStatus: resolved.calibrationStatus,
+    },
+  };
 }
 
 function confirmedLevelAt(evaluatedAt: string): ResearchMarketStructureFact | null {
@@ -279,6 +398,8 @@ function deriveRetestsAt(
 
 export interface DerivedStructuralReplayFrame {
   readonly evaluatedAt: string;
+  readonly regime: ResearchCanonicalRegimeResult;
+  readonly resolvedRoutes: ResolvedResearchRouteSet | null;
   readonly level: ResearchMarketStructureFact | null;
   readonly breakEvent: ResearchStructuralBreakEvent | null;
   readonly classificationFact: ResearchMarketStructureFact | null;
@@ -296,6 +417,8 @@ export function buildDerivedStructuralReplayFrame(
 
   const frame = frames[frameIndex]!;
   const evaluatedAt = frame.evaluatedAt;
+  const regime = regimeAt(evaluatedAt);
+  const routeContext = routeContextFor(regime);
   const level = confirmedLevelAt(evaluatedAt);
   const facts: ResearchMarketStructureFact[] = [];
   if (level) facts.push(level);
@@ -344,19 +467,21 @@ export function buildDerivedStructuralReplayFrame(
     instrument: "EURUSD",
     timeframe: TIMEFRAME,
     evaluatedAt,
-    regime: null,
+    regime: regime.fact,
     facts,
     strategyLens: lens,
   });
 
   return {
     evaluatedAt,
+    regime,
+    resolvedRoutes: routeContext.resolved,
     level,
     breakEvent,
     classificationFact,
     lifecycle,
     marketFacts: map.facts,
-    scene: projectMarketMapToChartScene(map),
+    scene: projectMarketMapToChartScene(map, routeContext.scene),
   };
 }
 
@@ -374,10 +499,10 @@ function lifecycleAt(frameIndex: number): StructuralLifecycle {
 function buildGeneratedEvidence(): readonly EvidenceEvent[] {
   const result: EvidenceEvent[] = [
     event("derived-eligibility", "ELIGIBILITY", frames[0]!.evaluatedAt, "ELIGIBLE"),
-    event("derived-regime", "REGIME_STATUS", frames[0]!.evaluatedAt, "AVAILABLE"),
   ];
 
   let previousLifecycle: StructuralLifecycle | null = null;
+  let previousRegimeStatus: "AVAILABLE" | "UNAVAILABLE" | "UNCERTAIN" | null = null;
   for (let index = 0; index < frames.length; index += 1) {
     const frame = frames[index]!;
     const knownBars = barsKnownBy(frame.evaluatedAt);
@@ -391,6 +516,23 @@ function buildGeneratedEvidence(): readonly EvidenceEvent[] {
       ));
     }
 
+    const derivedForRegime = buildDerivedStructuralReplayFrame(index);
+    const regimeStatus =
+      derivedForRegime.regime.status === "CLASSIFIED"
+        ? "AVAILABLE"
+        : derivedForRegime.regime.status === "UNCERTAIN"
+          ? "UNCERTAIN"
+          : "UNAVAILABLE";
+    if (regimeStatus !== previousRegimeStatus) {
+      result.push(event(
+        `derived-regime-${regimeStatus.toLowerCase()}`,
+        "REGIME_STATUS",
+        frame.evaluatedAt,
+        regimeStatus,
+      ));
+      previousRegimeStatus = regimeStatus;
+    }
+
     const lifecycle = lifecycleAt(index);
     if (lifecycle !== previousLifecycle) {
       result.push(event(
@@ -402,15 +544,17 @@ function buildGeneratedEvidence(): readonly EvidenceEvent[] {
       previousLifecycle = lifecycle;
     }
 
-    const derived = buildDerivedStructuralReplayFrame(index);
+    const derived = derivedForRegime;
     const note =
       derived.lifecycle?.lifecycle === "RETEST_HELD"
         ? "Engine-derived BOS retest is held from immutable post-break OHLC evidence."
         : derived.lifecycle?.lifecycle === "RETEST_TOUCHED"
           ? "Engine-derived post-break retest has touched; hold remains pending."
           : derived.breakEvent
-            ? "Engine-derived structural break is classified under the research profile."
-            : "Engine-derived external swing is known; no structural break is yet confirmed.";
+            ? `Engine-derived structural break is classified under the research profile. Canonical regime: ${derived.regime.regime ?? derived.regime.status}.`
+            : derived.regime.status === "CLASSIFIED"
+              ? `Canonical regime ${derived.regime.regime} is causally available; no structural break is yet confirmed.`
+              : "Canonical regime evidence is not yet available from the bounded window.";
 
     result.push(event(`derived-note-${index}`, "NOTE", frame.evaluatedAt, note));
   }
@@ -423,7 +567,7 @@ export function createDerivedStructuralReplayScenario(
 ): ReplayScenario {
   return {
     id: DERIVED_STRUCTURAL_SCENARIO_ID,
-    version: "0.1.0-alpha.3",
+    version: "0.1.0-alpha.4",
     caseId: "case-alpha-eurusd-derived-001",
     title: "Derived BOS → retest lifecycle from OHLC",
     description:
