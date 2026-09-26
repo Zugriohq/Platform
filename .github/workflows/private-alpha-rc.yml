@@ -1,0 +1,107 @@
+name: Private alpha cloud RC (Windows)
+
+# Produces a cloud-configured Windows RC of the private-validation-alpha desktop.
+# Normal branch CI (private-alpha.yml) is unaffected and keeps building LOCAL REPLAY builds.
+#
+# Run manually: Actions → "Private alpha cloud RC (Windows)" → Run workflow, with
+# api_base_url = https://api.zugrio.xyz (public configuration, not a secret).
+# Only run it once https://api.zugrio.xyz/health is healthy (see infra/cloudflare/README.md).
+#
+# On pull requests that change the RC tooling itself, it runs as a dry run against the
+# intended URL so the release path is proven before it is needed.
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_base_url:
+        description: "HTTPS API origin for the cloud RC (intended: https://api.zugrio.xyz)"
+        required: true
+        type: string
+  pull_request:
+    paths:
+      - ".github/workflows/private-alpha-rc.yml"
+      - "scripts/release/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: private-alpha-rc-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-input:
+    runs-on: ubuntu-latest
+    outputs:
+      api_base_url: ${{ steps.url.outputs.api_base_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Validate API base URL (https origin, no credentials/query/fragment/path)
+        id: url
+        env:
+          # Passed via env, never interpolated into the script, so the input cannot inject shell.
+          RAW_API_BASE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.api_base_url || 'https://api.zugrio.xyz' }}
+        run: |
+          set -euo pipefail
+          url="$(node scripts/release/rc.mjs validate-url "$RAW_API_BASE_URL")"
+          echo "api_base_url=$url" >> "$GITHUB_OUTPUT"
+          echo "Cloud RC API base URL: $url" >> "$GITHUB_STEP_SUMMARY"
+
+  windows-cloud-rc:
+    needs: validate-input
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    env:
+      API_BASE_URL: ${{ needs.validate-input.outputs.api_base_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9.15.4 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: pnpm install --frozen-lockfile
+      - name: Re-validate API base URL on the build runner
+        run: node scripts/release/rc.mjs validate-url "$API_BASE_URL"
+      - run: pnpm build:packages
+      - name: Desktop tests (cloud / LOCAL REPLAY app regression)
+        run: pnpm --filter @zugrio/desktop test
+      - name: Build cloud-configured renderer and Electron main
+        env:
+          VITE_ZUGRIO_API_BASE_URL: ${{ needs.validate-input.outputs.api_base_url }}
+        run: pnpm --filter @zugrio/desktop build
+      - name: Refuse to package unless the renderer carries the API URL
+        run: node scripts/release/rc.mjs verify-bundle apps/desktop/dist "$API_BASE_URL"
+      - name: Package portable Windows executable
+        working-directory: apps/desktop
+        run: pnpm exec electron-builder --win portable --publish never '-c.artifactName=Zugrio-Private-Alpha-${version}-cloud-rc.${ext}'
+      - name: Release manifest and SHA-256
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          exes=(apps/desktop/release/*-cloud-rc.exe)
+          if [ "${#exes[@]}" -ne 1 ]; then echo "expected exactly one cloud RC executable, found ${#exes[@]}"; exit 1; fi
+          node scripts/release/rc.mjs manifest \
+            --exe "${exes[0]}" \
+            --api "$API_BASE_URL" \
+            --commit "$GITHUB_SHA" \
+            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --out apps/desktop/release
+          {
+            echo '### Cloud RC artifact'
+            echo '```'
+            cat apps/desktop/release/*-cloud-rc.exe.sha256
+            echo '```'
+            echo 'Signing: **UNSIGNED**'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zugrio-private-alpha-cloud-rc-${{ github.sha }}
+          if-no-files-found: error
+          path: |
+            apps/desktop/release/*-cloud-rc.exe
+            apps/desktop/release/*-cloud-rc.exe.sha256
+            apps/desktop/release/*-cloud-rc.exe.manifest.json

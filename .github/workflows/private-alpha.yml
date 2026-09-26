@@ -13,6 +13,7 @@ on:
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
       - "tsconfig.base.json"
+      - "scripts/release/**"
       - ".github/workflows/private-alpha.yml"
   push:
     branches:
@@ -44,10 +45,10 @@ jobs:
         with: { version: 9.15.4 }
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: pnpm install --frozen-lockfile=false
+      - run: pnpm install --frozen-lockfile
       - name: Prisma schema validation
         run: pnpm --filter @zugrio/api prisma:validate
-      - name: Tests (decision-core, contract, API incl. PostgreSQL, desktop client)
+      - name: Tests (decision-core, contract, API incl. PostgreSQL, desktop client + app, release scripts)
         run: pnpm test
       - name: Strict typecheck
         run: pnpm typecheck
@@ -141,7 +142,7 @@ jobs:
         with: { version: 9.15.4 }
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: pnpm install --frozen-lockfile=false
+      - run: pnpm install --frozen-lockfile
       - run: pnpm build:packages
       - run: pnpm --filter @zugrio/desktop dist:win
       - uses: actions/upload-artifact@v4
