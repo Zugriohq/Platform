@@ -11,7 +11,7 @@ The frozen authority source remains `docs/architecture/frozen/Zugrio_Signal_Auth
 | Legacy failure | Zugrio guard | Current status |
 |---|---|---|
 | Break candle could effectively double as retest/confirmation | Research lifecycle observer requires source-bar chronology strictly after the confirmed break source bar. Fresh request time cannot change that. | Implemented + tested |
-| Valid BOS/retest looked missed because retest persistence was fragile | Retest touch and hold are explicit lifecycle facts with an append-only diagnostic trace. | Implemented + tested |
+| Valid BOS/retest looked missed because retest persistence was fragile | Retest touch and hold are explicit lifecycle facts with an append-only diagnostic trace; deterministic OHLC overlap/hold extraction is available from frozen geometry. | Implemented + tested |
 | Mandatory retest caused valid strong continuations to disappear | Frozen continuation lifecycle is represented behind `continuationReferenceEnabled`; it is research-only and defaults off. | Implemented + tested; no production authority |
 | Fixed/over-aggressive candle timer killed setups | Lifecycle observer has no implicit bar-count expiry. `EXPIRED` requires explicit policy evidence. | Implemented + tested |
 | Invalid/expired setup later resurrected | Terminal lifecycle is sticky; later evidence is diagnostic only. | Implemented + tested |
@@ -24,7 +24,7 @@ The frozen authority source remains `docs/architecture/frozen/Zugrio_Signal_Auth
 | Stale current entry remained presented as if still obtainable | Current-entry recheck separates historical event identity from fresh quote, geometry, cost, runway and continuity facts. | Implemented + tested |
 | Later request time could make old entry look fresh | Entry freshness is an explicit provenance-bearing predicate; evaluation time alone cannot renew it. | Implemented + tested |
 | Generic/specialist routing locked synthetics before useful structural observation | Do not put family admission ahead of structural diagnostics. Family-specific TradeBundles still need separate scope implementation/evidence. | Guard principle recorded; scope work pending |
-| Forex opportunities disappeared somewhere between detection and signal output | Every lifecycle advance/ignore/termination now has a reason code suitable for a future funnel diagnostic. | Foundation implemented; live scanner connection pending |
+| Forex opportunities disappeared somewhere between detection and signal output | Every lifecycle advance/ignore/termination has a reason code and the research funnel composes data → lifecycle → current-entry attrition into one diagnostic stage. | Diagnostic foundation implemented; live scanner connection pending |
 | Fixed HTF polling missed newly closed swing evidence | Required-timeframe gate exposes missing/stale evidence; market-data scheduler must refresh at source candle boundaries. | Decision-side guard implemented; scheduler work pending |
 | M1 recursive history requests | Request throttling/caching belongs to market-data ingestion, not decision authority. | Pending market-data layer |
 | Settings/profile changes altered open-trade policy | Frozen accepted policy/position management belongs to Gate 4M. | Deliberately not implemented in alpha |
