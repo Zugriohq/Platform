@@ -94,6 +94,9 @@ function layerForFact(fact: ResearchMarketStructureFact): ChartSemanticLayer {
     case "MSS":
     case "TRENDLINE_SUPPORT":
     case "TRENDLINE_RESISTANCE":
+    case "TRENDLINE_TOUCH":
+    case "TRENDLINE_PENETRATION":
+    case "TRENDLINE_BREAK":
     case "CHANNEL_SUPPORT":
     case "CHANNEL_RESISTANCE":
     case "RANGE_HIGH":
