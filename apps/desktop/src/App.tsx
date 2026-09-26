@@ -71,11 +71,14 @@ function PriceField({
 }) {
   const visible = decisions.slice(0, frame + 1);
   const visibleScenes = scenes.slice(0, frame + 1);
-  const snapshots = visible
-    .map((item) => item.current)
-    .filter((snapshot) => snapshot.price !== null);
+  const plotted = visible
+    .map((item, index) => ({
+      snapshot: item.current,
+      scene: visibleScenes[index],
+    }))
+    .filter((item) => item.snapshot.price !== null);
 
-  const prices = snapshots.map((snapshot) => snapshot.price as number);
+  const prices = plotted.map((item) => item.snapshot.price as number);
   const min = prices.length > 0 ? Math.min(...prices) - 0.0005 : 0;
   const max = prices.length > 0 ? Math.max(...prices) + 0.0005 : 1;
   const range = Math.max(max - min, 0.0001);
@@ -107,7 +110,7 @@ function PriceField({
       <polyline points={coords.join(" ")} fill="none" stroke="currentColor" strokeWidth="2.2" vectorEffect="non-scaling-stroke" />
       {coords.map((pair, index) => {
         const [x,y] = pair.split(",");
-        const scene = visibleScenes[index];
+        const scene = plotted[index]?.scene;
         const meaningful = (scene?.primitives ?? [])
           .filter(primitive => primitive.visibility === "PRIMARY")
           .map(primitive => primitive.label);

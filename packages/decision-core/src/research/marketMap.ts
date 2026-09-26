@@ -192,7 +192,7 @@ function epoch(value: string, label: string): number {
   return parsed;
 }
 
-function validateBar(bar: ResearchStructureBar): void {
+export function validateResearchStructureBar(bar: ResearchStructureBar): void {
   for (const [label, value] of Object.entries({
     open: bar.open,
     high: bar.high,
@@ -205,8 +205,11 @@ function validateBar(bar: ResearchStructureBar): void {
   if (bar.high < Math.max(bar.open, bar.close) || bar.low > Math.min(bar.open, bar.close)) {
     throw new Error("OHLC bar is internally inconsistent");
   }
-  epoch(bar.sourceClosedAt, "sourceClosedAt");
-  epoch(bar.knownAt, "knownAt");
+  const sourceClosedAt = epoch(bar.sourceClosedAt, "sourceClosedAt");
+  const knownAt = epoch(bar.knownAt, "knownAt");
+  if (knownAt < sourceClosedAt) {
+    throw new Error(`bar evidence cannot be known before source close: ${bar.sourceBarId}`);
+  }
 }
 
 function validateDefinition(definition: PivotDefinition): void {
@@ -235,7 +238,7 @@ export function detectConfirmedPivots(
 
   const ids = new Set<string>();
   for (const bar of bars) {
-    validateBar(bar);
+    validateResearchStructureBar(bar);
     if (ids.has(bar.sourceBarId)) throw new Error(`duplicate sourceBarId: ${bar.sourceBarId}`);
     ids.add(bar.sourceBarId);
   }
@@ -528,7 +531,7 @@ export function detectLiquiditySweep(
   if (!Number.isFinite(definition.penetrationTolerance) || definition.penetrationTolerance < 0) {
     throw new Error("penetrationTolerance must be finite and >= 0");
   }
-  validateBar(bar);
+  validateResearchStructureBar(bar);
   if (bar.dataStatus !== "FRESH_COMPLETE") return null;
   if (level.geometry.type !== "POINT" && level.geometry.type !== "ZONE") return null;
 

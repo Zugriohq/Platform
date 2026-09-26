@@ -128,4 +128,17 @@ describe("research current-entry recheck", () => {
       },
     }))).toThrow(/future evidence/);
   });
+  it("rejects future or impossible historical entry chronology", () => {
+    expect(() => recheckCurrentEntry({
+      eventId: "future-entry",
+      confirmedAt: "2026-09-24T08:21:00Z",
+      sourceBarClosedAt: "2026-09-24T08:20:00Z",
+    }, input())).toThrow(/confirmedAt cannot be in the future/);
+
+    expect(() => recheckCurrentEntry({
+      eventId: "impossible-entry",
+      confirmedAt: "2026-09-24T08:19:00Z",
+      sourceBarClosedAt: "2026-09-24T08:20:00Z",
+    }, input())).toThrow(/sourceBarClosedAt cannot follow confirmedAt/);
+  });
 });

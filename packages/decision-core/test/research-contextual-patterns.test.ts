@@ -227,4 +227,12 @@ describe("contextual pattern ontology", () => {
       minimumAnchorSeparationMs: 0,
     })).toBeNull();
   });
+  it("rejects morphology evidence timestamped before its source bar close", () => {
+    const impossible = {
+      ...bar("impossible", 1.1000, 1.1010, 1.0990, 1.1001, 0),
+      knownAt: "2026-09-24T07:59:59Z",
+    };
+    expect(() => detectCandlestickMorphology("M5", [impossible], candleDef))
+      .toThrow(/cannot be known before source close/);
+  });
 });

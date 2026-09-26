@@ -138,8 +138,11 @@ function orderedObservations(
       throw new Error(`duplicate lifecycle evidenceId: ${item.evidenceId}`);
     }
     seen.add(item.evidenceId);
-    epoch(item.knownAt, "knownAt");
-    epoch(item.sourceClosedAt, "sourceClosedAt");
+    const knownAt = epoch(item.knownAt, "knownAt");
+    const sourceClosedAt = epoch(item.sourceClosedAt, "sourceClosedAt");
+    if (knownAt < sourceClosedAt) {
+      throw new Error(`lifecycle evidence cannot be known before its source bar closes: ${item.evidenceId}`);
+    }
   }
 
   return [...observations].sort((a, b) => {

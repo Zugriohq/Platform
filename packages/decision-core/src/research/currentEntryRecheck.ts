@@ -102,8 +102,15 @@ export function recheckCurrentEntry(
     };
   }
 
-  epoch(entryEvent.confirmedAt, "entryEvent.confirmedAt");
-  epoch(entryEvent.sourceBarClosedAt, "entryEvent.sourceBarClosedAt");
+  if (!entryEvent.eventId) throw new Error("entryEvent.eventId must be non-empty");
+  const confirmedAt = epoch(entryEvent.confirmedAt, "entryEvent.confirmedAt");
+  const sourceBarClosedAt = epoch(entryEvent.sourceBarClosedAt, "entryEvent.sourceBarClosedAt");
+  if (sourceBarClosedAt > confirmedAt) {
+    throw new Error("entryEvent.sourceBarClosedAt cannot follow confirmedAt");
+  }
+  if (confirmedAt > evaluatedAt) {
+    throw new Error("entryEvent.confirmedAt cannot be in the future relative to evaluatedAt");
+  }
 
   const reasons: CurrentEntryReasonCode[] = [];
 

@@ -107,4 +107,33 @@ describe("research objective engine", () => {
     expect(result.runwayStatus).toBe("NO_CREDIBLE_OBJECTIVE");
     expect(result.blockers).toContain("NO_CREDIBLE_OBJECTIVE");
   });
+  it("rejects structural invalidation on the wrong side of entry", () => {
+    expect(() => evaluateResearchObjectives({
+      side:"BUY",
+      entryPrice:100,
+      structuralInvalidationPrice:101,
+      evaluatedAt:"2026-09-24T08:30:00Z",
+      candidates:[objective("target",105)],
+      policy:{
+        policyId:"structural-side:v1",
+        allowedFamilies:["NEAREST_CREDIBLE_STRUCTURE"],
+        minimumFirstObjectiveR:0,
+        maxObjectives:1,
+      },
+    })).toThrow(/below entry for BUY/);
+
+    expect(() => evaluateResearchObjectives({
+      side:"SELL",
+      entryPrice:100,
+      structuralInvalidationPrice:99,
+      evaluatedAt:"2026-09-24T08:30:00Z",
+      candidates:[objective("target",95)],
+      policy:{
+        policyId:"structural-side:v1",
+        allowedFamilies:["NEAREST_CREDIBLE_STRUCTURE"],
+        minimumFirstObjectiveR:0,
+        maxObjectives:1,
+      },
+    })).toThrow(/above entry for SELL/);
+  });
 });

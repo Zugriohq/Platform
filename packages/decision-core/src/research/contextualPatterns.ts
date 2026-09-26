@@ -1,3 +1,4 @@
+import { validateResearchStructureBar } from "./marketMap.js";
 import type {
   CanonicalRegime,
   MarketStructureConcept,
@@ -80,6 +81,8 @@ export function detectCandlestickMorphology(
 ): readonly ResearchMarketStructureFact[] {
   validateDefinition(definition);
   if (!timeframe.trim()) throw new Error("timeframe must be non-empty");
+
+  for (const bar of bars) validateResearchStructureBar(bar);
 
   const ordered = [...bars].sort((a, b) => {
     const byClose = epoch(a.sourceClosedAt, "sourceClosedAt") - epoch(b.sourceClosedAt, "sourceClosedAt");

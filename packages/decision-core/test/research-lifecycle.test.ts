@@ -247,4 +247,15 @@ describe("research structural lifecycle observer", () => {
       },
     ));
   });
+  it("rejects evidence that claims it was known before its source bar closed", () => {
+    expect(() => observeStructuralLifecycle(seed, [
+      observation(
+        "impossible-known-at",
+        "m5:0805",
+        "2026-09-24T08:10:00Z",
+        "2026-09-24T08:09:59Z",
+        { retestTouched: true },
+      ),
+    ])).toThrow(/cannot be known before its source bar closes/);
+  });
 });

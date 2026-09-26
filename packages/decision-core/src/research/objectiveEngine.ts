@@ -62,8 +62,16 @@ export function evaluateResearchObjectives(input: {
   }
 
   const evaluatedAt = epoch(input.evaluatedAt, "evaluatedAt");
+  const invalidationOnCorrectSide =
+    input.side === "BUY"
+      ? input.structuralInvalidationPrice < input.entryPrice
+      : input.structuralInvalidationPrice > input.entryPrice;
+  if (!invalidationOnCorrectSide) {
+    throw new Error(
+      `structural invalidation must be ${input.side === "BUY" ? "below" : "above"} entry for ${input.side}`,
+    );
+  }
   const riskDistance = Math.abs(input.entryPrice - input.structuralInvalidationPrice);
-  if (!(riskDistance > 0)) throw new Error("structural invalidation must differ from entry");
 
   const directional = input.candidates
     .filter(candidate => {
