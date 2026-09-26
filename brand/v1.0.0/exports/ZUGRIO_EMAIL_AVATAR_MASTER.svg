@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Zugrio avatar">
+  <rect width="512" height="512" rx="112" fill="#050608"/>
+  <rect x="1" y="1" width="510" height="510" rx="111" fill="none" stroke="#252C34" stroke-width="2"/>
+  <g transform="translate(86 110) scale(.85)">
+    <path d="M31 18 V83 L196 84 L18 260 V313 L315 312 L381 243 L157 242 L379 18 Z" fill="#F3F5F7"/>
+  </g>
+</svg>

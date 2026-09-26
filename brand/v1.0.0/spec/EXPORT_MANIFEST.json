@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "canonical_master": "brand/v1.0.0/master/ZUGRIO_WORDMARK_MASTER.svg",
+  "canonical_monogram": "brand/v1.0.0/master/ZUGRIO_MONOGRAM_MASTER.svg",
+  "derived_exports": [
+    "brand/v1.0.0/exports/ZUGRIO_WORDMARK_WHITE.svg",
+    "brand/v1.0.0/exports/ZUGRIO_WORDMARK_SILVER.svg",
+    "brand/v1.0.0/exports/ZUGRIO_WORDMARK_BLACK.svg",
+    "brand/v1.0.0/exports/ZUGRIO_WORDMARK_SIGNATURE_METALLIC.svg"
+  ],
+  "specs": [
+    "brand/v1.0.0/spec/ZUGRIO_GEOMETRY_CONSTRUCTION_SHEET.svg",
+    "brand/v1.0.0/spec/ZUGRIO_SIGNATURE_MOTION_SPEC.md",
+    "brand/v1.0.0/spec/USAGE_AND_CLEARSPACE.md",
+    "brand/v1.0.0/spec/MATERIAL_FINISH_SPEC.md"
+  ],
+  "master_viewbox": "0 0 2064 332",
+  "geometry_locked": true,
+  "live_fonts": false,
+  "colors": {
+    "obsidian_black": "#050508",
+    "graphite": "#1A1A1A",
+    "steel_silver": "#C8CCD0",
+    "soft_white": "#F5F5F7"
+  },
+  "note": "All finishes derive from the canonical path geometry. AI-generated imagery is reference-only and never the master."
+}

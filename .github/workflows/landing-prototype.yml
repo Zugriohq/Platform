@@ -1,0 +1,32 @@
+name: Landing prototype build
+
+on:
+  pull_request:
+    paths:
+      - "prototypes/landing-v3-react/**"
+      - "config/capability-scope-manifest.v1.json"
+      - "config/capability-scope-manifest.v1.json"
+      - ".github/workflows/landing-prototype.yml"
+  push:
+    branches: [chore/engineering-foundation]
+    paths:
+      - "prototypes/landing-v3-react/**"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: prototypes/landing-v3-react
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install prototype dependencies
+        run: npm install --no-audit --no-fund
+      - name: Build React prototype
+        run: npm run build

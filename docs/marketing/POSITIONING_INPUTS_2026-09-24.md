@@ -1,0 +1,128 @@
+# Zugrio Positioning Inputs — 2026-09-24
+
+Status: **current input constraints for the next positioning/headline pass**.  
+Issue: #22.
+
+This document is not the new positioning, headline or landing-page copy. It records product truths that the positioning work must respect.
+
+## 1. Superseded copy material
+
+The earlier `zugrio-copy-brief.md` is **superseded** and must not be used as a source of current public copy.
+
+Reasons include:
+- it uses **Method** as public language where current public language should use **strategy**;
+- it treats "The chart is not the market" as the acquisition hero; current direction reserves that line for the later/closing brand signature rather than the acquisition hero;
+- it implies Zugrio can apply a trader's named methodology "exactly as you would," which is incompatible with scope-specific, versioned strategy implementation and admission;
+- it blurs user-declared plan conditions with Zugrio-admitted strategy qualification;
+- it describes AI-like chart narration more broadly than the current deterministic chart-annotation boundary allows.
+
+Any useful historical phrasing from that brief must be re-evaluated against current architecture before reuse.
+
+## 2. Public strategy language
+
+Use **strategy** in public-facing copy unless a specific internal/domain name must be shown.
+
+Internal architecture may continue to use `MethodProfile` for domain compatibility.
+
+Public copy must preserve these distinctions:
+- **your plan condition occurred**;
+- **a user-defined structured strategy condition occurred**;
+- **Zugrio independently qualified/admitted a strategy signal**.
+
+Those are not interchangeable claims.
+
+## 3. Market lead for acquisition
+
+### Decision
+
+**Forex leads the acquisition narrative, while FX, Gold and Synthetic Indices appear together as the initial market scope.**
+
+Recommended positioning pattern:
+- Hero narrative/examples: primarily Forex when one market example is needed.
+- Immediate scope line: **FX · Gold · Synthetic Indices**.
+- Do not visually style Gold or Synthetic Indices as "coming soon"; all three are initial product tracks.
+- Market section: explain that each market is separately scoped/validated and that logic/evidence does not transfer merely because charts look similar.
+- Planned markets such as Crypto, Stocks/Equities, broader Commodities, traditional Indices, ETFs, Futures and later Options belong in a roadmap/FAQ/status area, **not beside the homepage hero**.
+
+This is a marketing hierarchy, not a product-scope hierarchy.
+
+"Planned" does not imply a launch date or current market support.
+
+## 4. Strategy portfolio and V1 truth
+
+Zugrio is **strategy-aware and designed for multiple strategies**, but the first build must not imply breadth that has not been proven.
+
+### V1
+- **Zugrio Core** is the only active strategy target.
+- Core V1 is the productized descendant of the strongest TTI Advanced Price Action lineage.
+- Core uses one fixed TradeBundle per admitted market-family/instrument scope.
+- If a bundle does not qualify, Zugrio passes; it does not dynamically choose another entry/exit combination.
+
+### In validation / later
+- Smart Money Concepts;
+- Trend Following;
+- Range / Mean Reversion;
+- a separately selectable Advanced Price Action preset only if it is demonstrated to be meaningfully distinct from Core.
+
+Public surfaces may show these as **In validation** where useful, but not as selectable live/admitted alternatives until their exact scope clears.
+
+### Custom Strategy
+Custom Strategy remains a later product direction. "Bring your own plan" can still mean declare/monitor/review a plan, but the V1 website must not imply a full custom strategy builder or adaptive execution engine is already available.
+
+### Strategy language
+- Strategy choice changes the governing rules; it is not cosmetic.
+- Fibonacci is a location/retracement tool, not a strategy.
+- Entry and exit are evaluated as part of a complete TradeBundle, not as independently proven modules.
+- Zugrio does not recommend switching strategies in V1 merely because another strategy has a current setup.
+
+## 5. Chart annotation boundary
+
+Live chart annotation is a flagship experience only to the extent the underlying product state supports it.
+
+Authoritative chart annotations must reflect deterministic/versioned:
+- strategy conditions;
+- Entry Model state;
+- Decision Case state;
+- provenance-bound market/context facts;
+- decision geometry.
+
+AI may explain those states separately. AI does not create the authoritative annotation state.
+
+A phrase such as:
+> break confirmed — awaiting retest
+
+is valid only if the active strategy/Entry Model defines reconstructable conditions corresponding to "break confirmed" and "awaiting retest."
+
+Do not market Zugrio as "narrating its thinking" if that implies free-form AI reasoning is being written onto the chart as trading evidence.
+
+## 6. Positioning implications
+
+The next positioning pass should not be built around:
+- unrestricted methodology choice;
+- generic "AI trading";
+- a claim that Zugrio exactly reproduces any trader's personal methodology;
+- equal-weight market storytelling in the hero;
+- free-form AI chart narration;
+- "The chart is not the market" as a preselected hero.
+
+The positioning process should start from the full product thesis while preserving a visible **status layer** that distinguishes live/V1, in-validation and future capabilities.
+
+The positioning process may produce new language for:
+- the core problem;
+- category/descriptor;
+- hero/headline;
+- value hierarchy;
+- market narrative;
+- strategy narrative;
+- product proof sequence.
+
+## 7. Evidence discipline
+
+If a capability is not implemented/admitted/released, public copy must use accurate developmental language.
+
+No copy should imply:
+- Zugrio Core is profitable or admitted before evidence clears;
+- an external strategy is supported before its exact version/scope clears;
+- user-authored strategy conditions are Zugrio-endorsed signals;
+- chart annotation is AI-generated authority;
+- non-custodial architecture determines regulatory status.

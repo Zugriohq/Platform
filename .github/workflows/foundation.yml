@@ -1,0 +1,51 @@
+name: Foundation integrity
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify governing repository documents
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            "README.md"
+            "ENGINEERING_CHARTER.md"
+            "STACK.md"
+            "AGENTS.md"
+            "CLAUDE.md"
+            "CURRENT-GATE.md"
+            "docs/engineering/AI_COLLABORATION.md"
+            "docs/engineering/GITHUB_GOVERNANCE.md"
+            "docs/engineering/REPOSITORY_STRUCTURE.md"
+            "docs/product/OPERATING_MODEL.md"
+            "docs/product/PRODUCT_DIRECTION.md"
+            "docs/product/ZUGRIO_1_0_PRD.md"
+            "docs/product/PRODUCT_DESIGN_PRD_V1.md"
+            "docs/product/PRODUCT_SURFACE_ARCHITECTURE_V1.md"
+            "docs/research/MODERN_PRODUCT_DESIGN_RESEARCH_2026_09_21.md"
+            "docs/product/WORK_SENIOR_PRODUCT_DESIGNER_BRIEF_V2.md"
+            "docs/brand/BRAND_PROPOSITION_V2_2_CANDIDATE.md"
+            "docs/brand/VISUAL_DIRECTION_V0_3.md"
+            "docs/marketing/POSITIONING_LOCK_2026-09-25.md"
+            "config/capability-scope-manifest.v1.json"
+            "docs/architecture/SYSTEM_ARCHITECTURE_V1.md"
+            "docs/architecture/DOMAIN_MODEL_V1.md"
+            "docs/product/PRD-TEMPLATE.md"
+            "docs/adr/0000-template.md"
+          )
+          for path in "${required[@]}"; do
+            test -s "$path" || { echo "Missing or empty required file: $path"; exit 1; }
+          done
+          grep -q "Freeze → extract → equivalence-test → cut over → delete legacy path" ENGINEERING_CHARTER.md
+          grep -q "Gate 4: \*\*not authorized" CURRENT-GATE.md
+          echo "Foundation integrity checks passed."
