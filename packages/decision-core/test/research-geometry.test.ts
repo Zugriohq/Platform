@@ -104,7 +104,7 @@ describe("research retest geometry extraction", () => {
   it("still cannot turn the original break bar into a retest after OHLC extraction", () => {
     const facts = extractRetestGeometryFacts(buyGeometry, {
       sourceBarId: "m5:0800",
-      open: 1.0990,
+      open: 1.1000,
       high: 1.1010,
       low: 1.0996,
       close: 1.1006,
