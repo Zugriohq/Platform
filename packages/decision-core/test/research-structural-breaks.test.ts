@@ -147,6 +147,8 @@ describe("research structural-break derivation", () => {
     expect(first.events[0]?.direction).toBe("UP");
     expect(first.events[0]?.breakId).toContain("high-1:m5:0810:UP:CLOSE_BEYOND");
     expect(first.events[0]?.authorityEffect).toBe("NONE");
+    expect(first.events[0]?.sourceBarEvidenceId).toBe(source.evidenceId);
+    expect(first.events[0]?.levelStateEvidenceId).toBe(activeState(swingHigh.factId).evidenceId);
   });
 
   it("emits a stable neutral DOWN break against a known swing low", () => {
@@ -300,6 +302,53 @@ describe("research structural-break derivation", () => {
       ],
     });
     expect(result.reasons).toContain("LEVEL_GEOMETRY_UNSUPPORTED");
+  });
+
+  it("allows prior bias to share legitimate level evidence without treating it as circular", () => {
+    const swingHigh = level("high-shared-prior","SWING_HIGH",1.1000);
+    const raw = detect(
+      swingHigh,
+      bar("m5:0810",1.0995,1.1010,1.0990,1.1005),
+      closeBreak,
+    ).events[0]!;
+
+    const classified = classifyStructuralBreak({
+      breakEvent:raw,
+      priorBias:{
+        bias:"BULLISH",
+        evidenceId:swingHigh.sourceEvidenceIds[0]!,
+        knownAt:"2026-09-24T07:59:00Z",
+        definitionId:"bias:v1",
+      },
+      evaluatedAt:"2026-09-24T08:11:00Z",
+      definition:bosProfile,
+    });
+
+    expect(classified.status).toBe("CLASSIFIED");
+    expect(classified.classification).toBe("BOS");
+  });
+
+  it("rejects prior bias that is manufactured from the break bar itself", () => {
+    const raw = detect(
+      level("high-circular-bias","SWING_HIGH",1.1000),
+      bar("m5:0810",1.0995,1.1010,1.0990,1.1005),
+      closeBreak,
+    ).events[0]!;
+
+    const classified = classifyStructuralBreak({
+      breakEvent:raw,
+      priorBias:{
+        bias:"BULLISH",
+        evidenceId:raw.sourceBarEvidenceId,
+        knownAt:"2026-09-24T08:05:00Z",
+        definitionId:"bias:v1",
+      },
+      evaluatedAt:"2026-09-24T08:11:00Z",
+      definition:bosProfile,
+    });
+
+    expect(classified.status).toBe("UNCLASSIFIED_STRUCTURAL_BREAK");
+    expect(classified.reasons).toContain("BIAS_USES_BREAK_BAR_EVIDENCE");
   });
 
   it("classifies continuation as BOS under an explicit vocabulary profile", () => {

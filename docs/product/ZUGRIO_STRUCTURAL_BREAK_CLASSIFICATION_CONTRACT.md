@@ -18,7 +18,8 @@ The neutral event records:
 - CLOSE_BEYOND or TOUCH_BEYOND mode;
 - broken level identity/concept/scale/timeframe;
 - broken level price and observed price;
-- source bar identity, close time and knownAt;
+- source bar identity, its evidence identity, close time and knownAt;
+- explicit level-state evidence identity;
 - definition/provenance identity;
 - source evidence identities.
 
@@ -60,3 +61,10 @@ CHoCH and MSS are deliberately not synonyms. The same opposing break can be CHoC
 Only classified engine facts enter the Market Map / EngineChartScene as BOS/CHoCH/MSS labels. The renderer may style and arrange them but does not infer them from candles or pixels.
 
 All outputs remain RESEARCH_ONLY with authorityEffect NONE.
+
+
+## Evidence roles
+
+The raw break preserves the break-bar evidence ID separately from the flattened provenance list. This matters because prior structural bias may legitimately share older swing/level evidence, but it may **not** be manufactured from the break bar itself.
+
+The classifier therefore rejects only circular break-bar bias evidence; it does not incorrectly reject legitimate shared historical context.

@@ -63,6 +63,8 @@ export interface ResearchStructuralBreakEvent {
   readonly levelPrice: number;
   readonly observedPrice: number;
   readonly sourceBarId: string;
+  readonly sourceBarEvidenceId: string;
+  readonly levelStateEvidenceId: string;
   readonly sourceClosedAt: string;
   readonly knownAt: string;
   readonly definitionId: string;
@@ -111,7 +113,7 @@ export type ResearchBreakClassificationReason =
   | "BREAK_FROM_FUTURE"
   | "NO_PROFILE_RULE"
   | "BIAS_NOT_PRIOR"
-  | "BIAS_EVIDENCE_REUSED"
+  | "BIAS_USES_BREAK_BAR_EVIDENCE"
   | "DISPLACEMENT_REQUIRED"
   | "DISPLACEMENT_DIRECTION_MISSING"
   | "DISPLACEMENT_DIRECTION_MISMATCH"
@@ -382,6 +384,8 @@ export function detectStructuralBreak(
       levelPrice: bounds.high,
       observedPrice: definition.mode === "CLOSE_BEYOND" ? bar.close : bar.high,
       sourceBarId: bar.sourceBarId,
+      sourceBarEvidenceId: bar.evidenceId,
+      levelStateEvidenceId: levelState.evidenceId,
       sourceClosedAt: bar.sourceClosedAt,
       knownAt: bar.knownAt,
       definitionId: definition.definitionId,
@@ -403,6 +407,8 @@ export function detectStructuralBreak(
       levelPrice: bounds.low,
       observedPrice: definition.mode === "CLOSE_BEYOND" ? bar.close : bar.low,
       sourceBarId: bar.sourceBarId,
+      sourceBarEvidenceId: bar.evidenceId,
+      levelStateEvidenceId: levelState.evidenceId,
       sourceClosedAt: bar.sourceClosedAt,
       knownAt: bar.knownAt,
       definitionId: definition.definitionId,
@@ -438,6 +444,8 @@ export function classifyStructuralBreak(input: {
   if (
     !input.breakEvent.breakId ||
     !input.breakEvent.definitionId ||
+    !input.breakEvent.sourceBarEvidenceId ||
+    !input.breakEvent.levelStateEvidenceId ||
     input.breakEvent.sourceEvidenceIds.length === 0
   ) {
     throw new Error("structural break event identity/provenance must be complete");
@@ -475,13 +483,13 @@ export function classifyStructuralBreak(input: {
       liveCapitalAuthority: false,
     };
   }
-  if (input.breakEvent.sourceEvidenceIds.includes(input.priorBias.evidenceId)) {
+  if (input.breakEvent.sourceBarEvidenceId === input.priorBias.evidenceId) {
     return {
       status: "UNCLASSIFIED_STRUCTURAL_BREAK",
       relation: relationFor(input.priorBias.bias, input.breakEvent.direction),
       classification: null,
       fact: null,
-      reasons: ["BIAS_EVIDENCE_REUSED"],
+      reasons: ["BIAS_USES_BREAK_BAR_EVIDENCE"],
       authority: "RESEARCH_ONLY",
       liveCapitalAuthority: false,
     };
