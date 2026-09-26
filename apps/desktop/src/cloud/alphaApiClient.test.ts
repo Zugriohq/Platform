@@ -46,6 +46,17 @@ describe("createAlphaApiClient", () => {
     expect(calls[0]?.url).toBe(`https://api.zugrio.xyz/v1/alpha/scenarios/${staleEntryScenario.id}/frames/4`);
   });
 
+  it("rejects malformed decision payloads even when alpha metadata is valid", async () => {
+    const decision = JSON.parse(JSON.stringify(buildDecisionCase(staleEntryScenario, 4)));
+    decision.authority = "LIVE";
+    const { impl } = fakeFetch(() => json(200, { meta: ALPHA_RESPONSE_META, data: decision }));
+    const client = createAlphaApiClient({ baseUrl: "https://api.zugrio.xyz", fetch: impl });
+    expect(await client.getFrameDecisionCase(staleEntryScenario.id, 4)).toEqual({
+      status: "rejected",
+      reason: "Response payload does not satisfy the expected alpha contract",
+    });
+  });
+
   it("returns engine-owned chart scenes from the cloud", async () => {
     const scene = JSON.parse(JSON.stringify(buildReplayChartScene(staleEntryScenario, 4)));
     const { impl, calls } = fakeFetch(() => json(200, { meta: ALPHA_RESPONSE_META, data: scene }));
@@ -55,6 +66,25 @@ describe("createAlphaApiClient", () => {
     expect(calls[0]?.url).toBe(
       `https://api.zugrio.xyz/v1/alpha/scenarios/${staleEntryScenario.id}/frames/4/chart-scene`,
     );
+  });
+
+  it("rejects malformed chart primitives even when alpha metadata is valid", async () => {
+    const scene = JSON.parse(JSON.stringify(buildReplayChartScene(staleEntryScenario, 4)));
+    scene.primitives[0].authorityEffect = "ALLOW";
+    const { impl } = fakeFetch(() => json(200, { meta: ALPHA_RESPONSE_META, data: scene }));
+    const client = createAlphaApiClient({ baseUrl: "https://api.zugrio.xyz", fetch: impl });
+    expect(await client.getFrameChartScene(staleEntryScenario.id, 4)).toEqual({
+      status: "rejected",
+      reason: "Response payload does not satisfy the expected alpha contract",
+    });
+  });
+
+  it("rejects chart primitives whose geometry arrives from the future", async () => {
+    const scene = JSON.parse(JSON.stringify(buildReplayChartScene(staleEntryScenario, 4)));
+    scene.primitives[0].geometry.time = "2099-01-01T00:00:00Z";
+    const { impl } = fakeFetch(() => json(200, { meta: ALPHA_RESPONSE_META, data: scene }));
+    const client = createAlphaApiClient({ baseUrl: "https://api.zugrio.xyz", fetch: impl });
+    expect((await client.getFrameChartScene(staleEntryScenario.id, 4)).status).toBe("rejected");
   });
 
   it("posts only scenarioId and frameIndex", async () => {
