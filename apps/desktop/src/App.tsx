@@ -2,7 +2,9 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   alphaScenarios,
   buildDecisionCase,
+  buildReplayChartScene,
   type DecisionCase,
+  type EngineChartScene,
   type ReplayScenario,
   type StructuralLifecycle,
   type StructuralState,
@@ -60,17 +62,23 @@ function EvidenceRow({ label, value }: { label: string; value: string }) {
 
 function PriceField({
   decisions,
+  scenes,
   frame,
 }: {
   decisions: readonly DecisionCase[];
+  scenes: readonly EngineChartScene[];
   frame: number;
 }) {
   const visible = decisions.slice(0, frame + 1);
-  const snapshots = visible
-    .map((item) => item.current)
-    .filter((snapshot) => snapshot.price !== null);
+  const visibleScenes = scenes.slice(0, frame + 1);
+  const plotted = visible
+    .map((item, index) => ({
+      snapshot: item.current,
+      scene: visibleScenes[index],
+    }))
+    .filter((item) => item.snapshot.price !== null);
 
-  const prices = snapshots.map((snapshot) => snapshot.price as number);
+  const prices = plotted.map((item) => item.snapshot.price as number);
   const min = prices.length > 0 ? Math.min(...prices) - 0.0005 : 0;
   const max = prices.length > 0 ? Math.max(...prices) + 0.0005 : 1;
   const range = Math.max(max - min, 0.0001);
@@ -102,15 +110,10 @@ function PriceField({
       <polyline points={coords.join(" ")} fill="none" stroke="currentColor" strokeWidth="2.2" vectorEffect="non-scaling-stroke" />
       {coords.map((pair, index) => {
         const [x,y] = pair.split(",");
-        const item = visible[index];
-        const labels = item?.annotations.map(annotation => annotation.label) ?? [];
-        const meaningful = labels.filter(label =>
-          label.includes("BREAK") ||
-          label.includes("RETEST") ||
-          label.includes("LIFECYCLE CONFIRMED") ||
-          label.includes("ENTRY CURRENT") ||
-          label.includes("ENTRY STALE")
-        );
+        const scene = plotted[index]?.scene;
+        const meaningful = (scene?.primitives ?? [])
+          .filter(primitive => primitive.visibility === "PRIMARY")
+          .map(primitive => primitive.label);
         return <g key={pair + index}>
           <circle cx={x} cy={y} r={index === coords.length - 1 ? 4.5 : 2.4} fill="currentColor" />
           {meaningful.map((label, labelIndex) => <g key={label}>
@@ -161,6 +164,7 @@ export function App({ apiClient: injectedClient }: AppProps = {}) {
   const [cloudSummaries, setCloudSummaries] = useState<readonly ScenarioSummary[]>([]);
   const [cloudScenario, setCloudScenario] = useState<ReplayScenario | undefined>();
   const [cloudDecisions, setCloudDecisions] = useState<readonly DecisionCase[]>([]);
+  const [cloudScenes, setCloudScenes] = useState<readonly EngineChartScene[]>([]);
   const [cloudStatus, setCloudStatus] = useState<CloudUiStatus>({ status: cloudConfigured ? "loading" : "idle" });
   const [recordStatus, setRecordStatus] = useState<RecordStatus>({ status: "idle" });
   const [retryNonce, setRetryNonce] = useState(0);
@@ -195,6 +199,7 @@ export function App({ apiClient: injectedClient }: AppProps = {}) {
     setCloudStatus({ status: "loading" });
     setCloudScenario(undefined);
     setCloudDecisions([]);
+    setCloudScenes([]);
     setRecordStatus({ status: "idle" });
     setFrame(0);
 
@@ -210,26 +215,47 @@ export function App({ apiClient: injectedClient }: AppProps = {}) {
       }
 
       const frameResults = await Promise.all(
-        detail.data.frames.map((_, index) =>
-          apiClient.getFrameDecisionCase(detail.data.id, index),
-        ),
+        detail.data.frames.map(async (_, index) => ({
+          decision: await apiClient.getFrameDecisionCase(detail.data.id, index),
+          scene: await apiClient.getFrameChartScene(detail.data.id, index),
+        })),
       );
       if (cancelled) return;
 
-      const failed = frameResults.find(result => result.status !== "ok");
-      if (failed) {
+      const failedDecision = frameResults
+        .map(result => result.decision)
+        .find(result => result.status !== "ok");
+      if (failedDecision) {
         setCloudStatus({
-          status: failed.status === "not-configured" ? "error" : failed.status,
-          reason: failed.reason,
+          status: failedDecision.status === "not-configured" ? "error" : failedDecision.status,
+          reason: failedDecision.reason,
+        });
+        return;
+      }
+
+      const failedScene = frameResults
+        .map(result => result.scene)
+        .find(result => result.status !== "ok");
+      if (failedScene) {
+        setCloudStatus({
+          status: failedScene.status === "not-configured" ? "error" : failedScene.status,
+          reason: failedScene.reason,
         });
         return;
       }
 
       setCloudScenario(detail.data as ReplayScenario);
       setCloudDecisions(
-        frameResults
-          .filter((result): result is Extract<typeof result, { status: "ok" }> => result.status === "ok")
-          .map(result => result.data),
+        frameResults.map(result => {
+          if (result.decision.status !== "ok") throw new Error("decision result narrowed after fail-closed check");
+          return result.decision.data;
+        }),
+      );
+      setCloudScenes(
+        frameResults.map(result => {
+          if (result.scene.status !== "ok") throw new Error("scene result narrowed after fail-closed check");
+          return result.scene.data;
+        }),
       );
       setCloudStatus({ status: "ready" });
     })();
@@ -242,9 +268,14 @@ export function App({ apiClient: injectedClient }: AppProps = {}) {
     () => localScenario.frames.map((_, index) => buildDecisionCase(localScenario, index)),
     [localScenario],
   );
+  const localScenes = useMemo(
+    () => localScenario.frames.map((_, index) => buildReplayChartScene(localScenario, index)),
+    [localScenario],
+  );
 
   const scenario = cloudConfigured ? cloudScenario : localScenario;
   const decisions = cloudConfigured ? cloudDecisions : localDecisions;
+  const scenes = cloudConfigured ? cloudScenes : localScenes;
   const maxFrame = Math.max(0, (scenario?.frames.length ?? 1) - 1);
   const safeFrame = Math.min(frame, maxFrame);
   const decision = decisions[safeFrame];
@@ -363,7 +394,7 @@ export function App({ apiClient: injectedClient }: AppProps = {}) {
           <span>Valid structure and trade geometry. No validated pWin/EV is available for this setup.</span>
         </div> : null}
 
-        <PriceField decisions={decisions} frame={safeFrame} />
+        <PriceField decisions={decisions} scenes={scenes} frame={safeFrame} />
 
         <div className="replay-strip">
           <button onClick={() => setFrame(value => Math.max(0, value - 1))} disabled={safeFrame === 0}>PREV</button>
