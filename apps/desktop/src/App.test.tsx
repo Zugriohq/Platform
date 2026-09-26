@@ -197,6 +197,24 @@ describe("App decision source", () => {
     expect(api.calls.some((call) => call.path === `/v1/alpha/scenarios/${firstScenario.id}/frames/0/chart-scene`)).toBe(true);
   });
 
+  it("renders engine-owned regime and eligible strategy routes without deriving them in the UI", async () => {
+    const api = cloudApi();
+    await renderApp(createAlphaApiClient({ baseUrl: API, fetch: api.fetchImpl }));
+    await waitFor(() => heading() !== undefined, "cloud decision rendered");
+
+    expect(text()).toContain("CANONICAL REGIME");
+    expect(text()).toContain("UNAVAILABLE");
+    expect(text()).toContain("ELIGIBLE RESEARCH ROUTES");
+
+    await click("NEXT");
+    await click("NEXT");
+
+    expect(text()).toContain("TRENDING");
+    expect(text()).toContain("BOS RETEST");
+    expect(text()).toContain("UNVALIDATED CANDIDATE SET");
+    expect(text()).toContain("derived-alpha:canonical-regime:v2");
+  });
+
   it("fails closed when the scenario list carries non-validation metadata", async () => {
     const api = cloudApi((path) =>
       path === "/v1/alpha/scenarios"

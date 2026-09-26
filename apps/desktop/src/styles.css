@@ -45,3 +45,11 @@
 .record-status{margin-top:10px;padding:10px 14px;border:1px solid #222b34;border-radius:14px;background:#080b0f;color:#7f8a94;font:600 10px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere}
 .record-saved{color:#aeb7bf;border-color:#3b4650}
 .record-failed{color:#969fa7}
+
+.market-context{margin:0 0 18px;display:grid;grid-template-columns:minmax(180px,.8fr) 1px minmax(170px,.65fr) 1px minmax(300px,1.55fr);align-items:stretch;border-top:1px solid #1f2730;border-bottom:1px solid #1f2730;background:linear-gradient(90deg,rgba(255,255,255,.018),transparent 68%)}
+.market-context>div{min-width:0;padding:13px 16px 12px}
+.market-context>i{width:1px;background:#202832;margin:10px 0}
+.market-context span{display:block;color:#5f6b76;font:700 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em}
+.market-context strong{display:block;margin-top:7px;color:#d4dae0;font:700 9px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.035em;overflow-wrap:anywhere}
+.market-context small{display:block;margin-top:5px;color:#59646f;font:600 7px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em}
+.market-context-routes strong{color:#bec6cd}

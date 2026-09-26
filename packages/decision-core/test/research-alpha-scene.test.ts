@@ -10,6 +10,14 @@ describe("alpha engine-owned chart scene", () => {
 
     expect(scene.timeframe).toBe("FIXTURE_UNSPECIFIED");
     expect(scene.regimeLabel).toBeNull();
+    expect(scene.regimeEvidenceId).toBeNull();
+    expect(scene.regimeDefinitionId).toBeNull();
+    expect(scene.regimeKnownAt).toBeNull();
+    expect(scene.routeContext).toEqual({
+      status: "UNAVAILABLE",
+      families: [],
+      calibrationStatus: null,
+    });
     expect(scene.authority).toBe("RESEARCH_ONLY");
     expect(scene.liveCapitalAuthority).toBe(false);
 

@@ -79,6 +79,50 @@ describe("createAlphaApiClient", () => {
     });
   });
 
+  it("rejects malformed or causally impossible regime-route scene context", async () => {
+    const base = JSON.parse(JSON.stringify(buildReplayChartScene(staleEntryScenario, 4)));
+
+    const malformedRoute = JSON.parse(JSON.stringify(base));
+    malformedRoute.routeContext = {
+      status: "ROUTES_AVAILABLE",
+      families: ["BOS_RETEST"],
+      calibrationStatus: "UNVALIDATED_CANDIDATE_SET",
+    };
+    const routeFetch = fakeFetch(() => json(200, { meta: ALPHA_RESPONSE_META, data: malformedRoute }));
+    const routeResult = await createAlphaApiClient({
+      baseUrl: "https://api.zugrio.xyz",
+      fetch: routeFetch.impl,
+    }).getFrameChartScene(staleEntryScenario.id, 4);
+    expect(routeResult.status).toBe("rejected");
+
+    const partialRegime = JSON.parse(JSON.stringify(base));
+    partialRegime.regimeLabel = "TRENDING";
+    partialRegime.regimeEvidenceId = "regime-evidence";
+    partialRegime.regimeDefinitionId = null;
+    partialRegime.regimeKnownAt = base.evaluatedAt;
+    const regimeFetch = fakeFetch(() => json(200, { meta: ALPHA_RESPONSE_META, data: partialRegime }));
+    expect((await createAlphaApiClient({
+      baseUrl: "https://api.zugrio.xyz",
+      fetch: regimeFetch.impl,
+    }).getFrameChartScene(staleEntryScenario.id, 4)).status).toBe("rejected");
+
+    const futureRegime = JSON.parse(JSON.stringify(base));
+    futureRegime.regimeLabel = "TRENDING";
+    futureRegime.regimeEvidenceId = "regime-evidence";
+    futureRegime.regimeDefinitionId = "regime-definition";
+    futureRegime.regimeKnownAt = "2099-01-01T00:00:00Z";
+    futureRegime.routeContext = {
+      status: "NO_DECLARED_ROUTE",
+      families: [],
+      calibrationStatus: "UNVALIDATED_CANDIDATE_SET",
+    };
+    const futureFetch = fakeFetch(() => json(200, { meta: ALPHA_RESPONSE_META, data: futureRegime }));
+    expect((await createAlphaApiClient({
+      baseUrl: "https://api.zugrio.xyz",
+      fetch: futureFetch.impl,
+    }).getFrameChartScene(staleEntryScenario.id, 4)).status).toBe("rejected");
+  });
+
   it("rejects chart primitives whose geometry arrives from the future", async () => {
     const scene = JSON.parse(JSON.stringify(buildReplayChartScene(staleEntryScenario, 4)));
     scene.primitives[0].geometry.time = "2099-01-01T00:00:00Z";

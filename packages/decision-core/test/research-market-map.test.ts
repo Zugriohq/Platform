@@ -240,6 +240,12 @@ describe("research market map", () => {
     expect(wave?.visibility).toBe("DETAIL");
     expect(wave?.authorityEffect).toBe("NONE");
     expect(scene.liveCapitalAuthority).toBe(false);
+    expect(scene.strategyVersion).toBe("0.1.0");
+    expect(scene.regimeLabel).toBe("TRENDING");
+    expect(scene.regimeEvidenceId).toBe("regime-1");
+    expect(scene.regimeDefinitionId).toBe("canonical-regime:v1");
+    expect(scene.regimeKnownAt).toBe("2026-09-24T08:30:00Z");
+    expect(scene.routeContext.status).toBe("UNAVAILABLE");
   });
 
   it("rejects future market-map facts instead of drawing hindsight", () => {
