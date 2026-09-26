@@ -72,6 +72,28 @@ Use chromatic color only for real semantic states. Welcome/editorial emails shou
 
 ---
 
+
+## 4A. Curvature and shell geometry
+
+Zugrio email should feel modern and tactile, not boxed-in.
+
+Required geometry:
+- outer email shell: **24–28 px radius**;
+- primary editorial/key-art surfaces: **18–22 px radius**;
+- CTA: **full pill or 14–18 px radius**;
+- image/key-art corners must align with the shell geometry;
+- keep enough black field around the shell that curvature remains visible.
+
+Do not ship:
+- square outer shells;
+- sharp-corner promotional cards;
+- boxed sections that feel like a legacy newsletter;
+- radius inconsistency between desktop and mobile.
+
+Fallback note:
+some legacy email clients may flatten radius. The layout must still remain coherent without relying on radius for meaning.
+
+
 ## 5. Signature email graphic
 
 Use the **Decision Horizon** motif:
@@ -99,6 +121,22 @@ a safe live-text "ZUGRIO" fallback may be used until a raster wordmark is hosted
 Do not depend on SVG logo support for email.
 
 ---
+
+
+## 6A. Sender identity and inbox avatar
+
+The inbox sender identity is part of the brand experience.
+
+Production requirement:
+- send from a branded `@zugrio.xyz` address;
+- authenticate the sending domain;
+- use the Zugrio monogram/avatar on a black field as the sender-profile asset where the mail client/provider supports it;
+- use the actual Zugrio wordmark inside the email body, not a typed approximation when a robust hosted raster is available.
+
+Current provisional Gmail/Brevo sender is for testing only and must not be treated as the finished public identity.
+
+The avatar source is the Zugrio monogram centered on an obsidian/black field with safe margins for circular inbox crops.
+
 
 ## 7. Typography
 
