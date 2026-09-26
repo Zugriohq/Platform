@@ -24,6 +24,7 @@ describe("OpenAPI contract", () => {
       "/v1/alpha/scenarios",
       "/v1/alpha/scenarios/{scenarioId}",
       "/v1/alpha/scenarios/{scenarioId}/frames/{frameIndex}",
+      "/v1/alpha/scenarios/{scenarioId}/frames/{frameIndex}/chart-scene",
     ]);
   });
 });
