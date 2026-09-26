@@ -5,6 +5,7 @@ export interface EvidenceSnapshot {
   readonly price: number;
   readonly setupQualified: boolean;
   readonly locationQualified: boolean;
+  readonly retestObserved: boolean;
   readonly triggerQualified: boolean;
   readonly currentConditionsValid: boolean;
   readonly invalidated: boolean;

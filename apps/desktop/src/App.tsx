@@ -1,8 +1,18 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { alphaScenarios, buildDecisionCase, type ReplayScenario } from "@zugrio/decision-core";
 
-function EvidenceRow({ label, value }: { label: string; value: boolean }) {
-  return <div className="evidence-row"><span>{label}</span><strong>{value ? "QUALIFIES" : "NOT YET"}</strong></div>;
+function EvidenceRow({
+  label,
+  value,
+  trueLabel = "QUALIFIES",
+  falseLabel = "NOT YET",
+}: {
+  label: string;
+  value: boolean;
+  trueLabel?: string;
+  falseLabel?: string;
+}) {
+  return <div className="evidence-row"><span>{label}</span><strong>{value ? trueLabel : falseLabel}</strong></div>;
 }
 
 function PriceField({ scenario, frame }: { scenario: ReplayScenario; frame: number }) {
@@ -16,6 +26,7 @@ function PriceField({ scenario, frame }: { scenario: ReplayScenario; frame: numb
     const y = 220 - ((price - min) / range) * 170;
     return `${x},${y}`;
   });
+  const current = points[points.length - 1];
 
   return <div className="chart-shell">
     <div className="chart-grid" />
@@ -27,6 +38,11 @@ function PriceField({ scenario, frame }: { scenario: ReplayScenario; frame: numb
       })}
     </svg>
     <div className="chart-watermark">REPLAY / NOT LIVE DATA</div>
+    <div className="chart-evidence">
+      <span className={current?.retestObserved ? "evidence-chip on" : "evidence-chip"}>RETEST</span>
+      <span className={current?.triggerQualified ? "evidence-chip on" : "evidence-chip"}>TRIGGER</span>
+      <span className={current?.currentConditionsValid ? "evidence-chip on" : "evidence-chip stale"}>RECHECK</span>
+    </div>
   </div>;
 }
 
@@ -71,10 +87,10 @@ export function App() {
       </div>
 
       <div className="state-rail">
-        {(["FORMING","READY","TRIGGERED","PASS"] as const).map((state,index) => <>
-          <span key={state} className={decision.state === state ? "state-mark active" : "state-mark"}>{state}</span>
-          {index < 3 ? <i key={state+"-line"} /> : null}
-        </>)}
+        {(["FORMING","READY","TRIGGERED","PASS"] as const).map((state,index) => <Fragment key={state}>
+          <span className={decision.state === state ? "state-mark active" : "state-mark"}>{state}</span>
+          {index < 3 ? <i /> : null}
+        </Fragment>)}
       </div>
 
       <PriceField scenario={scenario} frame={frame} />
@@ -92,8 +108,9 @@ export function App() {
           <h2>{decision.reason}</h2>
           <EvidenceRow label="Setup" value={decision.current.setupQualified}/>
           <EvidenceRow label="Location" value={decision.current.locationQualified}/>
+          <EvidenceRow label="Retest observation" value={decision.current.retestObserved} trueLabel="OBSERVED" falseLabel="NOT SEEN"/>
           <EvidenceRow label="Entry trigger" value={decision.current.triggerQualified}/>
-          <EvidenceRow label="Current conditions" value={decision.current.currentConditionsValid}/>
+          <EvidenceRow label="Current conditions" value={decision.current.currentConditionsValid} trueLabel="CURRENT" falseLabel="STALE"/>
           <div className="current-note">{decision.current.note}</div>
         </section>
 
@@ -109,7 +126,7 @@ export function App() {
         </section>
       </div>
 
-      <footer className="validation-foot"><strong>Validation fixture.</strong> No live market data, performance claim, trading permission or broker execution is present in this build.</footer>
+      <footer className="validation-foot"><strong>Validation fixture.</strong> Retest is recorded as evidence, not permission. No live market data, performance claim, trading permission or broker execution is present in this build.</footer>
     </section>
   </main>;
 }
