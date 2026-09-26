@@ -5,6 +5,7 @@ import {
   ALPHA_RESPONSE_META,
   type AlphaEnvelope,
   type DecisionCase,
+  type EngineChartScene,
   type MaterializeDecisionCaseRequest,
   type MaterializeDecisionCaseResult,
   type PersistedDecisionCase,
@@ -65,6 +66,25 @@ export class AlphaController {
     const decision = this.catalog.frameDecisionCase(scenarioId, Number(frameIndexParam));
     if (!decision) throw new NotFoundException(`Frame ${frameIndexParam} of scenario "${scenarioId}" not found`);
     return wrap(decision);
+  }
+
+  @Get("scenarios/:scenarioId/frames/:frameIndex/chart-scene")
+  @ApiOperation({ summary: "Engine-owned semantic chart scene for one replay frame" })
+  @ApiParam({ name: "scenarioId", type: String })
+  @ApiParam({ name: "frameIndex", type: "integer", description: "Zero-based replay frame index" })
+  @ApiOkResponse({ schema: envelope(schemas.chartScene) })
+  @ApiBadRequestResponse({ schema: schemas.error })
+  @ApiNotFoundResponse({ schema: schemas.error })
+  getFrameChartScene(
+    @Param("scenarioId") scenarioId: string,
+    @Param("frameIndex") frameIndexParam: string,
+  ): AlphaEnvelope<EngineChartScene> {
+    if (!NON_NEGATIVE_INTEGER.test(frameIndexParam)) {
+      throw new BadRequestException("frameIndex must be a non-negative integer");
+    }
+    const scene = this.catalog.frameChartScene(scenarioId, Number(frameIndexParam));
+    if (!scene) throw new NotFoundException(`Frame ${frameIndexParam} of scenario "${scenarioId}" not found`);
+    return wrap(scene);
   }
 
   @Post("decision-cases")

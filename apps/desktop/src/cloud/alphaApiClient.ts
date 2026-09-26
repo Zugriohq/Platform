@@ -14,6 +14,7 @@ import {
   isAlphaResponseMeta,
   type AlphaResponseMeta,
   type DecisionCase,
+  type EngineChartScene,
   type HealthStatus,
   type MaterializeDecisionCaseRequest,
   type MaterializeDecisionCaseResult,
@@ -39,6 +40,7 @@ export interface AlphaApiClient {
   listScenarios(): Promise<CloudResult<ScenarioSummary[]>>;
   getScenario(scenarioId: string): Promise<CloudResult<ScenarioDetail>>;
   getFrameDecisionCase(scenarioId: string, frameIndex: number): Promise<CloudResult<DecisionCase>>;
+  getFrameChartScene(scenarioId: string, frameIndex: number): Promise<CloudResult<EngineChartScene>>;
   materializeDecisionCase(request: MaterializeDecisionCaseRequest): Promise<CloudResult<MaterializeDecisionCaseResult>>;
   getDecisionCase(caseId: string): Promise<CloudResult<PersistedDecisionCase>>;
 }
@@ -118,6 +120,7 @@ export function createAlphaApiClient(options: AlphaApiClientOptions): AlphaApiCl
     listScenarios: () => call(ALPHA_API_PATHS.scenarios()),
     getScenario: (scenarioId) => call(ALPHA_API_PATHS.scenario(scenarioId)),
     getFrameDecisionCase: (scenarioId, frameIndex) => call(ALPHA_API_PATHS.frameDecisionCase(scenarioId, frameIndex)),
+    getFrameChartScene: (scenarioId, frameIndex) => call(ALPHA_API_PATHS.frameChartScene(scenarioId, frameIndex)),
     materializeDecisionCase: (request) =>
       call(ALPHA_API_PATHS.decisionCases(), {
         method: "POST",

@@ -2,8 +2,10 @@ import { Injectable } from "@nestjs/common";
 import {
   alphaScenarios,
   buildDecisionCase,
+  buildReplayChartScene,
   bundleIdentityKey,
   type DecisionCase,
+  type EngineChartScene,
   type ReplayScenario,
 } from "@zugrio/decision-core";
 import type { ScenarioDetail, ScenarioSummary } from "@zugrio/alpha-api-contract";
@@ -36,6 +38,12 @@ export class ScenarioCatalog {
     const scenario = this.find(scenarioId);
     if (!scenario || frameIndex >= scenario.frames.length) return undefined;
     return buildDecisionCase(scenario, frameIndex);
+  }
+
+  frameChartScene(scenarioId: string, frameIndex: number): EngineChartScene | undefined {
+    const scenario = this.find(scenarioId);
+    if (!scenario || frameIndex >= scenario.frames.length) return undefined;
+    return buildReplayChartScene(scenario, frameIndex);
   }
 }
 

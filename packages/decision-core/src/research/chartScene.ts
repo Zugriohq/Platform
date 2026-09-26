@@ -23,7 +23,11 @@ export type ChartSemanticLayer =
 export interface EngineChartPrimitive {
   readonly primitiveId: string;
   readonly layer: ChartSemanticLayer;
-  readonly concept: MarketStructureConcept | "REGIME";
+  readonly concept:
+    | MarketStructureConcept
+    | "REGIME"
+    | "STRUCTURAL_LIFECYCLE"
+    | "ENTRY_STATUS";
   readonly maturity: ResearchConceptMaturity | "DETERMINISTIC_FACT";
   readonly scale: StructureScale | null;
   readonly label: string;
@@ -42,6 +46,7 @@ export interface EngineChartPrimitive {
     | "IMBALANCE"
     | "SETUP"
     | "PATTERN"
+    | "ENTRY"
     | "ADVISORY";
   readonly authorityEffect: "NONE";
 }

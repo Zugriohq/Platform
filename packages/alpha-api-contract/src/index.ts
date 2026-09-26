@@ -12,6 +12,7 @@ import type {
   DecisionOutcome,
   EvidenceEvent,
   EvidenceSnapshot,
+  EngineChartScene,
   ReplayFrame,
   StructuralState,
 } from "@zugrio/decision-core";
@@ -24,6 +25,7 @@ export type {
   DecisionOutcome,
   EvidenceEvent,
   EvidenceSnapshot,
+  EngineChartScene,
   ReplayFrame,
   StructuralState,
 };
@@ -146,6 +148,8 @@ export const ALPHA_API_PATHS = {
   scenario: (scenarioId: string) => `/v1/alpha/scenarios/${encodeURIComponent(scenarioId)}`,
   frameDecisionCase: (scenarioId: string, frameIndex: number) =>
     `/v1/alpha/scenarios/${encodeURIComponent(scenarioId)}/frames/${frameIndex}`,
+  frameChartScene: (scenarioId: string, frameIndex: number) =>
+    `/v1/alpha/scenarios/${encodeURIComponent(scenarioId)}/frames/${frameIndex}/chart-scene`,
   decisionCases: () => "/v1/alpha/decision-cases",
   decisionCase: (caseId: string) => `/v1/alpha/decision-cases/${encodeURIComponent(caseId)}`,
 } as const;
