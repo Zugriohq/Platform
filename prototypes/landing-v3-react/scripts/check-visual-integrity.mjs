@@ -18,13 +18,38 @@ function forbidText(source, needle, message) {
 requireText(css, "--max:1332px", "The landing page must keep the shared 1332px content rail.");
 requireText(
   css,
-  ".hero-headline-frame{grid-area:1/1;display:flex;flex-direction:column;align-items:center",
-  "The hero headline must remain a deliberate centered two-line composition."
+  ".hero-headline-window",
+  "The hero must retain its clipped rolling-headline viewport."
 );
 requireText(
   app,
-  'const HERO_HEADLINE = ["Don’t trade the signal.", "Trade what’s still true."];',
-  "The approved static hero claim changed or was removed."
+  'const HERO_HEADLINES = [',
+  "The rolling hero headline set was removed."
+);
+requireText(
+  app,
+  '["Don’t trade the signal.", "Trade what’s still true."]',
+  "The primary Zugrio hero claim changed or was removed."
+);
+requireText(
+  app,
+  '["The market changes.", "Your decision should keep up."]',
+  "The secondary rolling hero claim changed or was removed."
+);
+requireText(
+  app,
+  "setHeadlineIndex((current) => (current + 1) % HERO_HEADLINES.length)",
+  "The hero headline rotation logic was removed."
+);
+requireText(
+  app,
+  '<span>DECISION QUALITY / THE POINT</span>',
+  "The Decision Quality conclusion lost its structured transition label."
+);
+requireText(
+  css,
+  ".dq-close>strong",
+  "The Decision Quality closing statement lost its canonical conclusion styling."
 );
 requireText(
   app,
