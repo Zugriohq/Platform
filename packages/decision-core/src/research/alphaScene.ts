@@ -80,7 +80,7 @@ export function buildReplayChartScene(
     timeframe: scenario.bundle.identity.scope.horizon,
     evaluatedAt: decision.current.evaluatedAt,
     strategyId: scenario.bundle.strategy,
-    regimeLabel: decision.current.regimeStatus,
+    regimeLabel: null,
     primitives,
     authority: "RESEARCH_ONLY",
     liveCapitalAuthority: false,
