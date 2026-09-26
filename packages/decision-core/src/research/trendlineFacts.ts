@@ -115,6 +115,7 @@ export function deriveConfirmedTrendlines(input:{
         minimumAnchorSeparationMs:input.definition.minimumAnchorSeparationMs,
       });
       if(!candidate) continue;
+      if(pointTime(third)-pointTime(second)<input.definition.minimumAnchorSeparationMs) continue;
 
       const confirmed=confirmTrendlineWithPivot(candidate,third,{
         definitionId:input.definition.definitionId,
@@ -248,6 +249,7 @@ export function deriveTrendlineInteractions(input:{
   readonly definition:ResearchTrendlineInteractionDefinition;
 }):readonly ResearchMarketStructureFact[]{
   const evaluatedAt=epoch(input.evaluatedAt,"evaluatedAt");
+  if(epoch(input.trendline.knownAt,"trendline.knownAt")>evaluatedAt) return [];
   const bars=input.bars
     .filter(bar=>epoch(bar.knownAt,"bar.knownAt")<=evaluatedAt)
     .sort((a,b)=>{
