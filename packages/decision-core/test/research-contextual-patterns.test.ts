@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   assessPatternContext,
-  buildTrendlineFromPivots,
+  buildTrendlineCandidateFromPivots,
+  confirmTrendlineWithPivot,
   detectCandlestickMorphology,
   type CandlestickMorphologyDefinition,
   type ResearchMarketStructureFact,
@@ -153,25 +154,62 @@ describe("contextual pattern ontology", () => {
     expect(facts.every(item => item.authorityEffect === "NONE")).toBe(true);
   });
 
-  it("builds trendline geometry only from two confirmed same-scale pivots", () => {
-    const first = contextFact("low-1", "SWING_LOW", "2026-09-24T08:05:01Z");
+  it("keeps a two-anchor line as a candidate until a third confirmed pivot agrees", () => {
+    const first = {
+      ...contextFact("low-1", "SWING_LOW", "2026-09-24T08:05:01Z"),
+      geometry: { type: "POINT", time: "2026-09-24T08:05:00Z", price: 1.1000 } as const,
+    };
     const second = {
       ...contextFact("low-2", "SWING_LOW", "2026-09-24T08:20:01Z"),
       geometry: { type: "POINT", time: "2026-09-24T08:20:00Z", price: 1.1010 } as const,
     };
-    const anchoredFirst = {
-      ...first,
-      geometry: { type: "POINT", time: "2026-09-24T08:05:00Z", price: 1.1000 } as const,
+    const third = {
+      ...contextFact("low-3", "SWING_LOW", "2026-09-24T08:35:01Z"),
+      geometry: { type: "POINT", time: "2026-09-24T08:35:00Z", price: 1.1020 } as const,
     };
 
-    const line = buildTrendlineFromPivots(anchoredFirst, second, {
-      definitionId: "trendline:two-pivot:v1",
+    const candidate = buildTrendlineCandidateFromPivots(first, second, {
+      definitionId: "trendline:two-anchor:v1",
       minimumAnchorSeparationMs: 10 * 60 * 1000,
     });
 
-    expect(line?.concept).toBe("TRENDLINE_SUPPORT");
-    expect(line?.geometry.type).toBe("PATH");
-    expect(line?.authorityEffect).toBe("NONE");
+    expect(candidate?.side).toBe("SUPPORT");
+    expect(candidate?.authority).toBe("RESEARCH_ONLY");
+
+    const confirmed = confirmTrendlineWithPivot(candidate!, third, {
+      definitionId: "trendline:third-anchor:v1",
+      anchorTolerance: 0.0001,
+    });
+
+    expect(confirmed?.concept).toBe("TRENDLINE_SUPPORT");
+    expect(confirmed?.maturity).toBe("RESEARCH_DERIVED");
+    expect(confirmed?.geometry.type).toBe("PATH");
+    expect(confirmed?.authorityEffect).toBe("NONE");
+  });
+
+  it("does not confirm a trendline when the third pivot misses the declared tolerance", () => {
+    const first = {
+      ...contextFact("low-1", "SWING_LOW", "2026-09-24T08:05:01Z"),
+      geometry: { type: "POINT", time: "2026-09-24T08:05:00Z", price: 1.1000 } as const,
+    };
+    const second = {
+      ...contextFact("low-2", "SWING_LOW", "2026-09-24T08:20:01Z"),
+      geometry: { type: "POINT", time: "2026-09-24T08:20:00Z", price: 1.1010 } as const,
+    };
+    const offLine = {
+      ...contextFact("low-off", "SWING_LOW", "2026-09-24T08:35:01Z"),
+      geometry: { type: "POINT", time: "2026-09-24T08:35:00Z", price: 1.1040 } as const,
+    };
+
+    const candidate = buildTrendlineCandidateFromPivots(first, second, {
+      definitionId: "trendline:two-anchor:v1",
+      minimumAnchorSeparationMs: 0,
+    });
+
+    expect(confirmTrendlineWithPivot(candidate!, offLine, {
+      definitionId: "trendline:third-anchor:v1",
+      anchorTolerance: 0.0002,
+    })).toBeNull();
   });
 
   it("refuses arbitrary cross-type anchors for a trendline", () => {
@@ -184,7 +222,7 @@ describe("contextual pattern ontology", () => {
       geometry: { type: "POINT", time: "2026-09-24T08:20:00Z", price: 1.1000 } as const,
     };
 
-    expect(buildTrendlineFromPivots(high, low, {
+    expect(buildTrendlineCandidateFromPivots(high, low, {
       definitionId: "trendline:v1",
       minimumAnchorSeparationMs: 0,
     })).toBeNull();

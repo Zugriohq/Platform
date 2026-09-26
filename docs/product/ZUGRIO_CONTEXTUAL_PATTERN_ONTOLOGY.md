@@ -90,11 +90,13 @@ This is not a canonical Zugrio concept yet because the phrase is used inconsiste
 Trendlines are engine geometry, not freehand UI analysis.
 
 Current research contract:
-- anchors must already be confirmed pivots;
+- the first two anchors must already be confirmed same-side pivots and create only a **candidate line**;
+- a third confirmed same-side pivot must agree with the projected line inside a versioned tolerance before a trendline fact is emitted;
 - anchor scale/timeframe must match;
-- minimum anchor separation is versioned;
-- the line itself has no support/resistance authority;
-- later touch/hold/break/reclaim facts must be observed separately.
+- minimum anchor separation and confirmation tolerance are versioned;
+- the confirmed line still has no trade authority;
+- later touch/hold/sweep/close-break/reclaim facts must be observed separately;
+- once an invalidation policy says a confirmed line is broken, later price cannot silently resurrect the same line identity.
 
 Future line-fitting/search algorithms may propose candidates, but proposal and confirmation remain separate.
 

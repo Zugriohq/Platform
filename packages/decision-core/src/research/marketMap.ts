@@ -330,16 +330,37 @@ export interface TrendlineDefinition {
   readonly minimumAnchorSeparationMs: number;
 }
 
+export interface ResearchTrendlineCandidate {
+  readonly candidateId: string;
+  readonly side: "SUPPORT" | "RESISTANCE";
+  readonly scale: StructureScale | null;
+  readonly timeframe: string;
+  readonly definitionId: string;
+  readonly anchorFactIds: readonly [string, string];
+  readonly anchorEvidenceIds: readonly string[];
+  readonly knownAt: string;
+  readonly geometry: Extract<MarketMapGeometry, { type: "PATH" }>;
+  readonly authority: "RESEARCH_ONLY";
+}
+
+export interface TrendlineConfirmationDefinition {
+  readonly definitionId: string;
+  /**
+   * Absolute price tolerance supplied by a versioned strategy/profile rule.
+   * The engine does not choose or tune this number.
+   */
+  readonly anchorTolerance: number;
+}
+
 /**
- * Builds deterministic trendline geometry only from two already-confirmed pivots.
- * It does not search arbitrary points, score a line, or treat the line as support/
- * resistance authority. A later touch/hold/break must be observed separately.
+ * Two confirmed same-side pivots define candidate geometry only.
+ * The candidate is not yet a confirmed trendline fact.
  */
-export function buildTrendlineFromPivots(
+export function buildTrendlineCandidateFromPivots(
   first: ResearchMarketStructureFact,
   second: ResearchMarketStructureFact,
   definition: TrendlineDefinition,
-): ResearchMarketStructureFact | null {
+): ResearchTrendlineCandidate | null {
   if (!definition.definitionId) throw new Error("trendline definitionId must be non-empty");
   if (!Number.isFinite(definition.minimumAnchorSeparationMs) || definition.minimumAnchorSeparationMs < 0) {
     throw new Error("minimumAnchorSeparationMs must be finite and >= 0");
@@ -354,26 +375,84 @@ export function buildTrendlineFromPivots(
   if (secondTime <= firstTime) return null;
   if (secondTime - firstTime < definition.minimumAnchorSeparationMs) return null;
 
-  const concept = first.concept === "SWING_LOW" ? "TRENDLINE_SUPPORT" : "TRENDLINE_RESISTANCE";
-  const side = first.concept === "SWING_LOW" ? "BUY" : "SELL";
+  const side = first.concept === "SWING_LOW" ? "SUPPORT" : "RESISTANCE";
 
   return {
-    factId: `trendline:${definition.definitionId}:${first.factId}:${second.factId}`,
-    concept,
-    maturity: "DETERMINISTIC_FACT",
+    candidateId: `trendline-candidate:${definition.definitionId}:${first.factId}:${second.factId}`,
+    side,
     scale: first.scale,
     timeframe: first.timeframe,
-    side,
+    definitionId: definition.definitionId,
+    anchorFactIds: [first.factId, second.factId],
+    anchorEvidenceIds: [...new Set([...first.sourceEvidenceIds, ...second.sourceEvidenceIds])],
     knownAt: epoch(first.knownAt, "first.knownAt") >= epoch(second.knownAt, "second.knownAt")
       ? first.knownAt
       : second.knownAt,
-    definitionId: definition.definitionId,
-    sourceEvidenceIds: [...new Set([...first.sourceEvidenceIds, ...second.sourceEvidenceIds])],
     geometry: {
       type: "PATH",
       points: [
         { time: first.geometry.time, price: first.geometry.price },
         { time: second.geometry.time, price: second.geometry.price },
+      ],
+    },
+    authority: "RESEARCH_ONLY",
+  };
+}
+
+/**
+ * A third confirmed same-side pivot must agree with the candidate line inside an
+ * explicit profile-owned tolerance before the engine emits a trendline fact.
+ */
+export function confirmTrendlineWithPivot(
+  candidate: ResearchTrendlineCandidate,
+  confirmingPivot: ResearchMarketStructureFact,
+  definition: TrendlineConfirmationDefinition,
+): ResearchMarketStructureFact | null {
+  if (!definition.definitionId) throw new Error("trendline confirmation definitionId must be non-empty");
+  if (!Number.isFinite(definition.anchorTolerance) || definition.anchorTolerance < 0) {
+    throw new Error("anchorTolerance must be finite and >= 0");
+  }
+  if (confirmingPivot.geometry.type !== "POINT") return null;
+  if (confirmingPivot.scale !== candidate.scale || confirmingPivot.timeframe !== candidate.timeframe) return null;
+
+  const requiredConcept = candidate.side === "SUPPORT" ? "SWING_LOW" : "SWING_HIGH";
+  if (confirmingPivot.concept !== requiredConcept) return null;
+
+  const first = candidate.geometry.points[0];
+  const second = candidate.geometry.points[1];
+  if (!first || !second) return null;
+
+  const firstTime = epoch(first.time, "trendline first anchor time");
+  const secondTime = epoch(second.time, "trendline second anchor time");
+  const thirdTime = epoch(confirmingPivot.geometry.time, "confirming pivot time");
+  if (thirdTime <= secondTime) return null;
+
+  const slope = (second.price - first.price) / (secondTime - firstTime);
+  const expected = first.price + slope * (thirdTime - firstTime);
+  if (Math.abs(confirmingPivot.geometry.price - expected) > definition.anchorTolerance) return null;
+
+  const concept = candidate.side === "SUPPORT" ? "TRENDLINE_SUPPORT" : "TRENDLINE_RESISTANCE";
+
+  return {
+    factId: `trendline:${definition.definitionId}:${candidate.candidateId}:${confirmingPivot.factId}`,
+    concept,
+    maturity: "RESEARCH_DERIVED",
+    scale: candidate.scale,
+    timeframe: candidate.timeframe,
+    side: candidate.side === "SUPPORT" ? "BUY" : "SELL",
+    knownAt: epoch(candidate.knownAt, "candidate.knownAt") >= epoch(confirmingPivot.knownAt, "confirmingPivot.knownAt")
+      ? candidate.knownAt
+      : confirmingPivot.knownAt,
+    definitionId: definition.definitionId,
+    sourceEvidenceIds: [...new Set([...candidate.anchorEvidenceIds, ...confirmingPivot.sourceEvidenceIds])],
+    geometry: {
+      type: "PATH",
+      points: [
+        ...candidate.geometry.points,
+        {
+          time: confirmingPivot.geometry.time,
+          price: confirmingPivot.geometry.price,
+        },
       ],
     },
     label: concept.replaceAll("_", " "),
