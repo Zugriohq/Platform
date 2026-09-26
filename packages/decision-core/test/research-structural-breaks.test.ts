@@ -120,6 +120,28 @@ function bar(
 }
 
 describe("research structural-break derivation", () => {
+  it("rejects malformed source/level identities instead of emitting unstable break IDs", () => {
+    const source = {
+      ...bar("m5:bad-id",1.0995,1.1010,1.0990,1.1005),
+      evidenceId:"",
+    };
+    expect(() => detect(
+      level("high-bad-source","SWING_HIGH",1.1000),
+      source,
+      closeBreak,
+    )).toThrow(/immutable evidenceId/);
+
+    const malformedLevel = {
+      ...level("high-bad-level","SWING_HIGH",1.1000),
+      sourceEvidenceIds:[],
+    };
+    expect(() => detect(
+      malformedLevel,
+      bar("m5:0810",1.0995,1.1010,1.0990,1.1005),
+      closeBreak,
+    )).toThrow(/level identity\/provenance/);
+  });
+
   it("rejects overlapping profile rules instead of letting array order decide break semantics", () => {
     const ambiguous: ResearchStructuralBreakDefinition = {
       ...closeBreak,
@@ -145,7 +167,7 @@ describe("research structural-break derivation", () => {
     expect(first.status).toBe("BREAK_OBSERVED");
     expect(first.events).toEqual(second.events);
     expect(first.events[0]?.direction).toBe("UP");
-    expect(first.events[0]?.breakId).toContain("high-1:m5:0810:UP:CLOSE_BEYOND");
+    expect(first.events[0]?.breakId).toContain("high-1:m5:0810:evidence:m5:0810:UP:CLOSE_BEYOND");
     expect(first.events[0]?.authorityEffect).toBe("NONE");
     expect(first.events[0]?.sourceBarEvidenceId).toBe(source.evidenceId);
     expect(first.events[0]?.levelStateEvidenceId).toBe(activeState(swingHigh.factId).evidenceId);
@@ -174,6 +196,30 @@ describe("research structural-break derivation", () => {
     );
     expect(result.status).toBe("NO_BREAK");
     expect(result.reasons).toContain("BAR_NOT_CLOSED_FOR_CLOSE_BREAK");
+  });
+
+  it("gives distinct immutable identities to evolving intrabar touch evidence", () => {
+    const swingHigh = level("high-intrabar-identity","SWING_HIGH",1.1000);
+    const early = bar(
+      "m5:forming",
+      1.0995,1.1005,1.0990,1.0997,
+      "2026-09-24T08:06:00Z",
+      "2026-09-24T08:10:00Z",
+      "INCOMPLETE",
+    );
+    const later = {
+      ...early,
+      evidenceId:"evidence:m5:forming:update-2",
+      high:1.1010,
+      knownAt:"2026-09-24T08:07:00Z",
+    };
+
+    const first = detect(swingHigh, early, touchBreak).events[0]!;
+    const second = detect(swingHigh, later, touchBreak).events[0]!;
+
+    expect(first.sourceBarId).toBe(second.sourceBarId);
+    expect(first.breakId).not.toBe(second.breakId);
+    expect(first.observedPrice).not.toBe(second.observedPrice);
   });
 
   it("allows an explicit touch-based profile to observe a causal intrabar touch", () => {

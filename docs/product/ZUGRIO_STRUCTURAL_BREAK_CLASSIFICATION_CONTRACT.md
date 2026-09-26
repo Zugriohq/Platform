@@ -13,7 +13,7 @@ This avoids making one community's vocabulary a universal hidden rule.
 ## Neutral break event
 
 The neutral event records:
-- stable break identity;
+- stable break identity bound to the immutable point-in-time bar evidence snapshot;
 - UP/DOWN direction;
 - CLOSE_BEYOND or TOUCH_BEYOND mode;
 - broken level identity/concept/scale/timeframe;
@@ -68,3 +68,10 @@ All outputs remain RESEARCH_ONLY with authorityEffect NONE.
 The raw break preserves the break-bar evidence ID separately from the flattened provenance list. This matters because prior structural bias may legitimately share older swing/level evidence, but it may **not** be manufactured from the break bar itself.
 
 The classifier therefore rejects only circular break-bar bias evidence; it does not incorrectly reject legitimate shared historical context.
+
+
+## Intrabar identity
+
+`sourceBarId` identifies the candle slot. `sourceBarEvidenceId` identifies an immutable point-in-time observation of that slot.
+
+For TOUCH_BEYOND research, two observations of the same forming candle can have different highs/lows. They therefore must not share one mutable break ID. Raw break identity includes the immutable bar evidence ID, so later intrabar observations append new facts instead of rewriting old ones.

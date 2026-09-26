@@ -217,6 +217,12 @@ export function detectStructuralBreak(
 ): ResearchStructuralBreakAssessment {
   validateBreakDefinition(definition);
   validateResearchStructureBar(bar);
+  if (!bar.sourceBarId || !bar.evidenceId) {
+    throw new Error("break source bar requires sourceBarId and immutable evidenceId");
+  }
+  if (!level.factId || !level.definitionId || level.sourceEvidenceIds.length === 0) {
+    throw new Error("broken level identity/provenance must be complete");
+  }
 
   const eligibleRule = definition.eligibleLevels.find(rule =>
     rule.concept === level.concept && rule.allowedScales.includes(level.scale),
@@ -240,6 +246,13 @@ export function detectStructuralBreak(
       authority: "RESEARCH_ONLY",
       liveCapitalAuthority: false,
     };
+  }
+  if (
+    !Number.isFinite(bounds.low) ||
+    !Number.isFinite(bounds.high) ||
+    bounds.low > bounds.high
+  ) {
+    throw new Error("broken level geometry must contain finite ordered prices");
   }
 
   const levelKnownAt = epoch(level.knownAt, "level.knownAt");
@@ -374,7 +387,7 @@ export function detectStructuralBreak(
 
   if (upObserved && eligibleRule.allowedDirections.includes("UP")) {
     events.push({
-      breakId: `structural-break:${definition.definitionId}:${level.factId}:${bar.sourceBarId}:UP:${definition.mode}`,
+      breakId: `structural-break:${definition.definitionId}:${level.factId}:${bar.sourceBarId}:${bar.evidenceId}:UP:${definition.mode}`,
       direction: "UP",
       mode: definition.mode,
       levelFactId: level.factId,
@@ -397,7 +410,7 @@ export function detectStructuralBreak(
 
   if (downObserved && eligibleRule.allowedDirections.includes("DOWN")) {
     events.push({
-      breakId: `structural-break:${definition.definitionId}:${level.factId}:${bar.sourceBarId}:DOWN:${definition.mode}`,
+      breakId: `structural-break:${definition.definitionId}:${level.factId}:${bar.sourceBarId}:${bar.evidenceId}:DOWN:${definition.mode}`,
       direction: "DOWN",
       mode: definition.mode,
       levelFactId: level.factId,
