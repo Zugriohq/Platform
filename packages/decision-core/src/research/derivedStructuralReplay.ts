@@ -434,10 +434,26 @@ function deriveImbalanceContextAt(
     if (!fvg) continue;
     add(fvg);
 
+    let revisitRank = 0;
     for (let revisitIndex = index + 1; revisitIndex < knownBars.length; revisitIndex += 1) {
       const revisitBar = knownBars[revisitIndex];
       if (!revisitBar) continue;
-      add(assessFvgRevisit(fvg, revisitBar, fvgRevisitDefinition).fact);
+
+      const assessment = assessFvgRevisit(fvg, revisitBar, fvgRevisitDefinition);
+      const rank =
+        assessment.status === "FULL_FILL"
+          ? 3
+          : assessment.status === "PARTIAL_FILL"
+            ? 2
+            : assessment.status === "TOUCHED"
+              ? 1
+              : 0;
+
+      if (rank > revisitRank) {
+        add(assessment.fact);
+        revisitRank = rank;
+      }
+      if (assessment.status === "FULL_FILL") break;
     }
   }
 
