@@ -75,6 +75,39 @@ describe("alpha API (memory persistence)", () => {
     });
   });
 
+  it("returns causal liquidity and imbalance primitives through the cloud chart-scene route", async () => {
+    const beforeEqualHigh = await api.request(
+      `/v1/alpha/scenarios/${DERIVED_STRUCTURAL_SCENARIO_ID}/frames/5/chart-scene`,
+    );
+    expect(beforeEqualHigh.status).toBe(200);
+    expect(beforeEqualHigh.body.data.primitives.some((item: { concept: string }) =>
+      item.concept === "EQUAL_HIGHS"
+    )).toBe(false);
+
+    const equalHigh = await api.request(
+      `/v1/alpha/scenarios/${DERIVED_STRUCTURAL_SCENARIO_ID}/frames/6/chart-scene`,
+    );
+    expect(equalHigh.status).toBe(200);
+    expect(equalHigh.body.data.primitives.some((item: { concept: string }) =>
+      item.concept === "EQUAL_HIGHS"
+    )).toBe(true);
+    expect(equalHigh.body.data.primitives.some((item: { concept: string }) =>
+      item.concept === "FVG"
+    )).toBe(true);
+
+    const swept = await api.request(
+      `/v1/alpha/scenarios/${DERIVED_STRUCTURAL_SCENARIO_ID}/frames/7/chart-scene`,
+    );
+    expect(swept.status).toBe(200);
+    expect(swept.body.meta).toEqual(ALPHA_RESPONSE_META);
+    expect(swept.body.data.primitives.some((item: { concept: string; label: string }) =>
+      item.concept === "LIQUIDITY_SWEEP" && item.label === "HIGH SWEEP / RECLAIM"
+    )).toBe(true);
+    expect(swept.body.data.primitives.every((item: { authorityEffect: string }) =>
+      item.authorityEffect === "NONE"
+    )).toBe(true);
+  });
+
   it("returns PASS as an outcome while preserving structural readiness when the entry goes stale", async () => {
     const { body } = await api.request(`/v1/alpha/scenarios/${staleEntryScenario.id}/frames/6`);
     expect(body.data.structuralState).toBe("STRUCTURAL_READY");
