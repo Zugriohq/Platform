@@ -133,6 +133,7 @@ function isEngineChartScenePayload(value: unknown): value is EngineChartScene {
     !(value.regimeEvidenceId === null || isNonEmptyString(value.regimeEvidenceId)) ||
     !(value.regimeDefinitionId === null || isNonEmptyString(value.regimeDefinitionId)) ||
     !(value.regimeKnownAt === null || isIsoTime(value.regimeKnownAt)) ||
+    !isRecord(value.regimeContext) ||
     !isRecord(value.routeContext) ||
     !Array.isArray(value.primitives)
   ) {
@@ -140,6 +141,18 @@ function isEngineChartScenePayload(value: unknown): value is EngineChartScene {
   }
 
   const sceneTime = Date.parse(value.evaluatedAt);
+  const regimeStatuses = ["CLASSIFIED","UNCERTAIN","UNAVAILABLE"] as const;
+  if (
+    !oneOf(value.regimeContext.status, regimeStatuses) ||
+    !(value.regimeContext.measurementId === null || isNonEmptyString(value.regimeContext.measurementId)) ||
+    !(value.regimeContext.profileId === null || isNonEmptyString(value.regimeContext.profileId)) ||
+    !(value.regimeContext.profileVersion === null || isNonEmptyString(value.regimeContext.profileVersion)) ||
+    !isStringArray(value.regimeContext.matchingRuleIds) ||
+    !isStringArray(value.regimeContext.reasons)
+  ) {
+    return false;
+  }
+
   const routeStatuses = ["UNAVAILABLE","ROUTES_AVAILABLE","NO_DECLARED_ROUTE"] as const;
   const routeFamilies = [
     "BREAKOUT_CONTINUATION","BREAKOUT_RETEST","BOS_RETEST","CHOCH_RETEST","MSS_RETEST",
@@ -164,6 +177,25 @@ function isEngineChartScenePayload(value: unknown): value is EngineChartScene {
     value.regimeKnownAt !== null;
   if (hasRegime !== hasCompleteRegimeProvenance) return false;
   if (value.regimeKnownAt !== null && Date.parse(value.regimeKnownAt) > sceneTime) return false;
+
+  if (value.regimeContext.status === "CLASSIFIED") {
+    if (
+      !hasRegime ||
+      !isNonEmptyString(value.regimeContext.measurementId) ||
+      !isNonEmptyString(value.regimeContext.profileId) ||
+      !isNonEmptyString(value.regimeContext.profileVersion) ||
+      value.regimeContext.matchingRuleIds.length !== 1
+    ) return false;
+  } else {
+    if (hasRegime) return false;
+    if (value.regimeContext.status === "UNCERTAIN") {
+      if (
+        !isNonEmptyString(value.regimeContext.measurementId) ||
+        !isNonEmptyString(value.regimeContext.profileId) ||
+        !isNonEmptyString(value.regimeContext.profileVersion)
+      ) return false;
+    }
+  }
 
   if (!hasRegime) {
     if (
