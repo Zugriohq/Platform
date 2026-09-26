@@ -51,3 +51,12 @@ It never invents `confirmRoute`, invalidation, expiry or execution permission.
 ## Authority
 
 Every output remains `RESEARCH_ONLY`, `liveCapitalAuthority:false` and `authorityEffect:NONE`.
+
+
+## Identity and lineage
+
+A retest chain has one immutable `touchAnchorEvidenceId`: the evidence snapshot that established the first usable touch. Later hold attempts reference that fixed anchor plus their own immutable bar evidence.
+
+Retest IDs therefore stay bounded; they do not recursively embed the full preceding retest ID chain. `priorTouchId` remains an explicit immediate lineage pointer.
+
+Before a prior touch can confirm a later hold, Zugrio verifies that its break identity, direction, scale, timeframe, level price, touch-zone geometry and evidence roles all match the current break/profile.

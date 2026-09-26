@@ -144,7 +144,7 @@ describe("research post-break retest derivation", () => {
 
     const hold = derivePostBreakRetest({
       breakEvent:source,
-      bar:bar("m5:0815",1.1005,1.1012,1.1002,1.1008,15),
+      bar:bar("m5:0815",1.1005,1.1012,1.1003,1.1008,15),
       definition:laterBarRequired,
       priorTouch:touch.retest,
     });
@@ -156,7 +156,7 @@ describe("research post-break retest derivation", () => {
   it("records a physical touch without claiming a held retest when the close fails", () => {
     const result = derivePostBreakRetest({
       breakEvent:breakEvent("UP"),
-      bar:bar("m5:0810",1.1010,1.1011,1.0998,1.0997,10),
+      bar:bar("m5:0810",1.1010,1.1011,1.0996,1.0997,10),
       definition:sameBarAllowed,
     });
 
@@ -218,6 +218,78 @@ describe("research post-break retest derivation", () => {
 
     expect(first.retest?.sourceBarId).toBe(second.retest?.sourceBarId);
     expect(first.retest?.retestId).not.toBe(second.retest?.retestId);
+  });
+
+  it("keeps later retest IDs bounded by a fixed touch anchor instead of recursively embedding prior IDs", () => {
+    const source = breakEvent("UP");
+    const touch = derivePostBreakRetest({
+      breakEvent:source,
+      bar:bar("m5:0810",1.1010,1.1011,1.0999,1.1004,10),
+      definition:laterBarRequired,
+    });
+    const failedHold = derivePostBreakRetest({
+      breakEvent:source,
+      bar:bar("m5:0815",1.1005,1.1010,1.0997,1.0998,15),
+      definition:laterBarRequired,
+      priorTouch:touch.retest,
+    });
+    const held = derivePostBreakRetest({
+      breakEvent:source,
+      bar:bar("m5:0820",1.1006,1.1012,1.1003,1.1009,20),
+      definition:laterBarRequired,
+      priorTouch:failedHold.retest,
+    });
+
+    expect(touch.retest?.touchAnchorEvidenceId).toBe("evidence:m5:0810");
+    expect(failedHold.retest?.touchAnchorEvidenceId).toBe(touch.retest?.touchAnchorEvidenceId);
+    expect(held.retest?.touchAnchorEvidenceId).toBe(touch.retest?.touchAnchorEvidenceId);
+    expect(held.retest?.retestId).not.toContain(failedHold.retest?.retestId ?? "impossible");
+  });
+
+  it("rejects forged or cross-break prior-touch provenance", () => {
+    const source = breakEvent("UP");
+    const touch = derivePostBreakRetest({
+      breakEvent:source,
+      bar:bar("m5:0810",1.1010,1.1011,1.0999,1.1004,10),
+      definition:laterBarRequired,
+    });
+    const next = bar("m5:0815",1.1005,1.1012,1.1003,1.1008,15);
+
+    expect(() => derivePostBreakRetest({
+      breakEvent:source,
+      bar:next,
+      definition:laterBarRequired,
+      priorTouch:{
+        ...touch.retest!,
+        direction:"DOWN",
+      },
+    })).toThrow(/different break\/definition/);
+
+    expect(() => derivePostBreakRetest({
+      breakEvent:source,
+      bar:next,
+      definition:laterBarRequired,
+      priorTouch:{
+        ...touch.retest!,
+        sourceEvidenceIds:touch.retest!.sourceEvidenceIds.filter(
+          id => id !== touch.retest!.touchAnchorEvidenceId,
+        ),
+      },
+    })).toThrow(/provenance roles must be present/);
+  });
+
+  it("rejects malformed bar identities and malformed runtime profile enums", () => {
+    expect(() => derivePostBreakRetest({
+      breakEvent:breakEvent("UP"),
+      bar:{...bar("m5:0810",1.1010,1.1012,1.0999,1.1004,10),evidenceId:""},
+      definition:sameBarAllowed,
+    })).toThrow(/immutable evidenceId/);
+
+    expect(() => derivePostBreakRetest({
+      breakEvent:breakEvent("UP"),
+      bar:bar("m5:0810",1.1010,1.1012,1.0999,1.1004,10),
+      definition:{...sameBarAllowed,holdTiming:"UNKNOWN" as never},
+    })).toThrow(/unsupported retest hold timing/);
   });
 
   it("is deterministic for the same break, evidence and definition", () => {

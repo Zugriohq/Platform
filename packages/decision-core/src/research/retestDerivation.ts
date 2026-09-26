@@ -67,6 +67,8 @@ export interface ResearchRetestEvidence {
     readonly close: number;
   };
   readonly touchedOnThisBar: boolean;
+  /** Immutable evidence identity of the first usable touch in this retest chain. */
+  readonly touchAnchorEvidenceId: string;
   readonly held: boolean;
   readonly penetration: number;
   readonly penetrationWithinLimit: boolean;
@@ -107,6 +109,15 @@ function validateDefinition(definition: ResearchRetestDefinition): void {
   }
   if (new Set(definition.eligibleBreakModes).size !== definition.eligibleBreakModes.length) {
     throw new Error("retest definition repeats an eligible break mode");
+  }
+  if (definition.eligibleBreakModes.some(mode => mode !== "CLOSE_BEYOND" && mode !== "TOUCH_BEYOND")) {
+    throw new Error("retest definition contains an unsupported break mode");
+  }
+  if (
+    definition.holdTiming !== "TOUCH_BAR_CLOSE_ALLOWED" &&
+    definition.holdTiming !== "LATER_BAR_REQUIRED"
+  ) {
+    throw new Error("unsupported retest hold timing");
   }
   for (const [label, value] of Object.entries({
     touchTolerance: definition.touchTolerance,
@@ -191,21 +202,62 @@ function validatePriorTouch(
   bar: ResearchStructureBar,
 ): void {
   if (
+    !priorTouch.retestId ||
+    !priorTouch.sourceBarEvidenceId ||
+    !priorTouch.touchAnchorEvidenceId ||
+    priorTouch.sourceEvidenceIds.length === 0
+  ) {
+    throw new Error("prior retest touch identity/provenance must be complete");
+  }
+  if (
+    !priorTouch.sourceEvidenceIds.includes(priorTouch.sourceBarEvidenceId) ||
+    !priorTouch.sourceEvidenceIds.includes(priorTouch.touchAnchorEvidenceId)
+  ) {
+    throw new Error("prior retest provenance roles must be present in sourceEvidenceIds");
+  }
+  if (
     priorTouch.breakId !== breakEvent.breakId ||
     priorTouch.levelFactId !== breakEvent.levelFactId ||
-    priorTouch.definitionId !== definition.definitionId
+    priorTouch.definitionId !== definition.definitionId ||
+    priorTouch.direction !== breakEvent.direction ||
+    priorTouch.scale !== breakEvent.scale ||
+    priorTouch.timeframe !== breakEvent.timeframe ||
+    priorTouch.levelPrice !== breakEvent.levelPrice
   ) {
     throw new Error("prior retest touch belongs to a different break/definition");
   }
-  if (priorTouch.held) {
+
+  const expectedLow = breakEvent.levelPrice - definition.touchTolerance;
+  const expectedHigh = breakEvent.levelPrice + definition.touchTolerance;
+  if (
+    priorTouch.touchZone.low !== expectedLow ||
+    priorTouch.touchZone.high !== expectedHigh
+  ) {
+    throw new Error("prior retest touch geometry does not match the current definition");
+  }
+
+  if (priorTouch.held || priorTouch.status === "RETEST_HELD") {
     throw new Error("prior retest touch is already held");
   }
+
+  const priorKnownAt = epoch(priorTouch.knownAt, "priorTouch.knownAt");
+  const priorClosedAt = epoch(priorTouch.sourceClosedAt, "priorTouch.sourceClosedAt");
+  const breakKnownAt = epoch(breakEvent.knownAt, "breakEvent.knownAt");
+  const breakClosedAt = epoch(breakEvent.sourceClosedAt, "breakEvent.sourceClosedAt");
+  if (priorKnownAt <= breakKnownAt || priorClosedAt <= breakClosedAt) {
+    throw new Error("prior retest touch must occur strictly after the break");
+  }
   if (
-    epoch(priorTouch.knownAt, "priorTouch.knownAt") >= epoch(bar.knownAt, "bar.knownAt") ||
-    epoch(priorTouch.sourceClosedAt, "priorTouch.sourceClosedAt") >=
-      epoch(bar.sourceClosedAt, "bar.sourceClosedAt")
+    priorKnownAt >= epoch(bar.knownAt, "bar.knownAt") ||
+    priorClosedAt >= epoch(bar.sourceClosedAt, "bar.sourceClosedAt")
   ) {
     throw new Error("prior retest touch must be strictly earlier than the current bar");
+  }
+  if (
+    priorTouch.sourceBarEvidenceId === bar.evidenceId ||
+    priorTouch.sourceEvidenceIds.includes(bar.evidenceId)
+  ) {
+    throw new Error("current retest bar evidence cannot be reused from prior touch provenance");
   }
 }
 
@@ -225,6 +277,9 @@ export function derivePostBreakRetest(input: {
   validateDefinition(definition);
   validateBreakEvent(breakEvent);
   validateResearchStructureBar(bar);
+  if (!bar.sourceBarId || !bar.evidenceId) {
+    throw new Error("retest source bar requires sourceBarId and immutable evidenceId");
+  }
 
   if (!definition.eligibleBreakModes.includes(breakEvent.mode)) {
     return noRetest("BREAK_MODE_NOT_ELIGIBLE");
@@ -264,10 +319,14 @@ export function derivePostBreakRetest(input: {
 
   const zoneLow = breakEvent.levelPrice - definition.touchTolerance;
   const zoneHigh = breakEvent.levelPrice + definition.touchTolerance;
+  if (!Number.isFinite(zoneLow) || !Number.isFinite(zoneHigh) || zoneLow > zoneHigh) {
+    throw new Error("retest touch zone must contain finite ordered prices");
+  }
   const touchedOnThisBar = bar.high >= zoneLow && bar.low <= zoneHigh;
 
   const usablePriorTouch =
     priorTouch !== null && priorTouch.penetrationWithinLimit;
+  const effectivePriorTouch = usablePriorTouch ? priorTouch : null;
 
   if (!touchedOnThisBar && !usablePriorTouch) {
     return noRetest("TOUCH_ZONE_NOT_REACHED");
@@ -278,8 +337,8 @@ export function derivePostBreakRetest(input: {
 
   const holdAllowed =
     definition.holdTiming === "TOUCH_BAR_CLOSE_ALLOWED"
-      ? touchedOnThisBar || usablePriorTouch
-      : usablePriorTouch;
+      ? touchedOnThisBar || effectivePriorTouch !== null
+      : effectivePriorTouch !== null;
 
   const closeValid =
     definition.holdRule === "CLOSE_VALID_SIDE" &&
@@ -301,7 +360,7 @@ export function derivePostBreakRetest(input: {
   } else if (
     touchedOnThisBar &&
     definition.holdTiming === "LATER_BAR_REQUIRED" &&
-    !usablePriorTouch
+    effectivePriorTouch === null
   ) {
     status = "RETEST_TOUCHED";
     reasons.push("TOUCH_OBSERVED", "HOLD_PENDING_LATER_BAR");
@@ -312,19 +371,21 @@ export function derivePostBreakRetest(input: {
     if (!closeValid) reasons.push("HOLD_CLOSE_FAILED");
     if (
       definition.holdTiming === "LATER_BAR_REQUIRED" &&
-      !usablePriorTouch
+      effectivePriorTouch === null
     ) {
       reasons.push("HOLD_PENDING_LATER_BAR");
     }
   }
 
+  const touchAnchorEvidenceId =
+    effectivePriorTouch?.touchAnchorEvidenceId ?? bar.evidenceId;
   const retestId =
-    `retest:${definition.definitionId}:${breakEvent.breakId}:${bar.sourceBarId}:${bar.evidenceId}:${priorTouch?.retestId ?? "direct"}`;
+    `retest:${definition.definitionId}:${breakEvent.breakId}:touch:${touchAnchorEvidenceId}:observation:${bar.sourceBarId}:${bar.evidenceId}`;
 
   const sourceEvidenceIds = [
     ...new Set([
       ...breakEvent.sourceEvidenceIds,
-      ...(priorTouch?.sourceEvidenceIds ?? []),
+      ...(effectivePriorTouch?.sourceEvidenceIds ?? []),
       bar.evidenceId,
     ]),
   ];
@@ -349,10 +410,11 @@ export function derivePostBreakRetest(input: {
       close: bar.close,
     },
     touchedOnThisBar,
+    touchAnchorEvidenceId,
     held,
     penetration,
     penetrationWithinLimit,
-    priorTouchId: priorTouch?.retestId ?? null,
+    priorTouchId: effectivePriorTouch?.retestId ?? null,
     sourceBarId: bar.sourceBarId,
     sourceBarEvidenceId: bar.evidenceId,
     sourceClosedAt: bar.sourceClosedAt,
