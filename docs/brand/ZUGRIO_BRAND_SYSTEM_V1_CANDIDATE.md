@@ -1,6 +1,6 @@
 # Zugrio Brand System v1.0 — Implementation Candidate
 
-Status: **founder-approved visual direction for implementation; production master artwork still requires final vector construction and optical QA.**
+Status: **Superseded for brand governance by `docs/brand/ZUGRIO_BRAND_OPERATING_SYSTEM_V1.md`. Retained as historical implementation reference.**
 
 This document extends `VISUAL_DIRECTION_V0_3.md` without changing the frozen application-test language in `BRAND_PROPOSITION_V2_2_CANDIDATE.md`.
 
