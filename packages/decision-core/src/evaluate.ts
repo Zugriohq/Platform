@@ -8,6 +8,7 @@ import type {
   EvidenceChange,
   EvidenceEvent,
   EvidenceKind,
+  EvidenceProvenance,
   EvidenceSnapshot,
   EligibilityStatus,
   RegimeStatus,
@@ -57,6 +58,27 @@ export function snapshotAt(scenario: ReplayScenario, evaluatedAt: string): Evide
     note.evidenceId,
   ].filter((id): id is string => Boolean(id));
 
+  const evidenceRefs: Partial<Record<EvidenceKind, EvidenceProvenance>> = {};
+  const bind = (
+    kind: EvidenceKind,
+    resolved: { evidenceId?: string; knownAt?: string },
+  ): void => {
+    if (resolved.evidenceId && resolved.knownAt) {
+      evidenceRefs[kind] = {
+        evidenceId: resolved.evidenceId,
+        knownAt: resolved.knownAt,
+      };
+    }
+  };
+
+  bind("ELIGIBILITY", eligibility);
+  bind("LIFECYCLE", lifecycle);
+  bind("REGIME_STATUS", regime);
+  bind("ENTRY_EVENT_OBSERVED", entry);
+  bind("CURRENT_ENTRY_STATUS", currentEntry);
+  bind("PRICE", price);
+  bind("NOTE", note);
+
   return {
     evaluatedAt,
     eligibility: eligibility.value,
@@ -67,6 +89,7 @@ export function snapshotAt(scenario: ReplayScenario, evaluatedAt: string): Evide
     price: price.value,
     note: note.value,
     evidenceIds,
+    evidenceRefs,
   };
 }
 
@@ -134,28 +157,28 @@ function evaluationId(scenario: ReplayScenario, evaluatedAt: string): string {
 
 function annotations(snapshot: EvidenceSnapshot): ChartAnnotation[] {
   const result: ChartAnnotation[] = [];
-  if (snapshot.lifecycle) {
-    const evidence = snapshot.evidenceIds.find((id) => id.includes("lifecycle"));
-    if (evidence) {
-      result.push({
-        id: `annotation:${evidence}`,
-        kind: "STRUCTURAL_LIFECYCLE",
-        label: snapshot.lifecycle.replaceAll("_", " "),
-        knownAt: snapshot.evaluatedAt,
-        evidenceId: evidence,
-      });
-    }
-  }
-  const entryEvidence = snapshot.evidenceIds.find((id) => id.includes("entry-status"));
-  if (entryEvidence && snapshot.currentEntryStatus !== "NOT_AVAILABLE") {
+  const lifecycleEvidence = snapshot.evidenceRefs.LIFECYCLE;
+  if (snapshot.lifecycle && lifecycleEvidence) {
     result.push({
-      id: `annotation:${entryEvidence}`,
-      kind: "ENTRY_STATUS",
-      label: `ENTRY ${snapshot.currentEntryStatus}`,
-      knownAt: snapshot.evaluatedAt,
-      evidenceId: entryEvidence,
+      id: `annotation:${lifecycleEvidence.evidenceId}`,
+      kind: "STRUCTURAL_LIFECYCLE",
+      label: snapshot.lifecycle.replaceAll("_", " "),
+      knownAt: lifecycleEvidence.knownAt,
+      evidenceId: lifecycleEvidence.evidenceId,
     });
   }
+
+  const entryEvidence = snapshot.evidenceRefs.CURRENT_ENTRY_STATUS;
+  if (entryEvidence && snapshot.currentEntryStatus !== "NOT_AVAILABLE") {
+    result.push({
+      id: `annotation:${entryEvidence.evidenceId}`,
+      kind: "ENTRY_STATUS",
+      label: `ENTRY ${snapshot.currentEntryStatus}`,
+      knownAt: entryEvidence.knownAt,
+      evidenceId: entryEvidence.evidenceId,
+    });
+  }
+
   return result;
 }
 

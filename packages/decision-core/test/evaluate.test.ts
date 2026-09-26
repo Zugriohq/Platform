@@ -71,6 +71,19 @@ describe("Slice 1 deterministic Decision Case", () => {
     expect(beforeEntry.annotations.every(annotation => Date.parse(annotation.knownAt) <= Date.parse("2026-09-24T08:15:00Z"))).toBe(true);
   });
 
+  it("annotations bind to the actual evidence timestamp, not the later evaluation time", () => {
+    const later = evaluateAt(staleEntryScenario, "2026-09-24T08:20:00Z");
+    const lifecycleAnnotation = later.annotations.find(annotation => annotation.kind === "STRUCTURAL_LIFECYCLE");
+    const entryAnnotation = later.annotations.find(annotation => annotation.kind === "ENTRY_STATUS");
+
+    expect(lifecycleAnnotation?.evidenceId).toBe("lifecycle-0815");
+    expect(lifecycleAnnotation?.knownAt).toBe("2026-09-24T08:15:00Z");
+    expect(entryAnnotation?.evidenceId).toBe("entry-status-0820");
+    expect(entryAnnotation?.knownAt).toBe("2026-09-24T08:20:00Z");
+    expect(Date.parse(lifecycleAnnotation?.knownAt ?? "")).toBeLessThanOrEqual(Date.parse(later.current.evaluatedAt));
+    expect(Date.parse(entryAnnotation?.knownAt ?? "")).toBeLessThanOrEqual(Date.parse(later.current.evaluatedAt));
+  });
+
   it("replays the same fixture deterministically", () => {
     expect(buildDecisionCase(currentEntryScenario, 5)).toEqual(buildDecisionCase(currentEntryScenario, 5));
   });

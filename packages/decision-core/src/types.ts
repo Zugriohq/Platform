@@ -55,6 +55,11 @@ export interface AlphaTradeBundle {
   readonly authoritySpecVersion: "1.0.2";
 }
 
+export interface EvidenceProvenance {
+  readonly evidenceId: string;
+  readonly knownAt: string;
+}
+
 export interface EvidenceSnapshot {
   readonly evaluatedAt: string;
   readonly eligibility: EligibilityStatus;
@@ -65,6 +70,7 @@ export interface EvidenceSnapshot {
   readonly price: number | null;
   readonly note: string;
   readonly evidenceIds: readonly string[];
+  readonly evidenceRefs: Readonly<Partial<Record<EvidenceKind, EvidenceProvenance>>>;
 }
 
 export interface EvidenceChange {
