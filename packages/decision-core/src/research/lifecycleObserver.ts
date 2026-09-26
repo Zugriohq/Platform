@@ -140,8 +140,8 @@ function orderedObservations(
     seen.add(item.evidenceId);
     const knownAt = epoch(item.knownAt, "knownAt");
     const sourceClosedAt = epoch(item.sourceClosedAt, "sourceClosedAt");
-    if (knownAt < sourceClosedAt) {
-      throw new Error(`lifecycle evidence cannot be known before its source bar closes: ${item.evidenceId}`);
+    if (item.dataStatus !== "INCOMPLETE" && knownAt < sourceClosedAt) {
+      throw new Error(`closed lifecycle evidence cannot be known before its source bar closes: ${item.evidenceId}`);
     }
   }
 

@@ -207,8 +207,8 @@ export function validateResearchStructureBar(bar: ResearchStructureBar): void {
   }
   const sourceClosedAt = epoch(bar.sourceClosedAt, "sourceClosedAt");
   const knownAt = epoch(bar.knownAt, "knownAt");
-  if (knownAt < sourceClosedAt) {
-    throw new Error(`bar evidence cannot be known before source close: ${bar.sourceBarId}`);
+  if (bar.dataStatus !== "INCOMPLETE" && knownAt < sourceClosedAt) {
+    throw new Error(`closed bar evidence cannot be known before source close: ${bar.sourceBarId}`);
   }
 }
 

@@ -14,7 +14,7 @@ function point(
     timeframe,
     status,
     evidenceId: id,
-    sourceClosedAt: "2026-09-24T08:20:00Z",
+    sourceClosedAt: knownAt,
     knownAt,
   };
 }

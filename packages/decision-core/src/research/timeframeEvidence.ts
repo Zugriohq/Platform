@@ -65,8 +65,8 @@ export function assessRequiredTimeframes(
     seenEvidenceIds.add(point.evidenceId);
     const sourceClosedAt = epoch(point.sourceClosedAt, "sourceClosedAt");
     const knownAt = epoch(point.knownAt, "knownAt");
-    if (knownAt < sourceClosedAt) {
-      throw new Error(`timeframe evidence cannot be known before source close: ${point.evidenceId}`);
+    if (point.status !== "INCOMPLETE" && knownAt < sourceClosedAt) {
+      throw new Error(`closed timeframe evidence cannot be known before source close: ${point.evidenceId}`);
     }
   }
 
