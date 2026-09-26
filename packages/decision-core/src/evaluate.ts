@@ -109,6 +109,7 @@ function structuralState(snapshot: EvidenceSnapshot): { state: StructuralState |
     case "BREAK_CONFIRMED":
     case "RETEST_TOUCHED":
     case "RETEST_HELD":
+    case "CONTINUATION_HELD":
       return {
         state: "STRUCTURAL_WATCH",
         reason: "The structural lifecycle is active, but it is not yet structurally complete.",

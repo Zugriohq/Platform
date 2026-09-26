@@ -12,6 +12,7 @@ export type StructuralLifecycle =
   | "BREAK_CONFIRMED"
   | "RETEST_TOUCHED"
   | "RETEST_HELD"
+  | "CONTINUATION_HELD"
   | "LIFECYCLE_CONFIRMED";
 
 export type RegimeStatus = "AVAILABLE" | "UNAVAILABLE" | "UNCERTAIN";
