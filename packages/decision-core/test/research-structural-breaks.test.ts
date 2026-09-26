@@ -120,6 +120,21 @@ function bar(
 }
 
 describe("research structural-break derivation", () => {
+  it("rejects overlapping profile rules instead of letting array order decide break semantics", () => {
+    const ambiguous: ResearchStructuralBreakDefinition = {
+      ...closeBreak,
+      eligibleLevels:[
+        {concept:"SWING_HIGH",allowedDirections:["UP"],allowedScales:["EXTERNAL"]},
+        {concept:"SWING_HIGH",allowedDirections:["DOWN"],allowedScales:["EXTERNAL"]},
+      ],
+    };
+    expect(() => detect(
+      level("high-ambiguous","SWING_HIGH",1.1000),
+      bar("m5:0810",1.0995,1.1010,1.0990,1.1005),
+      ambiguous,
+    )).toThrow(/ambiguous overlapping level rule/);
+  });
+
   it("emits a stable neutral UP break against a known swing high", () => {
     const swingHigh = level("high-1","SWING_HIGH",1.1000);
     const source = bar("m5:0810",1.0995,1.1010,1.0990,1.1005);
@@ -216,6 +231,33 @@ describe("research structural-break derivation", () => {
 
     const replacementLevel = level("high-new-identity","SWING_HIGH",1.1000);
     expect(detect(replacementLevel, source, closeBreak).status).toBe("BREAK_OBSERVED");
+  });
+
+  it("rejects a level-state fact that predates the level it describes", () => {
+    const swingHigh = level("high-state-predates","SWING_HIGH",1.1000,"EXTERNAL","2026-09-24T08:02:00Z");
+    const source = bar("m5:0810",1.0995,1.1010,1.0990,1.1005);
+    const result = detectStructuralBreak(
+      swingHigh,
+      source,
+      closeBreak,
+      activeState(swingHigh.factId, "2026-09-24T08:01:00Z"),
+    );
+    expect(result.reasons).toContain("LEVEL_STATE_PREDATES_LEVEL");
+  });
+
+  it("does not let the break bar also manufacture the level's active-state evidence", () => {
+    const swingHigh = level("high-state-self","SWING_HIGH",1.1000);
+    const source = bar("m5:0810",1.0995,1.1010,1.0990,1.1005);
+    const result = detectStructuralBreak(
+      swingHigh,
+      source,
+      closeBreak,
+      {
+        ...activeState(swingHigh.factId),
+        evidenceId:source.evidenceId,
+      },
+    );
+    expect(result.reasons).toContain("LEVEL_USES_BREAK_BAR_EVIDENCE");
   });
 
   it("rejects level-state evidence that was not knowable before the break", () => {
@@ -394,6 +436,33 @@ describe("research structural-break derivation", () => {
       definition:bosProfile,
     });
     expect(result.reasons).toContain("BREAK_FROM_FUTURE");
+  });
+
+  it("rejects incomplete displacement provenance when a profile requires displacement", () => {
+    const raw = detect(
+      level("low-mss-provenance","SWING_LOW",1.1000),
+      bar("m5:0810",1.1005,1.1010,1.0988,1.0995),
+      closeBreak,
+    ).events[0]!;
+
+    expect(() => classifyStructuralBreak({
+      breakEvent:raw,
+      priorBias:{
+        bias:"BULLISH",
+        evidenceId:"bias-1",
+        knownAt:"2026-09-24T08:05:00Z",
+        definitionId:"bias:v1",
+      },
+      displacement:{
+        present:true,
+        direction:"DOWN",
+        evidenceId:"",
+        knownAt:"2026-09-24T08:10:01Z",
+        definitionId:"displacement:v1",
+      },
+      evaluatedAt:"2026-09-24T08:11:00Z",
+      definition:mssProfile,
+    })).toThrow(/displacement evidence requires/);
   });
 
   it("requires directional displacement when the selected MSS profile requires displacement", () => {

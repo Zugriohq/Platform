@@ -36,6 +36,7 @@ export type ResearchStructuralBreakReason =
   | "LEVEL_NOT_KNOWABLE_YET"
   | "LEVEL_GEOMETRY_NOT_CAUSAL"
   | "LEVEL_STATE_NOT_KNOWABLE_YET"
+  | "LEVEL_STATE_PREDATES_LEVEL"
   | "LEVEL_NOT_ACTIVE"
   | "LEVEL_USES_BREAK_BAR_EVIDENCE"
   | "BAR_NOT_CLOSED_FOR_CLOSE_BREAK"
@@ -171,12 +172,17 @@ function validateBreakDefinition(definition: ResearchStructuralBreakDefinition):
     if (rule.allowedDirections.length === 0) {
       throw new Error(`eligible level ${rule.concept} requires at least one break direction`);
     }
+    if (new Set(rule.allowedDirections).size !== rule.allowedDirections.length) {
+      throw new Error(`eligible level ${rule.concept} repeats a break direction`);
+    }
     if (rule.allowedScales.length === 0) {
       throw new Error(`eligible level ${rule.concept} requires at least one scale`);
     }
-    const key = `${rule.concept}:${[...rule.allowedScales].sort().join(",")}`;
-    if (seen.has(key)) throw new Error(`ambiguous duplicate level rule: ${key}`);
-    seen.add(key);
+    for (const scale of rule.allowedScales) {
+      const key = `${rule.concept}:${String(scale)}`;
+      if (seen.has(key)) throw new Error(`ambiguous overlapping level rule: ${key}`);
+      seen.add(key);
+    }
   }
 }
 
@@ -264,6 +270,24 @@ export function detectStructuralBreak(
     throw new Error("level state must identify the same level and carry evidence/policy identity");
   }
   const levelStateKnownAt = epoch(levelState.knownAt, "levelState.knownAt");
+  if (levelStateKnownAt < levelKnownAt) {
+    return {
+      status: "NO_BREAK",
+      events: [],
+      reasons: ["LEVEL_STATE_PREDATES_LEVEL"],
+      authority: "RESEARCH_ONLY",
+      liveCapitalAuthority: false,
+    };
+  }
+  if (levelState.evidenceId === bar.evidenceId) {
+    return {
+      status: "NO_BREAK",
+      events: [],
+      reasons: ["LEVEL_USES_BREAK_BAR_EVIDENCE"],
+      authority: "RESEARCH_ONLY",
+      liveCapitalAuthority: false,
+    };
+  }
   if (levelStateKnownAt >= barClosedAt || levelStateKnownAt > barKnownAt) {
     return {
       status: "NO_BREAK",
@@ -411,7 +435,18 @@ export function classifyStructuralBreak(input: {
   validateClassificationDefinition(input.definition);
 
   const evaluatedAt = epoch(input.evaluatedAt, "evaluatedAt");
+  if (
+    !input.breakEvent.breakId ||
+    !input.breakEvent.definitionId ||
+    input.breakEvent.sourceEvidenceIds.length === 0
+  ) {
+    throw new Error("structural break event identity/provenance must be complete");
+  }
   const breakKnownAt = epoch(input.breakEvent.knownAt, "breakEvent.knownAt");
+  const breakSourceClosedAt = epoch(input.breakEvent.sourceClosedAt, "breakEvent.sourceClosedAt");
+  if (input.breakEvent.mode === "CLOSE_BEYOND" && breakKnownAt < breakSourceClosedAt) {
+    throw new Error("close-based structural break cannot be known before source close");
+  }
   const biasKnownAt = epoch(input.priorBias.knownAt, "priorBias.knownAt");
 
   if (breakKnownAt > evaluatedAt) {
@@ -486,6 +521,9 @@ export function classifyStructuralBreak(input: {
       };
     }
 
+    if (!input.displacement.evidenceId || !input.displacement.definitionId) {
+      throw new Error("displacement evidence requires evidenceId and definitionId");
+    }
     const displacementKnownAt = epoch(input.displacement.knownAt, "displacement.knownAt");
     if (displacementKnownAt > evaluatedAt) {
       return {
