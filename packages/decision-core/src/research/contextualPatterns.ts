@@ -37,7 +37,7 @@ function fact(
   return {
     factId: `candle:${definitionId}:${concept}:${bar.sourceBarId}`,
     concept,
-    maturity: "DETERMINISTIC_FACT",
+    maturity: "MORPHOLOGY_ONLY",
     scale: null,
     timeframe,
     side,

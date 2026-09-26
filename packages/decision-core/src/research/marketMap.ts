@@ -61,6 +61,7 @@ export type MarketStructureConcept =
 
 export type ResearchConceptMaturity =
   | "DETERMINISTIC_FACT"
+  | "MORPHOLOGY_ONLY"
   | "RESEARCH_DERIVED"
   | "ADVISORY_ONLY";
 

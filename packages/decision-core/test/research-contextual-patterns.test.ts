@@ -70,7 +70,7 @@ describe("contextual pattern ontology", () => {
     ], candleDef);
 
     const doji = facts.find(item => item.concept === "DOJI");
-    expect(doji?.maturity).toBe("DETERMINISTIC_FACT");
+    expect(doji?.maturity).toBe("MORPHOLOGY_ONLY");
     expect(doji?.authorityEffect).toBe("NONE");
     expect(doji?.side).toBe("NEUTRAL");
   });

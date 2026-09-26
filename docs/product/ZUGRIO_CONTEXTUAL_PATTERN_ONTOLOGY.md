@@ -60,7 +60,7 @@ These remain research-derived pattern objects until a causal detector definition
 
 ## Candlestick morphology
 
-The engine can deterministically label configured morphology such as:
+The engine can deterministically label configured morphology, but these facts carry the distinct maturity class `MORPHOLOGY_ONLY`, such as:
 - doji;
 - hammer;
 - shooting star;
@@ -117,6 +117,7 @@ These are rule examples, not profitability claims.
 The chart should make maturity visible:
 
 - **deterministic facts** — normal structural/liquidity overlays;
+- **morphology-only facts** — candlestick/shape facts kept visually secondary until contextualized;
 - **research-derived patterns** — clearly labelled research overlays;
 - **advisory-only patterns** — visually secondary and never mixed with authoritative setup geometry.
 

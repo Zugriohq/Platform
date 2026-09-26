@@ -135,7 +135,7 @@ function styleForFact(fact: ResearchMarketStructureFact): EngineChartPrimitive["
 function visibilityForFact(
   fact: ResearchMarketStructureFact,
 ): EngineChartPrimitive["visibility"] {
-  if (fact.maturity === "ADVISORY_ONLY") return "DETAIL";
+  if (fact.maturity === "ADVISORY_ONLY" || fact.maturity === "MORPHOLOGY_ONLY") return "DETAIL";
   if (
     fact.scale === "EXTERNAL" ||
     fact.concept === "LIQUIDITY_SWEEP" ||
