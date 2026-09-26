@@ -4,8 +4,13 @@ on:
   pull_request:
     paths:
       - "apps/desktop/**"
+      - "apps/api/**"
+      - "packages/domain/**"
       - "packages/decision-core/**"
+      - "packages/alpha-api-contract/**"
+      - "infra/**"
       - "package.json"
+      - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
       - "tsconfig.base.json"
       - ".github/workflows/private-alpha.yml"
@@ -13,9 +18,26 @@ on:
     branches:
       - "release/private-validation-alpha-2026-09-28"
 
+permissions:
+  contents: read
+
 jobs:
   validate:
     runs-on: ubuntu-latest
+    services:
+      # Throwaway CI database for the ADR-0002 ledger integration tests.
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: ci-throwaway
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      ZUGRIO_TEST_DATABASE_URL: postgresql://postgres:ci-throwaway@localhost:5432/postgres
+      # Fail (not skip) if the PostgreSQL integration suite cannot run.
+      ZUGRIO_REQUIRE_DB_TESTS: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -23,9 +45,92 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
       - run: pnpm install --frozen-lockfile=false
-      - run: pnpm test
-      - run: pnpm typecheck
-      - run: pnpm build
+      - name: Prisma schema validation
+        run: pnpm --filter @zugrio/api prisma:validate
+      - name: Tests (decision-core, contract, API incl. PostgreSQL, desktop client)
+        run: pnpm test
+      - name: Strict typecheck
+        run: pnpm typecheck
+      - name: Build (packages, API, desktop)
+        run: pnpm build
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: gitleaks (working tree)
+        run: docker run --rm -v "$PWD:/repo" -w /repo ghcr.io/gitleaks/gitleaks:v8.30.1 dir . --no-banner --redact --exit-code 1
+
+  api-image-arm64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+        with: { platforms: arm64 }
+      - uses: docker/setup-buildx-action@v3
+      - name: Build linux/arm64 API image (OCI Ampere A1 target)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          platforms: linux/arm64
+          push: false
+          load: true
+          tags: zugrio-api:arm64-ci
+          cache-from: type=gha,scope=api-arm64
+          cache-to: type=gha,mode=max,scope=api-arm64
+      - name: Run the arm64 image under emulation
+        run: |
+          set -euo pipefail
+          test "$(docker image inspect zugrio-api:arm64-ci --format '{{.Architecture}}')" = arm64
+          docker run -d --name api-arm64 --platform linux/arm64 -p 127.0.0.1:3000:3000 \
+            -e ZUGRIO_ALPHA_PERSISTENCE=memory zugrio-api:arm64-ci
+          for i in $(seq 1 60); do curl -fsS http://127.0.0.1:3000/health && break; sleep 2; done
+          curl -fsS http://127.0.0.1:3000/health | jq -e '.meta.liveCapitalAuthority == false and .data.status == "ok"'
+          docker exec api-arm64 node -e 'if (process.arch !== "arm64") process.exit(1)'
+          docker exec api-arm64 node_modules/.bin/prisma --version
+      - if: failure()
+        run: docker logs api-arm64 || true
+
+  compose-smoke:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/oci
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bring up postgres + migrate + api
+        run: |
+          set -euo pipefail
+          printf 'POSTGRES_PASSWORD=%s\nZUGRIO_API_LOCAL_PORT=3000\n' "$(openssl rand -hex 32)" > .env
+          docker compose up -d --build
+          ../../.github/scripts/wait-for-healthy.sh zugrio-alpha-api-1 300
+          docker compose ps -a
+          test "$(docker inspect -f '{{.State.ExitCode}}' zugrio-alpha-migrate-1)" = 0
+      - name: Tunnel overlay is valid and demands a token
+        run: |
+          set -euo pipefail
+          CLOUDFLARE_TUNNEL_TOKEN=placeholder docker compose -f docker-compose.yml -f docker-compose.tunnel.yml config --quiet
+          if docker compose -f docker-compose.yml -f docker-compose.tunnel.yml config --quiet 2>/dev/null; then
+            echo "tunnel overlay must refuse to start without CLOUDFLARE_TUNNEL_TOKEN"; exit 1
+          fi
+      - name: Smoke test
+        run: ./smoke-test.sh http://127.0.0.1:3000
+      - name: Persistence survives an API restart
+        run: |
+          set -euo pipefail
+          docker compose restart api
+          ../../.github/scripts/wait-for-healthy.sh zugrio-alpha-api-1 120
+          ./smoke-test.sh http://127.0.0.1:3000 | tee smoke.log
+          grep -q 'created=false' smoke.log
+      - name: API is not published on a public interface
+        run: |
+          set -euo pipefail
+          docker compose port api 3000 | grep -q '^127.0.0.1:'
+      - if: failure()
+        run: docker compose logs
+      - if: always()
+        run: docker compose down -v
 
   windows-portable:
     runs-on: windows-latest
@@ -37,8 +142,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
       - run: pnpm install --frozen-lockfile=false
-      - run: pnpm --filter @zugrio/domain build
-      - run: pnpm --filter @zugrio/decision-core build
+      - run: pnpm build:packages
       - run: pnpm --filter @zugrio/desktop dist:win
       - uses: actions/upload-artifact@v4
         with:
