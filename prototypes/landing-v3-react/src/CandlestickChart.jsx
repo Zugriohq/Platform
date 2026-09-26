@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
 
 const BASE_CLOSES = [
@@ -35,14 +35,42 @@ function buildBars(marketKey, caseKey) {
   });
 }
 
+// The chart draws in real CSS pixels: the viewBox always equals the rendered box, so
+// text keeps its true size on phones instead of being scaled down with an 820px canvas.
+function useRenderedSize(ref, fallback) {
+  const [size, setSize] = useState(fallback);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const read = () => {
+      const rect = el.getBoundingClientRect();
+      const next = { w: Math.round(rect.width), h: Math.round(rect.height) };
+      if (!next.w || !next.h) return;
+      setSize(prev => (prev.w === next.w && prev.h === next.h ? prev : next));
+    };
+    read();
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", read);
+      return () => window.removeEventListener("resize", read);
+    }
+    const observer = new ResizeObserver(read);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [ref]);
+  return size;
+}
+
 export default function CandlestickChart({ marketKey, caseKey, priceSpec }) {
   const [hovered, setHovered] = useState(null);
-  const bars = useMemo(() => buildBars(marketKey, caseKey), [marketKey, caseKey]);
+  const svgRef = useRef(null);
+  const { w: W, h: H } = useRenderedSize(svgRef, { w: 820, h: 340 });
+  const compact = W < 520;
+  const allBars = useMemo(() => buildBars(marketKey, caseKey), [marketKey, caseKey]);
+  // Narrow screens show the most recent candles only, so each candle stays legible.
+  const bars = compact ? allBars.slice(-(W < 380 ? 22 : 26)) : allBars;
 
-  const W = 820;
-  const H = 340;
-  const left = 16;
-  const right = 70;
+  const left = compact ? 10 : 16;
+  const right = compact ? 48 : 70;
   const top = 18;
   const bottom = 28;
   const plotW = W - left - right;
@@ -69,7 +97,7 @@ export default function CandlestickChart({ marketKey, caseKey, priceSpec }) {
 
   return (
     <div className="candlestick-wrap">
-      <svg className="chart" viewBox={"0 0 " + W + " " + H} role="img" aria-label="Illustrative candlestick chart with decision geometry">
+      <svg ref={svgRef} className="chart" viewBox={"0 0 " + W + " " + H} role="img" aria-label="Illustrative candlestick chart with decision geometry">
         <defs>
           <linearGradient id={"zone-" + marketKey} x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="var(--accent)" stopOpacity=".025"/>
