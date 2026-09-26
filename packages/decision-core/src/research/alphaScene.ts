@@ -1,4 +1,4 @@
-import type { ReplayScenario } from "../types.js";
+import type { ChartAnnotation, ReplayScenario } from "../types.js";
 import { buildDecisionCase } from "../evaluate.js";
 import type {
   ChartSemanticLayer,
@@ -6,47 +6,38 @@ import type {
   EngineChartScene,
 } from "./chartScene.js";
 
-function lifecycleConcept(label: string): "STRUCTURAL_LIFECYCLE" | "ENTRY_STATUS" {
-  return label.startsWith("ENTRY ") ? "ENTRY_STATUS" : "STRUCTURAL_LIFECYCLE";
-}
-
-function layerFor(label: string): ChartSemanticLayer {
-  return label.startsWith("ENTRY ") ? "ENTRY" : "SETUP";
-}
-
 function primitiveFor(
-  label: string,
-  evidenceId: string,
-  knownAt: string,
+  annotation: ChartAnnotation,
   price: number | null,
 ): EngineChartPrimitive | null {
   if (price === null) return null;
 
-  const concept = lifecycleConcept(label);
+  const concept =
+    annotation.kind === "ENTRY_STATUS"
+      ? "ENTRY_STATUS"
+      : "STRUCTURAL_LIFECYCLE";
+  const layer: ChartSemanticLayer =
+    annotation.kind === "ENTRY_STATUS"
+      ? "ENTRY"
+      : "SETUP";
+
   return {
-    primitiveId: `alpha-primitive:${evidenceId}`,
-    layer: layerFor(label),
+    primitiveId: `alpha-primitive:${annotation.evidenceId}`,
+    layer,
     concept,
     maturity: "DETERMINISTIC_FACT",
     scale: null,
-    label,
-    knownAt,
+    label: annotation.label,
+    knownAt: annotation.knownAt,
     geometry: {
       type: "POINT",
-      time: knownAt,
+      time: annotation.knownAt,
       price,
     },
     sourceFactIds: [],
-    sourceEvidenceIds: [evidenceId],
-    visibility:
-      label.includes("RETEST") ||
-      label.includes("BREAK") ||
-      label.includes("LIFECYCLE CONFIRMED") ||
-      label.includes("ENTRY STALE") ||
-      label.includes("ENTRY CURRENT")
-        ? "PRIMARY"
-        : "SECONDARY",
-    styleToken: concept === "ENTRY_STATUS" ? "ENTRY" : "SETUP",
+    sourceEvidenceIds: [annotation.evidenceId],
+    visibility: "PRIMARY",
+    styleToken: annotation.kind === "ENTRY_STATUS" ? "ENTRY" : "SETUP",
     authorityEffect: "NONE",
   };
 }
@@ -64,20 +55,13 @@ export function buildReplayChartScene(
 ): EngineChartScene {
   const decision = buildDecisionCase(scenario, frameIndex);
   const primitives = decision.annotations
-    .map(annotation =>
-      primitiveFor(
-        annotation.label,
-        annotation.evidenceId,
-        annotation.knownAt,
-        decision.current.price,
-      ),
-    )
+    .map(annotation => primitiveFor(annotation, decision.current.price))
     .filter((item): item is EngineChartPrimitive => item !== null);
 
   return {
     sceneId: `alpha-scene:${decision.evaluationId}`,
     instrument: scenario.bundle.identity.scope.instrument,
-    timeframe: scenario.bundle.identity.scope.horizon,
+    timeframe: "FIXTURE_UNSPECIFIED",
     evaluatedAt: decision.current.evaluatedAt,
     strategyId: scenario.bundle.strategy,
     regimeLabel: null,
