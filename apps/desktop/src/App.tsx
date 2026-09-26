@@ -279,6 +279,7 @@ export function App({ apiClient: injectedClient }: AppProps = {}) {
   const maxFrame = Math.max(0, (scenario?.frames.length ?? 1) - 1);
   const safeFrame = Math.min(frame, maxFrame);
   const decision = decisions[safeFrame];
+  const scene = scenes[safeFrame];
   const scope = scenario?.bundle.identity.scope;
 
   const sidebarItems = cloudConfigured
@@ -387,6 +388,31 @@ export function App({ apiClient: injectedClient }: AppProps = {}) {
             <span className={decision.structuralState === state ? "state-mark active" : "state-mark"}>{STATE_LABELS[state]}</span>
             {index < rail.length - 1 ? <i /> : null}
           </Fragment>)}
+        </div>
+
+        <div className="market-context" aria-label="Engine market context">
+          <div>
+            <span>STRATEGY</span>
+            <strong>{scene ? `${scene.strategyId} · v${scene.strategyVersion}` : "UNAVAILABLE"}</strong>
+          </div>
+          <i />
+          <div>
+            <span>CANONICAL REGIME</span>
+            <strong>{scene?.regimeLabel ?? "UNAVAILABLE"}</strong>
+            {scene?.regimeDefinitionId ? <small>{scene.regimeDefinitionId}</small> : null}
+          </div>
+          <i />
+          <div className="market-context-routes">
+            <span>ELIGIBLE RESEARCH ROUTES</span>
+            <strong>
+              {scene?.routeContext.status === "ROUTES_AVAILABLE"
+                ? scene.routeContext.families.map(item => item.replaceAll("_", " ")).join(" · ")
+                : scene?.routeContext.status === "NO_DECLARED_ROUTE"
+                  ? "NO DECLARED ROUTE"
+                  : "UNAVAILABLE"}
+            </strong>
+            {scene?.routeContext.calibrationStatus ? <small>UNVALIDATED CANDIDATE SET</small> : null}
+          </div>
         </div>
 
         {decision.structuralState === "STRUCTURAL_READY" ? <div className="structural-banner">
