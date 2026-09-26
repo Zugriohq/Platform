@@ -277,6 +277,19 @@ export function detectStructuralBreak(
     };
   }
 
+  // The level must exist before the break bar closes, and before an intrabar
+  // touch is observed. Equal timestamps are deliberately rejected to avoid
+  // discovering the level and "breaking" it from the same close.
+  if (levelKnownAt >= barClosedAt || levelKnownAt > barKnownAt) {
+    return {
+      status: "NO_BREAK",
+      events: [],
+      reasons: ["LEVEL_NOT_KNOWABLE_YET"],
+      authority: "RESEARCH_ONLY",
+      liveCapitalAuthority: false,
+    };
+  }
+
   if (
     levelState.levelFactId !== level.factId ||
     !levelState.evidenceId ||
@@ -317,19 +330,6 @@ export function detectStructuralBreak(
       status: "NO_BREAK",
       events: [],
       reasons: ["LEVEL_NOT_ACTIVE"],
-      authority: "RESEARCH_ONLY",
-      liveCapitalAuthority: false,
-    };
-  }
-
-  // The level must exist before the break bar closes, and before an intrabar
-  // touch is observed. Equal timestamps are deliberately rejected to avoid
-  // discovering the level and "breaking" it from the same close.
-  if (levelKnownAt >= barClosedAt || levelKnownAt > barKnownAt) {
-    return {
-      status: "NO_BREAK",
-      events: [],
-      reasons: ["LEVEL_NOT_KNOWABLE_YET"],
       authority: "RESEARCH_ONLY",
       liveCapitalAuthority: false,
     };
