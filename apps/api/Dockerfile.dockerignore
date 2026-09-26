@@ -1,0 +1,18 @@
+# BuildKit reads <Dockerfile>.dockerignore; the build context is the repository root.
+**/node_modules
+**/dist
+**/dist-electron
+**/release
+**/.env
+**/.env.*
+!**/.env.example
+.git
+apps/api/src/generated
+apps/api/openapi.json
+apps/desktop
+brand
+docs
+legacy
+prototypes
+workers
+infra

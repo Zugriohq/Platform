@@ -1,0 +1,87 @@
+# Zugrio private validation alpha — single-VM stack for OCI Ampere A1 (linux/arm64).
+# Also runs on amd64 for local integration. NO LIVE CAPITAL.
+#
+#   cp .env.example .env && edit .env          # never commit .env
+#   docker compose up -d --build               # postgres + migrate + api (no tunnel)
+#   docker compose -f docker-compose.yml -f docker-compose.tunnel.yml up -d
+#                                              # + Cloudflare Tunnel (needs CLOUDFLARE_TUNNEL_TOKEN)
+#
+# The API is never published on a public interface: it listens on the internal Docker
+# network for cloudflared and on 127.0.0.1 only for on-VM health checks.
+
+name: zugrio-alpha
+
+x-api-image: &api-image
+  image: ${ZUGRIO_API_IMAGE:-zugrio-api:local}
+  build:
+    context: ../..
+    dockerfile: apps/api/Dockerfile
+
+x-hardening: &hardening
+  read_only: true
+  tmpfs: ["/tmp"]
+  security_opt: ["no-new-privileges:true"]
+  cap_drop: ["ALL"]
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-zugrio}
+      POSTGRES_USER: ${POSTGRES_USER:-zugrio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks: [data]
+    shm_size: 256mb
+
+  # One-shot: applies committed Prisma migrations (including the ADR-0002 ledger guards)
+  # before the API starts. Re-running it is a no-op when the schema is current.
+  migrate:
+    <<: [*api-image, *hardening]
+    command: ["node_modules/.bin/prisma", "migrate", "deploy"]
+    restart: "no"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-zugrio}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-zugrio}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [data]
+
+  api:
+    <<: [*api-image, *hardening]
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-zugrio}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-zugrio}
+      PORT: "3000"
+      ZUGRIO_CORS_ORIGINS: ${ZUGRIO_CORS_ORIGINS:-*}
+      ZUGRIO_LOG_FORMAT: json
+    ports:
+      - "127.0.0.1:${ZUGRIO_API_LOCAL_PORT:-3000}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    networks: [data, edge]
+    logging:
+      driver: json-file
+      options: { max-size: "20m", max-file: "5" }
+
+networks:
+  # Database traffic never leaves this network; it has no route to the Internet.
+  data:
+    internal: true
+  # Outbound-only path for cloudflared to reach Cloudflare and the API.
+  edge: {}
+
+volumes:
+  pgdata:
+    name: zugrio-alpha-pgdata

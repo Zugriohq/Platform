@@ -1,0 +1,20 @@
+# Reference ingress for the Zugrio private-alpha tunnel.
+#
+# Production uses a *remotely-managed* tunnel (token in CLOUDFLARE_TUNNEL_TOKEN), so this
+# exact ingress is configured on the Cloudflare side (dashboard or API, see README.md).
+# This file documents it under version control and can be used verbatim for a
+# locally-managed tunnel (`cloudflared tunnel --config ... run`).
+#
+# No credentials belong in this file.
+
+tunnel: zugrio-alpha-api            # tunnel name; the UUID is not secret but is environment-specific
+# credentials-file: /etc/cloudflared/<TUNNEL_UUID>.json   # locally-managed only; never commit
+
+ingress:
+  - hostname: api.zugrio.xyz
+    service: http://api:3000          # Compose service name on the `edge` network
+    originRequest:
+      connectTimeout: 10s
+      noTLSVerify: false
+  # Anything else that reaches this tunnel is refused.
+  - service: http_status:404
