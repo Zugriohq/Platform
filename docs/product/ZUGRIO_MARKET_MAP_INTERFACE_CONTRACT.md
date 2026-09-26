@@ -206,3 +206,27 @@ Every visible analytical object should carry or resolve to:
 - authority/maturity class.
 
 No orphan arrows. No unexplained percentages. No renderer-owned analysis.
+
+
+## 10. Strategy × regime playbooks
+
+The engine must not infer "the best entry" from a textbook pattern name.
+
+A versioned strategy playbook declares route families that are eligible to be **evaluated** in each canonical regime. Examples:
+
+- BREAKOUT / EXPANSION → breakout continuation and breakout-retest research routes;
+- MEAN_REVERTING / EXHAUSTION → sweep/fakeout reversal research routes;
+- TRENDING → trend-continuation, BOS/MSS retest or mitigation routes where the strategy declares them;
+- COMPRESSION → compression-breakout watch routes;
+- NOISE → a strategy may deliberately declare no route.
+
+Each route binds:
+- required concept groups;
+- optional contextual concepts;
+- structural invalidation policy reference;
+- credible objective families;
+- optional later position-management policy reference.
+
+This is **not** a performance ranking. The alpha marks the resolved set as `UNVALIDATED_CANDIDATE_SET`.
+
+Actual route optimization requires replay/out-of-sample calibration and admission evidence. Knowledge of technical-analysis vocabulary alone is not enough to claim that one route is economically superior.
