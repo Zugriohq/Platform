@@ -1,5 +1,11 @@
 import { Injectable } from "@nestjs/common";
-import { alphaScenarios, buildDecisionCase, type DecisionCase, type ReplayScenario } from "@zugrio/decision-core";
+import {
+  alphaScenarios,
+  buildDecisionCase,
+  bundleIdentityKey,
+  type DecisionCase,
+  type ReplayScenario,
+} from "@zugrio/decision-core";
 import type { ScenarioDetail, ScenarioSummary } from "@zugrio/alpha-api-contract";
 
 /**
@@ -22,7 +28,7 @@ export class ScenarioCatalog {
 
   detail(scenarioId: string): ScenarioDetail | undefined {
     const scenario = this.find(scenarioId);
-    return scenario ? { ...toSummary(scenario), frames: scenario.frames } : undefined;
+    return scenario ? { ...toSummary(scenario), evidence: scenario.evidence, frames: scenario.frames } : undefined;
   }
 
   /** `undefined` when the scenario or frame does not exist. */
@@ -36,9 +42,12 @@ export class ScenarioCatalog {
 function toSummary(scenario: ReplayScenario): ScenarioSummary {
   return {
     id: scenario.id,
+    version: scenario.version,
+    caseId: scenario.caseId,
     title: scenario.title,
     description: scenario.description,
     bundle: scenario.bundle,
+    bundleKey: bundleIdentityKey(scenario.bundle.identity),
     frameCount: scenario.frames.length,
   };
 }

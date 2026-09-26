@@ -280,13 +280,22 @@
                         "type": "object",
                         "required": [
                           "id",
+                          "version",
+                          "caseId",
                           "title",
                           "description",
                           "bundle",
+                          "bundleKey",
                           "frameCount"
                         ],
                         "properties": {
                           "id": {
+                            "type": "string"
+                          },
+                          "version": {
+                            "type": "string"
+                          },
+                          "caseId": {
                             "type": "string"
                           },
                           "title": {
@@ -297,33 +306,25 @@
                           },
                           "bundle": {
                             "type": "object",
+                            "description": "`AlphaTradeBundle` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                             "required": [
-                              "id",
-                              "version",
+                              "identity",
                               "strategy",
-                              "instrument",
-                              "market",
-                              "horizon",
-                              "evidenceStatus"
+                              "evidenceStatus",
+                              "authoritySpecVersion"
                             ],
                             "properties": {
-                              "id": {
-                                "type": "string"
-                              },
-                              "version": {
-                                "type": "string"
-                              },
-                              "strategy": {
-                                "type": "string"
-                              },
-                              "instrument": {
-                                "type": "string"
-                              },
-                              "market": {
-                                "type": "string"
-                              },
-                              "horizon": {
-                                "type": "string"
+                              "identity": {
+                                "type": "object",
+                                "description": "`BundleIdentity` from @zugrio/domain: versioned MethodProfile / TradeBundle / RegimeModel / TimeframeMap and fixture scope.",
+                                "required": [
+                                  "methodProfile",
+                                  "tradeBundle",
+                                  "regimeModel",
+                                  "timeframeMap",
+                                  "scope"
+                                ],
+                                "additionalProperties": true
                               },
                               "evidenceStatus": {
                                 "type": "string",
@@ -331,7 +332,12 @@
                                   "VALIDATION_ONLY"
                                 ]
                               }
-                            }
+                            },
+                            "additionalProperties": true
+                          },
+                          "bundleKey": {
+                            "type": "string",
+                            "description": "@zugrio/domain bundleIdentityKey(bundle.identity)"
                           },
                           "frameCount": {
                             "type": "integer",
@@ -424,14 +430,24 @@
                       "type": "object",
                       "required": [
                         "id",
+                        "version",
+                        "caseId",
                         "title",
                         "description",
                         "bundle",
+                        "bundleKey",
                         "frameCount",
+                        "evidence",
                         "frames"
                       ],
                       "properties": {
                         "id": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "string"
+                        },
+                        "caseId": {
                           "type": "string"
                         },
                         "title": {
@@ -442,33 +458,25 @@
                         },
                         "bundle": {
                           "type": "object",
+                          "description": "`AlphaTradeBundle` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                           "required": [
-                            "id",
-                            "version",
+                            "identity",
                             "strategy",
-                            "instrument",
-                            "market",
-                            "horizon",
-                            "evidenceStatus"
+                            "evidenceStatus",
+                            "authoritySpecVersion"
                           ],
                           "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "version": {
-                              "type": "string"
-                            },
-                            "strategy": {
-                              "type": "string"
-                            },
-                            "instrument": {
-                              "type": "string"
-                            },
-                            "market": {
-                              "type": "string"
-                            },
-                            "horizon": {
-                              "type": "string"
+                            "identity": {
+                              "type": "object",
+                              "description": "`BundleIdentity` from @zugrio/domain: versioned MethodProfile / TradeBundle / RegimeModel / TimeframeMap and fixture scope.",
+                              "required": [
+                                "methodProfile",
+                                "tradeBundle",
+                                "regimeModel",
+                                "timeframeMap",
+                                "scope"
+                              ],
+                              "additionalProperties": true
                             },
                             "evidenceStatus": {
                               "type": "string",
@@ -476,48 +484,48 @@
                                 "VALIDATION_ONLY"
                               ]
                             }
-                          }
+                          },
+                          "additionalProperties": true
+                        },
+                        "bundleKey": {
+                          "type": "string",
+                          "description": "@zugrio/domain bundleIdentityKey(bundle.identity)"
                         },
                         "frameCount": {
                           "type": "integer",
                           "minimum": 1
                         },
+                        "evidence": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "description": "`EvidenceEvent` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                            "required": [
+                              "id",
+                              "kind",
+                              "knownAt",
+                              "value",
+                              "source"
+                            ],
+                            "properties": {
+                              "knownAt": {
+                                "type": "string",
+                                "format": "date-time"
+                              }
+                            },
+                            "additionalProperties": true
+                          }
+                        },
                         "frames": {
                           "type": "array",
                           "items": {
                             "type": "object",
-                            "description": "decision-core EvidenceSnapshot (validation fixture frame).",
+                            "description": "`ReplayFrame` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                             "required": [
-                              "timestamp",
-                              "price",
-                              "lifecycle",
-                              "entryEventObserved",
-                              "currentEntryStatus",
-                              "note"
+                              "evaluatedAt"
                             ],
-                            "properties": {
-                              "timestamp": {
-                                "type": "string",
-                                "format": "date-time"
-                              },
-                              "price": {
-                                "type": "number"
-                              },
-                              "lifecycle": {
-                                "type": "string",
-                                "description": "decision-core StructuralLifecycle"
-                              },
-                              "entryEventObserved": {
-                                "type": "boolean"
-                              },
-                              "currentEntryStatus": {
-                                "type": "string",
-                                "description": "decision-core CurrentEntryStatus"
-                              },
-                              "note": {
-                                "type": "string"
-                              }
-                            }
+                            "properties": {},
+                            "additionalProperties": true
                           }
                         }
                       }
@@ -632,14 +640,19 @@
                     },
                     "data": {
                       "type": "object",
-                      "description": "Deterministic `@zugrio/decision-core` DecisionCase for one replay frame.",
+                      "description": "`DecisionCase` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                       "required": [
                         "caseId",
+                        "scenarioId",
+                        "scenarioVersion",
+                        "evaluationId",
                         "bundle",
                         "current",
-                        "state",
-                        "reason",
-                        "entryReason",
+                        "structuralState",
+                        "outcome",
+                        "stateReason",
+                        "outcomeReason",
+                        "annotations",
                         "authority",
                         "authorityClass",
                         "modelScored",
@@ -649,35 +662,36 @@
                         "caseId": {
                           "type": "string"
                         },
+                        "scenarioId": {
+                          "type": "string"
+                        },
+                        "scenarioVersion": {
+                          "type": "string"
+                        },
+                        "evaluationId": {
+                          "type": "string"
+                        },
                         "bundle": {
                           "type": "object",
+                          "description": "`AlphaTradeBundle` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                           "required": [
-                            "id",
-                            "version",
+                            "identity",
                             "strategy",
-                            "instrument",
-                            "market",
-                            "horizon",
-                            "evidenceStatus"
+                            "evidenceStatus",
+                            "authoritySpecVersion"
                           ],
                           "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "version": {
-                              "type": "string"
-                            },
-                            "strategy": {
-                              "type": "string"
-                            },
-                            "instrument": {
-                              "type": "string"
-                            },
-                            "market": {
-                              "type": "string"
-                            },
-                            "horizon": {
-                              "type": "string"
+                            "identity": {
+                              "type": "object",
+                              "description": "`BundleIdentity` from @zugrio/domain: versioned MethodProfile / TradeBundle / RegimeModel / TimeframeMap and fixture scope.",
+                              "required": [
+                                "methodProfile",
+                                "tradeBundle",
+                                "regimeModel",
+                                "timeframeMap",
+                                "scope"
+                              ],
+                              "additionalProperties": true
                             },
                             "evidenceStatus": {
                               "type": "string",
@@ -685,52 +699,43 @@
                                 "VALIDATION_ONLY"
                               ]
                             }
-                          }
+                          },
+                          "additionalProperties": true
                         },
                         "current": {
                           "type": "object",
-                          "description": "decision-core EvidenceSnapshot (validation fixture frame).",
+                          "description": "`EvidenceSnapshot` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                           "required": [
-                            "timestamp",
-                            "price",
-                            "lifecycle",
-                            "entryEventObserved",
-                            "currentEntryStatus",
-                            "note"
+                            "evaluatedAt",
+                            "evidenceIds",
+                            "evidenceRefs"
                           ],
-                          "properties": {
-                            "timestamp": {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            "price": {
-                              "type": "number"
-                            },
-                            "lifecycle": {
-                              "type": "string",
-                              "description": "decision-core StructuralLifecycle"
-                            },
-                            "entryEventObserved": {
-                              "type": "boolean"
-                            },
-                            "currentEntryStatus": {
-                              "type": "string",
-                              "description": "decision-core CurrentEntryStatus"
-                            },
-                            "note": {
-                              "type": "string"
-                            }
-                          }
+                          "properties": {},
+                          "additionalProperties": true
                         },
-                        "state": {
+                        "structuralState": {
                           "type": "string",
-                          "description": "decision-core StructuralState"
+                          "nullable": true,
+                          "description": "decision-core StructuralState, or null"
                         },
-                        "reason": {
-                          "type": "string"
+                        "outcome": {
+                          "type": "string",
+                          "description": "decision-core DecisionOutcome"
                         },
-                        "entryReason": {
-                          "type": "string"
+                        "annotations": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "description": "`ChartAnnotation` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                            "required": [
+                              "id",
+                              "kind",
+                              "knownAt",
+                              "evidenceId"
+                            ],
+                            "properties": {},
+                            "additionalProperties": true
+                          }
                         },
                         "authority": {
                           "type": "string",
@@ -754,55 +759,38 @@
                           "type": "array",
                           "items": {
                             "type": "object",
-                            "description": "decision-core DecisionEvent.",
+                            "description": "`DecisionEvent` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                             "required": [
-                              "timestamp",
-                              "state",
-                              "reason",
-                              "entryReason",
-                              "price",
-                              "changes"
+                              "evaluationId",
+                              "evaluatedAt",
+                              "structuralState",
+                              "outcome",
+                              "stateReason",
+                              "outcomeReason",
+                              "changes",
+                              "annotationIds"
                             ],
                             "properties": {
-                              "timestamp": {
+                              "evaluationId": {
+                                "type": "string"
+                              },
+                              "evaluatedAt": {
                                 "type": "string",
                                 "format": "date-time"
                               },
-                              "state": {
+                              "structuralState": {
                                 "type": "string",
-                                "description": "decision-core StructuralState"
+                                "nullable": true
                               },
-                              "reason": {
+                              "outcome": {
                                 "type": "string"
-                              },
-                              "entryReason": {
-                                "type": "string"
-                              },
-                              "price": {
-                                "type": "number"
-                              },
-                              "changes": {
-                                "type": "array",
-                                "items": {
-                                  "type": "object",
-                                  "required": [
-                                    "field",
-                                    "from",
-                                    "to"
-                                  ],
-                                  "properties": {
-                                    "field": {
-                                      "type": "string"
-                                    },
-                                    "from": {},
-                                    "to": {}
-                                  }
-                                }
                               }
-                            }
+                            },
+                            "additionalProperties": true
                           }
                         }
-                      }
+                      },
+                      "additionalProperties": true
                     }
                   }
                 }
@@ -948,16 +936,20 @@
                       "properties": {
                         "created": {
                           "type": "boolean",
-                          "description": "false when an identical case already existed."
+                          "description": "false when the same decision-core evaluation was already persisted."
                         },
                         "decisionCase": {
                           "type": "object",
                           "required": [
                             "id",
+                            "evaluationId",
                             "decisionCoreCaseId",
                             "scenarioId",
+                            "scenarioVersion",
                             "frameIndex",
+                            "evaluatedAt",
                             "bundle",
+                            "bundleKey",
                             "authority",
                             "authorityClass",
                             "modelScored",
@@ -972,45 +964,48 @@
                               "type": "string",
                               "format": "uuid"
                             },
+                            "evaluationId": {
+                              "type": "string",
+                              "description": "decision-core evaluationId; idempotency key"
+                            },
                             "decisionCoreCaseId": {
                               "type": "string"
                             },
                             "scenarioId": {
                               "type": "string"
                             },
+                            "scenarioVersion": {
+                              "type": "string"
+                            },
                             "frameIndex": {
                               "type": "integer",
                               "minimum": 0
                             },
+                            "evaluatedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
                             "bundle": {
                               "type": "object",
+                              "description": "`AlphaTradeBundle` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                               "required": [
-                                "id",
-                                "version",
+                                "identity",
                                 "strategy",
-                                "instrument",
-                                "market",
-                                "horizon",
-                                "evidenceStatus"
+                                "evidenceStatus",
+                                "authoritySpecVersion"
                               ],
                               "properties": {
-                                "id": {
-                                  "type": "string"
-                                },
-                                "version": {
-                                  "type": "string"
-                                },
-                                "strategy": {
-                                  "type": "string"
-                                },
-                                "instrument": {
-                                  "type": "string"
-                                },
-                                "market": {
-                                  "type": "string"
-                                },
-                                "horizon": {
-                                  "type": "string"
+                                "identity": {
+                                  "type": "object",
+                                  "description": "`BundleIdentity` from @zugrio/domain: versioned MethodProfile / TradeBundle / RegimeModel / TimeframeMap and fixture scope.",
+                                  "required": [
+                                    "methodProfile",
+                                    "tradeBundle",
+                                    "regimeModel",
+                                    "timeframeMap",
+                                    "scope"
+                                  ],
+                                  "additionalProperties": true
                                 },
                                 "evidenceStatus": {
                                   "type": "string",
@@ -1018,7 +1013,11 @@
                                     "VALIDATION_ONLY"
                                   ]
                                 }
-                              }
+                              },
+                              "additionalProperties": true
+                            },
+                            "bundleKey": {
+                              "type": "string"
                             },
                             "authority": {
                               "type": "string",
@@ -1043,11 +1042,16 @@
                               "description": "decision-core DecisionCase for the persisted frame, without history (mutable read model).",
                               "required": [
                                 "caseId",
+                                "scenarioId",
+                                "scenarioVersion",
+                                "evaluationId",
                                 "bundle",
                                 "current",
-                                "state",
-                                "reason",
-                                "entryReason",
+                                "structuralState",
+                                "outcome",
+                                "stateReason",
+                                "outcomeReason",
+                                "annotations",
                                 "authority",
                                 "authorityClass",
                                 "modelScored"
@@ -1056,35 +1060,36 @@
                                 "caseId": {
                                   "type": "string"
                                 },
+                                "scenarioId": {
+                                  "type": "string"
+                                },
+                                "scenarioVersion": {
+                                  "type": "string"
+                                },
+                                "evaluationId": {
+                                  "type": "string"
+                                },
                                 "bundle": {
                                   "type": "object",
+                                  "description": "`AlphaTradeBundle` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                                   "required": [
-                                    "id",
-                                    "version",
+                                    "identity",
                                     "strategy",
-                                    "instrument",
-                                    "market",
-                                    "horizon",
-                                    "evidenceStatus"
+                                    "evidenceStatus",
+                                    "authoritySpecVersion"
                                   ],
                                   "properties": {
-                                    "id": {
-                                      "type": "string"
-                                    },
-                                    "version": {
-                                      "type": "string"
-                                    },
-                                    "strategy": {
-                                      "type": "string"
-                                    },
-                                    "instrument": {
-                                      "type": "string"
-                                    },
-                                    "market": {
-                                      "type": "string"
-                                    },
-                                    "horizon": {
-                                      "type": "string"
+                                    "identity": {
+                                      "type": "object",
+                                      "description": "`BundleIdentity` from @zugrio/domain: versioned MethodProfile / TradeBundle / RegimeModel / TimeframeMap and fixture scope.",
+                                      "required": [
+                                        "methodProfile",
+                                        "tradeBundle",
+                                        "regimeModel",
+                                        "timeframeMap",
+                                        "scope"
+                                      ],
+                                      "additionalProperties": true
                                     },
                                     "evidenceStatus": {
                                       "type": "string",
@@ -1092,52 +1097,43 @@
                                         "VALIDATION_ONLY"
                                       ]
                                     }
-                                  }
+                                  },
+                                  "additionalProperties": true
                                 },
                                 "current": {
                                   "type": "object",
-                                  "description": "decision-core EvidenceSnapshot (validation fixture frame).",
+                                  "description": "`EvidenceSnapshot` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                                   "required": [
-                                    "timestamp",
-                                    "price",
-                                    "lifecycle",
-                                    "entryEventObserved",
-                                    "currentEntryStatus",
-                                    "note"
+                                    "evaluatedAt",
+                                    "evidenceIds",
+                                    "evidenceRefs"
                                   ],
-                                  "properties": {
-                                    "timestamp": {
-                                      "type": "string",
-                                      "format": "date-time"
-                                    },
-                                    "price": {
-                                      "type": "number"
-                                    },
-                                    "lifecycle": {
-                                      "type": "string",
-                                      "description": "decision-core StructuralLifecycle"
-                                    },
-                                    "entryEventObserved": {
-                                      "type": "boolean"
-                                    },
-                                    "currentEntryStatus": {
-                                      "type": "string",
-                                      "description": "decision-core CurrentEntryStatus"
-                                    },
-                                    "note": {
-                                      "type": "string"
-                                    }
-                                  }
+                                  "properties": {},
+                                  "additionalProperties": true
                                 },
-                                "state": {
+                                "structuralState": {
                                   "type": "string",
-                                  "description": "decision-core StructuralState"
+                                  "nullable": true,
+                                  "description": "decision-core StructuralState, or null"
                                 },
-                                "reason": {
-                                  "type": "string"
+                                "outcome": {
+                                  "type": "string",
+                                  "description": "decision-core DecisionOutcome"
                                 },
-                                "entryReason": {
-                                  "type": "string"
+                                "annotations": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "description": "`ChartAnnotation` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                                    "required": [
+                                      "id",
+                                      "kind",
+                                      "knownAt",
+                                      "evidenceId"
+                                    ],
+                                    "properties": {},
+                                    "additionalProperties": true
+                                  }
                                 },
                                 "authority": {
                                   "type": "string",
@@ -1157,7 +1153,8 @@
                                     false
                                   ]
                                 }
-                              }
+                              },
+                              "additionalProperties": true
                             },
                             "events": {
                               "type": "array",
@@ -1192,52 +1189,34 @@
                                   },
                                   "event": {
                                     "type": "object",
-                                    "description": "decision-core DecisionEvent.",
+                                    "description": "`DecisionEvent` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                                     "required": [
-                                      "timestamp",
-                                      "state",
-                                      "reason",
-                                      "entryReason",
-                                      "price",
-                                      "changes"
+                                      "evaluationId",
+                                      "evaluatedAt",
+                                      "structuralState",
+                                      "outcome",
+                                      "stateReason",
+                                      "outcomeReason",
+                                      "changes",
+                                      "annotationIds"
                                     ],
                                     "properties": {
-                                      "timestamp": {
+                                      "evaluationId": {
+                                        "type": "string"
+                                      },
+                                      "evaluatedAt": {
                                         "type": "string",
                                         "format": "date-time"
                                       },
-                                      "state": {
+                                      "structuralState": {
                                         "type": "string",
-                                        "description": "decision-core StructuralState"
+                                        "nullable": true
                                       },
-                                      "reason": {
+                                      "outcome": {
                                         "type": "string"
-                                      },
-                                      "entryReason": {
-                                        "type": "string"
-                                      },
-                                      "price": {
-                                        "type": "number"
-                                      },
-                                      "changes": {
-                                        "type": "array",
-                                        "items": {
-                                          "type": "object",
-                                          "required": [
-                                            "field",
-                                            "from",
-                                            "to"
-                                          ],
-                                          "properties": {
-                                            "field": {
-                                              "type": "string"
-                                            },
-                                            "from": {},
-                                            "to": {}
-                                          }
-                                        }
                                       }
-                                    }
+                                    },
+                                    "additionalProperties": true
                                   }
                                 }
                               }
@@ -1326,16 +1305,20 @@
                       "properties": {
                         "created": {
                           "type": "boolean",
-                          "description": "false when an identical case already existed."
+                          "description": "false when the same decision-core evaluation was already persisted."
                         },
                         "decisionCase": {
                           "type": "object",
                           "required": [
                             "id",
+                            "evaluationId",
                             "decisionCoreCaseId",
                             "scenarioId",
+                            "scenarioVersion",
                             "frameIndex",
+                            "evaluatedAt",
                             "bundle",
+                            "bundleKey",
                             "authority",
                             "authorityClass",
                             "modelScored",
@@ -1350,45 +1333,48 @@
                               "type": "string",
                               "format": "uuid"
                             },
+                            "evaluationId": {
+                              "type": "string",
+                              "description": "decision-core evaluationId; idempotency key"
+                            },
                             "decisionCoreCaseId": {
                               "type": "string"
                             },
                             "scenarioId": {
                               "type": "string"
                             },
+                            "scenarioVersion": {
+                              "type": "string"
+                            },
                             "frameIndex": {
                               "type": "integer",
                               "minimum": 0
                             },
+                            "evaluatedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
                             "bundle": {
                               "type": "object",
+                              "description": "`AlphaTradeBundle` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                               "required": [
-                                "id",
-                                "version",
+                                "identity",
                                 "strategy",
-                                "instrument",
-                                "market",
-                                "horizon",
-                                "evidenceStatus"
+                                "evidenceStatus",
+                                "authoritySpecVersion"
                               ],
                               "properties": {
-                                "id": {
-                                  "type": "string"
-                                },
-                                "version": {
-                                  "type": "string"
-                                },
-                                "strategy": {
-                                  "type": "string"
-                                },
-                                "instrument": {
-                                  "type": "string"
-                                },
-                                "market": {
-                                  "type": "string"
-                                },
-                                "horizon": {
-                                  "type": "string"
+                                "identity": {
+                                  "type": "object",
+                                  "description": "`BundleIdentity` from @zugrio/domain: versioned MethodProfile / TradeBundle / RegimeModel / TimeframeMap and fixture scope.",
+                                  "required": [
+                                    "methodProfile",
+                                    "tradeBundle",
+                                    "regimeModel",
+                                    "timeframeMap",
+                                    "scope"
+                                  ],
+                                  "additionalProperties": true
                                 },
                                 "evidenceStatus": {
                                   "type": "string",
@@ -1396,7 +1382,11 @@
                                     "VALIDATION_ONLY"
                                   ]
                                 }
-                              }
+                              },
+                              "additionalProperties": true
+                            },
+                            "bundleKey": {
+                              "type": "string"
                             },
                             "authority": {
                               "type": "string",
@@ -1421,11 +1411,16 @@
                               "description": "decision-core DecisionCase for the persisted frame, without history (mutable read model).",
                               "required": [
                                 "caseId",
+                                "scenarioId",
+                                "scenarioVersion",
+                                "evaluationId",
                                 "bundle",
                                 "current",
-                                "state",
-                                "reason",
-                                "entryReason",
+                                "structuralState",
+                                "outcome",
+                                "stateReason",
+                                "outcomeReason",
+                                "annotations",
                                 "authority",
                                 "authorityClass",
                                 "modelScored"
@@ -1434,35 +1429,36 @@
                                 "caseId": {
                                   "type": "string"
                                 },
+                                "scenarioId": {
+                                  "type": "string"
+                                },
+                                "scenarioVersion": {
+                                  "type": "string"
+                                },
+                                "evaluationId": {
+                                  "type": "string"
+                                },
                                 "bundle": {
                                   "type": "object",
+                                  "description": "`AlphaTradeBundle` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                                   "required": [
-                                    "id",
-                                    "version",
+                                    "identity",
                                     "strategy",
-                                    "instrument",
-                                    "market",
-                                    "horizon",
-                                    "evidenceStatus"
+                                    "evidenceStatus",
+                                    "authoritySpecVersion"
                                   ],
                                   "properties": {
-                                    "id": {
-                                      "type": "string"
-                                    },
-                                    "version": {
-                                      "type": "string"
-                                    },
-                                    "strategy": {
-                                      "type": "string"
-                                    },
-                                    "instrument": {
-                                      "type": "string"
-                                    },
-                                    "market": {
-                                      "type": "string"
-                                    },
-                                    "horizon": {
-                                      "type": "string"
+                                    "identity": {
+                                      "type": "object",
+                                      "description": "`BundleIdentity` from @zugrio/domain: versioned MethodProfile / TradeBundle / RegimeModel / TimeframeMap and fixture scope.",
+                                      "required": [
+                                        "methodProfile",
+                                        "tradeBundle",
+                                        "regimeModel",
+                                        "timeframeMap",
+                                        "scope"
+                                      ],
+                                      "additionalProperties": true
                                     },
                                     "evidenceStatus": {
                                       "type": "string",
@@ -1470,52 +1466,43 @@
                                         "VALIDATION_ONLY"
                                       ]
                                     }
-                                  }
+                                  },
+                                  "additionalProperties": true
                                 },
                                 "current": {
                                   "type": "object",
-                                  "description": "decision-core EvidenceSnapshot (validation fixture frame).",
+                                  "description": "`EvidenceSnapshot` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                                   "required": [
-                                    "timestamp",
-                                    "price",
-                                    "lifecycle",
-                                    "entryEventObserved",
-                                    "currentEntryStatus",
-                                    "note"
+                                    "evaluatedAt",
+                                    "evidenceIds",
+                                    "evidenceRefs"
                                   ],
-                                  "properties": {
-                                    "timestamp": {
-                                      "type": "string",
-                                      "format": "date-time"
-                                    },
-                                    "price": {
-                                      "type": "number"
-                                    },
-                                    "lifecycle": {
-                                      "type": "string",
-                                      "description": "decision-core StructuralLifecycle"
-                                    },
-                                    "entryEventObserved": {
-                                      "type": "boolean"
-                                    },
-                                    "currentEntryStatus": {
-                                      "type": "string",
-                                      "description": "decision-core CurrentEntryStatus"
-                                    },
-                                    "note": {
-                                      "type": "string"
-                                    }
-                                  }
+                                  "properties": {},
+                                  "additionalProperties": true
                                 },
-                                "state": {
+                                "structuralState": {
                                   "type": "string",
-                                  "description": "decision-core StructuralState"
+                                  "nullable": true,
+                                  "description": "decision-core StructuralState, or null"
                                 },
-                                "reason": {
-                                  "type": "string"
+                                "outcome": {
+                                  "type": "string",
+                                  "description": "decision-core DecisionOutcome"
                                 },
-                                "entryReason": {
-                                  "type": "string"
+                                "annotations": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "description": "`ChartAnnotation` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                                    "required": [
+                                      "id",
+                                      "kind",
+                                      "knownAt",
+                                      "evidenceId"
+                                    ],
+                                    "properties": {},
+                                    "additionalProperties": true
+                                  }
                                 },
                                 "authority": {
                                   "type": "string",
@@ -1535,7 +1522,8 @@
                                     false
                                   ]
                                 }
-                              }
+                              },
+                              "additionalProperties": true
                             },
                             "events": {
                               "type": "array",
@@ -1570,52 +1558,34 @@
                                   },
                                   "event": {
                                     "type": "object",
-                                    "description": "decision-core DecisionEvent.",
+                                    "description": "`DecisionEvent` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                                     "required": [
-                                      "timestamp",
-                                      "state",
-                                      "reason",
-                                      "entryReason",
-                                      "price",
-                                      "changes"
+                                      "evaluationId",
+                                      "evaluatedAt",
+                                      "structuralState",
+                                      "outcome",
+                                      "stateReason",
+                                      "outcomeReason",
+                                      "changes",
+                                      "annotationIds"
                                     ],
                                     "properties": {
-                                      "timestamp": {
+                                      "evaluationId": {
+                                        "type": "string"
+                                      },
+                                      "evaluatedAt": {
                                         "type": "string",
                                         "format": "date-time"
                                       },
-                                      "state": {
+                                      "structuralState": {
                                         "type": "string",
-                                        "description": "decision-core StructuralState"
+                                        "nullable": true
                                       },
-                                      "reason": {
+                                      "outcome": {
                                         "type": "string"
-                                      },
-                                      "entryReason": {
-                                        "type": "string"
-                                      },
-                                      "price": {
-                                        "type": "number"
-                                      },
-                                      "changes": {
-                                        "type": "array",
-                                        "items": {
-                                          "type": "object",
-                                          "required": [
-                                            "field",
-                                            "from",
-                                            "to"
-                                          ],
-                                          "properties": {
-                                            "field": {
-                                              "type": "string"
-                                            },
-                                            "from": {},
-                                            "to": {}
-                                          }
-                                        }
                                       }
-                                    }
+                                    },
+                                    "additionalProperties": true
                                   }
                                 }
                               }
@@ -1740,10 +1710,14 @@
                       "type": "object",
                       "required": [
                         "id",
+                        "evaluationId",
                         "decisionCoreCaseId",
                         "scenarioId",
+                        "scenarioVersion",
                         "frameIndex",
+                        "evaluatedAt",
                         "bundle",
+                        "bundleKey",
                         "authority",
                         "authorityClass",
                         "modelScored",
@@ -1758,45 +1732,48 @@
                           "type": "string",
                           "format": "uuid"
                         },
+                        "evaluationId": {
+                          "type": "string",
+                          "description": "decision-core evaluationId; idempotency key"
+                        },
                         "decisionCoreCaseId": {
                           "type": "string"
                         },
                         "scenarioId": {
                           "type": "string"
                         },
+                        "scenarioVersion": {
+                          "type": "string"
+                        },
                         "frameIndex": {
                           "type": "integer",
                           "minimum": 0
                         },
+                        "evaluatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
                         "bundle": {
                           "type": "object",
+                          "description": "`AlphaTradeBundle` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                           "required": [
-                            "id",
-                            "version",
+                            "identity",
                             "strategy",
-                            "instrument",
-                            "market",
-                            "horizon",
-                            "evidenceStatus"
+                            "evidenceStatus",
+                            "authoritySpecVersion"
                           ],
                           "properties": {
-                            "id": {
-                              "type": "string"
-                            },
-                            "version": {
-                              "type": "string"
-                            },
-                            "strategy": {
-                              "type": "string"
-                            },
-                            "instrument": {
-                              "type": "string"
-                            },
-                            "market": {
-                              "type": "string"
-                            },
-                            "horizon": {
-                              "type": "string"
+                            "identity": {
+                              "type": "object",
+                              "description": "`BundleIdentity` from @zugrio/domain: versioned MethodProfile / TradeBundle / RegimeModel / TimeframeMap and fixture scope.",
+                              "required": [
+                                "methodProfile",
+                                "tradeBundle",
+                                "regimeModel",
+                                "timeframeMap",
+                                "scope"
+                              ],
+                              "additionalProperties": true
                             },
                             "evidenceStatus": {
                               "type": "string",
@@ -1804,7 +1781,11 @@
                                 "VALIDATION_ONLY"
                               ]
                             }
-                          }
+                          },
+                          "additionalProperties": true
+                        },
+                        "bundleKey": {
+                          "type": "string"
                         },
                         "authority": {
                           "type": "string",
@@ -1829,11 +1810,16 @@
                           "description": "decision-core DecisionCase for the persisted frame, without history (mutable read model).",
                           "required": [
                             "caseId",
+                            "scenarioId",
+                            "scenarioVersion",
+                            "evaluationId",
                             "bundle",
                             "current",
-                            "state",
-                            "reason",
-                            "entryReason",
+                            "structuralState",
+                            "outcome",
+                            "stateReason",
+                            "outcomeReason",
+                            "annotations",
                             "authority",
                             "authorityClass",
                             "modelScored"
@@ -1842,35 +1828,36 @@
                             "caseId": {
                               "type": "string"
                             },
+                            "scenarioId": {
+                              "type": "string"
+                            },
+                            "scenarioVersion": {
+                              "type": "string"
+                            },
+                            "evaluationId": {
+                              "type": "string"
+                            },
                             "bundle": {
                               "type": "object",
+                              "description": "`AlphaTradeBundle` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                               "required": [
-                                "id",
-                                "version",
+                                "identity",
                                 "strategy",
-                                "instrument",
-                                "market",
-                                "horizon",
-                                "evidenceStatus"
+                                "evidenceStatus",
+                                "authoritySpecVersion"
                               ],
                               "properties": {
-                                "id": {
-                                  "type": "string"
-                                },
-                                "version": {
-                                  "type": "string"
-                                },
-                                "strategy": {
-                                  "type": "string"
-                                },
-                                "instrument": {
-                                  "type": "string"
-                                },
-                                "market": {
-                                  "type": "string"
-                                },
-                                "horizon": {
-                                  "type": "string"
+                                "identity": {
+                                  "type": "object",
+                                  "description": "`BundleIdentity` from @zugrio/domain: versioned MethodProfile / TradeBundle / RegimeModel / TimeframeMap and fixture scope.",
+                                  "required": [
+                                    "methodProfile",
+                                    "tradeBundle",
+                                    "regimeModel",
+                                    "timeframeMap",
+                                    "scope"
+                                  ],
+                                  "additionalProperties": true
                                 },
                                 "evidenceStatus": {
                                   "type": "string",
@@ -1878,52 +1865,43 @@
                                     "VALIDATION_ONLY"
                                   ]
                                 }
-                              }
+                              },
+                              "additionalProperties": true
                             },
                             "current": {
                               "type": "object",
-                              "description": "decision-core EvidenceSnapshot (validation fixture frame).",
+                              "description": "`EvidenceSnapshot` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                               "required": [
-                                "timestamp",
-                                "price",
-                                "lifecycle",
-                                "entryEventObserved",
-                                "currentEntryStatus",
-                                "note"
+                                "evaluatedAt",
+                                "evidenceIds",
+                                "evidenceRefs"
                               ],
-                              "properties": {
-                                "timestamp": {
-                                  "type": "string",
-                                  "format": "date-time"
-                                },
-                                "price": {
-                                  "type": "number"
-                                },
-                                "lifecycle": {
-                                  "type": "string",
-                                  "description": "decision-core StructuralLifecycle"
-                                },
-                                "entryEventObserved": {
-                                  "type": "boolean"
-                                },
-                                "currentEntryStatus": {
-                                  "type": "string",
-                                  "description": "decision-core CurrentEntryStatus"
-                                },
-                                "note": {
-                                  "type": "string"
-                                }
-                              }
+                              "properties": {},
+                              "additionalProperties": true
                             },
-                            "state": {
+                            "structuralState": {
                               "type": "string",
-                              "description": "decision-core StructuralState"
+                              "nullable": true,
+                              "description": "decision-core StructuralState, or null"
                             },
-                            "reason": {
-                              "type": "string"
+                            "outcome": {
+                              "type": "string",
+                              "description": "decision-core DecisionOutcome"
                             },
-                            "entryReason": {
-                              "type": "string"
+                            "annotations": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "description": "`ChartAnnotation` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                                "required": [
+                                  "id",
+                                  "kind",
+                                  "knownAt",
+                                  "evidenceId"
+                                ],
+                                "properties": {},
+                                "additionalProperties": true
+                              }
                             },
                             "authority": {
                               "type": "string",
@@ -1943,7 +1921,8 @@
                                 false
                               ]
                             }
-                          }
+                          },
+                          "additionalProperties": true
                         },
                         "events": {
                           "type": "array",
@@ -1978,52 +1957,34 @@
                               },
                               "event": {
                                 "type": "object",
-                                "description": "decision-core DecisionEvent.",
+                                "description": "`DecisionEvent` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                                 "required": [
-                                  "timestamp",
-                                  "state",
-                                  "reason",
-                                  "entryReason",
-                                  "price",
-                                  "changes"
+                                  "evaluationId",
+                                  "evaluatedAt",
+                                  "structuralState",
+                                  "outcome",
+                                  "stateReason",
+                                  "outcomeReason",
+                                  "changes",
+                                  "annotationIds"
                                 ],
                                 "properties": {
-                                  "timestamp": {
+                                  "evaluationId": {
+                                    "type": "string"
+                                  },
+                                  "evaluatedAt": {
                                     "type": "string",
                                     "format": "date-time"
                                   },
-                                  "state": {
+                                  "structuralState": {
                                     "type": "string",
-                                    "description": "decision-core StructuralState"
+                                    "nullable": true
                                   },
-                                  "reason": {
+                                  "outcome": {
                                     "type": "string"
-                                  },
-                                  "entryReason": {
-                                    "type": "string"
-                                  },
-                                  "price": {
-                                    "type": "number"
-                                  },
-                                  "changes": {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "object",
-                                      "required": [
-                                        "field",
-                                        "from",
-                                        "to"
-                                      ],
-                                      "properties": {
-                                        "field": {
-                                          "type": "string"
-                                        },
-                                        "from": {},
-                                        "to": {}
-                                      }
-                                    }
                                   }
-                                }
+                                },
+                                "additionalProperties": true
                               }
                             }
                           }

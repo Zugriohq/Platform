@@ -76,7 +76,7 @@ describe.skipIf(!adminUrl)("PostgreSQL decision ledger", () => {
     expect(created.status).toBe(201);
     const persisted = created.body.data.decisionCase;
     expect(persisted.consistentWithDecisionCore).toBe(true);
-    expect(persisted.projection.state).toBe("STRUCTURAL_READY");
+    expect(persisted.projection).toMatchObject({ structuralState: "STRUCTURAL_READY", outcome: "PASS" });
     expect(persisted.events.some((entry: { event: { changes: unknown[] } }) => entry.event.changes.length > 0)).toBe(true);
 
     // A fresh store/app instance proves reconstruction comes from PostgreSQL, not memory.
@@ -116,7 +116,7 @@ describe.skipIf(!adminUrl)("PostgreSQL decision ledger", () => {
   it("rejects UPDATE, DELETE and TRUNCATE on decision events", async () => {
     const { body } = await materialize(2);
     const caseId = body.data.decisionCase.id;
-    await expect(sql.query(`UPDATE decision_event SET payload = jsonb_set(payload, '{reason}', '"hindsight"') WHERE case_id = $1`, [caseId])).rejects.toThrow(/append-only/);
+    await expect(sql.query(`UPDATE decision_event SET payload = jsonb_set(payload, '{stateReason}', '"hindsight"') WHERE case_id = $1`, [caseId])).rejects.toThrow(/append-only/);
     await expect(sql.query(`DELETE FROM decision_event WHERE case_id = $1`, [caseId])).rejects.toThrow(/append-only/);
     await expect(sql.query(`TRUNCATE decision_event CASCADE`)).rejects.toThrow(/append-only/);
     await expect(sql.query(`DELETE FROM decision_case WHERE id = $1`, [caseId])).rejects.toThrow(/append-only/);
@@ -127,13 +127,15 @@ describe.skipIf(!adminUrl)("PostgreSQL decision ledger", () => {
     const caseId = body.data.decisionCase.id;
     await expect(sql.query(`UPDATE decision_case SET frame_index = 0 WHERE id = $1`, [caseId])).rejects.toThrow(/identity is immutable/);
     await expect(sql.query(`UPDATE decision_case SET bundle = '{}'::jsonb WHERE id = $1`, [caseId])).rejects.toThrow(/identity is immutable/);
+    await expect(sql.query(`UPDATE decision_case SET bundle_key = 'other' WHERE id = $1`, [caseId])).rejects.toThrow(/identity is immutable/);
+    await expect(sql.query(`UPDATE decision_case SET evaluated_at = now() WHERE id = $1`, [caseId])).rejects.toThrow(/identity is immutable/);
 
     // The projection is the mutable read model; changing it must not touch the ledger,
     // and reconstruction must report the divergence rather than trust it.
     const before = await api.request(`/v1/alpha/decision-cases/${caseId}`);
     await sql.query(
-      `UPDATE decision_case SET projection_state = 'STRUCTURAL_READY',
-         projection = jsonb_set(projection, '{state}', '"STRUCTURAL_READY"') WHERE id = $1`,
+      `UPDATE decision_case SET projection_outcome = 'PASS',
+         projection = jsonb_set(projection, '{outcome}', '"PASS"') WHERE id = $1`,
       [caseId],
     );
     const after = await api.request(`/v1/alpha/decision-cases/${caseId}`);
@@ -155,10 +157,10 @@ describe.skipIf(!adminUrl)("PostgreSQL decision ledger", () => {
     ).rejects.toThrow(/projection_authority_check/);
     await expect(
       sql.query(
-        `INSERT INTO decision_case (id, decision_core_case_id, scenario_id, frame_index, bundle_id, bundle_version, bundle,
-           release_channel, projection_state, projection, updated_at)
-         VALUES (gen_random_uuid(), 'x', 'x', 0, 'b', 'v', '{}', 'production', 'STRUCTURAL_CANDIDATE',
-           '{"state":"STRUCTURAL_CANDIDATE","authority":"NO_LIVE_CAPITAL","authorityClass":"STRUCTURAL_ONLY","modelScored":false}', now())`,
+        `INSERT INTO decision_case (id, evaluation_id, decision_core_case_id, scenario_id, scenario_version, frame_index,
+           evaluated_at, bundle_key, bundle, release_channel, projection_structural_state, projection_outcome, projection, updated_at)
+         VALUES (gen_random_uuid(), 'e', 'c', 's', 'v', 0, now(), 'k', '{}', 'production', NULL, 'WAIT',
+           '{"evaluationId":"e","structuralState":null,"outcome":"WAIT","authority":"NO_LIVE_CAPITAL","authorityClass":"STRUCTURAL_ONLY","modelScored":false}', now())`,
       ),
     ).rejects.toThrow(/release_channel_check/);
   });

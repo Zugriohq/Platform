@@ -23,8 +23,8 @@ echo "ok  /v1/alpha/scenarios ($(jq '.data | length' <<<"$scenarios") scenarios)
 
 frame="$(curl -fsS "$base/v1/alpha/scenarios/$scenario_id/frames/0")" || fail "GET frame"
 check_meta "$frame" frame
-[ "$(jq -r .data.authority <<<"$frame")" = NO_LIVE_CAPITAL ] || fail "frame authority"
-echo "ok  frame 0 state=$(jq -r .data.state <<<"$frame")"
+[ "$(jq -c "[.data.authority, .data.authorityClass, .data.modelScored]" <<<"$frame")" = '["NO_LIVE_CAPITAL","STRUCTURAL_ONLY",false]' ] || fail "frame authority"
+echo "ok  frame 0 structuralState=$(jq -r .data.structuralState <<<"$frame") outcome=$(jq -r .data.outcome <<<"$frame")"
 
 created="$(curl -fsS -X POST "$base/v1/alpha/decision-cases" -H 'content-type: application/json' \
   -d "{\"scenarioId\":\"$scenario_id\",\"frameIndex\":0}")" || fail "POST decision-cases"

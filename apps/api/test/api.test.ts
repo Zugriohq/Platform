@@ -31,6 +31,8 @@ describe("alpha API (memory persistence)", () => {
     const found = await api.request(`/v1/alpha/scenarios/${staleEntryScenario.id}`);
     expect(found.status).toBe(200);
     expect(found.body.data.frames).toEqual(JSON.parse(JSON.stringify(staleEntryScenario.frames)));
+    expect(found.body.data.evidence).toEqual(JSON.parse(JSON.stringify(staleEntryScenario.evidence)));
+    expect(found.body.data).toMatchObject({ version: staleEntryScenario.version, caseId: staleEntryScenario.caseId });
     expect((await api.request("/v1/alpha/scenarios/unknown")).status).toBe(404);
   });
 
@@ -45,9 +47,10 @@ describe("alpha API (memory persistence)", () => {
     }
   });
 
-  it("preserves the structural case through the API when the current entry goes stale", async () => {
+  it("returns PASS as an outcome while preserving structural readiness when the entry goes stale", async () => {
     const { body } = await api.request(`/v1/alpha/scenarios/${staleEntryScenario.id}/frames/6`);
-    expect(body.data.state).toBe("STRUCTURAL_READY");
+    expect(body.data.structuralState).toBe("STRUCTURAL_READY");
+    expect(body.data.outcome).toBe("PASS");
     expect(body.data.current.currentEntryStatus).toBe("STALE");
     expect(body.data).toMatchObject({ authority: "NO_LIVE_CAPITAL", authorityClass: "STRUCTURAL_ONLY", modelScored: false });
   });

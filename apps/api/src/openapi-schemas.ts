@@ -1,15 +1,24 @@
 /**
- * OpenAPI schemas for the alpha wire contract. They mirror
- * `@zugrio/alpha-api-contract`; `test/openapi.test.ts` keeps the committed
- * `openapi.json` in sync with these definitions.
+ * OpenAPI schemas for the alpha wire contract (`@zugrio/alpha-api-contract`).
+ *
+ * Objects produced by `@zugrio/decision-core` / `@zugrio/domain` are described by their
+ * identifying and authority fields only (with `additionalProperties: true`) and point
+ * to the TypeScript source of truth. The decision vocabulary (structural states,
+ * outcomes, lifecycle values) is deliberately not enumerated here, so this contract
+ * cannot drift from the deterministic authority. Authority markers ARE pinned.
+ * `test/openapi.test.ts` keeps the committed `openapi.json` in sync.
  */
 type Schema = Record<string, unknown>;
 
-/**
- * Decision vocabulary is owned by @zugrio/decision-core and is intentionally not
- * enumerated here, so the API contract cannot drift from the deterministic authority.
- */
-const state: Schema = { type: "string", description: "decision-core StructuralState" };
+function decisionCoreObject(typeName: string, required: string[], properties: Schema = {}): Schema {
+  return {
+    type: "object",
+    description: `\`${typeName}\` from @zugrio/decision-core (packages/decision-core/src/types.ts).`,
+    required,
+    properties,
+    additionalProperties: true,
+  };
+}
 
 export const metaSchema: Schema = {
   type: "object",
@@ -24,108 +33,114 @@ export const metaSchema: Schema = {
   },
 };
 
-const bundleSchema: Schema = {
-  type: "object",
-  required: ["id", "version", "strategy", "instrument", "market", "horizon", "evidenceStatus"],
-  properties: {
-    id: { type: "string" },
-    version: { type: "string" },
-    strategy: { type: "string" },
-    instrument: { type: "string" },
-    market: { type: "string" },
-    horizon: { type: "string" },
-    evidenceStatus: { type: "string", enum: ["VALIDATION_ONLY"] },
-  },
-};
-
-const snapshotSchema: Schema = {
-  type: "object",
-  description: "decision-core EvidenceSnapshot (validation fixture frame).",
-  required: ["timestamp", "price", "lifecycle", "entryEventObserved", "currentEntryStatus", "note"],
-  properties: {
-    timestamp: { type: "string", format: "date-time" },
-    price: { type: "number" },
-    lifecycle: { type: "string", description: "decision-core StructuralLifecycle" },
-    entryEventObserved: { type: "boolean" },
-    currentEntryStatus: { type: "string", description: "decision-core CurrentEntryStatus" },
-    note: { type: "string" },
-  },
-};
-
-const scenarioSummarySchema: Schema = {
-  type: "object",
-  required: ["id", "title", "description", "bundle", "frameCount"],
-  properties: {
-    id: { type: "string" },
-    title: { type: "string" },
-    description: { type: "string" },
-    bundle: bundleSchema,
-    frameCount: { type: "integer", minimum: 1 },
-  },
-};
-
-const scenarioDetailSchema: Schema = {
-  ...scenarioSummarySchema,
-  required: [...(scenarioSummarySchema["required"] as string[]), "frames"],
-  properties: {
-    ...(scenarioSummarySchema["properties"] as Schema),
-    frames: { type: "array", items: snapshotSchema },
-  },
-};
-
-const decisionEventSchema: Schema = {
-  type: "object",
-  description: "decision-core DecisionEvent.",
-  required: ["timestamp", "state", "reason", "entryReason", "price", "changes"],
-  properties: {
-    timestamp: { type: "string", format: "date-time" },
-    state,
-    reason: { type: "string" },
-    entryReason: { type: "string" },
-    price: { type: "number" },
-    changes: {
-      type: "array",
-      items: {
-        type: "object",
-        required: ["field", "from", "to"],
-        properties: { field: { type: "string" }, from: {}, to: {} },
-      },
-    },
-  },
-};
-
 const authorityProperties: Schema = {
   authority: { type: "string", enum: ["NO_LIVE_CAPITAL"] },
   authorityClass: { type: "string", enum: ["STRUCTURAL_ONLY"] },
   modelScored: { type: "boolean", enum: [false] },
 };
 
+const bundleSchema = decisionCoreObject("AlphaTradeBundle", ["identity", "strategy", "evidenceStatus", "authoritySpecVersion"], {
+  identity: {
+    type: "object",
+    description: "`BundleIdentity` from @zugrio/domain: versioned MethodProfile / TradeBundle / RegimeModel / TimeframeMap and fixture scope.",
+    required: ["methodProfile", "tradeBundle", "regimeModel", "timeframeMap", "scope"],
+    additionalProperties: true,
+  },
+  evidenceStatus: { type: "string", enum: ["VALIDATION_ONLY"] },
+});
+
+const decisionEventSchema = decisionCoreObject("DecisionEvent", [
+  "evaluationId",
+  "evaluatedAt",
+  "structuralState",
+  "outcome",
+  "stateReason",
+  "outcomeReason",
+  "changes",
+  "annotationIds",
+], {
+  evaluationId: { type: "string" },
+  evaluatedAt: { type: "string", format: "date-time" },
+  structuralState: { type: "string", nullable: true },
+  outcome: { type: "string" },
+});
+
+const projectionRequired = [
+  "caseId",
+  "scenarioId",
+  "scenarioVersion",
+  "evaluationId",
+  "bundle",
+  "current",
+  "structuralState",
+  "outcome",
+  "stateReason",
+  "outcomeReason",
+  "annotations",
+  "authority",
+  "authorityClass",
+  "modelScored",
+];
 const projectionProperties: Schema = {
   caseId: { type: "string" },
+  scenarioId: { type: "string" },
+  scenarioVersion: { type: "string" },
+  evaluationId: { type: "string" },
   bundle: bundleSchema,
-  current: snapshotSchema,
-  state,
-  reason: { type: "string" },
-  entryReason: { type: "string" },
+  current: decisionCoreObject("EvidenceSnapshot", ["evaluatedAt", "evidenceIds", "evidenceRefs"]),
+  structuralState: { type: "string", nullable: true, description: "decision-core StructuralState, or null" },
+  outcome: { type: "string", description: "decision-core DecisionOutcome" },
+  annotations: { type: "array", items: decisionCoreObject("ChartAnnotation", ["id", "kind", "knownAt", "evidenceId"]) },
   ...authorityProperties,
 };
-const projectionRequired = ["caseId", "bundle", "current", "state", "reason", "entryReason", "authority", "authorityClass", "modelScored"];
 
-const decisionCaseSchema: Schema = {
+const decisionCaseSchema = decisionCoreObject("DecisionCase", [...projectionRequired, "history"], {
+  ...projectionProperties,
+  history: { type: "array", items: decisionEventSchema },
+});
+
+const scenarioSummarySchema: Schema = {
   type: "object",
-  description: "Deterministic `@zugrio/decision-core` DecisionCase for one replay frame.",
-  required: [...projectionRequired, "history"],
-  properties: { ...projectionProperties, history: { type: "array", items: decisionEventSchema } },
+  required: ["id", "version", "caseId", "title", "description", "bundle", "bundleKey", "frameCount"],
+  properties: {
+    id: { type: "string" },
+    version: { type: "string" },
+    caseId: { type: "string" },
+    title: { type: "string" },
+    description: { type: "string" },
+    bundle: bundleSchema,
+    bundleKey: { type: "string", description: "@zugrio/domain bundleIdentityKey(bundle.identity)" },
+    frameCount: { type: "integer", minimum: 1 },
+  },
+};
+
+const scenarioDetailSchema: Schema = {
+  ...scenarioSummarySchema,
+  required: [...(scenarioSummarySchema["required"] as string[]), "evidence", "frames"],
+  properties: {
+    ...(scenarioSummarySchema["properties"] as Schema),
+    evidence: {
+      type: "array",
+      items: decisionCoreObject("EvidenceEvent", ["id", "kind", "knownAt", "value", "source"], {
+        knownAt: { type: "string", format: "date-time" },
+      }),
+    },
+    frames: { type: "array", items: decisionCoreObject("ReplayFrame", ["evaluatedAt"]) },
+  },
 };
 
 const persistedCaseSchema: Schema = {
   type: "object",
   required: [
     "id",
+    "evaluationId",
     "decisionCoreCaseId",
     "scenarioId",
+    "scenarioVersion",
     "frameIndex",
+    "evaluatedAt",
     "bundle",
+    "bundleKey",
     "authority",
     "authorityClass",
     "modelScored",
@@ -137,16 +152,21 @@ const persistedCaseSchema: Schema = {
   ],
   properties: {
     id: { type: "string", format: "uuid" },
+    evaluationId: { type: "string", description: "decision-core evaluationId; idempotency key" },
     decisionCoreCaseId: { type: "string" },
     scenarioId: { type: "string" },
+    scenarioVersion: { type: "string" },
     frameIndex: { type: "integer", minimum: 0 },
+    evaluatedAt: { type: "string", format: "date-time" },
     bundle: bundleSchema,
+    bundleKey: { type: "string" },
     ...authorityProperties,
     projection: {
       type: "object",
       description: "decision-core DecisionCase for the persisted frame, without history (mutable read model).",
       required: projectionRequired,
       properties: projectionProperties,
+      additionalProperties: true,
     },
     events: {
       type: "array",
@@ -196,7 +216,7 @@ export const schemas = {
     type: "object",
     required: ["created", "decisionCase"],
     properties: {
-      created: { type: "boolean", description: "false when an identical case already existed." },
+      created: { type: "boolean", description: "false when the same decision-core evaluation was already persisted." },
       decisionCase: persistedCaseSchema,
     },
   },

@@ -28,16 +28,16 @@ async function materializeThenRead(mutate: (record: StoredDecisionCase) => Store
 
 describe("DecisionCaseService reconstruction", () => {
   it("flags a stored projection that decision-core would not produce", async () => {
-    const result = await materializeThenRead((record) => ({ ...record, projection: { ...record.projection, state: "STRUCTURAL_WATCH" } }));
+    const result = await materializeThenRead((record) => ({ ...record, projection: { ...record.projection, outcome: "WAIT" } }));
     expect(result.consistentWithDecisionCore).toBe(false);
-    expect(result.projection.state).toBe("STRUCTURAL_WATCH");
+    expect(result.projection.outcome).toBe("WAIT");
   });
 
   it("flags a rewritten ledger event", async () => {
     const result = await materializeThenRead((record) => ({
       ...record,
       events: record.events.map((entry, index) =>
-        index === 0 ? { ...entry, event: { ...entry.event, reason: "rewritten in hindsight" } } : entry,
+        index === 0 ? { ...entry, event: { ...entry.event, stateReason: "rewritten in hindsight" } } : entry,
       ),
     }));
     expect(result.consistentWithDecisionCore).toBe(false);
@@ -56,8 +56,21 @@ describe("DecisionCaseService reconstruction", () => {
     expect(result.consistentWithDecisionCore).toBe(false);
   });
 
-  it("flags a record whose bundle version no longer matches the fixture", async () => {
-    const result = await materializeThenRead((record) => ({ ...record, bundle: { ...record.bundle, version: "0.0.0" } }));
+  it("flags a record whose bundle identity or scenario version no longer matches the fixture", async () => {
+    const otherBundle = await materializeThenRead((record) => ({ ...record, bundleKey: `${record.bundleKey}-old` }));
+    expect(otherBundle.consistentWithDecisionCore).toBe(false);
+    const otherVersion = await materializeThenRead((record) => ({ ...record, scenarioVersion: "0.0.0" }));
+    expect(otherVersion.consistentWithDecisionCore).toBe(false);
+  });
+
+  it("flags a rewritten evidence annotation binding", async () => {
+    const result = await materializeThenRead((record) => ({
+      ...record,
+      projection: {
+        ...record.projection,
+        annotations: record.projection.annotations.map((annotation) => ({ ...annotation, knownAt: record.projection.current.evaluatedAt })),
+      },
+    }));
     expect(result.consistentWithDecisionCore).toBe(false);
   });
 

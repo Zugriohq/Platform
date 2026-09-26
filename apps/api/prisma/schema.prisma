@@ -33,20 +33,24 @@ enum DecisionEventType {
   REPLAY_STATE_CLASSIFIED
 }
 
-// Decision semantics (states, reasons, evidence changes) are owned by
-// @zugrio/decision-core and stored verbatim as JSON, with the state copied into a
-// plain text column for querying. The database therefore never re-encodes the
-// decision vocabulary; it only enforces the authority limits and ledger immutability.
+// Decision semantics (structural states, outcomes, reasons, evidence, annotations) are
+// owned by @zugrio/decision-core and stored verbatim as JSON, with state/outcome copied
+// into plain text columns for querying. The database never re-encodes the decision
+// vocabulary; it only enforces the authority limits and ledger immutability.
 
 model DecisionCase {
   id                 String           @id @default(uuid()) @db.Uuid
-  /// decision-core identity (`scenarioId:frameTimestamp`).
+  /// decision-core evaluationId (case, scenario version, bundle identity, evaluation time).
+  evaluationId       String           @unique(map: "decision_case_evaluation_id_key") @map("evaluation_id")
+  /// decision-core caseId (stable across frames of one scenario).
   decisionCoreCaseId String           @map("decision_core_case_id")
   scenarioId         String           @map("scenario_id")
+  scenarioVersion    String           @map("scenario_version")
   frameIndex         Int              @map("frame_index")
-  bundleId           String           @map("bundle_id")
-  bundleVersion      String           @map("bundle_version")
-  /// Immutable copy of the trade bundle the case was classified against.
+  evaluatedAt        DateTime         @map("evaluated_at") @db.Timestamptz(3)
+  /// @zugrio/domain bundleIdentityKey(bundle.identity).
+  bundleKey          String           @map("bundle_key")
+  /// Immutable copy of the versioned trade bundle the case was evaluated against.
   bundle             Json
   authority          CapitalAuthority @default(NO_LIVE_CAPITAL)
   authorityClass     AuthorityClass   @default(STRUCTURAL_ONLY) @map("authority_class")
@@ -55,30 +59,33 @@ model DecisionCase {
   releaseChannel     String           @map("release_channel")
 
   // Read-optimized projection (may be updated; the ledger may not).
-  projectionState String @map("projection_state")
+  projectionStructuralState String? @map("projection_structural_state")
+  projectionOutcome         String  @map("projection_outcome")
   /// decision-core DecisionCase for this frame, without history.
-  projection      Json
+  projection                Json
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   events DecisionEvent[]
 
-  @@unique([scenarioId, frameIndex, bundleId, bundleVersion], map: "decision_case_scenario_frame_bundle_key")
+  @@index([decisionCoreCaseId], map: "decision_case_decision_core_case_id_idx")
   @@map("decision_case")
 }
 
 model DecisionEvent {
-  id         BigInt            @id @default(autoincrement())
-  caseId     String            @map("case_id") @db.Uuid
-  sequence   Int
-  eventType  DecisionEventType @map("event_type")
-  /// Replay frame timestamp the classification applies to.
-  occurredAt DateTime          @map("occurred_at") @db.Timestamptz(3)
-  recordedAt DateTime          @default(now()) @map("recorded_at") @db.Timestamptz(3)
-  state      String
+  id              BigInt            @id @default(autoincrement())
+  caseId          String            @map("case_id") @db.Uuid
+  sequence        Int
+  eventType       DecisionEventType @map("event_type")
+  evaluationId    String            @map("evaluation_id")
+  /// Replay evaluation time the event applies to.
+  occurredAt      DateTime          @map("occurred_at") @db.Timestamptz(3)
+  recordedAt      DateTime          @default(now()) @map("recorded_at") @db.Timestamptz(3)
+  structuralState String?           @map("structural_state")
+  outcome         String
   /// Verbatim decision-core DecisionEvent.
-  payload    Json
+  payload         Json
 
   decisionCase DecisionCase @relation(fields: [caseId], references: [id], onDelete: Restrict, onUpdate: Restrict)
 

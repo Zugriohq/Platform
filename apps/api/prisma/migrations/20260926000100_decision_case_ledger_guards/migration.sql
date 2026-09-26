@@ -9,7 +9,7 @@
 --     model-scored, and the stored decision-core projection/events must themselves
 --     declare NO_LIVE_CAPITAL / STRUCTURAL_ONLY (belt and braces on top of the enums).
 --
--- Decision states are deliberately NOT constrained here: their vocabulary belongs to
+-- Structural states and outcomes are deliberately NOT constrained here: their vocabulary belongs to
 -- @zugrio/decision-core, and reconstruction re-runs decision-core to verify them.
 
 ALTER TABLE "decision_case"
@@ -21,13 +21,18 @@ ALTER TABLE "decision_case"
     AND "projection"->>'authority' = 'NO_LIVE_CAPITAL'
     AND "projection"->>'authorityClass' = 'STRUCTURAL_ONLY'
     AND "projection"->'modelScored' = 'false'::jsonb
-    AND "projection"->>'state' = "projection_state"
+    AND "projection"->>'evaluationId' = "evaluation_id"
+    AND "projection"->>'structuralState' IS NOT DISTINCT FROM "projection_structural_state"
+    AND "projection"->>'outcome' = "projection_outcome"
   );
 
 ALTER TABLE "decision_event"
   ADD CONSTRAINT "decision_event_sequence_check" CHECK ("sequence" >= 0),
   ADD CONSTRAINT "decision_event_payload_check" CHECK (
-    jsonb_typeof("payload") = 'object' AND "payload"->>'state' = "state"
+    jsonb_typeof("payload") = 'object'
+    AND "payload"->>'evaluationId' = "evaluation_id"
+    AND "payload"->>'structuralState' IS NOT DISTINCT FROM "structural_state"
+    AND "payload"->>'outcome' = "outcome"
   );
 
 CREATE FUNCTION "zugrio_reject_ledger_mutation"() RETURNS trigger
@@ -58,11 +63,13 @@ CREATE FUNCTION "zugrio_reject_case_identity_change"() RETURNS trigger
 LANGUAGE plpgsql AS $$
 BEGIN
   IF NEW."id" IS DISTINCT FROM OLD."id"
+     OR NEW."evaluation_id" IS DISTINCT FROM OLD."evaluation_id"
      OR NEW."decision_core_case_id" IS DISTINCT FROM OLD."decision_core_case_id"
      OR NEW."scenario_id" IS DISTINCT FROM OLD."scenario_id"
+     OR NEW."scenario_version" IS DISTINCT FROM OLD."scenario_version"
      OR NEW."frame_index" IS DISTINCT FROM OLD."frame_index"
-     OR NEW."bundle_id" IS DISTINCT FROM OLD."bundle_id"
-     OR NEW."bundle_version" IS DISTINCT FROM OLD."bundle_version"
+     OR NEW."evaluated_at" IS DISTINCT FROM OLD."evaluated_at"
+     OR NEW."bundle_key" IS DISTINCT FROM OLD."bundle_key"
      OR NEW."bundle" IS DISTINCT FROM OLD."bundle"
      OR NEW."authority" IS DISTINCT FROM OLD."authority"
      OR NEW."authority_class" IS DISTINCT FROM OLD."authority_class"

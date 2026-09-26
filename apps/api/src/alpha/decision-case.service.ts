@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
-import { buildDecisionCase, type DecisionCase } from "@zugrio/decision-core";
+import { buildDecisionCase, bundleIdentityKey, type DecisionCase } from "@zugrio/decision-core";
 import type {
   MaterializeDecisionCaseRequest,
   MaterializeDecisionCaseResult,
@@ -46,8 +46,8 @@ export class DecisionCaseService {
     let consistent = false;
     if (
       scenario &&
-      scenario.bundle.id === record.bundle.id &&
-      scenario.bundle.version === record.bundle.version &&
+      scenario.version === record.scenarioVersion &&
+      bundleIdentityKey(scenario.bundle.identity) === record.bundleKey &&
       record.frameIndex < scenario.frames.length
     ) {
       const expected = toNewRecord(scenario.id, record.frameIndex, buildDecisionCase(scenario, record.frameIndex));
@@ -60,14 +60,18 @@ export class DecisionCaseService {
 function toNewRecord(scenarioId: string, frameIndex: number, decision: DecisionCase): NewDecisionCase {
   const { history, ...projection } = decision;
   return {
+    evaluationId: decision.evaluationId,
     decisionCoreCaseId: decision.caseId,
     scenarioId,
+    scenarioVersion: decision.scenarioVersion,
     frameIndex,
+    evaluatedAt: new Date(decision.current.evaluatedAt).toISOString(),
     bundle: decision.bundle,
+    bundleKey: bundleIdentityKey(decision.bundle.identity),
     projection,
     events: history.map((event, sequence) => ({
       sequence,
-      occurredAt: new Date(event.timestamp).toISOString(),
+      occurredAt: new Date(event.evaluatedAt).toISOString(),
       event,
     })),
   };
@@ -75,7 +79,11 @@ function toNewRecord(scenarioId: string, frameIndex: number, decision: DecisionC
 
 function sameRecord(expected: NewDecisionCase, stored: StoredDecisionCase): boolean {
   return (
+    expected.evaluationId === stored.evaluationId &&
     expected.decisionCoreCaseId === stored.decisionCoreCaseId &&
+    expected.scenarioVersion === stored.scenarioVersion &&
+    expected.bundleKey === stored.bundleKey &&
+    Date.parse(expected.evaluatedAt) === Date.parse(stored.evaluatedAt) &&
     stored.authority === "NO_LIVE_CAPITAL" &&
     stored.authorityClass === "STRUCTURAL_ONLY" &&
     stored.modelScored === false &&

@@ -22,25 +22,30 @@ export class PrismaDecisionCaseStore implements DecisionCaseStore {
     try {
       const row = await this.prisma.decisionCase.create({
         data: {
+          evaluationId: input.evaluationId,
           decisionCoreCaseId: input.decisionCoreCaseId,
           scenarioId: input.scenarioId,
+          scenarioVersion: input.scenarioVersion,
           frameIndex: input.frameIndex,
-          bundleId: input.bundle.id,
-          bundleVersion: input.bundle.version,
+          evaluatedAt: new Date(input.evaluatedAt),
+          bundleKey: input.bundleKey,
           bundle: toJson(input.bundle),
           authority: "NO_LIVE_CAPITAL",
           authorityClass: "STRUCTURAL_ONLY",
           modelScored: false,
           releaseChannel: ALPHA_RELEASE_CHANNEL,
-          projectionState: input.projection.state,
+          projectionStructuralState: input.projection.structuralState,
+          projectionOutcome: input.projection.outcome,
           projection: toJson(input.projection),
           // Nested create: the case and its full history commit in one transaction.
           events: {
             create: input.events.map((event) => ({
               sequence: event.sequence,
               eventType: "REPLAY_STATE_CLASSIFIED",
+              evaluationId: event.event.evaluationId,
               occurredAt: new Date(event.occurredAt),
-              state: event.event.state,
+              structuralState: event.event.structuralState,
+              outcome: event.event.outcome,
               payload: toJson(event.event),
             })),
           },
@@ -52,14 +57,7 @@ export class PrismaDecisionCaseStore implements DecisionCaseStore {
       if (!(error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")) throw error;
       // Concurrent or repeated materialization of the same case: return the original.
       const existing = await this.prisma.decisionCase.findUnique({
-        where: {
-          scenarioId_frameIndex_bundleId_bundleVersion: {
-            scenarioId: input.scenarioId,
-            frameIndex: input.frameIndex,
-            bundleId: input.bundle.id,
-            bundleVersion: input.bundle.version,
-          },
-        },
+        where: { evaluationId: input.evaluationId },
         include: withEvents,
       });
       if (!existing) throw error;
@@ -93,10 +91,14 @@ function toJson(value: AlphaTradeBundle | DecisionCaseProjection | DecisionEvent
 function fromRow(row: CaseWithEvents): StoredDecisionCase {
   return {
     id: row.id,
+    evaluationId: row.evaluationId,
     decisionCoreCaseId: row.decisionCoreCaseId,
     scenarioId: row.scenarioId,
+    scenarioVersion: row.scenarioVersion,
     frameIndex: row.frameIndex,
+    evaluatedAt: row.evaluatedAt.toISOString(),
     bundle: row.bundle as unknown as AlphaTradeBundle,
+    bundleKey: row.bundleKey,
     authority: row.authority,
     authorityClass: row.authorityClass,
     modelScored: false,

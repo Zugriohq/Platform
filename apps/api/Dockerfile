@@ -19,16 +19,19 @@ RUN apt-get update \
  && npm install -g pnpm@${PNPM_VERSION}
 WORKDIR /repo
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml tsconfig.base.json ./
+COPY packages/domain/package.json packages/domain/
 COPY packages/decision-core/package.json packages/decision-core/
 COPY packages/alpha-api-contract/package.json packages/alpha-api-contract/
 COPY apps/api/package.json apps/api/
 
 FROM base AS build
 RUN pnpm install --frozen-lockfile --filter "@zugrio/api..."
+COPY packages/domain packages/domain
 COPY packages/decision-core packages/decision-core
 COPY packages/alpha-api-contract packages/alpha-api-contract
 COPY apps/api apps/api
-RUN pnpm --filter @zugrio/decision-core build \
+RUN pnpm --filter @zugrio/domain build \
+ && pnpm --filter @zugrio/decision-core build \
  && pnpm --filter @zugrio/alpha-api-contract build \
  && pnpm --filter @zugrio/api build
 
@@ -48,6 +51,7 @@ ENV NODE_ENV=production \
     PORT=3000
 WORKDIR /app
 COPY --from=prod-deps --chown=root:root /repo /app
+COPY --from=build /repo/packages/domain/dist packages/domain/dist
 COPY --from=build /repo/packages/decision-core/dist packages/decision-core/dist
 COPY --from=build /repo/packages/alpha-api-contract/dist packages/alpha-api-contract/dist
 COPY --from=build /repo/apps/api/dist apps/api/dist

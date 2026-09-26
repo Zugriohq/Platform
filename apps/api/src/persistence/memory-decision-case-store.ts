@@ -8,7 +8,7 @@ export class MemoryDecisionCaseStore implements DecisionCaseStore {
   private readonly byIdentity = new Map<string, string>();
 
   async create(input: NewDecisionCase): Promise<CreateResult> {
-    const identity = JSON.stringify([input.scenarioId, input.frameIndex, input.bundle.id, input.bundle.version]);
+    const identity = input.evaluationId;
     const existingId = this.byIdentity.get(identity);
     const existing = existingId ? this.byId.get(existingId) : undefined;
     if (existing) return { created: false, record: existing };
@@ -16,10 +16,14 @@ export class MemoryDecisionCaseStore implements DecisionCaseStore {
     const now = new Date().toISOString();
     const record: StoredDecisionCase = structuredClone({
       id: randomUUID(),
+      evaluationId: input.evaluationId,
       decisionCoreCaseId: input.decisionCoreCaseId,
       scenarioId: input.scenarioId,
+      scenarioVersion: input.scenarioVersion,
       frameIndex: input.frameIndex,
+      evaluatedAt: input.evaluatedAt,
       bundle: input.bundle,
+      bundleKey: input.bundleKey,
       authority: "NO_LIVE_CAPITAL" as const,
       authorityClass: "STRUCTURAL_ONLY" as const,
       modelScored: false as const,
