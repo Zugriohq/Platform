@@ -10,7 +10,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it } from "vitest";
 import { ALPHA_RESPONSE_META } from "@zugrio/alpha-api-contract";
-import { alphaScenarios, buildDecisionCase, bundleIdentityKey, type ReplayScenario } from "@zugrio/decision-core";
+import { alphaScenarios, buildDecisionCase, buildReplayChartScene, bundleIdentityKey, type ReplayScenario } from "@zugrio/decision-core";
 import { App } from "./App";
 import { createAlphaApiClient } from "./cloud";
 
@@ -70,6 +70,12 @@ function cloudApi(override?: Route) {
 
     const envelope = (data: unknown) => json(200, { meta: ALPHA_RESPONSE_META, data });
     if (url.pathname === "/v1/alpha/scenarios") return envelope(alphaScenarios.map(summary));
+
+    const sceneMatch = /^\/v1\/alpha\/scenarios\/([^/]+)\/frames\/(\d+)\/chart-scene$/.exec(url.pathname);
+    if (sceneMatch) {
+      const scenario = alphaScenarios.find((item) => item.id === decodeURIComponent(sceneMatch[1] ?? ""));
+      return scenario ? envelope(buildReplayChartScene(scenario, Number(sceneMatch[2]))) : json(404, { message: "not found" });
+    }
 
     const frameMatch = /^\/v1\/alpha\/scenarios\/([^/]+)\/frames\/(\d+)$/.exec(url.pathname);
     if (frameMatch) {
@@ -188,6 +194,7 @@ describe("App decision source", () => {
     );
     expect(text()).not.toContain("LOCAL REPLAY");
     expect(api.calls.some((call) => call.path === `/v1/alpha/scenarios/${firstScenario.id}/frames/0`)).toBe(true);
+    expect(api.calls.some((call) => call.path === `/v1/alpha/scenarios/${firstScenario.id}/frames/0/chart-scene`)).toBe(true);
   });
 
   it("fails closed when the scenario list carries non-validation metadata", async () => {
@@ -203,6 +210,17 @@ describe("App decision source", () => {
     expect(heading()).toBeUndefined();
     expect(text()).not.toContain("CURRENT STRUCTURAL STATE");
     expect(container?.querySelectorAll(".case-button")).toHaveLength(0);
+  });
+
+  it("fails closed when a chart scene carries non-validation metadata", async () => {
+    const api = cloudApi((path) =>
+      path.endsWith("/chart-scene") ? { status: 200, body: { meta: { ...ALPHA_RESPONSE_META, liveData: true }, data: {} } } : undefined,
+    );
+    await renderApp(createAlphaApiClient({ baseUrl: API, fetch: api.fetchImpl }));
+
+    await waitFor(() => text().includes("REJECTED"), "rejected scene status");
+    expect(heading()).toBeUndefined();
+    expect(text()).not.toContain("CURRENT STRUCTURAL STATE");
   });
 
   it("fails closed when any frame decision carries non-validation metadata", async () => {

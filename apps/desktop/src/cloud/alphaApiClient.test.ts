@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ALPHA_RESPONSE_META } from "@zugrio/alpha-api-contract";
-import { buildDecisionCase, staleEntryScenario } from "@zugrio/decision-core";
+import { buildDecisionCase, buildReplayChartScene, staleEntryScenario } from "@zugrio/decision-core";
 import { createAlphaApiClient, resolveApiBaseUrl } from "./alphaApiClient";
 
 type Handler = (url: string, init?: RequestInit) => Response | Promise<Response>;
@@ -44,6 +44,17 @@ describe("createAlphaApiClient", () => {
     const result = await client.getFrameDecisionCase(staleEntryScenario.id, 4);
     expect(result).toEqual({ status: "ok", source: "CLOUD", meta: ALPHA_RESPONSE_META, data: decision, httpStatus: 200 });
     expect(calls[0]?.url).toBe(`https://api.zugrio.xyz/v1/alpha/scenarios/${staleEntryScenario.id}/frames/4`);
+  });
+
+  it("returns engine-owned chart scenes from the cloud", async () => {
+    const scene = JSON.parse(JSON.stringify(buildReplayChartScene(staleEntryScenario, 4)));
+    const { impl, calls } = fakeFetch(() => json(200, { meta: ALPHA_RESPONSE_META, data: scene }));
+    const client = createAlphaApiClient({ baseUrl: "https://api.zugrio.xyz", fetch: impl });
+    const result = await client.getFrameChartScene(staleEntryScenario.id, 4);
+    expect(result).toEqual({ status: "ok", source: "CLOUD", meta: ALPHA_RESPONSE_META, data: scene, httpStatus: 200 });
+    expect(calls[0]?.url).toBe(
+      `https://api.zugrio.xyz/v1/alpha/scenarios/${staleEntryScenario.id}/frames/4/chart-scene`,
+    );
   });
 
   it("posts only scenarioId and frameIndex", async () => {
