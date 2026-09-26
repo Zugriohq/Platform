@@ -2052,6 +2052,186 @@
           "private-validation-alpha"
         ]
       }
+    },
+    "/v1/alpha/scenarios/{scenarioId}/frames/{frameIndex}/chart-scene": {
+      "get": {
+        "operationId": "AlphaController_getFrameChartScene",
+        "parameters": [
+          {
+            "name": "scenarioId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "frameIndex",
+            "required": true,
+            "in": "path",
+            "description": "Zero-based replay frame index",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "`EngineChartScene` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                      "required": [
+                        "sceneId",
+                        "instrument",
+                        "timeframe",
+                        "evaluatedAt",
+                        "strategyId",
+                        "regimeLabel",
+                        "primitives",
+                        "authority",
+                        "liveCapitalAuthority"
+                      ],
+                      "properties": {
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "RESEARCH_ONLY"
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "primitives": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "description": "`EngineChartPrimitive` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                            "required": [
+                              "primitiveId",
+                              "layer",
+                              "concept",
+                              "maturity",
+                              "label",
+                              "knownAt",
+                              "geometry",
+                              "sourceFactIds",
+                              "sourceEvidenceIds",
+                              "visibility",
+                              "styleToken",
+                              "authorityEffect"
+                            ],
+                            "properties": {},
+                            "additionalProperties": true
+                          }
+                        }
+                      },
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Engine-owned semantic chart scene for one replay frame",
+        "tags": [
+          "private-validation-alpha"
+        ]
+      }
     }
   },
   "info": {
