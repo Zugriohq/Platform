@@ -107,7 +107,7 @@ const STORY = [
 
 const HERO_HEADLINES = [
   ["Don’t trade the signal.", "Trade what’s still true."],
-  ["The market changes.", "Your decision should too."],
+  ["Markets change.", "Your decision should too."],
 ];
 
 const PROBLEM_CHAIN = [
@@ -498,21 +498,27 @@ export default function App() {
               transition={{ duration: .78, ease: [0.16,1,0.3,1] }}
             >
               <span className="hero-headline-window">
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.span
-                    key={headlineIndex}
-                    className="hero-headline-frame"
-                    aria-hidden="true"
-                    initial={prefersReduced ? false : { opacity: 0, y: "34%", filter: "blur(5px)" }}
-                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                    exit={prefersReduced ? undefined : { opacity: 0, y: "-34%", filter: "blur(5px)" }}
-                    transition={{ duration: .72, ease: [0.16,1,0.3,1] }}
-                  >
-                    {HERO_HEADLINES[headlineIndex].map((part) => (
-                      <span className="hero-headline-part" key={part}>{part}</span>
-                    ))}
-                  </motion.span>
-                </AnimatePresence>
+                {HERO_HEADLINES.map((headline, index) => {
+                  const active = index === headlineIndex;
+                  return (
+                    <motion.span
+                      key={headline.join("|")}
+                      className={"hero-headline-frame " + (active ? "is-active" : "is-inactive")}
+                      aria-hidden="true"
+                      initial={false}
+                      animate={{
+                        opacity: active ? 1 : 0,
+                        y: prefersReduced ? 0 : active ? "0%" : index < headlineIndex ? "-28%" : "28%",
+                        filter: prefersReduced || active ? "blur(0px)" : "blur(5px)",
+                      }}
+                      transition={{ duration: prefersReduced ? 0 : .68, ease: [0.16,1,0.3,1] }}
+                    >
+                      {headline.map((part) => (
+                        <span className="hero-headline-part" key={part}>{part}</span>
+                      ))}
+                    </motion.span>
+                  );
+                })}
               </span>
             </motion.h1>
 
