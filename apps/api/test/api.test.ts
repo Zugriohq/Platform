@@ -1,6 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ALPHA_RESPONSE_META } from "@zugrio/alpha-api-contract";
-import { alphaScenarios, buildDecisionCase, staleEntryScenario } from "@zugrio/decision-core";
+import {
+  DERIVED_STRUCTURAL_SCENARIO_ID,
+  alphaScenarios,
+  buildDecisionCase,
+  staleEntryScenario,
+} from "@zugrio/decision-core";
 import { postJson, startApi, type RunningApi } from "./helpers.js";
 
 let api: RunningApi;
@@ -45,6 +50,29 @@ describe("alpha API (memory persistence)", () => {
         expect(body.data).toEqual(JSON.parse(JSON.stringify(buildDecisionCase(scenario, frame))));
       }
     }
+  });
+
+  it("returns engine-derived BOS and retest primitives through the cloud chart-scene route", async () => {
+    const before = await api.request(
+      `/v1/alpha/scenarios/${DERIVED_STRUCTURAL_SCENARIO_ID}/frames/1/chart-scene`,
+    );
+    expect(before.status).toBe(200);
+    expect(before.body.data.primitives.some((item: { concept: string }) => item.concept === "BOS")).toBe(false);
+
+    const held = await api.request(
+      `/v1/alpha/scenarios/${DERIVED_STRUCTURAL_SCENARIO_ID}/frames/4/chart-scene`,
+    );
+    expect(held.status).toBe(200);
+    expect(held.body.meta).toEqual(ALPHA_RESPONSE_META);
+    expect(held.body.data.primitives.some((item: { concept: string }) => item.concept === "BOS")).toBe(true);
+    expect(held.body.data.primitives.some((item: { concept: string; label: string }) =>
+      item.concept === "RETEST" && item.label === "RETEST HELD"
+    )).toBe(true);
+    expect(held.body.data).toMatchObject({
+      authority: "RESEARCH_ONLY",
+      liveCapitalAuthority: false,
+      timeframe: "M5",
+    });
   });
 
   it("returns PASS as an outcome while preserving structural readiness when the entry goes stale", async () => {
