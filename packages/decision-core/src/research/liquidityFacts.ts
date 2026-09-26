@@ -41,6 +41,7 @@ export function deriveEqualLiquidityLevels(input: {
   const usable = input.pivots
     .filter(fact =>
       (fact.concept === "SWING_HIGH" || fact.concept === "SWING_LOW") &&
+      fact.maturity === "DETERMINISTIC_FACT" &&
       fact.geometry.type === "POINT" &&
       epoch(fact.knownAt, "fact.knownAt") <= evaluatedAt
     )
