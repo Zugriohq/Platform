@@ -81,6 +81,24 @@ function level(
   };
 }
 
+function activeState(levelFactId: string, knownAt = "2026-09-24T08:00:01Z") {
+  return {
+    levelFactId,
+    status:"ACTIVE" as const,
+    evidenceId:`level-state:${levelFactId}`,
+    knownAt,
+    policyRef:"level-state:v1",
+  };
+}
+
+function detect(
+  levelFact: ResearchMarketStructureFact,
+  sourceBar: ResearchStructureBar,
+  definition: ResearchStructuralBreakDefinition = closeBreak,
+) {
+  return detectStructuralBreak(levelFact, sourceBar, definition, activeState(levelFact.factId));
+}
+
 function bar(
   id: string,
   open: number,
@@ -106,8 +124,8 @@ describe("research structural-break derivation", () => {
     const swingHigh = level("high-1","SWING_HIGH",1.1000);
     const source = bar("m5:0810",1.0995,1.1010,1.0990,1.1005);
 
-    const first = detectStructuralBreak(swingHigh, source, closeBreak);
-    const second = detectStructuralBreak(swingHigh, source, closeBreak);
+    const first = detect(swingHigh, source, closeBreak);
+    const second = detect(swingHigh, source, closeBreak);
 
     expect(first.status).toBe("BREAK_OBSERVED");
     expect(first.events).toEqual(second.events);
@@ -117,7 +135,7 @@ describe("research structural-break derivation", () => {
   });
 
   it("emits a stable neutral DOWN break against a known swing low", () => {
-    const result = detectStructuralBreak(
+    const result = detect(
       level("low-1","SWING_LOW",1.1000),
       bar("m5:0810",1.1005,1.1010,1.0988,1.0995),
       closeBreak,
@@ -126,7 +144,7 @@ describe("research structural-break derivation", () => {
   });
 
   it("does not let an incomplete bar confirm a close-based break", () => {
-    const result = detectStructuralBreak(
+    const result = detect(
       level("high-1","SWING_HIGH",1.1000),
       bar(
         "m5:forming",
@@ -142,7 +160,7 @@ describe("research structural-break derivation", () => {
   });
 
   it("allows an explicit touch-based profile to observe a causal intrabar touch", () => {
-    const result = detectStructuralBreak(
+    const result = detect(
       level("high-1","SWING_HIGH",1.1000),
       bar(
         "m5:forming",
@@ -159,7 +177,7 @@ describe("research structural-break derivation", () => {
   });
 
   it("cannot break a level that was not knowable before the break observation", () => {
-    const result = detectStructuralBreak(
+    const result = detect(
       level("future-high","SWING_HIGH",1.1000,"EXTERNAL","2026-09-24T08:10:00Z"),
       bar("m5:0810",1.0995,1.1010,1.0990,1.1005),
       closeBreak,
@@ -174,8 +192,51 @@ describe("research structural-break derivation", () => {
       ...level("high-1","SWING_HIGH",1.1000),
       sourceEvidenceIds:[source.evidenceId],
     };
-    const result = detectStructuralBreak(contaminated, source, closeBreak);
+    const result = detect(contaminated, source, closeBreak);
     expect(result.reasons).toContain("LEVEL_USES_BREAK_BAR_EVIDENCE");
+  });
+
+  it("does not re-break a consumed or invalidated level without a new active level identity", () => {
+    const swingHigh = level("high-consumed","SWING_HIGH",1.1000);
+    const source = bar("m5:0810",1.0995,1.1010,1.0990,1.1005);
+
+    for (const status of ["CONSUMED","INVALIDATED"] as const) {
+      const result = detectStructuralBreak(
+        swingHigh,
+        source,
+        closeBreak,
+        {
+          ...activeState(swingHigh.factId),
+          status,
+        },
+      );
+      expect(result.status).toBe("NO_BREAK");
+      expect(result.reasons).toContain("LEVEL_NOT_ACTIVE");
+    }
+
+    const replacementLevel = level("high-new-identity","SWING_HIGH",1.1000);
+    expect(detect(replacementLevel, source, closeBreak).status).toBe("BREAK_OBSERVED");
+  });
+
+  it("rejects level-state evidence that was not knowable before the break", () => {
+    const swingHigh = level("high-state-future","SWING_HIGH",1.1000);
+    const source = bar("m5:0810",1.0995,1.1010,1.0990,1.1005);
+    const result = detectStructuralBreak(
+      swingHigh,
+      source,
+      closeBreak,
+      activeState(swingHigh.factId, "2026-09-24T08:10:00Z"),
+    );
+    expect(result.reasons).toContain("LEVEL_STATE_NOT_KNOWABLE_YET");
+  });
+
+  it("rejects level geometry that occurs after the level claims to be known", () => {
+    const impossible = {
+      ...level("future-geometry","SWING_HIGH",1.1000),
+      geometry:{type:"POINT" as const,time:"2026-09-24T08:01:00Z",price:1.1000},
+    };
+    const result = detect(impossible, bar("m5:0810",1.0995,1.1010,1.0990,1.1005), closeBreak);
+    expect(result.reasons).toContain("LEVEL_GEOMETRY_NOT_CAUSAL");
   });
 
   it("does not invent projected trendline break geometry", () => {
@@ -190,7 +251,7 @@ describe("research structural-break derivation", () => {
         ],
       },
     };
-    const result = detectStructuralBreak(trendline, bar("m5:0810",1.1,1.102,1.099,1.101), {
+    const result = detect(trendline, bar("m5:0810",1.1,1.102,1.099,1.101), {
       ...closeBreak,
       eligibleLevels:[
         {concept:"TRENDLINE_RESISTANCE",allowedDirections:["UP"],allowedScales:["EXTERNAL"]},
@@ -200,7 +261,7 @@ describe("research structural-break derivation", () => {
   });
 
   it("classifies continuation as BOS under an explicit vocabulary profile", () => {
-    const raw = detectStructuralBreak(
+    const raw = detect(
       level("high-1","SWING_HIGH",1.1000),
       bar("m5:0810",1.0995,1.1010,1.0990,1.1005),
       closeBreak,
@@ -224,8 +285,32 @@ describe("research structural-break derivation", () => {
     expect(classified.fact?.concept).toBe("BOS");
   });
 
+  it("classifies bearish continuation as BOS under the same explicit profile", () => {
+    const raw = detect(
+      level("low-1","SWING_LOW",1.1000),
+      bar("m5:0810",1.1005,1.1010,1.0988,1.0995),
+      closeBreak,
+    ).events[0]!;
+
+    const classified = classifyStructuralBreak({
+      breakEvent:raw,
+      priorBias:{
+        bias:"BEARISH",
+        evidenceId:"bias-bear",
+        knownAt:"2026-09-24T08:05:00Z",
+        definitionId:"bias:v1",
+      },
+      evaluatedAt:"2026-09-24T08:11:00Z",
+      definition:bosProfile,
+    });
+
+    expect(classified.relation).toBe("CONTINUATION");
+    expect(classified.classification).toBe("BOS");
+    expect(classified.fact?.side).toBe("SELL");
+  });
+
   it("classifies the same opposing raw break as CHoCH under one profile", () => {
-    const raw = detectStructuralBreak(
+    const raw = detect(
       level("low-1","SWING_LOW",1.1000),
       bar("m5:0810",1.1005,1.1010,1.0988,1.0995),
       closeBreak,
@@ -248,7 +333,7 @@ describe("research structural-break derivation", () => {
   });
 
   it("does not call the same opposing break MSS until that profile's displacement requirement is satisfied", () => {
-    const raw = detectStructuralBreak(
+    const raw = detect(
       level("low-1","SWING_LOW",1.1000),
       bar("m5:0810",1.1005,1.1010,1.0988,1.0995),
       closeBreak,
@@ -290,8 +375,57 @@ describe("research structural-break derivation", () => {
     expect(withDisplacement.classification).toBe("MSS");
   });
 
+  it("refuses classification before the raw break itself is knowable", () => {
+    const raw = detect(
+      level("high-future-classification","SWING_HIGH",1.1000),
+      bar("m5:0810",1.0995,1.1010,1.0990,1.1005),
+      closeBreak,
+    ).events[0]!;
+
+    const result = classifyStructuralBreak({
+      breakEvent:raw,
+      priorBias:{
+        bias:"BULLISH",
+        evidenceId:"bias-1",
+        knownAt:"2026-09-24T08:05:00Z",
+        definitionId:"bias:v1",
+      },
+      evaluatedAt:"2026-09-24T08:09:00Z",
+      definition:bosProfile,
+    });
+    expect(result.reasons).toContain("BREAK_FROM_FUTURE");
+  });
+
+  it("requires directional displacement when the selected MSS profile requires displacement", () => {
+    const raw = detect(
+      level("low-mss-direction","SWING_LOW",1.1000),
+      bar("m5:0810",1.1005,1.1010,1.0988,1.0995),
+      closeBreak,
+    ).events[0]!;
+
+    const result = classifyStructuralBreak({
+      breakEvent:raw,
+      priorBias:{
+        bias:"BULLISH",
+        evidenceId:"bias-1",
+        knownAt:"2026-09-24T08:05:00Z",
+        definitionId:"bias:v1",
+      },
+      displacement:{
+        present:true,
+        direction:null,
+        evidenceId:"displacement-undirected",
+        knownAt:"2026-09-24T08:10:01Z",
+        definitionId:"displacement:v1",
+      },
+      evaluatedAt:"2026-09-24T08:11:00Z",
+      definition:mssProfile,
+    });
+    expect(result.reasons).toContain("DISPLACEMENT_DIRECTION_MISSING");
+  });
+
   it("leaves a valid raw break unclassified when the profile has no rule for it", () => {
-    const raw = detectStructuralBreak(
+    const raw = detect(
       level("high-1","SWING_HIGH",1.1000),
       bar("m5:0810",1.0995,1.1010,1.0990,1.1005),
       closeBreak,
@@ -315,12 +449,12 @@ describe("research structural-break derivation", () => {
 
   it("preserves internal/external structure as separate facts", () => {
     const source = bar("m5:0810",1.0995,1.1020,1.0990,1.1015);
-    const internal = detectStructuralBreak(
+    const internal = detect(
       level("internal-high","SWING_HIGH",1.1000,"INTERNAL"),
       source,
       closeBreak,
     ).events[0]!;
-    const external = detectStructuralBreak(
+    const external = detect(
       level("external-high","SWING_HIGH",1.1010,"EXTERNAL"),
       source,
       closeBreak,
@@ -332,7 +466,7 @@ describe("research structural-break derivation", () => {
   });
 
   it("projects a classified structural break into the engine-owned chart scene", () => {
-    const raw = detectStructuralBreak(
+    const raw = detect(
       level("high-1","SWING_HIGH",1.1000),
       bar("m5:0810",1.0995,1.1010,1.0990,1.1005),
       closeBreak,

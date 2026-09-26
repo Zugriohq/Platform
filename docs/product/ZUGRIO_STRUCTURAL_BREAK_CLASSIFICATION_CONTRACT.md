@@ -33,6 +33,8 @@ The detector does not choose tolerance or which concepts can break in which dire
 - STALE/GAP bars cannot create a break.
 - PATH/trendline geometry is not projected here; dynamic-line breaks need a separate versioned projection policy.
 - Re-evaluating the same level/source bar/profile yields the same break ID.
+- Every break requires an explicit level-state fact from a named policy.
+- CONSUMED or INVALIDATED levels cannot create another fresh break event; a later structure level must have a new identity.
 
 ## Classification
 
@@ -41,6 +43,8 @@ Classification consumes:
 - prior structural bias known before the break;
 - the selected vocabulary/profile definition;
 - optional displacement evidence when that profile requires it.
+
+When displacement is required, it must carry the same direction as the raw break. A merely present but directionless displacement flag is insufficient.
 
 Relation is computed only as:
 - continuation;

@@ -34,11 +34,22 @@ export type ResearchStructuralBreakReason =
   | "LEVEL_NOT_ELIGIBLE"
   | "LEVEL_GEOMETRY_UNSUPPORTED"
   | "LEVEL_NOT_KNOWABLE_YET"
+  | "LEVEL_GEOMETRY_NOT_CAUSAL"
+  | "LEVEL_STATE_NOT_KNOWABLE_YET"
+  | "LEVEL_NOT_ACTIVE"
   | "LEVEL_USES_BREAK_BAR_EVIDENCE"
   | "BAR_NOT_CLOSED_FOR_CLOSE_BREAK"
   | "DATA_STALE"
   | "DATA_GAP"
   | "NO_BREAK";
+
+export interface ResearchBreakLevelState {
+  readonly levelFactId: string;
+  readonly status: "ACTIVE" | "CONSUMED" | "INVALIDATED";
+  readonly evidenceId: string;
+  readonly knownAt: string;
+  readonly policyRef: string;
+}
 
 export interface ResearchStructuralBreakEvent {
   readonly breakId: string;
@@ -96,10 +107,12 @@ export interface ResearchBreakClassificationDefinition {
 
 export type ResearchBreakClassificationReason =
   | "CLASSIFIED"
+  | "BREAK_FROM_FUTURE"
   | "NO_PROFILE_RULE"
   | "BIAS_NOT_PRIOR"
   | "BIAS_EVIDENCE_REUSED"
   | "DISPLACEMENT_REQUIRED"
+  | "DISPLACEMENT_DIRECTION_MISSING"
   | "DISPLACEMENT_DIRECTION_MISMATCH"
   | "DISPLACEMENT_FROM_FUTURE";
 
@@ -149,6 +162,10 @@ function validateBreakDefinition(definition: ResearchStructuralBreakDefinition):
     throw new Error("break tolerance must be finite and >= 0");
   }
 
+  if (definition.eligibleLevels.length === 0) {
+    throw new Error("break definition requires at least one eligible level rule");
+  }
+
   const seen = new Set<string>();
   for (const rule of definition.eligibleLevels) {
     if (rule.allowedDirections.length === 0) {
@@ -188,6 +205,7 @@ export function detectStructuralBreak(
   level: ResearchMarketStructureFact,
   bar: ResearchStructureBar,
   definition: ResearchStructuralBreakDefinition,
+  levelState: ResearchBreakLevelState,
 ): ResearchStructuralBreakAssessment {
   validateBreakDefinition(definition);
   validateResearchStructureBar(bar);
@@ -219,6 +237,51 @@ export function detectStructuralBreak(
   const levelKnownAt = epoch(level.knownAt, "level.knownAt");
   const barKnownAt = epoch(bar.knownAt, "bar.knownAt");
   const barClosedAt = epoch(bar.sourceClosedAt, "bar.sourceClosedAt");
+
+  const geometryKnownAt =
+    level.geometry.type === "POINT"
+      ? epoch(level.geometry.time, "level.geometry.time")
+      : level.geometry.type === "LEVEL" || level.geometry.type === "ZONE"
+        ? level.geometry.startAt
+          ? epoch(level.geometry.startAt, "level.geometry.startAt")
+          : levelKnownAt
+        : levelKnownAt;
+  if (geometryKnownAt > levelKnownAt) {
+    return {
+      status: "NO_BREAK",
+      events: [],
+      reasons: ["LEVEL_GEOMETRY_NOT_CAUSAL"],
+      authority: "RESEARCH_ONLY",
+      liveCapitalAuthority: false,
+    };
+  }
+
+  if (
+    levelState.levelFactId !== level.factId ||
+    !levelState.evidenceId ||
+    !levelState.policyRef
+  ) {
+    throw new Error("level state must identify the same level and carry evidence/policy identity");
+  }
+  const levelStateKnownAt = epoch(levelState.knownAt, "levelState.knownAt");
+  if (levelStateKnownAt >= barClosedAt || levelStateKnownAt > barKnownAt) {
+    return {
+      status: "NO_BREAK",
+      events: [],
+      reasons: ["LEVEL_STATE_NOT_KNOWABLE_YET"],
+      authority: "RESEARCH_ONLY",
+      liveCapitalAuthority: false,
+    };
+  }
+  if (levelState.status !== "ACTIVE") {
+    return {
+      status: "NO_BREAK",
+      events: [],
+      reasons: ["LEVEL_NOT_ACTIVE"],
+      authority: "RESEARCH_ONLY",
+      liveCapitalAuthority: false,
+    };
+  }
 
   // The level must exist before the break bar closes, and before an intrabar
   // touch is observed. Equal timestamps are deliberately rejected to avoid
@@ -298,7 +361,7 @@ export function detectStructuralBreak(
       sourceClosedAt: bar.sourceClosedAt,
       knownAt: bar.knownAt,
       definitionId: definition.definitionId,
-      sourceEvidenceIds: [...new Set([...level.sourceEvidenceIds, bar.evidenceId])],
+      sourceEvidenceIds: [...new Set([...level.sourceEvidenceIds, levelState.evidenceId, bar.evidenceId])],
       authority: "RESEARCH_ONLY",
       authorityEffect: "NONE",
     });
@@ -319,7 +382,7 @@ export function detectStructuralBreak(
       sourceClosedAt: bar.sourceClosedAt,
       knownAt: bar.knownAt,
       definitionId: definition.definitionId,
-      sourceEvidenceIds: [...new Set([...level.sourceEvidenceIds, bar.evidenceId])],
+      sourceEvidenceIds: [...new Set([...level.sourceEvidenceIds, levelState.evidenceId, bar.evidenceId])],
       authority: "RESEARCH_ONLY",
       authorityEffect: "NONE",
     });
@@ -350,6 +413,21 @@ export function classifyStructuralBreak(input: {
   const evaluatedAt = epoch(input.evaluatedAt, "evaluatedAt");
   const breakKnownAt = epoch(input.breakEvent.knownAt, "breakEvent.knownAt");
   const biasKnownAt = epoch(input.priorBias.knownAt, "priorBias.knownAt");
+
+  if (breakKnownAt > evaluatedAt) {
+    return {
+      status: "UNCLASSIFIED_STRUCTURAL_BREAK",
+      relation: relationFor(input.priorBias.bias, input.breakEvent.direction),
+      classification: null,
+      fact: null,
+      reasons: ["BREAK_FROM_FUTURE"],
+      authority: "RESEARCH_ONLY",
+      liveCapitalAuthority: false,
+    };
+  }
+  if (!input.priorBias.evidenceId || !input.priorBias.definitionId) {
+    throw new Error("prior bias requires evidenceId and definitionId");
+  }
 
   if (biasKnownAt >= breakKnownAt) {
     return {
@@ -420,10 +498,18 @@ export function classifyStructuralBreak(input: {
         liveCapitalAuthority: false,
       };
     }
-    if (
-      input.displacement.direction !== null &&
-      input.displacement.direction !== input.breakEvent.direction
-    ) {
+    if (input.displacement.direction === null) {
+      return {
+        status: "UNCLASSIFIED_STRUCTURAL_BREAK",
+        relation,
+        classification: null,
+        fact: null,
+        reasons: ["DISPLACEMENT_DIRECTION_MISSING"],
+        authority: "RESEARCH_ONLY",
+        liveCapitalAuthority: false,
+      };
+    }
+    if (input.displacement.direction !== input.breakEvent.direction) {
       return {
         status: "UNCLASSIFIED_STRUCTURAL_BREAK",
         relation,
@@ -466,7 +552,7 @@ export function classifyStructuralBreak(input: {
     geometry: {
       type: "LEVEL",
       price: input.breakEvent.levelPrice,
-      startAt: input.breakEvent.sourceClosedAt,
+      startAt: input.breakEvent.knownAt,
     },
     label: `${String(input.breakEvent.scale ?? "UNSCALED")} ${classification} ${input.breakEvent.direction === "UP" ? "↑" : "↓"}`,
     authority: "RESEARCH_ONLY",
