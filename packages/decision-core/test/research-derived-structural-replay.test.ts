@@ -29,7 +29,7 @@ describe("derived structural alpha replay", () => {
     expect(classified.regime.regime).toBe("TRENDING");
     expect(classified.scene.regimeLabel).toBe("TRENDING");
     expect(classified.scene.regimeEvidenceId).toBe(classified.regime.classificationId);
-    expect(classified.scene.regimeDefinitionId).toBe("derived-alpha:canonical-regime:v1");
+    expect(classified.scene.regimeDefinitionId).toBe("derived-alpha:canonical-regime:v2");
     expect(classified.scene.strategyVersion).toBe("0.1.0");
     expect(classified.scene.routeContext).toEqual({
       status: "ROUTES_AVAILABLE",
