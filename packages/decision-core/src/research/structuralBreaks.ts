@@ -463,6 +463,13 @@ export function classifyStructuralBreak(input: {
   ) {
     throw new Error("structural break event identity/provenance must be complete");
   }
+  if (
+    input.breakEvent.sourceBarEvidenceId === input.breakEvent.levelStateEvidenceId ||
+    !input.breakEvent.sourceEvidenceIds.includes(input.breakEvent.sourceBarEvidenceId) ||
+    !input.breakEvent.sourceEvidenceIds.includes(input.breakEvent.levelStateEvidenceId)
+  ) {
+    throw new Error("structural break provenance roles must be distinct and present in sourceEvidenceIds");
+  }
   const breakKnownAt = epoch(input.breakEvent.knownAt, "breakEvent.knownAt");
   const breakSourceClosedAt = epoch(input.breakEvent.sourceClosedAt, "breakEvent.sourceClosedAt");
   if (input.breakEvent.mode === "CLOSE_BEYOND" && breakKnownAt < breakSourceClosedAt) {

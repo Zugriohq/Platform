@@ -350,6 +350,46 @@ describe("research structural-break derivation", () => {
     expect(result.reasons).toContain("LEVEL_GEOMETRY_UNSUPPORTED");
   });
 
+  it("rejects forged break provenance roles that are absent from the flattened evidence set", () => {
+    const raw = detect(
+      level("high-forged-provenance","SWING_HIGH",1.1000),
+      bar("m5:0810",1.0995,1.1010,1.0990,1.1005),
+      closeBreak,
+    ).events[0]!;
+
+    const missingBarEvidence = {
+      ...raw,
+      sourceEvidenceIds: raw.sourceEvidenceIds.filter(id => id !== raw.sourceBarEvidenceId),
+    };
+    expect(() => classifyStructuralBreak({
+      breakEvent:missingBarEvidence,
+      priorBias:{
+        bias:"BULLISH",
+        evidenceId:"bias-1",
+        knownAt:"2026-09-24T08:05:00Z",
+        definitionId:"bias:v1",
+      },
+      evaluatedAt:"2026-09-24T08:11:00Z",
+      definition:bosProfile,
+    })).toThrow(/provenance roles must be distinct and present/);
+
+    const aliasedRoles = {
+      ...raw,
+      levelStateEvidenceId: raw.sourceBarEvidenceId,
+    };
+    expect(() => classifyStructuralBreak({
+      breakEvent:aliasedRoles,
+      priorBias:{
+        bias:"BULLISH",
+        evidenceId:"bias-1",
+        knownAt:"2026-09-24T08:05:00Z",
+        definitionId:"bias:v1",
+      },
+      evaluatedAt:"2026-09-24T08:11:00Z",
+      definition:bosProfile,
+    })).toThrow(/provenance roles must be distinct and present/);
+  });
+
   it("allows prior bias to share legitimate level evidence without treating it as circular", () => {
     const swingHigh = level("high-shared-prior","SWING_HIGH",1.1000);
     const raw = detect(
