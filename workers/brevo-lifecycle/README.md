@@ -1,5 +1,7 @@
 # Zugrio Brevo Lifecycle Worker
 
+> **2026-09-26 production template migration:** Brand OS v1 templates are active in Brevo and are the canonical sequence: EA00=10, EA01=13, EA02=14, EA03=15, EA04=16, EA05=17. The older IDs 1–6 remain inactive. Cloudflare Pages/Worker environment variables must be updated to the canonical IDs before automated delivery is considered production-ready. Duplicates 11–12 are non-canonical cleanup items.
+
 Purpose: continue the early-access email sequence after the immediate signup welcome.
 
 This Worker is intentionally separate from the landing-page request path so:
