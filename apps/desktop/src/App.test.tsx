@@ -212,7 +212,7 @@ describe("App decision source", () => {
     expect(text()).toContain("TRENDING");
     expect(text()).toContain("BOS RETEST");
     expect(text()).toContain("UNVALIDATED CANDIDATE SET");
-    expect(text()).toContain("derived-alpha:canonical-regime:v1");
+    expect(text()).toContain("derived-alpha:canonical-regime:v2");
   });
 
   it("fails closed when the scenario list carries non-validation metadata", async () => {
