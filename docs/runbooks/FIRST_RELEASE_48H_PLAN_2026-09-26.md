@@ -182,6 +182,28 @@ Then:
 
 ---
 
+
+## 8A. Premium release gate
+
+The first invited build is not exempt from Zugrio's premium standard because it is early.
+
+A release candidate fails the premium gate if any critical path contains:
+- placeholder-quality UI;
+- visibly inconsistent spacing/type/geometry;
+- broken or awkward responsive behavior;
+- generic or contradictory language;
+- unresolved visual regression;
+- unclear status/control semantics;
+- avoidable latency or interaction friction;
+- low-quality email/onboarding;
+- dead links or unpolished error states;
+- any touchpoint that feels materially below the rest of the Zugrio experience.
+
+The goal is not decorative perfection. The goal is **coherent, category-leading craft across the entire usable path**.
+
+Premium does not override safety/readiness. If a capability is not ready, the premium behavior is to state that clearly rather than polish an unsupported claim.
+
+
 ## 9. Current blockers already known
 
 1. Cloudflare Pages bot reported a failed build on the latest headline PR.
