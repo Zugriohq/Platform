@@ -14,6 +14,8 @@ export type ResearchLifecycleReasonCode =
   | "RETEST_TOUCHED"
   | "RETEST_HELD"
   | "CONTINUATION_ROUTE_DISABLED"
+  | "CONTINUATION_VALID_SIDE_FAILED"
+  | "EXTENSION_BUDGET_FAILED"
   | "CONTINUATION_HELD"
   | "CONFIRMATION_WITHOUT_HELD_ROUTE"
   | "LIFECYCLE_CONFIRMED"
@@ -42,6 +44,15 @@ export interface ResearchBreakSeed {
   readonly continuationReferenceEnabled: boolean;
 }
 
+export interface ResearchContinuationObservation {
+  readonly validSideHeld: boolean;
+  readonly extensionBudgetOk: boolean;
+  /**
+   * Identity of the declared extension-budget rule. The observer never tunes it.
+   */
+  readonly extensionBudgetProvenanceId: string;
+}
+
 export interface ResearchLifecycleObservation {
   readonly evidenceId: string;
   readonly sourceBarId: string;
@@ -52,7 +63,7 @@ export interface ResearchLifecycleObservation {
   /** Named upstream structural facts. This observer does not invent their thresholds. */
   readonly retestTouched?: boolean;
   readonly retestHeld?: boolean;
-  readonly continuationHeld?: boolean;
+  readonly continuation?: ResearchContinuationObservation;
   /**
    * Explicit upstream statement that a held route completed its frozen lifecycle.
    * The observer only accepts it after the corresponding HELD state exists.
@@ -262,9 +273,16 @@ export function observeStructuralLifecycle(
       }
     }
 
-    if (observation.continuationHeld) {
+    if (observation.continuation) {
+      if (!observation.continuation.extensionBudgetProvenanceId) {
+        throw new Error("continuation extensionBudgetProvenanceId must be non-empty");
+      }
       if (!seed.continuationReferenceEnabled) {
         push(observation, "IGNORE", "CONTINUATION_ROUTE_DISABLED", current(), current(), "CONTINUATION");
+      } else if (!observation.continuation.validSideHeld) {
+        push(observation, "IGNORE", "CONTINUATION_VALID_SIDE_FAILED", current(), current(), "CONTINUATION");
+      } else if (!observation.continuation.extensionBudgetOk) {
+        push(observation, "IGNORE", "EXTENSION_BUDGET_FAILED", current(), current(), "CONTINUATION");
       } else if (continuation === "BREAK_CONFIRMED") {
         const from = current();
         continuation = "CONTINUATION_HELD";
