@@ -51,6 +51,28 @@ const TIMEFRAME = "M5";
 
 const bars: readonly ResearchStructureBar[] = [
   {
+    evidenceId: "ohlc-0735",
+    sourceBarId: "EURUSD:M5:0735",
+    open: 1.1738,
+    high: 1.1744,
+    low: 1.1736,
+    close: 1.1741,
+    sourceClosedAt: "2026-09-24T07:40:00Z",
+    knownAt: "2026-09-24T07:40:01Z",
+    dataStatus: "FRESH_COMPLETE",
+  },
+  {
+    evidenceId: "ohlc-0740",
+    sourceBarId: "EURUSD:M5:0740",
+    open: 1.1741,
+    high: 1.1749,
+    low: 1.1739,
+    close: 1.1747,
+    sourceClosedAt: "2026-09-24T07:45:00Z",
+    knownAt: "2026-09-24T07:45:01Z",
+    dataStatus: "FRESH_COMPLETE",
+  },
+  {
     evidenceId: "ohlc-0745",
     sourceBarId: "EURUSD:M5:0745",
     open: 1.1747,
@@ -173,14 +195,14 @@ const retestDefinition: ResearchRetestDefinition = {
 };
 
 const regimeMeasurementDefinition: ResearchRegimeMeasurementDefinition = {
-  definitionId: "derived-alpha:regime-measurements:v1",
-  lookbackBars: 3,
+  definitionId: "derived-alpha:regime-measurements:v2",
+  lookbackBars: 5,
   baselineBars: 2,
   maxLatestBarAgeMs: 60_000,
 };
 
 const regimeClassificationDefinition: ResearchRegimeClassificationDefinition = {
-  definitionId: "derived-alpha:canonical-regime:v1",
+  definitionId: "derived-alpha:canonical-regime:v2",
   profileId: "zugrio-core-derived-alpha",
   profileVersion: "0.1.0",
   rules: [
@@ -191,14 +213,14 @@ const regimeClassificationDefinition: ResearchRegimeClassificationDefinition = {
         {
           measurement: "CLOSE_EFFICIENCY",
           operator: "GTE",
-          threshold: 0.8,
-          thresholdProvenanceId: "derived-alpha:fixture-threshold:close-efficiency:v1",
+          threshold: 0.3,
+          thresholdProvenanceId: "derived-alpha:fixture-threshold:close-efficiency:v2",
         },
         {
           measurement: "SIGNED_CLOSE_MOVE",
           operator: "GT",
-          threshold: 0.0008,
-          thresholdProvenanceId: "derived-alpha:fixture-threshold:signed-move:v1",
+          threshold: 0.0004,
+          thresholdProvenanceId: "derived-alpha:fixture-threshold:signed-move:v2",
         },
       ],
     },
