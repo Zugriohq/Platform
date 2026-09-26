@@ -534,6 +534,23 @@ Use:
 - value contrast before shadow;
 - subtle inset highlights.
 
+
+### Curvature as brand behavior
+
+Zugrio is not a hard-edged, utilitarian trading terminal brand.
+
+Its geometry should combine precision with **controlled curvature**:
+- major brand surfaces: 20–28 px radii;
+- editorial/email shells: 24–28 px radii;
+- raised brand cards: 16–22 px radii;
+- compact controls: 10–14 px radii;
+- primary marketing CTAs may use a full pill where the interaction benefits from it.
+
+Curvature must feel engineered, not playful. Corners should soften the experience without turning every element into a generic rounded card.
+
+Square outer shells, sharp promotional cards and visibly boxy public-facing compositions are not the default Zugrio brand expression.
+
+
 Avoid:
 - universally rounded SaaS cards;
 - floating glass cards everywhere;
