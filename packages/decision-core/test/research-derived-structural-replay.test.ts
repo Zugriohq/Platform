@@ -16,6 +16,28 @@ describe("derived structural alpha replay", () => {
     expect(scenario?.bundle.evidenceStatus).toBe("VALIDATION_ONLY");
   });
 
+  it("keeps canonical regime unavailable until the bounded window is causal, then resolves strategy routes", () => {
+    const early = buildDerivedStructuralReplayFrame(1);
+    expect(early.regime.status).toBe("UNAVAILABLE");
+    expect(early.regime.regime).toBeNull();
+    expect(early.resolvedRoutes).toBeNull();
+    expect(early.scene.regimeLabel).toBeNull();
+    expect(early.scene.routeContext.status).toBe("UNAVAILABLE");
+
+    const classified = buildDerivedStructuralReplayFrame(2);
+    expect(classified.regime.status).toBe("CLASSIFIED");
+    expect(classified.regime.regime).toBe("TRENDING");
+    expect(classified.scene.regimeLabel).toBe("TRENDING");
+    expect(classified.scene.regimeEvidenceId).toBe(classified.regime.classificationId);
+    expect(classified.scene.regimeDefinitionId).toBe("derived-alpha:canonical-regime:v1");
+    expect(classified.scene.strategyVersion).toBe("0.1.0");
+    expect(classified.scene.routeContext).toEqual({
+      status: "ROUTES_AVAILABLE",
+      families: ["BOS_RETEST"],
+      calibrationStatus: "UNVALIDATED_CANDIDATE_SET",
+    });
+  });
+
   it("does not hindsight-fill BOS before the causal break is knowable", () => {
     const before = buildDerivedStructuralReplayFrame(1);
     expect(before.breakEvent).toBeNull();
@@ -55,6 +77,8 @@ describe("derived structural alpha replay", () => {
     const scene = buildReplayChartScene(scenario, 4);
 
     expect(scene.timeframe).toBe("M5");
+    expect(scene.regimeLabel).toBe("TRENDING");
+    expect(scene.routeContext.families).toEqual(["BOS_RETEST"]);
     expect(scene.primitives.some(primitive => primitive.concept === "BOS")).toBe(true);
     expect(scene.primitives.some(primitive =>
       primitive.concept === "RETEST" && primitive.label === "RETEST HELD"
