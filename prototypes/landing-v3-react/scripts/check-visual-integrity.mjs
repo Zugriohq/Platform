@@ -17,6 +17,8 @@ function forbidText(source, needle, message) {
 
 requireText(css, "--max:1332px", "The landing page must keep the shared 1332px content rail.");
 requireText(css, "white-space:nowrap", "Headline lines must stay locked to one visual line each.");
+requireText(css, "position:absolute", "Rolling headline frames must stay out of document flow to prevent layout shift.");
+requireText(css, "height:1.98em", "Desktop rolling headline viewport must keep a fixed optical height.");
 requireText(
   css,
   ".hero-headline-window",
