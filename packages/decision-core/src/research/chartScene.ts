@@ -208,7 +208,7 @@ export function projectMarketMapToChartScene(
     label: fact.label,
     knownAt: fact.knownAt,
     geometry: fact.geometry,
-    sourceFactIds: [fact.factId],
+    sourceFactIds: [fact.factId, ...(fact.sourceFactIds ?? [])],
     sourceEvidenceIds: fact.sourceEvidenceIds,
     visibility: visibilityForFact(fact),
     styleToken: styleForFact(fact),
