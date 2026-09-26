@@ -105,3 +105,38 @@ Email is best-effort.
 A successful D1 signup must never be rolled back because Brevo is unavailable.
 
 Provider errors are written to `email_last_error` and `email_send_log` for diagnosis.
+
+## EA00 recovery / privacy guardrail
+
+Production or backfill delivery must **never** use Brevo's template-test endpoint with multiple subscribers. That endpoint is for testing and can expose the recipient batch together in the message recipient field.
+
+The Worker now supports safe EA00 recovery for accepted signups whose welcome was never recorded.
+
+Required variables:
+- `BREVO_LIST_ID`
+- `BREVO_WELCOME_TEMPLATE_ID=10`
+- `BREVO_EA00_RECOVERY_ENABLED=true|false`
+
+Safety:
+- recovery is **disabled by default**;
+- reconcile the existing subscriber backlog in D1 before enabling it, otherwise already-delivered manual/test welcomes could be duplicated;
+- each recovered welcome is sent through the transactional SMTP API with exactly one address in `to`;
+- successful recovery writes `welcome_sent_at`, starts sequence step 1, sets the next send time and inserts an EA00 send-log row;
+- failed recovery leaves the signup accepted and records the provider error;
+- blacklisted contacts are not sent.
+
+Canonical Brand OS template IDs:
+- EA00 = 10
+- EA01 = 13
+- EA02 = 14
+- EA03 = 15
+- EA04 = 16
+- EA05 = 17
+
+Release order:
+1. reconcile current EA00 deliveries in D1;
+2. configure the canonical IDs;
+3. deploy the Worker;
+4. verify `/health`;
+5. enable `BREVO_EA00_RECOVERY_ENABLED=true`;
+6. test with a fresh controlled signup.
