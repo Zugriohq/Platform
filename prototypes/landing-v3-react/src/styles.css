@@ -2204,3 +2204,100 @@ footer>div a{color:#78838d}
   .market-topography-graze{animation:none!important;display:none}
   .decision-focus:before{animation:none!important}
 }
+
+
+/* ── SWEEP REVIEW V2 / RHYTHM + MOTION INTEGRITY ─────────────────────────
+   Restores the intended headline roll and closes the remaining hierarchy gaps.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Hero: controlled two-state rolling headline, fixed optical footprint. */
+.hero-headline{
+  min-height:1.92em;
+  display:grid;
+  place-items:center;
+}
+.hero-headline-window{
+  display:grid;
+  place-items:center;
+  width:100%;
+  overflow:hidden;
+  padding:.08em .04em .12em;
+}
+.hero-headline-frame{
+  grid-area:1/1;
+  width:100%;
+  min-height:1.78em;
+  justify-content:center;
+}
+.hero h1 .hero-headline-part{
+  line-height:.94;
+}
+
+/* Decision Quality: conclusion, not a stray secondary headline. */
+.dq-close{
+  max-width:none;
+  margin:96px 0 0;
+  padding:24px 0 0;
+  border-top:1px solid rgba(255,255,255,.09);
+  display:grid;
+  grid-template-columns:minmax(150px,.28fr) minmax(0,1fr);
+  gap:36px;
+  align-items:baseline;
+  color:inherit;
+}
+.dq-close>span{
+  color:#65707b;
+  font:700 9px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.12em;
+}
+.dq-close>strong{
+  max-width:760px;
+  justify-self:end;
+  color:#dce2e7;
+  font-size:clamp(18px,1.65vw,24px);
+  line-height:1.3;
+  letter-spacing:-.025em;
+  font-weight:560;
+  text-align:right;
+}
+
+/* Public microtype floor: keep compact metadata legible without enlarging
+   the illustrative workspace's dense data labels. */
+.story-capability em,
+.readiness-capability em,
+.readiness-meta,
+.readiness-legend-row>span,
+.readiness-legend-row>b,
+.story-pathline b{
+  font-size:8.5px;
+}
+.dq-case-ledger span,
+.dq-observation-ledger small{
+  font-size:8.5px;
+}
+
+@media(max-width:720px){
+  .hero-headline{min-height:2.02em}
+  .hero-headline-window{padding:.08em 0 .13em}
+  .hero-headline-frame{min-height:1.86em}
+  .hero h1 .hero-headline-part{line-height:.97}
+
+  .dq-close{
+    margin-top:72px;
+    grid-template-columns:1fr;
+    gap:11px;
+    padding-top:20px;
+  }
+  .dq-close>span{font-size:8.5px}
+  .dq-close>strong{
+    justify-self:start;
+    max-width:520px;
+    font-size:18px;
+    line-height:1.38;
+    text-align:left;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .hero-headline-window{overflow:visible}
+}
