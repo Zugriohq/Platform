@@ -68,6 +68,10 @@ export function detectThreeBarFvg(
   if (!(firstClose < middleClose && middleClose < thirdClose)) {
     throw new Error("FVG bars must be strictly chronological");
   }
+  const knownAt = [first.knownAt, middle.knownAt, third.knownAt]
+    .reduce((latest, candidate) =>
+      epoch(candidate, "bar.knownAt") > epoch(latest, "bar.knownAt") ? candidate : latest
+    );
 
   const bullishGap = third.low - first.high;
   const bearishGap = first.low - third.high;
@@ -87,7 +91,7 @@ export function detectThreeBarFvg(
     scale: null,
     timeframe,
     side: bullish ? "BUY" : "SELL",
-    knownAt: third.knownAt,
+    knownAt,
     definitionId: definition.definitionId,
     sourceEvidenceIds: [first.evidenceId, middle.evidenceId, third.evidenceId],
     geometry: {
