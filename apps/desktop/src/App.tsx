@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   alphaScenarios,
   buildDecisionCase,
@@ -7,6 +7,11 @@ import {
   type StructuralLifecycle,
   type StructuralState,
 } from "@zugrio/decision-core";
+import type { ScenarioSummary } from "@zugrio/alpha-api-contract";
+import {
+  LOCAL_REPLAY_LABEL,
+  createConfiguredAlphaApiClient,
+} from "./cloud";
 
 const STATE_LABELS: Record<StructuralState, string> = {
   STRUCTURAL_CANDIDATE: "STRUCTURAL CANDIDATE",
@@ -21,6 +26,15 @@ const CHANGE_LABELS = {
   entryEventObserved: "ENTRY EVENT",
   currentEntryStatus: "CURRENT ENTRY",
 } as const;
+
+type CloudUiStatus =
+  | { status: "idle" | "loading" | "ready" }
+  | { status: "unavailable" | "error" | "rejected"; reason: string };
+
+type RecordStatus =
+  | { status: "idle" | "saving" }
+  | { status: "saved"; id: string; created: boolean }
+  | { status: "failed"; reason: string };
 
 function stateLabel(state: StructuralState | null): string {
   return state ? STATE_LABELS[state] : "NO ACTIVE STRUCTURAL STATE";
@@ -44,25 +58,20 @@ function EvidenceRow({ label, value }: { label: string; value: string }) {
 }
 
 function PriceField({
-  scenario,
+  decisions,
   frame,
-  decision,
 }: {
-  scenario: ReplayScenario;
+  decisions: readonly DecisionCase[];
   frame: number;
-  decision: DecisionCase;
 }) {
-  const decisions = scenario.frames
-    .slice(0, frame + 1)
-    .map((_, index) => buildDecisionCase(scenario, index));
-
-  const snapshots = decisions
+  const visible = decisions.slice(0, frame + 1);
+  const snapshots = visible
     .map((item) => item.current)
     .filter((snapshot) => snapshot.price !== null);
 
   const prices = snapshots.map((snapshot) => snapshot.price as number);
-  const min = Math.min(...prices) - 0.0005;
-  const max = Math.max(...prices) + 0.0005;
+  const min = prices.length > 0 ? Math.min(...prices) - 0.0005 : 0;
+  const max = prices.length > 0 ? Math.max(...prices) + 0.0005 : 1;
   const range = Math.max(max - min, 0.0001);
   const coords = prices.map((price, index) => {
     const x = prices.length === 1 ? 20 : 20 + (index / (prices.length - 1)) * 720;
@@ -70,18 +79,19 @@ function PriceField({
     return `${x},${y}`;
   });
 
-  const current = decision.current;
-  const retestObserved = lifecycleAtLeastRetest(current.lifecycle);
+  const decision = decisions[frame];
+  const current = decision?.current;
+  const retestObserved = current ? lifecycleAtLeastRetest(current.lifecycle) : false;
   const entryClass =
-    current.currentEntryStatus === "CURRENT"
+    current?.currentEntryStatus === "CURRENT"
       ? "evidence-chip on"
-      : current.currentEntryStatus === "STALE"
+      : current?.currentEntryStatus === "STALE"
         ? "evidence-chip stale"
         : "evidence-chip";
   const entryLabel =
-    current.currentEntryStatus === "CURRENT"
+    current?.currentEntryStatus === "CURRENT"
       ? "ENTRY CURRENT"
-      : current.currentEntryStatus === "STALE"
+      : current?.currentEntryStatus === "STALE"
         ? "ENTRY STALE"
         : "NO ENTRY";
 
@@ -91,7 +101,7 @@ function PriceField({
       <polyline points={coords.join(" ")} fill="none" stroke="currentColor" strokeWidth="2.2" vectorEffect="non-scaling-stroke" />
       {coords.map((pair, index) => {
         const [x,y] = pair.split(",");
-        const item = decisions[index];
+        const item = visible[index];
         const labels = item?.annotations.map(annotation => annotation.label) ?? [];
         const meaningful = labels.filter(label =>
           label.includes("BREAK") ||
@@ -126,26 +136,144 @@ function PriceField({
     <div className="chart-watermark">POINT-IN-TIME REPLAY / NOT LIVE DATA</div>
     <div className="chart-evidence" aria-label="Current replay evidence">
       <span className={retestObserved ? "evidence-chip on" : "evidence-chip"}>RETEST</span>
-      <span className={current.entryEventObserved ? "evidence-chip on" : "evidence-chip"}>ENTRY EVENT</span>
+      <span className={current?.entryEventObserved ? "evidence-chip on" : "evidence-chip"}>ENTRY EVENT</span>
       <span className={entryClass}>{entryLabel}</span>
     </div>
   </div>;
 }
 
+function failureReason(status: CloudUiStatus): string | undefined {
+  return "reason" in status ? status.reason : undefined;
+}
+
 export function App() {
+  const apiClient = useMemo(() => createConfiguredAlphaApiClient(), []);
+  const cloudConfigured = apiClient.baseUrl !== undefined;
+
   const [scenarioIndex, setScenarioIndex] = useState(0);
-  const scenario = alphaScenarios[scenarioIndex] ?? alphaScenarios[0];
   const [frame, setFrame] = useState(0);
-  const safeFrame = Math.min(frame, scenario.frames.length - 1);
-  const decision = useMemo(
-    () => buildDecisionCase(scenario, safeFrame),
-    [scenario, safeFrame],
+  const [cloudSummaries, setCloudSummaries] = useState<readonly ScenarioSummary[]>([]);
+  const [cloudScenario, setCloudScenario] = useState<ReplayScenario | undefined>();
+  const [cloudDecisions, setCloudDecisions] = useState<readonly DecisionCase[]>([]);
+  const [cloudStatus, setCloudStatus] = useState<CloudUiStatus>({ status: cloudConfigured ? "loading" : "idle" });
+  const [recordStatus, setRecordStatus] = useState<RecordStatus>({ status: "idle" });
+  const [retryNonce, setRetryNonce] = useState(0);
+
+  useEffect(() => {
+    if (!cloudConfigured) return;
+    let cancelled = false;
+
+    setCloudStatus({ status: "loading" });
+    void apiClient.listScenarios().then(result => {
+      if (cancelled) return;
+      if (result.status !== "ok") {
+        setCloudStatus({
+          status: result.status === "not-configured" ? "error" : result.status,
+          reason: result.reason,
+        });
+        return;
+      }
+      setCloudSummaries(result.data);
+      setScenarioIndex(index => Math.min(index, Math.max(0, result.data.length - 1)));
+    });
+
+    return () => { cancelled = true; };
+  }, [apiClient, cloudConfigured, retryNonce]);
+
+  const selectedCloudSummary = cloudSummaries[scenarioIndex];
+
+  useEffect(() => {
+    if (!cloudConfigured || !selectedCloudSummary) return;
+    let cancelled = false;
+
+    setCloudStatus({ status: "loading" });
+    setCloudScenario(undefined);
+    setCloudDecisions([]);
+    setRecordStatus({ status: "idle" });
+    setFrame(0);
+
+    void (async () => {
+      const detail = await apiClient.getScenario(selectedCloudSummary.id);
+      if (cancelled) return;
+      if (detail.status !== "ok") {
+        setCloudStatus({
+          status: detail.status === "not-configured" ? "error" : detail.status,
+          reason: detail.reason,
+        });
+        return;
+      }
+
+      const frameResults = await Promise.all(
+        detail.data.frames.map((_, index) =>
+          apiClient.getFrameDecisionCase(detail.data.id, index),
+        ),
+      );
+      if (cancelled) return;
+
+      const failed = frameResults.find(result => result.status !== "ok");
+      if (failed && failed.status !== "ok") {
+        setCloudStatus({
+          status: failed.status === "not-configured" ? "error" : failed.status,
+          reason: failed.reason,
+        });
+        return;
+      }
+
+      setCloudScenario(detail.data as ReplayScenario);
+      setCloudDecisions(
+        frameResults
+          .filter((result): result is Extract<typeof result, { status: "ok" }> => result.status === "ok")
+          .map(result => result.data),
+      );
+      setCloudStatus({ status: "ready" });
+    })();
+
+    return () => { cancelled = true; };
+  }, [apiClient, cloudConfigured, selectedCloudSummary]);
+
+  const localScenario = alphaScenarios[scenarioIndex] ?? alphaScenarios[0];
+  const localDecisions = useMemo(
+    () => localScenario.frames.map((_, index) => buildDecisionCase(localScenario, index)),
+    [localScenario],
   );
-  const scope = scenario.bundle.identity.scope;
+
+  const scenario = cloudConfigured ? cloudScenario : localScenario;
+  const decisions = cloudConfigured ? cloudDecisions : localDecisions;
+  const maxFrame = Math.max(0, (scenario?.frames.length ?? 1) - 1);
+  const safeFrame = Math.min(frame, maxFrame);
+  const decision = decisions[safeFrame];
+  const scope = scenario?.bundle.identity.scope;
+
+  const sidebarItems = cloudConfigured
+    ? cloudSummaries
+    : alphaScenarios.map(item => ({
+        id: item.id,
+        title: item.title,
+        bundle: item.bundle,
+      }));
 
   function chooseScenario(index: number) {
     setScenarioIndex(index);
     setFrame(0);
+    setRecordStatus({ status: "idle" });
+  }
+
+  async function recordCurrentCase() {
+    if (!cloudConfigured || !scenario || !decision) return;
+    setRecordStatus({ status: "saving" });
+    const result = await apiClient.materializeDecisionCase({
+      scenarioId: scenario.id,
+      frameIndex: safeFrame,
+    });
+    if (result.status !== "ok") {
+      setRecordStatus({ status: "failed", reason: result.reason });
+      return;
+    }
+    setRecordStatus({
+      status: "saved",
+      id: result.data.decisionCase.id,
+      created: result.data.created,
+    });
   }
 
   const rail: readonly StructuralState[] = [
@@ -158,12 +286,14 @@ export function App() {
     <header className="topbar">
       <div className="brand"><img src="./brand/zugrio-wordmark-flat-white.svg" alt="Zugrio" /></div>
       <div className="release-chip">PRIVATE VALIDATION / ALPHA</div>
-      <div className="topbar-right">STRUCTURAL ONLY · NO LIVE CAPITAL</div>
+      <div className="topbar-right">
+        {cloudConfigured ? "CLOUD VALIDATION" : LOCAL_REPLAY_LABEL} · NO LIVE CAPITAL
+      </div>
     </header>
 
     <aside className="sidebar">
-      <div className="sidebar-label">REPLAY CASES</div>
-      {alphaScenarios.map((item, index) => <button
+      <div className="sidebar-label">{cloudConfigured ? "CLOUD CASES" : "REPLAY CASES"}</div>
+      {sidebarItems.map((item, index) => <button
         className={index === scenarioIndex ? "case-button selected" : "case-button"}
         key={item.id}
         onClick={() => chooseScenario(index)}
@@ -176,83 +306,124 @@ export function App() {
     </aside>
 
     <section className="workspace">
-      <div className="workspace-head">
+      <div className={"source-banner " + (cloudConfigured ? "cloud" : "local")}>
         <div>
-          <div className="eyebrow">{scope.instrument} / {scope.market} / {scope.horizon}</div>
-          <h1>{scenario.title}</h1>
-          <p>{scenario.description}</p>
+          <strong>{cloudConfigured ? "ZUGRIO CLOUD" : LOCAL_REPLAY_LABEL}</strong>
+          <span>
+            {cloudConfigured
+              ? apiClient.baseUrl
+              : "Cloud API is not configured in this build. Decisions are computed locally from bundled validation fixtures."}
+          </span>
         </div>
-        <div className={"decision-state state-" + (decision.structuralState ?? "none").toLowerCase()}>
-          <span>CURRENT STRUCTURAL STATE</span>
-          <strong>{stateLabel(decision.structuralState)}</strong>
-          <em>{decision.outcome.replaceAll("_", " ")}</em>
-        </div>
+        {cloudConfigured ? <span className={"source-status status-" + cloudStatus.status}>
+          {cloudStatus.status.toUpperCase()}
+        </span> : <span className="source-status status-local">EXPLICIT LOCAL MODE</span>}
       </div>
 
-      <div className="state-rail">
-        {rail.map((state,index) => <Fragment key={state}>
-          <span className={decision.structuralState === state ? "state-mark active" : "state-mark"}>{STATE_LABELS[state]}</span>
-          {index < rail.length - 1 ? <i /> : null}
-        </Fragment>)}
-      </div>
+      {cloudConfigured && cloudStatus.status !== "ready" ? <section className="cloud-gate">
+        <div className="panel-kicker">CLOUD DECISION SOURCE</div>
+        <h1>{cloudStatus.status === "loading" ? "Connecting to Zugrio Cloud…" : "Cloud decision data is unavailable."}</h1>
+        <p>
+          {cloudStatus.status === "loading"
+            ? "The desktop is waiting for the validation API. It will not silently substitute local decision output."
+            : failureReason(cloudStatus)}
+        </p>
+        {cloudStatus.status !== "loading" ? <button onClick={() => setRetryNonce(value => value + 1)}>RETRY CLOUD</button> : null}
+      </section> : null}
 
-      {decision.structuralState === "STRUCTURAL_READY" ? <div className="structural-banner">
-        <strong>STRUCTURAL READY · NOT MODEL-SCORED</strong>
-        <span>Valid structure and trade geometry. No validated pWin/EV is available for this setup.</span>
-      </div> : null}
-
-      <PriceField scenario={scenario} frame={safeFrame} decision={decision} />
-
-      <div className="replay-strip">
-        <button onClick={() => setFrame(value => Math.max(0, value - 1))} disabled={safeFrame === 0}>PREV</button>
-        <div><span>REPLAY FRAME</span><strong>{safeFrame + 1} / {scenario.frames.length}</strong></div>
-        <input
-          aria-label="Replay frame"
-          type="range"
-          min="0"
-          max={scenario.frames.length - 1}
-          value={safeFrame}
-          onChange={event => setFrame(Number(event.target.value))}
-        />
-        <button onClick={() => setFrame(value => Math.min(scenario.frames.length - 1, value + 1))} disabled={safeFrame === scenario.frames.length - 1}>NEXT</button>
-      </div>
-
-      <div className="lower-grid">
-        <section className="panel">
-          <div className="panel-kicker">WHAT IS STILL TRUE?</div>
-          <h2>{decision.outcomeReason}</h2>
-          <EvidenceRow label="Eligibility" value={formatValue(decision.current.eligibility)} />
-          <EvidenceRow label="Regime evidence" value={formatValue(decision.current.regimeStatus)} />
-          <EvidenceRow label="Lifecycle" value={formatValue(decision.current.lifecycle)} />
-          <EvidenceRow label="Retest" value={lifecycleAtLeastRetest(decision.current.lifecycle) ? "OBSERVED" : "NOT YET"} />
-          <EvidenceRow label="Entry event" value={decision.current.entryEventObserved ? "FIXTURE OBSERVED" : "NOT OBSERVED"} />
-          <EvidenceRow label="Current entry" value={formatValue(decision.current.currentEntryStatus)} />
-          <EvidenceRow label="Outcome" value={formatValue(decision.outcome)} />
-          <div className="current-note">{decision.current.note}</div>
-        </section>
-
-        <section className="panel">
-          <div className="panel-kicker">DECISION CASE / HISTORY</div>
-          <div className="timeline">
-            {decision.history.map((event,index)=><div className="timeline-row" key={event.evaluationId + index}>
-              <time>{new Date(event.evaluatedAt).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}</time>
-              <span className="mini-state">{stateLabel(event.structuralState)}</span>
-              <div className="event-copy">
-                <p>{event.outcomeReason}</p>
-                {event.changes.length > 0 ? <div className="event-changes">
-                  {event.changes.map(change => <span key={change.field + String(change.to)} className="event-change on">
-                    {CHANGE_LABELS[change.field]} → {formatValue(change.to)}
-                  </span>)}
-                </div> : null}
-              </div>
-            </div>)}
+      {scenario && decision && (!cloudConfigured || cloudStatus.status === "ready") ? <>
+        <div className="workspace-head">
+          <div>
+            <div className="eyebrow">{scope?.instrument} / {scope?.market} / {scope?.horizon}</div>
+            <h1>{scenario.title}</h1>
+            <p>{scenario.description}</p>
           </div>
-        </section>
-      </div>
+          <div className={"decision-state state-" + (decision.structuralState ?? "none").toLowerCase()}>
+            <span>CURRENT STRUCTURAL STATE</span>
+            <strong>{stateLabel(decision.structuralState)}</strong>
+            <em>{decision.outcome.replaceAll("_", " ")}</em>
+          </div>
+        </div>
 
-      <footer className="validation-foot">
-        <strong>Validation fixture.</strong> Point-in-time structural lifecycle and current-entry evidence only. PASS is an outcome, not an opportunity state. No admitted inference, model-scored READY, FIRE, live market data, trading permission or broker execution is present in this build.
-      </footer>
+        <div className="state-rail">
+          {rail.map((state,index) => <Fragment key={state}>
+            <span className={decision.structuralState === state ? "state-mark active" : "state-mark"}>{STATE_LABELS[state]}</span>
+            {index < rail.length - 1 ? <i /> : null}
+          </Fragment>)}
+        </div>
+
+        {decision.structuralState === "STRUCTURAL_READY" ? <div className="structural-banner">
+          <strong>STRUCTURAL READY · NOT MODEL-SCORED</strong>
+          <span>Valid structure and trade geometry. No validated pWin/EV is available for this setup.</span>
+        </div> : null}
+
+        <PriceField decisions={decisions} frame={safeFrame} />
+
+        <div className="replay-strip">
+          <button onClick={() => setFrame(value => Math.max(0, value - 1))} disabled={safeFrame === 0}>PREV</button>
+          <div><span>REPLAY FRAME</span><strong>{safeFrame + 1} / {scenario.frames.length}</strong></div>
+          <input
+            aria-label="Replay frame"
+            type="range"
+            min="0"
+            max={maxFrame}
+            value={safeFrame}
+            onChange={event => {
+              setFrame(Number(event.target.value));
+              setRecordStatus({ status: "idle" });
+            }}
+          />
+          <button onClick={() => setFrame(value => Math.min(maxFrame, value + 1))} disabled={safeFrame === maxFrame}>NEXT</button>
+          {cloudConfigured ? <button className="record-case" onClick={() => void recordCurrentCase()} disabled={recordStatus.status === "saving"}>
+            {recordStatus.status === "saving" ? "RECORDING…" : "RECORD CASE"}
+          </button> : null}
+        </div>
+
+        {cloudConfigured && recordStatus.status !== "idle" ? <div className={"record-status record-" + recordStatus.status}>
+          {recordStatus.status === "saved"
+            ? `Decision Case ${recordStatus.created ? "recorded" : "already recorded"} · ${recordStatus.id}`
+            : recordStatus.status === "failed"
+              ? `Decision Case was not recorded · ${recordStatus.reason}`
+              : "Recording Decision Case…"}
+        </div> : null}
+
+        <div className="lower-grid">
+          <section className="panel">
+            <div className="panel-kicker">WHAT IS STILL TRUE?</div>
+            <h2>{decision.outcomeReason}</h2>
+            <EvidenceRow label="Eligibility" value={formatValue(decision.current.eligibility)} />
+            <EvidenceRow label="Regime evidence" value={formatValue(decision.current.regimeStatus)} />
+            <EvidenceRow label="Lifecycle" value={formatValue(decision.current.lifecycle)} />
+            <EvidenceRow label="Retest" value={lifecycleAtLeastRetest(decision.current.lifecycle) ? "OBSERVED" : "NOT YET"} />
+            <EvidenceRow label="Entry event" value={decision.current.entryEventObserved ? "FIXTURE OBSERVED" : "NOT OBSERVED"} />
+            <EvidenceRow label="Current entry" value={formatValue(decision.current.currentEntryStatus)} />
+            <EvidenceRow label="Outcome" value={formatValue(decision.outcome)} />
+            <div className="current-note">{decision.current.note}</div>
+          </section>
+
+          <section className="panel">
+            <div className="panel-kicker">DECISION CASE / HISTORY</div>
+            <div className="timeline">
+              {decision.history.map((event,index)=><div className="timeline-row" key={event.evaluationId + index}>
+                <time>{new Date(event.evaluatedAt).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}</time>
+                <span className="mini-state">{stateLabel(event.structuralState)}</span>
+                <div className="event-copy">
+                  <p>{event.outcomeReason}</p>
+                  {event.changes.length > 0 ? <div className="event-changes">
+                    {event.changes.map(change => <span key={change.field + String(change.to)} className="event-change on">
+                      {CHANGE_LABELS[change.field]} → {formatValue(change.to)}
+                    </span>)}
+                  </div> : null}
+                </div>
+              </div>)}
+            </div>
+          </section>
+        </div>
+
+        <footer className="validation-foot">
+          <strong>Validation fixture.</strong> Point-in-time structural lifecycle and current-entry evidence only. PASS is an outcome, not an opportunity state. No admitted inference, model-scored READY, FIRE, live market data, trading permission or broker execution is present in this build.
+        </footer>
+      </> : null}
     </section>
   </main>;
 }
