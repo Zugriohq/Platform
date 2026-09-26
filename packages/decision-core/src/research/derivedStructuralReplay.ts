@@ -59,7 +59,7 @@ const bars: readonly ResearchStructureBar[] = [
   {
     evidenceId: "ohlc-0755",
     sourceBarId: "EURUSD:M5:0755",
-    open: 1.1756,
+    open: 1.1754,
     high: 1.1755,
     low: 1.1749,
     close: 1.1752,
