@@ -1,5 +1,13 @@
 export type OpportunityState = "FORMING" | "READY" | "TRIGGERED" | "PASS";
 
+export type EvidenceField =
+  | "setupQualified"
+  | "locationQualified"
+  | "retestObserved"
+  | "triggerQualified"
+  | "currentConditionsValid"
+  | "invalidated";
+
 export interface EvidenceSnapshot {
   readonly timestamp: string;
   readonly price: number;
@@ -22,11 +30,18 @@ export interface AlphaTradeBundle {
   readonly evidenceStatus: "VALIDATION_ONLY";
 }
 
+export interface EvidenceChange {
+  readonly field: EvidenceField;
+  readonly from: boolean;
+  readonly to: boolean;
+}
+
 export interface DecisionEvent {
   readonly timestamp: string;
   readonly state: OpportunityState;
   readonly reason: string;
   readonly price: number;
+  readonly changes: readonly EvidenceChange[];
 }
 
 export interface DecisionCase {
