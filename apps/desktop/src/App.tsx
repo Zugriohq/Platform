@@ -84,7 +84,6 @@ export function App() {
     "STRUCTURAL_CANDIDATE",
     "STRUCTURAL_WATCH",
     "STRUCTURAL_READY",
-    "INVALIDATED",
   ];
 
   return <main className="app-shell">
@@ -111,19 +110,19 @@ export function App() {
           <h1>{scenario.title}</h1>
           <p>{scenario.description}</p>
         </div>
-        <div className={"decision-state state-" + decision.state.toLowerCase()}>
-          <span>CURRENT STRUCTURAL STATE</span><strong>{STATE_LABELS[decision.state]}</strong>
+        <div className={"decision-state state-" + (decision.structuralState ?? "none").toLowerCase()}>
+          <span>CURRENT STRUCTURAL STATE</span><strong>{stateLabel(decision.structuralState)}</strong>
         </div>
       </div>
 
       <div className="state-rail">
         {rail.map((state,index) => <Fragment key={state}>
-          <span className={decision.state === state ? "state-mark active" : "state-mark"}>{STATE_LABELS[state]}</span>
+          <span className={decision.structuralState === state ? "state-mark active" : "state-mark"}>{STATE_LABELS[state]}</span>
           {index < rail.length - 1 ? <i /> : null}
         </Fragment>)}
       </div>
 
-      {decision.state === "STRUCTURAL_READY" ? <div className="structural-banner">
+      {decision.structuralState === "STRUCTURAL_READY" ? <div className="structural-banner">
         <strong>STRUCTURAL READY · NOT MODEL-SCORED</strong>
         <span>Valid structure and trade geometry. No validated pWin/EV is available for this setup.</span>
       </div> : null}
@@ -140,8 +139,8 @@ export function App() {
       <div className="lower-grid">
         <section className="panel">
           <div className="panel-kicker">WHAT IS STILL TRUE?</div>
-          <h2>{decision.entryReason}</h2>
-          <EvidenceRow label="Lifecycle" value={formatValue(decision.current.lifecycle)}/>
+          <h2>{decision.outcomeReason}</h2>
+          <EvidenceRow label="Eligibility" value={formatValue(decision.current.eligibility)}/><EvidenceRow label="Lifecycle" value={decision.current.lifecycle ? formatValue(decision.current.lifecycle) : "UNAVAILABLE"}/><EvidenceRow label="Outcome" value={formatValue(decision.outcome)}/>
           <EvidenceRow label="Retest" value={lifecycleAtLeastRetest(decision.current.lifecycle) ? "OBSERVED" : "NOT YET"}/>
           <EvidenceRow label="Entry event" value={decision.current.entryEventObserved ? "FIXTURE OBSERVED" : "NOT OBSERVED"}/>
           <EvidenceRow label="Current entry" value={formatValue(decision.current.currentEntryStatus)}/>
@@ -153,9 +152,9 @@ export function App() {
           <div className="timeline">
             {decision.history.map((event,index)=><div className="timeline-row" key={event.timestamp+index}>
               <time>{new Date(event.timestamp).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}</time>
-              <span className="mini-state">{STATE_LABELS[event.state]}</span>
+              <span className="mini-state">{stateLabel(event.structuralState)}</span>
               <div className="event-copy">
-                <p>{event.entryReason}</p>
+                <p>{event.outcomeReason}</p>
                 {event.changes.length > 0 ? <div className="event-changes">
                   {event.changes.map(change => <span key={change.field + String(change.to)} className="event-change on">
                     {CHANGE_LABELS[change.field]} → {formatValue(change.to)}

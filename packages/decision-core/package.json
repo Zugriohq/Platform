@@ -1,6 +1,6 @@
 {
   "name": "@zugrio/decision-core",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
@@ -10,5 +10,11 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
+  },
+  "dependencies": {
+    "@zugrio/domain": "workspace:*"
+  },
+  "devDependencies": {
+    "fast-check": "^4.3.0"
   }
 }

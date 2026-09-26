@@ -1,63 +1,114 @@
+import type { BundleIdentity } from "@zugrio/domain";
+
+export type EligibilityStatus = "ELIGIBLE" | "INELIGIBLE" | "INVALIDATED";
+
 export type StructuralState =
   | "STRUCTURAL_CANDIDATE"
   | "STRUCTURAL_WATCH"
-  | "STRUCTURAL_READY"
-  | "INVALIDATED";
+  | "STRUCTURAL_READY";
 
 export type StructuralLifecycle =
   | "CANDIDATE_IDENTIFIED"
   | "BREAK_CONFIRMED"
   | "RETEST_TOUCHED"
   | "RETEST_HELD"
-  | "LIFECYCLE_CONFIRMED"
-  | "INVALIDATED";
+  | "LIFECYCLE_CONFIRMED";
 
+export type RegimeStatus = "AVAILABLE" | "UNAVAILABLE" | "UNCERTAIN";
 export type CurrentEntryStatus = "NOT_AVAILABLE" | "CURRENT" | "STALE";
+export type DecisionOutcome = "WAIT" | "PASS" | "CURRENT_FIXTURE_ENTRY";
 
-export type EvidenceField = "lifecycle" | "entryEventObserved" | "currentEntryStatus";
-export type EvidenceValue = StructuralLifecycle | CurrentEntryStatus | boolean;
+export type EvidenceKind =
+  | "ELIGIBILITY"
+  | "LIFECYCLE"
+  | "REGIME_STATUS"
+  | "ENTRY_EVENT_OBSERVED"
+  | "CURRENT_ENTRY_STATUS"
+  | "PRICE"
+  | "NOTE";
 
-export interface EvidenceSnapshot {
-  readonly timestamp: string;
-  readonly price: number;
-  readonly lifecycle: StructuralLifecycle;
-  readonly entryEventObserved: boolean;
-  readonly currentEntryStatus: CurrentEntryStatus;
-  readonly note: string;
+export type EvidenceValue =
+  | EligibilityStatus
+  | StructuralLifecycle
+  | RegimeStatus
+  | CurrentEntryStatus
+  | boolean
+  | number
+  | string;
+
+export interface EvidenceEvent {
+  readonly id: string;
+  readonly kind: EvidenceKind;
+  readonly knownAt: string;
+  readonly value: EvidenceValue;
+  readonly source: "REPLAY_FIXTURE";
+}
+
+export interface ReplayFrame {
+  readonly evaluatedAt: string;
 }
 
 export interface AlphaTradeBundle {
-  readonly id: string;
-  readonly version: string;
+  readonly identity: BundleIdentity;
   readonly strategy: "Zugrio Core";
-  readonly instrument: string;
-  readonly market: "FX";
-  readonly horizon: "Intraday";
   readonly evidenceStatus: "VALIDATION_ONLY";
+  readonly authoritySpecVersion: "1.0.2";
+}
+
+export interface EvidenceSnapshot {
+  readonly evaluatedAt: string;
+  readonly eligibility: EligibilityStatus;
+  readonly lifecycle: StructuralLifecycle | null;
+  readonly regimeStatus: RegimeStatus;
+  readonly entryEventObserved: boolean;
+  readonly currentEntryStatus: CurrentEntryStatus;
+  readonly price: number | null;
+  readonly note: string;
+  readonly evidenceIds: readonly string[];
 }
 
 export interface EvidenceChange {
-  readonly field: EvidenceField;
-  readonly from: EvidenceValue;
-  readonly to: EvidenceValue;
+  readonly field:
+    | "eligibility"
+    | "lifecycle"
+    | "regimeStatus"
+    | "entryEventObserved"
+    | "currentEntryStatus";
+  readonly from: EvidenceValue | null;
+  readonly to: EvidenceValue | null;
+}
+
+export interface ChartAnnotation {
+  readonly id: string;
+  readonly kind: "STRUCTURAL_LIFECYCLE" | "ENTRY_STATUS";
+  readonly label: string;
+  readonly knownAt: string;
+  readonly evidenceId: string;
 }
 
 export interface DecisionEvent {
-  readonly timestamp: string;
-  readonly state: StructuralState;
-  readonly reason: string;
-  readonly entryReason: string;
-  readonly price: number;
+  readonly evaluationId: string;
+  readonly evaluatedAt: string;
+  readonly structuralState: StructuralState | null;
+  readonly outcome: DecisionOutcome;
+  readonly stateReason: string;
+  readonly outcomeReason: string;
   readonly changes: readonly EvidenceChange[];
+  readonly annotationIds: readonly string[];
 }
 
 export interface DecisionCase {
   readonly caseId: string;
+  readonly scenarioId: string;
+  readonly scenarioVersion: string;
+  readonly evaluationId: string;
   readonly bundle: AlphaTradeBundle;
   readonly current: EvidenceSnapshot;
-  readonly state: StructuralState;
-  readonly reason: string;
-  readonly entryReason: string;
+  readonly structuralState: StructuralState | null;
+  readonly outcome: DecisionOutcome;
+  readonly stateReason: string;
+  readonly outcomeReason: string;
+  readonly annotations: readonly ChartAnnotation[];
   readonly history: readonly DecisionEvent[];
   readonly authority: "NO_LIVE_CAPITAL";
   readonly authorityClass: "STRUCTURAL_ONLY";
@@ -66,8 +117,11 @@ export interface DecisionCase {
 
 export interface ReplayScenario {
   readonly id: string;
+  readonly version: string;
+  readonly caseId: string;
   readonly title: string;
   readonly description: string;
   readonly bundle: AlphaTradeBundle;
-  readonly frames: readonly EvidenceSnapshot[];
+  readonly evidence: readonly EvidenceEvent[];
+  readonly frames: readonly ReplayFrame[];
 }

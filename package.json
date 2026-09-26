@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
-    "build": "pnpm --filter @zugrio/decision-core build && pnpm --filter @zugrio/desktop build",
+    "build": "pnpm --filter @zugrio/domain build && pnpm --filter @zugrio/decision-core build && pnpm --filter @zugrio/desktop build",
     "test": "pnpm --filter @zugrio/decision-core test",
-    "typecheck": "pnpm --filter @zugrio/decision-core typecheck && pnpm --filter @zugrio/desktop typecheck"
+    "typecheck": "pnpm --filter @zugrio/domain typecheck && pnpm --filter @zugrio/decision-core typecheck && pnpm --filter @zugrio/desktop typecheck"
   },
   "devDependencies": {
     "typescript": "^5.7.3",
