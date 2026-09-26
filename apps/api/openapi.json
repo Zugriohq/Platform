@@ -486,14 +486,13 @@
                           "type": "array",
                           "items": {
                             "type": "object",
+                            "description": "decision-core EvidenceSnapshot (validation fixture frame).",
                             "required": [
                               "timestamp",
                               "price",
-                              "setupQualified",
-                              "locationQualified",
-                              "triggerQualified",
-                              "currentConditionsValid",
-                              "invalidated",
+                              "lifecycle",
+                              "entryEventObserved",
+                              "currentEntryStatus",
                               "note"
                             ],
                             "properties": {
@@ -504,20 +503,16 @@
                               "price": {
                                 "type": "number"
                               },
-                              "setupQualified": {
+                              "lifecycle": {
+                                "type": "string",
+                                "description": "decision-core StructuralLifecycle"
+                              },
+                              "entryEventObserved": {
                                 "type": "boolean"
                               },
-                              "locationQualified": {
-                                "type": "boolean"
-                              },
-                              "triggerQualified": {
-                                "type": "boolean"
-                              },
-                              "currentConditionsValid": {
-                                "type": "boolean"
-                              },
-                              "invalidated": {
-                                "type": "boolean"
+                              "currentEntryStatus": {
+                                "type": "string",
+                                "description": "decision-core CurrentEntryStatus"
                               },
                               "note": {
                                 "type": "string"
@@ -644,8 +639,11 @@
                         "current",
                         "state",
                         "reason",
-                        "history",
-                        "authority"
+                        "entryReason",
+                        "authority",
+                        "authorityClass",
+                        "modelScored",
+                        "history"
                       ],
                       "properties": {
                         "caseId": {
@@ -691,14 +689,13 @@
                         },
                         "current": {
                           "type": "object",
+                          "description": "decision-core EvidenceSnapshot (validation fixture frame).",
                           "required": [
                             "timestamp",
                             "price",
-                            "setupQualified",
-                            "locationQualified",
-                            "triggerQualified",
-                            "currentConditionsValid",
-                            "invalidated",
+                            "lifecycle",
+                            "entryEventObserved",
+                            "currentEntryStatus",
                             "note"
                           ],
                           "properties": {
@@ -709,20 +706,16 @@
                             "price": {
                               "type": "number"
                             },
-                            "setupQualified": {
+                            "lifecycle": {
+                              "type": "string",
+                              "description": "decision-core StructuralLifecycle"
+                            },
+                            "entryEventObserved": {
                               "type": "boolean"
                             },
-                            "locationQualified": {
-                              "type": "boolean"
-                            },
-                            "triggerQualified": {
-                              "type": "boolean"
-                            },
-                            "currentConditionsValid": {
-                              "type": "boolean"
-                            },
-                            "invalidated": {
-                              "type": "boolean"
+                            "currentEntryStatus": {
+                              "type": "string",
+                              "description": "decision-core CurrentEntryStatus"
                             },
                             "note": {
                               "type": "string"
@@ -731,25 +724,44 @@
                         },
                         "state": {
                           "type": "string",
-                          "enum": [
-                            "FORMING",
-                            "READY",
-                            "TRIGGERED",
-                            "PASS"
-                          ]
+                          "description": "decision-core StructuralState"
                         },
                         "reason": {
                           "type": "string"
+                        },
+                        "entryReason": {
+                          "type": "string"
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        },
+                        "authorityClass": {
+                          "type": "string",
+                          "enum": [
+                            "STRUCTURAL_ONLY"
+                          ]
+                        },
+                        "modelScored": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
                         },
                         "history": {
                           "type": "array",
                           "items": {
                             "type": "object",
+                            "description": "decision-core DecisionEvent.",
                             "required": [
                               "timestamp",
                               "state",
                               "reason",
-                              "price"
+                              "entryReason",
+                              "price",
+                              "changes"
                             ],
                             "properties": {
                               "timestamp": {
@@ -758,27 +770,37 @@
                               },
                               "state": {
                                 "type": "string",
-                                "enum": [
-                                  "FORMING",
-                                  "READY",
-                                  "TRIGGERED",
-                                  "PASS"
-                                ]
+                                "description": "decision-core StructuralState"
                               },
                               "reason": {
                                 "type": "string"
                               },
+                              "entryReason": {
+                                "type": "string"
+                              },
                               "price": {
                                 "type": "number"
+                              },
+                              "changes": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "required": [
+                                    "field",
+                                    "from",
+                                    "to"
+                                  ],
+                                  "properties": {
+                                    "field": {
+                                      "type": "string"
+                                    },
+                                    "from": {},
+                                    "to": {}
+                                  }
+                                }
                               }
                             }
                           }
-                        },
-                        "authority": {
-                          "type": "string",
-                          "enum": [
-                            "NO_LIVE_CAPITAL"
-                          ]
                         }
                       }
                     }
@@ -937,6 +959,8 @@
                             "frameIndex",
                             "bundle",
                             "authority",
+                            "authorityClass",
+                            "modelScored",
                             "projection",
                             "events",
                             "createdAt",
@@ -1002,36 +1026,83 @@
                                 "NO_LIVE_CAPITAL"
                               ]
                             },
+                            "authorityClass": {
+                              "type": "string",
+                              "enum": [
+                                "STRUCTURAL_ONLY"
+                              ]
+                            },
+                            "modelScored": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
                             "projection": {
                               "type": "object",
+                              "description": "decision-core DecisionCase for the persisted frame, without history (mutable read model).",
                               "required": [
+                                "caseId",
+                                "bundle",
+                                "current",
                                 "state",
                                 "reason",
-                                "current"
+                                "entryReason",
+                                "authority",
+                                "authorityClass",
+                                "modelScored"
                               ],
                               "properties": {
-                                "state": {
-                                  "type": "string",
-                                  "enum": [
-                                    "FORMING",
-                                    "READY",
-                                    "TRIGGERED",
-                                    "PASS"
-                                  ]
-                                },
-                                "reason": {
+                                "caseId": {
                                   "type": "string"
+                                },
+                                "bundle": {
+                                  "type": "object",
+                                  "required": [
+                                    "id",
+                                    "version",
+                                    "strategy",
+                                    "instrument",
+                                    "market",
+                                    "horizon",
+                                    "evidenceStatus"
+                                  ],
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "version": {
+                                      "type": "string"
+                                    },
+                                    "strategy": {
+                                      "type": "string"
+                                    },
+                                    "instrument": {
+                                      "type": "string"
+                                    },
+                                    "market": {
+                                      "type": "string"
+                                    },
+                                    "horizon": {
+                                      "type": "string"
+                                    },
+                                    "evidenceStatus": {
+                                      "type": "string",
+                                      "enum": [
+                                        "VALIDATION_ONLY"
+                                      ]
+                                    }
+                                  }
                                 },
                                 "current": {
                                   "type": "object",
+                                  "description": "decision-core EvidenceSnapshot (validation fixture frame).",
                                   "required": [
                                     "timestamp",
                                     "price",
-                                    "setupQualified",
-                                    "locationQualified",
-                                    "triggerQualified",
-                                    "currentConditionsValid",
-                                    "invalidated",
+                                    "lifecycle",
+                                    "entryEventObserved",
+                                    "currentEntryStatus",
                                     "note"
                                   ],
                                   "properties": {
@@ -1042,25 +1113,49 @@
                                     "price": {
                                       "type": "number"
                                     },
-                                    "setupQualified": {
+                                    "lifecycle": {
+                                      "type": "string",
+                                      "description": "decision-core StructuralLifecycle"
+                                    },
+                                    "entryEventObserved": {
                                       "type": "boolean"
                                     },
-                                    "locationQualified": {
-                                      "type": "boolean"
-                                    },
-                                    "triggerQualified": {
-                                      "type": "boolean"
-                                    },
-                                    "currentConditionsValid": {
-                                      "type": "boolean"
-                                    },
-                                    "invalidated": {
-                                      "type": "boolean"
+                                    "currentEntryStatus": {
+                                      "type": "string",
+                                      "description": "decision-core CurrentEntryStatus"
                                     },
                                     "note": {
                                       "type": "string"
                                     }
                                   }
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "description": "decision-core StructuralState"
+                                },
+                                "reason": {
+                                  "type": "string"
+                                },
+                                "entryReason": {
+                                  "type": "string"
+                                },
+                                "authority": {
+                                  "type": "string",
+                                  "enum": [
+                                    "NO_LIVE_CAPITAL"
+                                  ]
+                                },
+                                "authorityClass": {
+                                  "type": "string",
+                                  "enum": [
+                                    "STRUCTURAL_ONLY"
+                                  ]
+                                },
+                                "modelScored": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    false
+                                  ]
                                 }
                               }
                             },
@@ -1074,9 +1169,7 @@
                                   "eventType",
                                   "occurredAt",
                                   "recordedAt",
-                                  "state",
-                                  "reason",
-                                  "price"
+                                  "event"
                                 ],
                                 "properties": {
                                   "sequence": {
@@ -1097,20 +1190,54 @@
                                     "type": "string",
                                     "format": "date-time"
                                   },
-                                  "state": {
-                                    "type": "string",
-                                    "enum": [
-                                      "FORMING",
-                                      "READY",
-                                      "TRIGGERED",
-                                      "PASS"
-                                    ]
-                                  },
-                                  "reason": {
-                                    "type": "string"
-                                  },
-                                  "price": {
-                                    "type": "number"
+                                  "event": {
+                                    "type": "object",
+                                    "description": "decision-core DecisionEvent.",
+                                    "required": [
+                                      "timestamp",
+                                      "state",
+                                      "reason",
+                                      "entryReason",
+                                      "price",
+                                      "changes"
+                                    ],
+                                    "properties": {
+                                      "timestamp": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                      },
+                                      "state": {
+                                        "type": "string",
+                                        "description": "decision-core StructuralState"
+                                      },
+                                      "reason": {
+                                        "type": "string"
+                                      },
+                                      "entryReason": {
+                                        "type": "string"
+                                      },
+                                      "price": {
+                                        "type": "number"
+                                      },
+                                      "changes": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "required": [
+                                            "field",
+                                            "from",
+                                            "to"
+                                          ],
+                                          "properties": {
+                                            "field": {
+                                              "type": "string"
+                                            },
+                                            "from": {},
+                                            "to": {}
+                                          }
+                                        }
+                                      }
+                                    }
                                   }
                                 }
                               }
@@ -1210,6 +1337,8 @@
                             "frameIndex",
                             "bundle",
                             "authority",
+                            "authorityClass",
+                            "modelScored",
                             "projection",
                             "events",
                             "createdAt",
@@ -1275,36 +1404,83 @@
                                 "NO_LIVE_CAPITAL"
                               ]
                             },
+                            "authorityClass": {
+                              "type": "string",
+                              "enum": [
+                                "STRUCTURAL_ONLY"
+                              ]
+                            },
+                            "modelScored": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
                             "projection": {
                               "type": "object",
+                              "description": "decision-core DecisionCase for the persisted frame, without history (mutable read model).",
                               "required": [
+                                "caseId",
+                                "bundle",
+                                "current",
                                 "state",
                                 "reason",
-                                "current"
+                                "entryReason",
+                                "authority",
+                                "authorityClass",
+                                "modelScored"
                               ],
                               "properties": {
-                                "state": {
-                                  "type": "string",
-                                  "enum": [
-                                    "FORMING",
-                                    "READY",
-                                    "TRIGGERED",
-                                    "PASS"
-                                  ]
-                                },
-                                "reason": {
+                                "caseId": {
                                   "type": "string"
+                                },
+                                "bundle": {
+                                  "type": "object",
+                                  "required": [
+                                    "id",
+                                    "version",
+                                    "strategy",
+                                    "instrument",
+                                    "market",
+                                    "horizon",
+                                    "evidenceStatus"
+                                  ],
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "version": {
+                                      "type": "string"
+                                    },
+                                    "strategy": {
+                                      "type": "string"
+                                    },
+                                    "instrument": {
+                                      "type": "string"
+                                    },
+                                    "market": {
+                                      "type": "string"
+                                    },
+                                    "horizon": {
+                                      "type": "string"
+                                    },
+                                    "evidenceStatus": {
+                                      "type": "string",
+                                      "enum": [
+                                        "VALIDATION_ONLY"
+                                      ]
+                                    }
+                                  }
                                 },
                                 "current": {
                                   "type": "object",
+                                  "description": "decision-core EvidenceSnapshot (validation fixture frame).",
                                   "required": [
                                     "timestamp",
                                     "price",
-                                    "setupQualified",
-                                    "locationQualified",
-                                    "triggerQualified",
-                                    "currentConditionsValid",
-                                    "invalidated",
+                                    "lifecycle",
+                                    "entryEventObserved",
+                                    "currentEntryStatus",
                                     "note"
                                   ],
                                   "properties": {
@@ -1315,25 +1491,49 @@
                                     "price": {
                                       "type": "number"
                                     },
-                                    "setupQualified": {
+                                    "lifecycle": {
+                                      "type": "string",
+                                      "description": "decision-core StructuralLifecycle"
+                                    },
+                                    "entryEventObserved": {
                                       "type": "boolean"
                                     },
-                                    "locationQualified": {
-                                      "type": "boolean"
-                                    },
-                                    "triggerQualified": {
-                                      "type": "boolean"
-                                    },
-                                    "currentConditionsValid": {
-                                      "type": "boolean"
-                                    },
-                                    "invalidated": {
-                                      "type": "boolean"
+                                    "currentEntryStatus": {
+                                      "type": "string",
+                                      "description": "decision-core CurrentEntryStatus"
                                     },
                                     "note": {
                                       "type": "string"
                                     }
                                   }
+                                },
+                                "state": {
+                                  "type": "string",
+                                  "description": "decision-core StructuralState"
+                                },
+                                "reason": {
+                                  "type": "string"
+                                },
+                                "entryReason": {
+                                  "type": "string"
+                                },
+                                "authority": {
+                                  "type": "string",
+                                  "enum": [
+                                    "NO_LIVE_CAPITAL"
+                                  ]
+                                },
+                                "authorityClass": {
+                                  "type": "string",
+                                  "enum": [
+                                    "STRUCTURAL_ONLY"
+                                  ]
+                                },
+                                "modelScored": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    false
+                                  ]
                                 }
                               }
                             },
@@ -1347,9 +1547,7 @@
                                   "eventType",
                                   "occurredAt",
                                   "recordedAt",
-                                  "state",
-                                  "reason",
-                                  "price"
+                                  "event"
                                 ],
                                 "properties": {
                                   "sequence": {
@@ -1370,20 +1568,54 @@
                                     "type": "string",
                                     "format": "date-time"
                                   },
-                                  "state": {
-                                    "type": "string",
-                                    "enum": [
-                                      "FORMING",
-                                      "READY",
-                                      "TRIGGERED",
-                                      "PASS"
-                                    ]
-                                  },
-                                  "reason": {
-                                    "type": "string"
-                                  },
-                                  "price": {
-                                    "type": "number"
+                                  "event": {
+                                    "type": "object",
+                                    "description": "decision-core DecisionEvent.",
+                                    "required": [
+                                      "timestamp",
+                                      "state",
+                                      "reason",
+                                      "entryReason",
+                                      "price",
+                                      "changes"
+                                    ],
+                                    "properties": {
+                                      "timestamp": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                      },
+                                      "state": {
+                                        "type": "string",
+                                        "description": "decision-core StructuralState"
+                                      },
+                                      "reason": {
+                                        "type": "string"
+                                      },
+                                      "entryReason": {
+                                        "type": "string"
+                                      },
+                                      "price": {
+                                        "type": "number"
+                                      },
+                                      "changes": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "required": [
+                                            "field",
+                                            "from",
+                                            "to"
+                                          ],
+                                          "properties": {
+                                            "field": {
+                                              "type": "string"
+                                            },
+                                            "from": {},
+                                            "to": {}
+                                          }
+                                        }
+                                      }
+                                    }
                                   }
                                 }
                               }
@@ -1513,6 +1745,8 @@
                         "frameIndex",
                         "bundle",
                         "authority",
+                        "authorityClass",
+                        "modelScored",
                         "projection",
                         "events",
                         "createdAt",
@@ -1578,36 +1812,83 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         },
+                        "authorityClass": {
+                          "type": "string",
+                          "enum": [
+                            "STRUCTURAL_ONLY"
+                          ]
+                        },
+                        "modelScored": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
                         "projection": {
                           "type": "object",
+                          "description": "decision-core DecisionCase for the persisted frame, without history (mutable read model).",
                           "required": [
+                            "caseId",
+                            "bundle",
+                            "current",
                             "state",
                             "reason",
-                            "current"
+                            "entryReason",
+                            "authority",
+                            "authorityClass",
+                            "modelScored"
                           ],
                           "properties": {
-                            "state": {
-                              "type": "string",
-                              "enum": [
-                                "FORMING",
-                                "READY",
-                                "TRIGGERED",
-                                "PASS"
-                              ]
-                            },
-                            "reason": {
+                            "caseId": {
                               "type": "string"
+                            },
+                            "bundle": {
+                              "type": "object",
+                              "required": [
+                                "id",
+                                "version",
+                                "strategy",
+                                "instrument",
+                                "market",
+                                "horizon",
+                                "evidenceStatus"
+                              ],
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "version": {
+                                  "type": "string"
+                                },
+                                "strategy": {
+                                  "type": "string"
+                                },
+                                "instrument": {
+                                  "type": "string"
+                                },
+                                "market": {
+                                  "type": "string"
+                                },
+                                "horizon": {
+                                  "type": "string"
+                                },
+                                "evidenceStatus": {
+                                  "type": "string",
+                                  "enum": [
+                                    "VALIDATION_ONLY"
+                                  ]
+                                }
+                              }
                             },
                             "current": {
                               "type": "object",
+                              "description": "decision-core EvidenceSnapshot (validation fixture frame).",
                               "required": [
                                 "timestamp",
                                 "price",
-                                "setupQualified",
-                                "locationQualified",
-                                "triggerQualified",
-                                "currentConditionsValid",
-                                "invalidated",
+                                "lifecycle",
+                                "entryEventObserved",
+                                "currentEntryStatus",
                                 "note"
                               ],
                               "properties": {
@@ -1618,25 +1899,49 @@
                                 "price": {
                                   "type": "number"
                                 },
-                                "setupQualified": {
+                                "lifecycle": {
+                                  "type": "string",
+                                  "description": "decision-core StructuralLifecycle"
+                                },
+                                "entryEventObserved": {
                                   "type": "boolean"
                                 },
-                                "locationQualified": {
-                                  "type": "boolean"
-                                },
-                                "triggerQualified": {
-                                  "type": "boolean"
-                                },
-                                "currentConditionsValid": {
-                                  "type": "boolean"
-                                },
-                                "invalidated": {
-                                  "type": "boolean"
+                                "currentEntryStatus": {
+                                  "type": "string",
+                                  "description": "decision-core CurrentEntryStatus"
                                 },
                                 "note": {
                                   "type": "string"
                                 }
                               }
+                            },
+                            "state": {
+                              "type": "string",
+                              "description": "decision-core StructuralState"
+                            },
+                            "reason": {
+                              "type": "string"
+                            },
+                            "entryReason": {
+                              "type": "string"
+                            },
+                            "authority": {
+                              "type": "string",
+                              "enum": [
+                                "NO_LIVE_CAPITAL"
+                              ]
+                            },
+                            "authorityClass": {
+                              "type": "string",
+                              "enum": [
+                                "STRUCTURAL_ONLY"
+                              ]
+                            },
+                            "modelScored": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
                             }
                           }
                         },
@@ -1650,9 +1955,7 @@
                               "eventType",
                               "occurredAt",
                               "recordedAt",
-                              "state",
-                              "reason",
-                              "price"
+                              "event"
                             ],
                             "properties": {
                               "sequence": {
@@ -1673,20 +1976,54 @@
                                 "type": "string",
                                 "format": "date-time"
                               },
-                              "state": {
-                                "type": "string",
-                                "enum": [
-                                  "FORMING",
-                                  "READY",
-                                  "TRIGGERED",
-                                  "PASS"
-                                ]
-                              },
-                              "reason": {
-                                "type": "string"
-                              },
-                              "price": {
-                                "type": "number"
+                              "event": {
+                                "type": "object",
+                                "description": "decision-core DecisionEvent.",
+                                "required": [
+                                  "timestamp",
+                                  "state",
+                                  "reason",
+                                  "entryReason",
+                                  "price",
+                                  "changes"
+                                ],
+                                "properties": {
+                                  "timestamp": {
+                                    "type": "string",
+                                    "format": "date-time"
+                                  },
+                                  "state": {
+                                    "type": "string",
+                                    "description": "decision-core StructuralState"
+                                  },
+                                  "reason": {
+                                    "type": "string"
+                                  },
+                                  "entryReason": {
+                                    "type": "string"
+                                  },
+                                  "price": {
+                                    "type": "number"
+                                  },
+                                  "changes": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "required": [
+                                        "field",
+                                        "from",
+                                        "to"
+                                      ],
+                                      "properties": {
+                                        "field": {
+                                          "type": "string"
+                                        },
+                                        "from": {},
+                                        "to": {}
+                                      }
+                                    }
+                                  }
+                                }
                               }
                             }
                           }

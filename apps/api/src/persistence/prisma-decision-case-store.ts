@@ -1,6 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import type { AlphaTradeBundle, EvidenceSnapshot } from "@zugrio/decision-core";
-import { ALPHA_RELEASE_CHANNEL } from "@zugrio/alpha-api-contract";
+import type { AlphaTradeBundle, DecisionEvent } from "@zugrio/decision-core";
+import { ALPHA_RELEASE_CHANNEL, type DecisionCaseProjection } from "@zugrio/alpha-api-contract";
 import { Prisma, PrismaClient } from "../generated/prisma/client.js";
 import type { CreateResult, DecisionCaseStore, NewDecisionCase, StoredDecisionCase } from "./decision-case-store.js";
 
@@ -29,19 +29,19 @@ export class PrismaDecisionCaseStore implements DecisionCaseStore {
           bundleVersion: input.bundle.version,
           bundle: toJson(input.bundle),
           authority: "NO_LIVE_CAPITAL",
+          authorityClass: "STRUCTURAL_ONLY",
+          modelScored: false,
           releaseChannel: ALPHA_RELEASE_CHANNEL,
           projectionState: input.projection.state,
-          projectionReason: input.projection.reason,
-          projectionSnapshot: toJson(input.projection.current),
+          projection: toJson(input.projection),
           // Nested create: the case and its full history commit in one transaction.
           events: {
             create: input.events.map((event) => ({
               sequence: event.sequence,
               eventType: "REPLAY_STATE_CLASSIFIED",
               occurredAt: new Date(event.occurredAt),
-              state: event.state,
-              reason: event.reason,
-              price: new Prisma.Decimal(event.price.toString()),
+              state: event.event.state,
+              payload: toJson(event.event),
             })),
           },
         },
@@ -86,7 +86,7 @@ export class PrismaDecisionCaseStore implements DecisionCaseStore {
   }
 }
 
-function toJson(value: AlphaTradeBundle | EvidenceSnapshot): Prisma.InputJsonObject {
+function toJson(value: AlphaTradeBundle | DecisionCaseProjection | DecisionEvent): Prisma.InputJsonObject {
   return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonObject;
 }
 
@@ -98,19 +98,15 @@ function fromRow(row: CaseWithEvents): StoredDecisionCase {
     frameIndex: row.frameIndex,
     bundle: row.bundle as unknown as AlphaTradeBundle,
     authority: row.authority,
-    projection: {
-      state: row.projectionState,
-      reason: row.projectionReason,
-      current: row.projectionSnapshot as unknown as EvidenceSnapshot,
-    },
+    authorityClass: row.authorityClass,
+    modelScored: false,
+    projection: row.projection as unknown as DecisionCaseProjection,
     events: row.events.map((event) => ({
       sequence: event.sequence,
       eventType: event.eventType,
       occurredAt: event.occurredAt.toISOString(),
       recordedAt: event.recordedAt.toISOString(),
-      state: event.state,
-      reason: event.reason,
-      price: event.price.toNumber(),
+      event: event.payload as unknown as DecisionEvent,
     })),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),

@@ -58,18 +58,17 @@ export class DecisionCaseService {
 }
 
 function toNewRecord(scenarioId: string, frameIndex: number, decision: DecisionCase): NewDecisionCase {
+  const { history, ...projection } = decision;
   return {
     decisionCoreCaseId: decision.caseId,
     scenarioId,
     frameIndex,
     bundle: decision.bundle,
-    projection: { state: decision.state, reason: decision.reason, current: decision.current },
-    events: decision.history.map((event, sequence) => ({
+    projection,
+    events: history.map((event, sequence) => ({
       sequence,
       occurredAt: new Date(event.timestamp).toISOString(),
-      state: event.state,
-      reason: event.reason,
-      price: event.price,
+      event,
     })),
   };
 }
@@ -78,10 +77,10 @@ function sameRecord(expected: NewDecisionCase, stored: StoredDecisionCase): bool
   return (
     expected.decisionCoreCaseId === stored.decisionCoreCaseId &&
     stored.authority === "NO_LIVE_CAPITAL" &&
+    stored.authorityClass === "STRUCTURAL_ONLY" &&
+    stored.modelScored === false &&
     canonical(expected.bundle) === canonical(stored.bundle) &&
-    expected.projection.state === stored.projection.state &&
-    expected.projection.reason === stored.projection.reason &&
-    canonical(expected.projection.current) === canonical(stored.projection.current) &&
+    canonical(expected.projection) === canonical(stored.projection) &&
     expected.events.length === stored.events.length &&
     expected.events.every((event, index) => {
       const actual = stored.events[index];
@@ -89,9 +88,7 @@ function sameRecord(expected: NewDecisionCase, stored: StoredDecisionCase): bool
         actual !== undefined &&
         actual.sequence === event.sequence &&
         Date.parse(actual.occurredAt) === Date.parse(event.occurredAt) &&
-        actual.state === event.state &&
-        actual.reason === event.reason &&
-        actual.price === event.price
+        canonical(actual.event) === canonical(event.event)
       );
     })
   );

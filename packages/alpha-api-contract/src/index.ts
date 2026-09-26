@@ -7,11 +7,12 @@
 import type {
   AlphaTradeBundle,
   DecisionCase,
+  DecisionEvent,
   EvidenceSnapshot,
-  OpportunityState,
+  StructuralState,
 } from "@zugrio/decision-core";
 
-export type { AlphaTradeBundle, DecisionCase, EvidenceSnapshot, OpportunityState };
+export type { AlphaTradeBundle, DecisionCase, DecisionEvent, EvidenceSnapshot, StructuralState };
 
 export const ALPHA_RELEASE_CHANNEL = "private-validation-alpha";
 
@@ -71,21 +72,18 @@ export interface MaterializeDecisionCaseRequest {
 /** Only event type the alpha ledger records: a decision-core replay classification. */
 export type DecisionEventType = "REPLAY_STATE_CLASSIFIED";
 
+/** One append-only ledger entry wrapping a verbatim decision-core `DecisionEvent`. */
 export interface PersistedDecisionEvent {
   readonly sequence: number;
   readonly eventType: DecisionEventType;
+  /** Replay frame time the event applies to (`event.timestamp`, normalized to ISO-8601). */
   readonly occurredAt: string;
   readonly recordedAt: string;
-  readonly state: OpportunityState;
-  readonly reason: string;
-  readonly price: number;
+  readonly event: DecisionEvent;
 }
 
-export interface DecisionCaseProjection {
-  readonly state: OpportunityState;
-  readonly reason: string;
-  readonly current: EvidenceSnapshot;
-}
+/** Read projection: the decision-core `DecisionCase` for the persisted frame, without history. */
+export type DecisionCaseProjection = Omit<DecisionCase, "history">;
 
 export interface PersistedDecisionCase {
   /** Server-issued identity of the persisted case. */
@@ -96,6 +94,8 @@ export interface PersistedDecisionCase {
   readonly frameIndex: number;
   readonly bundle: AlphaTradeBundle;
   readonly authority: "NO_LIVE_CAPITAL";
+  readonly authorityClass: "STRUCTURAL_ONLY";
+  readonly modelScored: false;
   readonly projection: DecisionCaseProjection;
   /** Append-only ledger, ordered by `sequence`. */
   readonly events: readonly PersistedDecisionEvent[];

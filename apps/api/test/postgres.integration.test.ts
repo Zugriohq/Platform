@@ -10,7 +10,7 @@ import { randomBytes } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { staleEntryScenario, validEntryScenario } from "@zugrio/decision-core";
+import { staleEntryScenario, currentEntryScenario } from "@zugrio/decision-core";
 import { PrismaDecisionCaseStore } from "../src/persistence/prisma-decision-case-store.js";
 import { postJson, startApi, type RunningApi } from "./helpers.js";
 
@@ -72,11 +72,12 @@ describe.skipIf(!adminUrl)("PostgreSQL decision ledger", () => {
   });
 
   it("persists a case and reconstructs it identically after a restart", async () => {
-    const created = await materialize(4);
+    const created = await materialize(6);
     expect(created.status).toBe(201);
     const persisted = created.body.data.decisionCase;
     expect(persisted.consistentWithDecisionCore).toBe(true);
-    expect(persisted.projection.state).toBe("PASS");
+    expect(persisted.projection.state).toBe("STRUCTURAL_READY");
+    expect(persisted.events.some((entry: { event: { changes: unknown[] } }) => entry.event.changes.length > 0)).toBe(true);
 
     // A fresh store/app instance proves reconstruction comes from PostgreSQL, not memory.
     const restarted = await startApi(new PrismaDecisionCaseStore(databaseUrl));
@@ -89,20 +90,25 @@ describe.skipIf(!adminUrl)("PostgreSQL decision ledger", () => {
     }
 
     const rows = await sql.query(
-      `SELECT authority::text, release_channel FROM decision_case WHERE id = $1`,
+      `SELECT authority::text, authority_class::text, model_scored, release_channel FROM decision_case WHERE id = $1`,
       [persisted.id],
     );
-    expect(rows.rows[0]).toEqual({ authority: "NO_LIVE_CAPITAL", release_channel: "private-validation-alpha" });
+    expect(rows.rows[0]).toEqual({
+      authority: "NO_LIVE_CAPITAL",
+      authority_class: "STRUCTURAL_ONLY",
+      model_scored: false,
+      release_channel: "private-validation-alpha",
+    });
   });
 
   it("creates exactly one case under concurrent materialization", async () => {
-    const responses = await Promise.all(Array.from({ length: 8 }, () => materialize(3, validEntryScenario.id)));
+    const responses = await Promise.all(Array.from({ length: 8 }, () => materialize(3, currentEntryScenario.id)));
     expect(responses.every((response) => response.status === 200 || response.status === 201)).toBe(true);
     expect(responses.filter((response) => response.body.data.created)).toHaveLength(1);
     expect(new Set(responses.map((response) => response.body.data.decisionCase.id)).size).toBe(1);
     const count = await sql.query(
       `SELECT count(*)::int AS n FROM decision_case WHERE scenario_id = $1 AND frame_index = 3`,
-      [validEntryScenario.id],
+      [currentEntryScenario.id],
     );
     expect(count.rows[0].n).toBe(1);
   });
@@ -110,7 +116,7 @@ describe.skipIf(!adminUrl)("PostgreSQL decision ledger", () => {
   it("rejects UPDATE, DELETE and TRUNCATE on decision events", async () => {
     const { body } = await materialize(2);
     const caseId = body.data.decisionCase.id;
-    await expect(sql.query(`UPDATE decision_event SET reason = 'hindsight' WHERE case_id = $1`, [caseId])).rejects.toThrow(/append-only/);
+    await expect(sql.query(`UPDATE decision_event SET payload = jsonb_set(payload, '{reason}', '"hindsight"') WHERE case_id = $1`, [caseId])).rejects.toThrow(/append-only/);
     await expect(sql.query(`DELETE FROM decision_event WHERE case_id = $1`, [caseId])).rejects.toThrow(/append-only/);
     await expect(sql.query(`TRUNCATE decision_event CASCADE`)).rejects.toThrow(/append-only/);
     await expect(sql.query(`DELETE FROM decision_case WHERE id = $1`, [caseId])).rejects.toThrow(/append-only/);
@@ -125,21 +131,34 @@ describe.skipIf(!adminUrl)("PostgreSQL decision ledger", () => {
     // The projection is the mutable read model; changing it must not touch the ledger,
     // and reconstruction must report the divergence rather than trust it.
     const before = await api.request(`/v1/alpha/decision-cases/${caseId}`);
-    await sql.query(`UPDATE decision_case SET projection_state = 'TRIGGERED' WHERE id = $1`, [caseId]);
+    await sql.query(
+      `UPDATE decision_case SET projection_state = 'STRUCTURAL_READY',
+         projection = jsonb_set(projection, '{state}', '"STRUCTURAL_READY"') WHERE id = $1`,
+      [caseId],
+    );
     const after = await api.request(`/v1/alpha/decision-cases/${caseId}`);
     expect(after.body.data.events).toEqual(before.body.data.events);
     expect(after.body.data.consistentWithDecisionCore).toBe(false);
   });
 
-  it("cannot store any authority other than NO_LIVE_CAPITAL or a foreign release channel", async () => {
+  it("cannot store any authority other than NO_LIVE_CAPITAL / STRUCTURAL_ONLY or a foreign release channel", async () => {
     const { body } = await materialize(0);
     const caseId = body.data.decisionCase.id;
     await expect(sql.query(`UPDATE decision_case SET authority = 'LIVE_CAPITAL' WHERE id = $1`, [caseId])).rejects.toThrow(/invalid input value for enum/);
+    await expect(sql.query(`UPDATE decision_case SET authority_class = 'MODEL_ADMITTED' WHERE id = $1`, [caseId])).rejects.toThrow(/invalid input value for enum/);
+    await expect(sql.query(`UPDATE decision_case SET model_scored = true WHERE id = $1`, [caseId])).rejects.toThrow(/not_model_scored_check|identity is immutable/);
+    await expect(
+      sql.query(`UPDATE decision_case SET projection = jsonb_set(projection, '{authority}', '"LIVE_CAPITAL"') WHERE id = $1`, [caseId]),
+    ).rejects.toThrow(/projection_authority_check/);
+    await expect(
+      sql.query(`UPDATE decision_case SET projection = jsonb_set(projection, '{modelScored}', 'true') WHERE id = $1`, [caseId]),
+    ).rejects.toThrow(/projection_authority_check/);
     await expect(
       sql.query(
         `INSERT INTO decision_case (id, decision_core_case_id, scenario_id, frame_index, bundle_id, bundle_version, bundle,
-           release_channel, projection_state, projection_reason, projection_snapshot, updated_at)
-         VALUES (gen_random_uuid(), 'x', 'x', 0, 'b', 'v', '{}', 'production', 'FORMING', 'r', '{}', now())`,
+           release_channel, projection_state, projection, updated_at)
+         VALUES (gen_random_uuid(), 'x', 'x', 0, 'b', 'v', '{}', 'production', 'STRUCTURAL_CANDIDATE',
+           '{"state":"STRUCTURAL_CANDIDATE","authority":"NO_LIVE_CAPITAL","authorityClass":"STRUCTURAL_ONLY","modelScored":false}', now())`,
       ),
     ).rejects.toThrow(/release_channel_check/);
   });

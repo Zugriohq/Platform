@@ -1,12 +1,12 @@
-import type { AlphaTradeBundle, EvidenceSnapshot, OpportunityState } from "@zugrio/decision-core";
-import type { PersistedDecisionCase } from "@zugrio/alpha-api-contract";
+import type { AlphaTradeBundle, DecisionEvent } from "@zugrio/decision-core";
+import type { DecisionCaseProjection, PersistedDecisionCase } from "@zugrio/alpha-api-contract";
 
 export interface NewDecisionEvent {
   readonly sequence: number;
+  /** ISO-8601 replay frame time of `event.timestamp`. */
   readonly occurredAt: string;
-  readonly state: OpportunityState;
-  readonly reason: string;
-  readonly price: number;
+  /** Verbatim decision-core event. */
+  readonly event: DecisionEvent;
 }
 
 export interface NewDecisionCase {
@@ -14,11 +14,8 @@ export interface NewDecisionCase {
   readonly scenarioId: string;
   readonly frameIndex: number;
   readonly bundle: AlphaTradeBundle;
-  readonly projection: {
-    readonly state: OpportunityState;
-    readonly reason: string;
-    readonly current: EvidenceSnapshot;
-  };
+  /** Verbatim decision-core DecisionCase without history. */
+  readonly projection: DecisionCaseProjection;
   readonly events: readonly NewDecisionEvent[];
 }
 
@@ -34,7 +31,8 @@ export interface CreateResult {
  * Persistence port for the alpha decision ledger (ADR-0002). Implementations must:
  *  - write a case and its full event history atomically;
  *  - be idempotent on (scenarioId, frameIndex, bundle id, bundle version);
- *  - never update or delete an event once written.
+ *  - never update or delete an event once written;
+ *  - store decision-core output verbatim, without interpreting it.
  */
 export interface DecisionCaseStore {
   readonly kind: "postgres" | "memory";

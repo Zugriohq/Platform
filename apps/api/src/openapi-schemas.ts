@@ -5,7 +5,11 @@
  */
 type Schema = Record<string, unknown>;
 
-const state: Schema = { type: "string", enum: ["FORMING", "READY", "TRIGGERED", "PASS"] };
+/**
+ * Decision vocabulary is owned by @zugrio/decision-core and is intentionally not
+ * enumerated here, so the API contract cannot drift from the deterministic authority.
+ */
+const state: Schema = { type: "string", description: "decision-core StructuralState" };
 
 export const metaSchema: Schema = {
   type: "object",
@@ -36,24 +40,14 @@ const bundleSchema: Schema = {
 
 const snapshotSchema: Schema = {
   type: "object",
-  required: [
-    "timestamp",
-    "price",
-    "setupQualified",
-    "locationQualified",
-    "triggerQualified",
-    "currentConditionsValid",
-    "invalidated",
-    "note",
-  ],
+  description: "decision-core EvidenceSnapshot (validation fixture frame).",
+  required: ["timestamp", "price", "lifecycle", "entryEventObserved", "currentEntryStatus", "note"],
   properties: {
     timestamp: { type: "string", format: "date-time" },
     price: { type: "number" },
-    setupQualified: { type: "boolean" },
-    locationQualified: { type: "boolean" },
-    triggerQualified: { type: "boolean" },
-    currentConditionsValid: { type: "boolean" },
-    invalidated: { type: "boolean" },
+    lifecycle: { type: "string", description: "decision-core StructuralLifecycle" },
+    entryEventObserved: { type: "boolean" },
+    currentEntryStatus: { type: "string", description: "decision-core CurrentEntryStatus" },
     note: { type: "string" },
   },
 };
@@ -79,31 +73,49 @@ const scenarioDetailSchema: Schema = {
   },
 };
 
-const decisionCaseSchema: Schema = {
+const decisionEventSchema: Schema = {
   type: "object",
-  description: "Deterministic `@zugrio/decision-core` DecisionCase for one replay frame.",
-  required: ["caseId", "bundle", "current", "state", "reason", "history", "authority"],
+  description: "decision-core DecisionEvent.",
+  required: ["timestamp", "state", "reason", "entryReason", "price", "changes"],
   properties: {
-    caseId: { type: "string" },
-    bundle: bundleSchema,
-    current: snapshotSchema,
+    timestamp: { type: "string", format: "date-time" },
     state,
     reason: { type: "string" },
-    history: {
+    entryReason: { type: "string" },
+    price: { type: "number" },
+    changes: {
       type: "array",
       items: {
         type: "object",
-        required: ["timestamp", "state", "reason", "price"],
-        properties: {
-          timestamp: { type: "string", format: "date-time" },
-          state,
-          reason: { type: "string" },
-          price: { type: "number" },
-        },
+        required: ["field", "from", "to"],
+        properties: { field: { type: "string" }, from: {}, to: {} },
       },
     },
-    authority: { type: "string", enum: ["NO_LIVE_CAPITAL"] },
   },
+};
+
+const authorityProperties: Schema = {
+  authority: { type: "string", enum: ["NO_LIVE_CAPITAL"] },
+  authorityClass: { type: "string", enum: ["STRUCTURAL_ONLY"] },
+  modelScored: { type: "boolean", enum: [false] },
+};
+
+const projectionProperties: Schema = {
+  caseId: { type: "string" },
+  bundle: bundleSchema,
+  current: snapshotSchema,
+  state,
+  reason: { type: "string" },
+  entryReason: { type: "string" },
+  ...authorityProperties,
+};
+const projectionRequired = ["caseId", "bundle", "current", "state", "reason", "entryReason", "authority", "authorityClass", "modelScored"];
+
+const decisionCaseSchema: Schema = {
+  type: "object",
+  description: "Deterministic `@zugrio/decision-core` DecisionCase for one replay frame.",
+  required: [...projectionRequired, "history"],
+  properties: { ...projectionProperties, history: { type: "array", items: decisionEventSchema } },
 };
 
 const persistedCaseSchema: Schema = {
@@ -115,6 +127,8 @@ const persistedCaseSchema: Schema = {
     "frameIndex",
     "bundle",
     "authority",
+    "authorityClass",
+    "modelScored",
     "projection",
     "events",
     "createdAt",
@@ -127,26 +141,25 @@ const persistedCaseSchema: Schema = {
     scenarioId: { type: "string" },
     frameIndex: { type: "integer", minimum: 0 },
     bundle: bundleSchema,
-    authority: { type: "string", enum: ["NO_LIVE_CAPITAL"] },
+    ...authorityProperties,
     projection: {
       type: "object",
-      required: ["state", "reason", "current"],
-      properties: { state, reason: { type: "string" }, current: snapshotSchema },
+      description: "decision-core DecisionCase for the persisted frame, without history (mutable read model).",
+      required: projectionRequired,
+      properties: projectionProperties,
     },
     events: {
       type: "array",
       description: "Append-only ledger ordered by sequence (ADR-0002).",
       items: {
         type: "object",
-        required: ["sequence", "eventType", "occurredAt", "recordedAt", "state", "reason", "price"],
+        required: ["sequence", "eventType", "occurredAt", "recordedAt", "event"],
         properties: {
           sequence: { type: "integer", minimum: 0 },
           eventType: { type: "string", enum: ["REPLAY_STATE_CLASSIFIED"] },
           occurredAt: { type: "string", format: "date-time" },
           recordedAt: { type: "string", format: "date-time" },
-          state,
-          reason: { type: "string" },
-          price: { type: "number" },
+          event: decisionEventSchema,
         },
       },
     },

@@ -21,22 +21,32 @@ function tampering(inner: DecisionCaseStore, mutate: (record: StoredDecisionCase
 
 async function materializeThenRead(mutate: (record: StoredDecisionCase) => StoredDecisionCase) {
   const service = new DecisionCaseService(new ScenarioCatalog(), tampering(new MemoryDecisionCaseStore(), mutate));
-  const { decisionCase } = await service.materialize({ scenarioId: staleEntryScenario.id, frameIndex: 4 });
+  const { decisionCase } = await service.materialize({ scenarioId: staleEntryScenario.id, frameIndex: 6 });
   expect(decisionCase.consistentWithDecisionCore).toBe(true);
   return service.reconstruct(decisionCase.id);
 }
 
 describe("DecisionCaseService reconstruction", () => {
   it("flags a stored projection that decision-core would not produce", async () => {
-    const result = await materializeThenRead((record) => ({ ...record, projection: { ...record.projection, state: "TRIGGERED" } }));
+    const result = await materializeThenRead((record) => ({ ...record, projection: { ...record.projection, state: "STRUCTURAL_WATCH" } }));
     expect(result.consistentWithDecisionCore).toBe(false);
-    expect(result.projection.state).toBe("TRIGGERED");
+    expect(result.projection.state).toBe("STRUCTURAL_WATCH");
   });
 
   it("flags a rewritten ledger event", async () => {
     const result = await materializeThenRead((record) => ({
       ...record,
-      events: record.events.map((event, index) => (index === 0 ? { ...event, reason: "rewritten in hindsight" } : event)),
+      events: record.events.map((entry, index) =>
+        index === 0 ? { ...entry, event: { ...entry.event, reason: "rewritten in hindsight" } } : entry,
+      ),
+    }));
+    expect(result.consistentWithDecisionCore).toBe(false);
+  });
+
+  it("flags a dropped evidence change", async () => {
+    const result = await materializeThenRead((record) => ({
+      ...record,
+      events: record.events.map((entry) => ({ ...entry, event: { ...entry.event, changes: [] } })),
     }));
     expect(result.consistentWithDecisionCore).toBe(false);
   });

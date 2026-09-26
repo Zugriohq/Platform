@@ -21,6 +21,8 @@ export class MemoryDecisionCaseStore implements DecisionCaseStore {
       frameIndex: input.frameIndex,
       bundle: input.bundle,
       authority: "NO_LIVE_CAPITAL" as const,
+      authorityClass: "STRUCTURAL_ONLY" as const,
+      modelScored: false as const,
       projection: input.projection,
       events: input.events.map((event) => ({
         ...event,

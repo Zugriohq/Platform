@@ -19,21 +19,24 @@ datasource db {
   provider = "postgresql"
 }
 
-/// The only authority value the alpha schema can store.
+/// The only capital authority the alpha schema can store.
 enum CapitalAuthority {
   NO_LIVE_CAPITAL
 }
 
-enum OpportunityState {
-  FORMING
-  READY
-  TRIGGERED
-  PASS
+/// The only authority class the alpha schema can store (structural, not model-scored).
+enum AuthorityClass {
+  STRUCTURAL_ONLY
 }
 
 enum DecisionEventType {
   REPLAY_STATE_CLASSIFIED
 }
+
+// Decision semantics (states, reasons, evidence changes) are owned by
+// @zugrio/decision-core and stored verbatim as JSON, with the state copied into a
+// plain text column for querying. The database therefore never re-encodes the
+// decision vocabulary; it only enforces the authority limits and ledger immutability.
 
 model DecisionCase {
   id                 String           @id @default(uuid()) @db.Uuid
@@ -46,12 +49,15 @@ model DecisionCase {
   /// Immutable copy of the trade bundle the case was classified against.
   bundle             Json
   authority          CapitalAuthority @default(NO_LIVE_CAPITAL)
+  authorityClass     AuthorityClass   @default(STRUCTURAL_ONLY) @map("authority_class")
+  /// Always false in the alpha (CHECK constraint): no validated model score exists.
+  modelScored        Boolean          @default(false) @map("model_scored")
   releaseChannel     String           @map("release_channel")
 
   // Read-optimized projection (may be updated; the ledger may not).
-  projectionState    OpportunityState @map("projection_state")
-  projectionReason   String           @map("projection_reason")
-  projectionSnapshot Json             @map("projection_snapshot")
+  projectionState String @map("projection_state")
+  /// decision-core DecisionCase for this frame, without history.
+  projection      Json
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
@@ -70,9 +76,9 @@ model DecisionEvent {
   /// Replay frame timestamp the classification applies to.
   occurredAt DateTime          @map("occurred_at") @db.Timestamptz(3)
   recordedAt DateTime          @default(now()) @map("recorded_at") @db.Timestamptz(3)
-  state      OpportunityState
-  reason     String
-  price      Decimal           @db.Decimal(18, 8)
+  state      String
+  /// Verbatim decision-core DecisionEvent.
+  payload    Json
 
   decisionCase DecisionCase @relation(fields: [caseId], references: [id], onDelete: Restrict, onUpdate: Restrict)
 

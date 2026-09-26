@@ -5,7 +5,7 @@ CREATE SCHEMA IF NOT EXISTS "public";
 CREATE TYPE "CapitalAuthority" AS ENUM ('NO_LIVE_CAPITAL');
 
 -- CreateEnum
-CREATE TYPE "OpportunityState" AS ENUM ('FORMING', 'READY', 'TRIGGERED', 'PASS');
+CREATE TYPE "AuthorityClass" AS ENUM ('STRUCTURAL_ONLY');
 
 -- CreateEnum
 CREATE TYPE "DecisionEventType" AS ENUM ('REPLAY_STATE_CLASSIFIED');
@@ -20,10 +20,11 @@ CREATE TABLE "decision_case" (
     "bundle_version" TEXT NOT NULL,
     "bundle" JSONB NOT NULL,
     "authority" "CapitalAuthority" NOT NULL DEFAULT 'NO_LIVE_CAPITAL',
+    "authority_class" "AuthorityClass" NOT NULL DEFAULT 'STRUCTURAL_ONLY',
+    "model_scored" BOOLEAN NOT NULL DEFAULT false,
     "release_channel" TEXT NOT NULL,
-    "projection_state" "OpportunityState" NOT NULL,
-    "projection_reason" TEXT NOT NULL,
-    "projection_snapshot" JSONB NOT NULL,
+    "projection_state" TEXT NOT NULL,
+    "projection" JSONB NOT NULL,
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(3) NOT NULL,
 
@@ -38,9 +39,8 @@ CREATE TABLE "decision_event" (
     "event_type" "DecisionEventType" NOT NULL,
     "occurred_at" TIMESTAMPTZ(3) NOT NULL,
     "recorded_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "state" "OpportunityState" NOT NULL,
-    "reason" TEXT NOT NULL,
-    "price" DECIMAL(18,8) NOT NULL,
+    "state" TEXT NOT NULL,
+    "payload" JSONB NOT NULL,
 
     CONSTRAINT "decision_event_pkey" PRIMARY KEY ("id")
 );

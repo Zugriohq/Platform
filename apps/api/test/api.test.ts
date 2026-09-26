@@ -45,10 +45,11 @@ describe("alpha API (memory persistence)", () => {
     }
   });
 
-  it("keeps PASS as a first-class outcome through the API", async () => {
-    const { body } = await api.request(`/v1/alpha/scenarios/${staleEntryScenario.id}/frames/4`);
-    expect(body.data.state).toBe("PASS");
-    expect(body.data.authority).toBe("NO_LIVE_CAPITAL");
+  it("preserves the structural case through the API when the current entry goes stale", async () => {
+    const { body } = await api.request(`/v1/alpha/scenarios/${staleEntryScenario.id}/frames/6`);
+    expect(body.data.state).toBe("STRUCTURAL_READY");
+    expect(body.data.current.currentEntryStatus).toBe("STALE");
+    expect(body.data).toMatchObject({ authority: "NO_LIVE_CAPITAL", authorityClass: "STRUCTURAL_ONLY", modelScored: false });
   });
 
   it("rejects malformed and out-of-range frame indexes", async () => {
@@ -62,19 +63,19 @@ describe("alpha API (memory persistence)", () => {
   });
 
   it("persists a Decision Case and reconstructs it with history", async () => {
-    const created = await api.request("/v1/alpha/decision-cases", postJson({ scenarioId: staleEntryScenario.id, frameIndex: 4 }));
+    const created = await api.request("/v1/alpha/decision-cases", postJson({ scenarioId: staleEntryScenario.id, frameIndex: 6 }));
     expect(created.status).toBe(201);
     expect(created.body.meta).toEqual(ALPHA_RESPONSE_META);
     const persisted = created.body.data.decisionCase;
     expect(created.body.data.created).toBe(true);
-    expect(persisted.authority).toBe("NO_LIVE_CAPITAL");
-    expect(persisted.projection.state).toBe("PASS");
+    expect(persisted).toMatchObject({ authority: "NO_LIVE_CAPITAL", authorityClass: "STRUCTURAL_ONLY", modelScored: false });
     expect(persisted.consistentWithDecisionCore).toBe(true);
 
-    const expected = buildDecisionCase(staleEntryScenario, 4);
-    expect(persisted.decisionCoreCaseId).toBe(expected.caseId);
-    expect(persisted.events.map((event: { state: string }) => event.state)).toEqual(expected.history.map((event) => event.state));
-    expect(persisted.events.map((event: { sequence: number }) => event.sequence)).toEqual(expected.history.map((_, index) => index));
+    const { history, ...projection } = JSON.parse(JSON.stringify(buildDecisionCase(staleEntryScenario, 6)));
+    expect(persisted.decisionCoreCaseId).toBe(projection.caseId);
+    expect(persisted.projection).toEqual(projection);
+    expect(persisted.events.map((entry: { event: unknown }) => entry.event)).toEqual(history);
+    expect(persisted.events.map((entry: { sequence: number }) => entry.sequence)).toEqual(history.map((_: unknown, index: number) => index));
 
     const fetched = await api.request(`/v1/alpha/decision-cases/${persisted.id}`);
     expect(fetched.status).toBe(200);
