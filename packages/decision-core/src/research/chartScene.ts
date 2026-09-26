@@ -4,6 +4,7 @@ import type {
   ResearchConceptMaturity,
   ResearchMarketMap,
   ResearchMarketStructureFact,
+  ResearchEntryRouteFamily,
   StructureScale,
 } from "./marketMap.js";
 
@@ -51,13 +52,24 @@ export interface EngineChartPrimitive {
   readonly authorityEffect: "NONE";
 }
 
+export interface EngineChartRouteContext {
+  readonly status: "UNAVAILABLE" | "ROUTES_AVAILABLE" | "NO_DECLARED_ROUTE";
+  readonly families: readonly ResearchEntryRouteFamily[];
+  readonly calibrationStatus: "UNVALIDATED_CANDIDATE_SET" | null;
+}
+
 export interface EngineChartScene {
   readonly sceneId: string;
   readonly instrument: string;
   readonly timeframe: string;
   readonly evaluatedAt: string;
   readonly strategyId: string;
+  readonly strategyVersion: string;
   readonly regimeLabel: string | null;
+  readonly regimeEvidenceId: string | null;
+  readonly regimeDefinitionId: string | null;
+  readonly regimeKnownAt: string | null;
+  readonly routeContext: EngineChartRouteContext;
   readonly primitives: readonly EngineChartPrimitive[];
   readonly authority: "RESEARCH_ONLY";
   readonly liveCapitalAuthority: false;
@@ -157,6 +169,11 @@ function visibilityForFact(
  */
 export function projectMarketMapToChartScene(
   marketMap: ResearchMarketMap,
+  routeContext: EngineChartRouteContext = {
+    status: "UNAVAILABLE",
+    families: [],
+    calibrationStatus: null,
+  },
 ): EngineChartScene {
   const primitives: EngineChartPrimitive[] = marketMap.facts.map((fact) => ({
     primitiveId: `primitive:${fact.factId}`,
@@ -201,7 +218,12 @@ export function projectMarketMapToChartScene(
     timeframe: marketMap.timeframe,
     evaluatedAt: marketMap.evaluatedAt,
     strategyId: marketMap.strategyLens.strategyId,
+    strategyVersion: marketMap.strategyLens.version,
     regimeLabel: marketMap.regime?.regime ?? null,
+    regimeEvidenceId: marketMap.regime?.evidenceId ?? null,
+    regimeDefinitionId: marketMap.regime?.definitionId ?? null,
+    regimeKnownAt: marketMap.regime?.knownAt ?? null,
+    routeContext,
     primitives,
     authority: "RESEARCH_ONLY",
     liveCapitalAuthority: false,
