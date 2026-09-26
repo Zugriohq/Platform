@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import {
   ArrowRight, ChevronRight, LockKeyhole, Menu, X
@@ -105,7 +105,10 @@ const STORY = [
   },
 ];
 
-const HERO_HEADLINE = ["Don’t trade the signal.", "Trade what’s still true."];
+const HERO_HEADLINES = [
+  ["Don’t trade the signal.", "Trade what’s still true."],
+  ["The market changes.", "Your decision should keep up."],
+];
 
 const PROBLEM_CHAIN = [
   ["01", "MISSED OPPORTUNITY", "You can miss the opportunity."],
@@ -430,6 +433,7 @@ export default function App() {
   const heroOpacity = useTransform(scrollYProgress, [0, .14], [1, .96]);
 
   const [introComplete, setIntroComplete] = useState(false);
+  const [headlineIndex, setHeadlineIndex] = useState(0);
   const [menu, setMenu] = useState(false);
   const [marketKey, setMarketKey] = useState("FX");
   const [caseKey, setCaseKey] = useState("valid");
@@ -442,6 +446,16 @@ export default function App() {
     ["Decision quality", "#decision-quality"],
     ["Readiness", "#status"],
   ], []);
+
+  useEffect(() => {
+    if (prefersReduced || !introComplete) return undefined;
+
+    const timer = window.setInterval(() => {
+      setHeadlineIndex((current) => (current + 1) % HERO_HEADLINES.length);
+    }, 5200);
+
+    return () => window.clearInterval(timer);
+  }, [prefersReduced, introComplete]);
 
   return (
     <>
@@ -479,14 +493,27 @@ export default function App() {
 
             <motion.h1
               className="hero-headline"
-              aria-label={HERO_HEADLINE.join(" ")}
+              aria-live="polite"
+              aria-label={HERO_HEADLINES[headlineIndex].join(" ")}
               variants={{ hidden:{opacity:0,y:18,filter:"blur(7px)"},show:{opacity:1,y:0,filter:"blur(0px)"} }}
               transition={{ duration: .78, ease: [0.16,1,0.3,1] }}
             >
-              <span className="hero-headline-frame" aria-hidden="true">
-                {HERO_HEADLINE.map((part) => (
-                  <span className="hero-headline-part" key={part}>{part}</span>
-                ))}
+              <span className="hero-headline-window">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={headlineIndex}
+                    className="hero-headline-frame"
+                    aria-hidden="true"
+                    initial={prefersReduced ? false : { opacity: 0, y: "34%", filter: "blur(5px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={prefersReduced ? undefined : { opacity: 0, y: "-34%", filter: "blur(5px)" }}
+                    transition={{ duration: .72, ease: [0.16,1,0.3,1] }}
+                  >
+                    {HERO_HEADLINES[headlineIndex].map((part) => (
+                      <span className="hero-headline-part" key={part}>{part}</span>
+                    ))}
+                  </motion.span>
+                </AnimatePresence>
               </span>
             </motion.h1>
 
@@ -658,7 +685,10 @@ export default function App() {
             </div>
           </div>
 
-          <p className="dq-close">Know what actually needs improving.</p>
+          <div className="dq-close" role="note">
+            <span>DECISION QUALITY / THE POINT</span>
+            <strong>Know what actually needs improving.</strong>
+          </div>
         </motion.section>
 
         <motion.section className="readiness" id="status" {...sectionReveal}>
