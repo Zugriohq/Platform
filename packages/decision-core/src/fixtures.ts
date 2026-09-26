@@ -1,5 +1,6 @@
 import type { BundleIdentity } from "@zugrio/domain";
 import type { AlphaTradeBundle, EvidenceEvent, ReplayFrame, ReplayScenario } from "./types.js";
+import { createDerivedStructuralReplayScenario } from "./research/derivedStructuralReplay.js";
 
 const identity: BundleIdentity = {
   methodProfile: { kind: "METHOD_PROFILE", id: "zugrio-core-fixture", version: "0.1.0-alpha.2" },
@@ -151,7 +152,10 @@ export const regimeUnavailableScenario: ReplayScenario = {
   frames: [frame("2026-09-24T11:00:00Z")]
 };
 
+export const derivedStructuralScenario = createDerivedStructuralReplayScenario(bundle);
+
 export const alphaScenarios = [
+  derivedStructuralScenario,
   staleEntryScenario,
   currentEntryScenario,
   noSetupScenario,

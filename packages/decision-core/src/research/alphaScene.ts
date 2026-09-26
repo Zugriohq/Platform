@@ -5,6 +5,10 @@ import type {
   EngineChartPrimitive,
   EngineChartScene,
 } from "./chartScene.js";
+import {
+  buildDerivedStructuralChartScene,
+  DERIVED_STRUCTURAL_SCENARIO_ID,
+} from "./derivedStructuralReplay.js";
 
 function primitiveFor(
   annotation: ChartAnnotation,
@@ -53,6 +57,10 @@ export function buildReplayChartScene(
   scenario: ReplayScenario,
   frameIndex: number,
 ): EngineChartScene {
+  if (scenario.id === DERIVED_STRUCTURAL_SCENARIO_ID) {
+    return buildDerivedStructuralChartScene(frameIndex);
+  }
+
   const decision = buildDecisionCase(scenario, frameIndex);
   const primitives = decision.annotations
     .map(annotation => primitiveFor(annotation, decision.current.price))

@@ -11,3 +11,5 @@ export * from "./strategyRegimePlaybook.js";
 export * from "./objectiveEngine.js";
 export * from "./structuralBreaks.js";
 export * from "./retestDerivation.js";
+
+export * from "./derivedStructuralReplay.js";
