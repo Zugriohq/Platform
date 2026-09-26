@@ -215,6 +215,19 @@ describe("App decision source", () => {
     expect(text()).toContain("derived-alpha:canonical-regime:v2");
   });
 
+  it("renders engine-owned liquidity sweep context from the cloud scene", async () => {
+    const api = cloudApi();
+    await renderApp(createAlphaApiClient({ baseUrl: API, fetch: api.fetchImpl }));
+    await waitFor(() => heading() !== undefined, "cloud decision rendered");
+
+    for (let step = 0; step < 7; step += 1) await click("NEXT");
+
+    expect(text()).toContain("HIGH SWEEP / RECLAIM");
+    expect(api.calls.some((call) =>
+      call.path === `/v1/alpha/scenarios/${firstScenario.id}/frames/7/chart-scene`
+    )).toBe(true);
+  });
+
   it("fails closed when the scenario list carries non-validation metadata", async () => {
     const api = cloudApi((path) =>
       path === "/v1/alpha/scenarios"

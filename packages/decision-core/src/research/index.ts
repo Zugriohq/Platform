@@ -15,3 +15,5 @@ export * from "./retestDerivation.js";
 export * from "./derivedStructuralReplay.js";
 
 export * from "./regimeEvidence.js";
+export * from "./imbalanceFacts.js";
+export * from "./liquidityFacts.js";

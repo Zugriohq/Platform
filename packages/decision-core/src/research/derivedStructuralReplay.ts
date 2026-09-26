@@ -7,6 +7,17 @@ import {
   type ResearchStructureBar,
 } from "./marketMap.js";
 import {
+  deriveEqualLiquidityLevels,
+  deriveLiquiditySweeps,
+  type ResearchEqualLiquidityDefinition,
+} from "./liquidityFacts.js";
+import {
+  assessFvgRevisit,
+  detectThreeBarFvg,
+  type ResearchFvgDefinition,
+  type ResearchFvgRevisitDefinition,
+} from "./imbalanceFacts.js";
+import {
   projectMarketMapToChartScene,
   type EngineChartRegimeContext,
   type EngineChartRouteContext,
@@ -150,6 +161,50 @@ const bars: readonly ResearchStructureBar[] = [
     knownAt: "2026-09-24T08:20:01Z",
     dataStatus: "FRESH_COMPLETE",
   },
+  {
+    evidenceId: "ohlc-0820",
+    sourceBarId: "EURUSD:M5:0820",
+    open: 1.17630,
+    high: 1.17662,
+    low: 1.17610,
+    close: 1.17650,
+    sourceClosedAt: "2026-09-24T08:25:00Z",
+    knownAt: "2026-09-24T08:25:01Z",
+    dataStatus: "FRESH_COMPLETE",
+  },
+  {
+    evidenceId: "ohlc-0825",
+    sourceBarId: "EURUSD:M5:0825",
+    open: 1.17650,
+    high: 1.17655,
+    low: 1.17555,
+    close: 1.17610,
+    sourceClosedAt: "2026-09-24T08:30:00Z",
+    knownAt: "2026-09-24T08:30:01Z",
+    dataStatus: "FRESH_COMPLETE",
+  },
+  {
+    evidenceId: "ohlc-0830",
+    sourceBarId: "EURUSD:M5:0830",
+    open: 1.17610,
+    high: 1.17690,
+    low: 1.17580,
+    close: 1.17650,
+    sourceClosedAt: "2026-09-24T08:35:00Z",
+    knownAt: "2026-09-24T08:35:01Z",
+    dataStatus: "FRESH_COMPLETE",
+  },
+  {
+    evidenceId: "ohlc-0835",
+    sourceBarId: "EURUSD:M5:0835",
+    open: 1.17650,
+    high: 1.17655,
+    low: 1.17555,
+    close: 1.17558,
+    sourceClosedAt: "2026-09-24T08:40:00Z",
+    knownAt: "2026-09-24T08:40:01Z",
+    dataStatus: "FRESH_COMPLETE",
+  },
 ] as const;
 
 const frames: readonly ReplayFrame[] = [
@@ -158,6 +213,10 @@ const frames: readonly ReplayFrame[] = [
   { evaluatedAt: "2026-09-24T08:10:01Z" },
   { evaluatedAt: "2026-09-24T08:15:01Z" },
   { evaluatedAt: "2026-09-24T08:20:01Z" },
+  { evaluatedAt: "2026-09-24T08:25:01Z" },
+  { evaluatedAt: "2026-09-24T08:30:01Z" },
+  { evaluatedAt: "2026-09-24T08:35:01Z" },
+  { evaluatedAt: "2026-09-24T08:40:01Z" },
 ] as const;
 
 const breakDefinition: ResearchStructuralBreakDefinition = {
@@ -193,6 +252,28 @@ const retestDefinition: ResearchRetestDefinition = {
   maximumPenetration: 0.0002,
   holdRule: "CLOSE_VALID_SIDE",
   holdTiming: "LATER_BAR_REQUIRED",
+};
+
+const equalLiquidityDefinition: ResearchEqualLiquidityDefinition = {
+  definitionId: "derived-alpha:equal-liquidity:v1",
+  tolerance: 0.00005,
+  pairing: "ADJACENT_CONFIRMED_PIVOTS",
+};
+
+const liquiditySweepDefinition = {
+  definitionId: "derived-alpha:liquidity-sweep:v1",
+  penetrationTolerance: 0.0001,
+} as const;
+
+const fvgDefinition: ResearchFvgDefinition = {
+  definitionId: "derived-alpha:fvg:wick-gap:v1",
+  minimumGap: 0.00005,
+};
+
+const fvgRevisitDefinition: ResearchFvgRevisitDefinition = {
+  definitionId: "derived-alpha:fvg-revisit:v1",
+  partialFillRule: "CLOSE_INSIDE_ZONE",
+  fullFillRule: "WICK_REACH_FAR_BOUNDARY",
 };
 
 const regimeMeasurementDefinition: ResearchRegimeMeasurementDefinition = {
@@ -298,6 +379,91 @@ function barsKnownBy(evaluatedAt: string): ResearchStructureBar[] {
   return bars.filter(bar => epoch(bar.knownAt) <= cutoff);
 }
 
+function confirmedPivotsAt(evaluatedAt: string): readonly ResearchMarketStructureFact[] {
+  return detectConfirmedPivots(TIMEFRAME, barsKnownBy(evaluatedAt), [
+    {
+      definitionId: "derived-alpha:external-pivot:1x1:v1",
+      scale: "EXTERNAL",
+      leftBars: 1,
+      rightBars: 1,
+    },
+  ]);
+}
+
+function deriveLiquidityContextAt(
+  evaluatedAt: string,
+  pivots: readonly ResearchMarketStructureFact[],
+): {
+  equalLevels: readonly ResearchMarketStructureFact[];
+  sweeps: readonly ResearchMarketStructureFact[];
+} {
+  const equalLevels = deriveEqualLiquidityLevels({
+    evaluatedAt,
+    pivots,
+    definition: equalLiquidityDefinition,
+  });
+  const sweeps = deriveLiquiditySweeps({
+    evaluatedAt,
+    levels: equalLevels,
+    bars: barsKnownBy(evaluatedAt),
+    definition: liquiditySweepDefinition,
+  });
+  return { equalLevels, sweeps };
+}
+
+function deriveImbalanceContextAt(
+  evaluatedAt: string,
+): readonly ResearchMarketStructureFact[] {
+  const knownBars = barsKnownBy(evaluatedAt);
+  const facts: ResearchMarketStructureFact[] = [];
+  const factIds = new Set<string>();
+
+  const add = (fact: ResearchMarketStructureFact | null) => {
+    if (!fact || factIds.has(fact.factId)) return;
+    factIds.add(fact.factId);
+    facts.push(fact);
+  };
+
+  for (let index = 2; index < knownBars.length; index += 1) {
+    const first = knownBars[index - 2];
+    const middle = knownBars[index - 1];
+    const third = knownBars[index];
+    if (!first || !middle || !third) continue;
+
+    const fvg = detectThreeBarFvg(TIMEFRAME, first, middle, third, fvgDefinition);
+    if (!fvg) continue;
+    add(fvg);
+
+    let revisitRank = 0;
+    for (let revisitIndex = index + 1; revisitIndex < knownBars.length; revisitIndex += 1) {
+      const revisitBar = knownBars[revisitIndex];
+      if (!revisitBar) continue;
+
+      const assessment = assessFvgRevisit(fvg, revisitBar, fvgRevisitDefinition);
+      const rank =
+        assessment.status === "FULL_FILL"
+          ? 3
+          : assessment.status === "PARTIAL_FILL"
+            ? 2
+            : assessment.status === "TOUCHED"
+              ? 1
+              : 0;
+
+      if (rank > revisitRank) {
+        add(assessment.fact);
+        revisitRank = rank;
+      }
+      if (assessment.status === "FULL_FILL") break;
+    }
+  }
+
+  return facts.sort((a, b) => {
+    const byKnownAt = epoch(a.knownAt) - epoch(b.knownAt);
+    if (byKnownAt !== 0) return byKnownAt;
+    return a.factId.localeCompare(b.factId);
+  });
+}
+
 function regimeAt(evaluatedAt: string): ResearchCanonicalRegimeResult {
   return classifyCanonicalRegime({
     assessment: computeRegimeMeasurements({
@@ -352,14 +518,7 @@ function routeContextFor(
 }
 
 function confirmedLevelAt(evaluatedAt: string): ResearchMarketStructureFact | null {
-  const pivots = detectConfirmedPivots(TIMEFRAME, barsKnownBy(evaluatedAt), [
-    {
-      definitionId: "derived-alpha:external-pivot:1x1:v1",
-      scale: "EXTERNAL",
-      leftBars: 1,
-      rightBars: 1,
-    },
-  ]);
+  const pivots = confirmedPivotsAt(evaluatedAt);
 
   return pivots.find(fact =>
     fact.concept === "SWING_HIGH" &&
@@ -441,6 +600,9 @@ export interface DerivedStructuralReplayFrame {
   readonly breakEvent: ResearchStructuralBreakEvent | null;
   readonly classificationFact: ResearchMarketStructureFact | null;
   readonly lifecycle: ResearchLifecycleResult | null;
+  readonly equalLiquidityFacts: readonly ResearchMarketStructureFact[];
+  readonly liquiditySweepFacts: readonly ResearchMarketStructureFact[];
+  readonly imbalanceFacts: readonly ResearchMarketStructureFact[];
   readonly marketFacts: readonly ResearchMarketStructureFact[];
   readonly scene: EngineChartScene;
 }
@@ -456,8 +618,15 @@ export function buildDerivedStructuralReplayFrame(
   const evaluatedAt = frame.evaluatedAt;
   const regime = regimeAt(evaluatedAt);
   const routeContext = routeContextFor(regime);
+  const pivots = confirmedPivotsAt(evaluatedAt);
   const level = confirmedLevelAt(evaluatedAt);
-  const facts: ResearchMarketStructureFact[] = [];
+  const liquidityContext = deriveLiquidityContextAt(evaluatedAt, pivots);
+  const imbalanceFacts = deriveImbalanceContextAt(evaluatedAt);
+  const facts: ResearchMarketStructureFact[] = [
+    ...liquidityContext.equalLevels,
+    ...liquidityContext.sweeps,
+    ...imbalanceFacts,
+  ];
   if (level) facts.push(level);
 
   let breakEvent: ResearchStructuralBreakEvent | null = null;
@@ -517,6 +686,9 @@ export function buildDerivedStructuralReplayFrame(
     breakEvent,
     classificationFact,
     lifecycle,
+    equalLiquidityFacts: liquidityContext.equalLevels,
+    liquiditySweepFacts: liquidityContext.sweeps,
+    imbalanceFacts,
     marketFacts: map.facts,
     scene: projectMarketMapToChartScene(
       map,
@@ -608,11 +780,11 @@ export function createDerivedStructuralReplayScenario(
 ): ReplayScenario {
   return {
     id: DERIVED_STRUCTURAL_SCENARIO_ID,
-    version: "0.1.0-alpha.4",
+    version: "0.1.0-alpha.5",
     caseId: "case-alpha-eurusd-derived-001",
-    title: "Derived BOS → retest lifecycle from OHLC",
+    title: "Derived structure → liquidity → imbalance context from OHLC",
     description:
-      "A fabricated point-in-time validation replay whose structure, BOS classification and retest lifecycle are derived by the research engine from immutable OHLC evidence.",
+      "A fabricated point-in-time validation replay whose structure, BOS/retest lifecycle, canonical regime, equal-liquidity, sweep/reclaim and FVG context are derived by the research engine from immutable OHLC evidence.",
     bundle,
     evidence: buildGeneratedEvidence(),
     frames,
