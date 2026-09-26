@@ -1,0 +1,430 @@
+export type CanonicalRegime =
+  | "TRENDING"
+  | "MEAN_REVERTING"
+  | "EXPANSION"
+  | "BREAKOUT"
+  | "NOISE"
+  | "EXHAUSTION"
+  | "COMPRESSION";
+
+export type StructureScale = "INTERNAL" | "INTERMEDIATE" | "EXTERNAL";
+
+export type MarketStructureConcept =
+  | "SWING_HIGH"
+  | "SWING_LOW"
+  | "EQUAL_HIGHS"
+  | "EQUAL_LOWS"
+  | "BOS"
+  | "CHOCH"
+  | "MSS"
+  | "LIQUIDITY_SWEEP"
+  | "FAKEOUT"
+  | "INDUCEMENT"
+  | "DISPLACEMENT"
+  | "FVG"
+  | "ORDER_BLOCK"
+  | "MITIGATION"
+  | "RANGE_HIGH"
+  | "RANGE_LOW"
+  | "BREAKOUT"
+  | "RETEST"
+  | "CONTINUATION"
+  | "ELLIOTT_WAVE";
+
+export type ResearchConceptMaturity =
+  | "DETERMINISTIC_FACT"
+  | "RESEARCH_DERIVED"
+  | "ADVISORY_ONLY";
+
+export type MarketMapGeometry =
+  | {
+      readonly type: "POINT";
+      readonly time: string;
+      readonly price: number;
+    }
+  | {
+      readonly type: "LEVEL";
+      readonly price: number;
+      readonly startAt?: string;
+      readonly endAt?: string;
+    }
+  | {
+      readonly type: "ZONE";
+      readonly low: number;
+      readonly high: number;
+      readonly startAt?: string;
+      readonly endAt?: string;
+    }
+  | {
+      readonly type: "PATH";
+      readonly points: readonly {
+        readonly time: string;
+        readonly price: number;
+      }[];
+    };
+
+export interface ResearchMarketStructureFact {
+  readonly factId: string;
+  readonly concept: MarketStructureConcept;
+  readonly maturity: ResearchConceptMaturity;
+  readonly scale: StructureScale | null;
+  readonly timeframe: string;
+  readonly side: "BUY" | "SELL" | "NEUTRAL";
+  readonly knownAt: string;
+  readonly definitionId: string;
+  readonly sourceEvidenceIds: readonly string[];
+  readonly geometry: MarketMapGeometry;
+  readonly label: string;
+  readonly authority: "RESEARCH_ONLY";
+  readonly authorityEffect: "NONE";
+}
+
+export interface ResearchRegimeFact {
+  readonly regime: CanonicalRegime;
+  readonly knownAt: string;
+  readonly evidenceId: string;
+  readonly definitionId: string;
+}
+
+export type ResearchEntryRouteFamily =
+  | "BREAKOUT_CONTINUATION"
+  | "BREAKOUT_RETEST"
+  | "BOS_RETEST"
+  | "CHOCH_RETEST"
+  | "LIQUIDITY_SWEEP_REVERSAL"
+  | "FAKEOUT_REVERSAL"
+  | "FVG_MITIGATION"
+  | "TREND_CONTINUATION"
+  | "RANGE_MEAN_REVERSION"
+  | "COMPRESSION_BREAKOUT_WATCH";
+
+export type ResearchObjectiveFamily =
+  | "NEAREST_CREDIBLE_STRUCTURE"
+  | "OPPOSING_LIQUIDITY"
+  | "RANGE_BOUNDARY"
+  | "IMBALANCE_BOUNDARY"
+  | "TRAILING_STRUCTURE"
+  | "TIME_EXIT";
+
+export interface ResearchStrategyLens {
+  readonly strategyId: string;
+  readonly version: string;
+  readonly compatibleRegimes: readonly CanonicalRegime[];
+  readonly requiredConcepts: readonly MarketStructureConcept[];
+  readonly optionalConcepts: readonly MarketStructureConcept[];
+  /**
+   * These are routes to observe/compare, not a declaration that one is profitable.
+   * Evidence/admission later determines which route, if any, can be authoritative.
+   */
+  readonly entryRouteFamilies: readonly ResearchEntryRouteFamily[];
+  readonly objectiveFamilies: readonly ResearchObjectiveFamily[];
+  readonly invalidationPolicyRef: string;
+  readonly authority: "RESEARCH_ONLY";
+}
+
+export interface ResearchMarketMap {
+  readonly mapId: string;
+  readonly instrument: string;
+  readonly timeframe: string;
+  readonly evaluatedAt: string;
+  readonly regime: ResearchRegimeFact | null;
+  readonly facts: readonly ResearchMarketStructureFact[];
+  readonly strategyLens: ResearchStrategyLens;
+  readonly authority: "RESEARCH_ONLY";
+  readonly liveCapitalAuthority: false;
+}
+
+export interface ResearchStructureBar {
+  readonly evidenceId: string;
+  readonly sourceBarId: string;
+  readonly open: number;
+  readonly high: number;
+  readonly low: number;
+  readonly close: number;
+  readonly sourceClosedAt: string;
+  readonly knownAt: string;
+  readonly dataStatus: "FRESH_COMPLETE" | "INCOMPLETE" | "STALE" | "GAP";
+}
+
+export interface PivotDefinition {
+  readonly definitionId: string;
+  readonly scale: StructureScale;
+  readonly leftBars: number;
+  readonly rightBars: number;
+}
+
+function epoch(value: string, label: string): number {
+  const parsed = Date.parse(value);
+  if (!Number.isFinite(parsed)) throw new Error(`${label} is not a valid ISO timestamp: ${value}`);
+  return parsed;
+}
+
+function validateBar(bar: ResearchStructureBar): void {
+  for (const [label, value] of Object.entries({
+    open: bar.open,
+    high: bar.high,
+    low: bar.low,
+    close: bar.close,
+  })) {
+    if (!Number.isFinite(value)) throw new Error(`${label} must be finite`);
+  }
+  if (bar.low > bar.high) throw new Error("bar.low cannot exceed bar.high");
+  if (bar.high < Math.max(bar.open, bar.close) || bar.low > Math.min(bar.open, bar.close)) {
+    throw new Error("OHLC bar is internally inconsistent");
+  }
+  epoch(bar.sourceClosedAt, "sourceClosedAt");
+  epoch(bar.knownAt, "knownAt");
+}
+
+function validateDefinition(definition: PivotDefinition): void {
+  if (!definition.definitionId) throw new Error("pivot definitionId must be non-empty");
+  if (!Number.isInteger(definition.leftBars) || definition.leftBars < 1) {
+    throw new Error("leftBars must be an integer >= 1");
+  }
+  if (!Number.isInteger(definition.rightBars) || definition.rightBars < 1) {
+    throw new Error("rightBars must be an integer >= 1");
+  }
+}
+
+/**
+ * Confirmed, non-repainting pivots using rightmost-plateau semantics:
+ * ties are allowed on the left and must be strictly cleared on the right.
+ *
+ * Window sizes are supplied by a versioned definition; this detector does not
+ * decide what INTERNAL / INTERMEDIATE / EXTERNAL "should" mean.
+ */
+export function detectConfirmedPivots(
+  timeframe: string,
+  bars: readonly ResearchStructureBar[],
+  definitions: readonly PivotDefinition[],
+): readonly ResearchMarketStructureFact[] {
+  if (!timeframe.trim()) throw new Error("timeframe must be non-empty");
+
+  const ids = new Set<string>();
+  for (const bar of bars) {
+    validateBar(bar);
+    if (ids.has(bar.sourceBarId)) throw new Error(`duplicate sourceBarId: ${bar.sourceBarId}`);
+    ids.add(bar.sourceBarId);
+  }
+  for (const definition of definitions) validateDefinition(definition);
+
+  const ordered = [...bars].sort((a, b) => {
+    const byClose = epoch(a.sourceClosedAt, "sourceClosedAt") - epoch(b.sourceClosedAt, "sourceClosedAt");
+    if (byClose !== 0) return byClose;
+    return a.sourceBarId.localeCompare(b.sourceBarId);
+  });
+
+  const facts: ResearchMarketStructureFact[] = [];
+
+  for (const definition of definitions) {
+    const { leftBars, rightBars } = definition;
+
+    for (let index = leftBars; index < ordered.length - rightBars; index += 1) {
+      const source = ordered[index];
+      if (!source) continue;
+
+      const window = ordered.slice(index - leftBars, index + rightBars + 1);
+      if (window.length !== leftBars + rightBars + 1) continue;
+      if (window.some(bar => bar.dataStatus !== "FRESH_COMPLETE")) continue;
+
+      const left = ordered.slice(index - leftBars, index);
+      const right = ordered.slice(index + 1, index + rightBars + 1);
+      const confirmingBar = ordered[index + rightBars];
+      if (!confirmingBar) continue;
+
+      const highConfirmed =
+        left.every(bar => source.high >= bar.high) &&
+        right.every(bar => source.high > bar.high);
+
+      const lowConfirmed =
+        left.every(bar => source.low <= bar.low) &&
+        right.every(bar => source.low < bar.low);
+
+      const sourceEvidenceIds = window.map(bar => bar.evidenceId);
+      const knownAt = confirmingBar.knownAt;
+
+      if (highConfirmed) {
+        facts.push({
+          factId: `pivot:${definition.definitionId}:${source.sourceBarId}:high`,
+          concept: "SWING_HIGH",
+          maturity: "DETERMINISTIC_FACT",
+          scale: definition.scale,
+          timeframe,
+          side: "SELL",
+          knownAt,
+          definitionId: definition.definitionId,
+          sourceEvidenceIds,
+          geometry: {
+            type: "POINT",
+            time: source.sourceClosedAt,
+            price: source.high,
+          },
+          label: `${definition.scale} SWING HIGH`,
+          authority: "RESEARCH_ONLY",
+          authorityEffect: "NONE",
+        });
+      }
+
+      if (lowConfirmed) {
+        facts.push({
+          factId: `pivot:${definition.definitionId}:${source.sourceBarId}:low`,
+          concept: "SWING_LOW",
+          maturity: "DETERMINISTIC_FACT",
+          scale: definition.scale,
+          timeframe,
+          side: "BUY",
+          knownAt,
+          definitionId: definition.definitionId,
+          sourceEvidenceIds,
+          geometry: {
+            type: "POINT",
+            time: source.sourceClosedAt,
+            price: source.low,
+          },
+          label: `${definition.scale} SWING LOW`,
+          authority: "RESEARCH_ONLY",
+          authorityEffect: "NONE",
+        });
+      }
+    }
+  }
+
+  return facts.sort((a, b) => {
+    const byKnownAt = epoch(a.knownAt, "knownAt") - epoch(b.knownAt, "knownAt");
+    if (byKnownAt !== 0) return byKnownAt;
+    return a.factId.localeCompare(b.factId);
+  });
+}
+
+export interface EqualLevelPairDefinition {
+  readonly definitionId: string;
+  readonly tolerance: number;
+}
+
+export function identifyEqualLevelPair(
+  first: ResearchMarketStructureFact,
+  second: ResearchMarketStructureFact,
+  definition: EqualLevelPairDefinition,
+): ResearchMarketStructureFact | null {
+  if (!definition.definitionId) throw new Error("equal-level definitionId must be non-empty");
+  if (!Number.isFinite(definition.tolerance) || definition.tolerance < 0) {
+    throw new Error("equal-level tolerance must be finite and >= 0");
+  }
+  if (first.concept !== second.concept) return null;
+  if (first.scale !== second.scale || first.timeframe !== second.timeframe) return null;
+  if (first.concept !== "SWING_HIGH" && first.concept !== "SWING_LOW") return null;
+  if (first.geometry.type !== "POINT" || second.geometry.type !== "POINT") return null;
+
+  const distance = Math.abs(first.geometry.price - second.geometry.price);
+  if (distance > definition.tolerance) return null;
+
+  const low = Math.min(first.geometry.price, second.geometry.price);
+  const high = Math.max(first.geometry.price, second.geometry.price);
+  const concept = first.concept === "SWING_HIGH" ? "EQUAL_HIGHS" : "EQUAL_LOWS";
+  const side = first.concept === "SWING_HIGH" ? "SELL" : "BUY";
+
+  return {
+    factId: `equal-level:${definition.definitionId}:${first.factId}:${second.factId}`,
+    concept,
+    maturity: "DETERMINISTIC_FACT",
+    scale: first.scale,
+    timeframe: first.timeframe,
+    side,
+    knownAt: epoch(first.knownAt, "knownAt") >= epoch(second.knownAt, "knownAt") ? first.knownAt : second.knownAt,
+    definitionId: definition.definitionId,
+    sourceEvidenceIds: [...new Set([...first.sourceEvidenceIds, ...second.sourceEvidenceIds])],
+    geometry: {
+      type: "ZONE",
+      low,
+      high,
+    },
+    label: concept.replaceAll("_", " "),
+    authority: "RESEARCH_ONLY",
+    authorityEffect: "NONE",
+  };
+}
+
+export interface SweepDefinition {
+  readonly definitionId: string;
+  readonly penetrationTolerance: number;
+}
+
+export function detectLiquiditySweep(
+  level: ResearchMarketStructureFact,
+  bar: ResearchStructureBar,
+  definition: SweepDefinition,
+): ResearchMarketStructureFact | null {
+  if (!definition.definitionId) throw new Error("sweep definitionId must be non-empty");
+  if (!Number.isFinite(definition.penetrationTolerance) || definition.penetrationTolerance < 0) {
+    throw new Error("penetrationTolerance must be finite and >= 0");
+  }
+  validateBar(bar);
+  if (bar.dataStatus !== "FRESH_COMPLETE") return null;
+  if (level.geometry.type !== "POINT" && level.geometry.type !== "ZONE") return null;
+
+  const levelHigh = level.geometry.type === "POINT" ? level.geometry.price : level.geometry.high;
+  const levelLow = level.geometry.type === "POINT" ? level.geometry.price : level.geometry.low;
+
+  const sweepsHigh =
+    (level.concept === "SWING_HIGH" || level.concept === "EQUAL_HIGHS") &&
+    bar.high > levelHigh + definition.penetrationTolerance &&
+    bar.close <= levelHigh;
+
+  const sweepsLow =
+    (level.concept === "SWING_LOW" || level.concept === "EQUAL_LOWS") &&
+    bar.low < levelLow - definition.penetrationTolerance &&
+    bar.close >= levelLow;
+
+  if (!sweepsHigh && !sweepsLow) return null;
+
+  return {
+    factId: `sweep:${definition.definitionId}:${level.factId}:${bar.sourceBarId}`,
+    concept: "LIQUIDITY_SWEEP",
+    maturity: "DETERMINISTIC_FACT",
+    scale: level.scale,
+    timeframe: level.timeframe,
+    side: sweepsHigh ? "SELL" : "BUY",
+    knownAt: bar.knownAt,
+    definitionId: definition.definitionId,
+    sourceEvidenceIds: [...new Set([...level.sourceEvidenceIds, bar.evidenceId])],
+    geometry: {
+      type: "POINT",
+      time: bar.sourceClosedAt,
+      price: sweepsHigh ? bar.high : bar.low,
+    },
+    label: sweepsHigh ? "HIGH SWEEP / RECLAIM" : "LOW SWEEP / RECLAIM",
+    authority: "RESEARCH_ONLY",
+    authorityEffect: "NONE",
+  };
+}
+
+export function buildResearchMarketMap(input: {
+  readonly mapId: string;
+  readonly instrument: string;
+  readonly timeframe: string;
+  readonly evaluatedAt: string;
+  readonly regime: ResearchRegimeFact | null;
+  readonly facts: readonly ResearchMarketStructureFact[];
+  readonly strategyLens: ResearchStrategyLens;
+}): ResearchMarketMap {
+  epoch(input.evaluatedAt, "evaluatedAt");
+  for (const fact of input.facts) {
+    if (epoch(fact.knownAt, "fact.knownAt") > epoch(input.evaluatedAt, "evaluatedAt")) {
+      throw new Error(`future market-map fact is not knowable yet: ${fact.factId}`);
+    }
+  }
+  if (input.regime && epoch(input.regime.knownAt, "regime.knownAt") > epoch(input.evaluatedAt, "evaluatedAt")) {
+    throw new Error("future regime fact is not knowable yet");
+  }
+
+  return {
+    ...input,
+    facts: [...input.facts].sort((a, b) => {
+      const byKnownAt = epoch(a.knownAt, "knownAt") - epoch(b.knownAt, "knownAt");
+      if (byKnownAt !== 0) return byKnownAt;
+      return a.factId.localeCompare(b.factId);
+    }),
+    authority: "RESEARCH_ONLY",
+    liveCapitalAuthority: false,
+  };
+}
