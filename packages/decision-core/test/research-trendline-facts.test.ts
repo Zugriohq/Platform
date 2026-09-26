@@ -199,6 +199,7 @@ describe("research trendline facts",()=>{
     expect(broken.status).toBe("CLOSE_BREAK");
     expect(broken.fact).toMatchObject({
       concept:"TRENDLINE_BREAK",
+      maturity:"RESEARCH_DERIVED",
       authority:"RESEARCH_ONLY",
       authorityEffect:"NONE",
     });
