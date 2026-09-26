@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { ALPHA_RESPONSE_META } from "@zugrio/alpha-api-contract";
-import { buildDecisionCase, buildReplayChartScene, staleEntryScenario } from "@zugrio/decision-core";
+import {
+  DERIVED_STRUCTURAL_SCENARIO_ID,
+  alphaScenarios,
+  buildDecisionCase,
+  buildReplayChartScene,
+  staleEntryScenario,
+} from "@zugrio/decision-core";
 import { createAlphaApiClient, resolveApiBaseUrl } from "./alphaApiClient";
 
 type Handler = (url: string, init?: RequestInit) => Response | Promise<Response>;
@@ -66,6 +72,28 @@ describe("createAlphaApiClient", () => {
     expect(calls[0]?.url).toBe(
       `https://api.zugrio.xyz/v1/alpha/scenarios/${staleEntryScenario.id}/frames/4/chart-scene`,
     );
+  });
+
+  it("accepts engine-owned liquidity and imbalance primitives without desktop-side inference", async () => {
+    const scenario = alphaScenarios.find(item => item.id === DERIVED_STRUCTURAL_SCENARIO_ID)!;
+    const scene = JSON.parse(JSON.stringify(buildReplayChartScene(scenario, 7)));
+    expect(scene.primitives.some((item: { concept: string }) => item.concept === "EQUAL_HIGHS")).toBe(true);
+    expect(scene.primitives.some((item: { concept: string }) => item.concept === "LIQUIDITY_SWEEP")).toBe(true);
+    expect(scene.primitives.some((item: { concept: string }) => item.concept === "FVG")).toBe(true);
+
+    const { impl } = fakeFetch(() => json(200, { meta: ALPHA_RESPONSE_META, data: scene }));
+    const client = createAlphaApiClient({ baseUrl: "https://api.zugrio.xyz", fetch: impl });
+    const result = await client.getFrameChartScene(scenario.id, 7);
+
+    expect(result.status).toBe("ok");
+    if (result.status !== "ok") throw new Error("expected cloud chart scene");
+    expect(result.data.primitives.some(item =>
+      item.concept === "LIQUIDITY_SWEEP" && item.layer === "LIQUIDITY"
+    )).toBe(true);
+    expect(result.data.primitives.some(item =>
+      item.concept === "FVG" && item.layer === "IMBALANCE"
+    )).toBe(true);
+    expect(result.data.primitives.every(item => item.authorityEffect === "NONE")).toBe(true);
   });
 
   it("rejects malformed chart primitives even when alpha metadata is valid", async () => {
