@@ -141,6 +141,7 @@ function visibilityForFact(
     fact.concept === "LIQUIDITY_SWEEP" ||
     fact.concept === "BOS" ||
     fact.concept === "CHOCH" ||
+    fact.concept === "MSS" ||
     fact.concept === "BREAKOUT"
   ) {
     return "PRIMARY";
