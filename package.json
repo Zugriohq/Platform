@@ -6,7 +6,8 @@
   "scripts": {
     "build:packages": "pnpm --filter @zugrio/domain build && pnpm --filter @zugrio/decision-core build && pnpm --filter @zugrio/alpha-api-contract build",
     "build": "pnpm build:packages && pnpm --filter @zugrio/api build && pnpm --filter @zugrio/desktop build",
-    "test": "pnpm build:packages && pnpm -r test",
+    "test": "pnpm build:packages && pnpm -r test && pnpm test:release",
+    "test:release": "node --test scripts/release/rc.test.mjs",
     "typecheck": "pnpm build:packages && pnpm -r typecheck"
   },
   "devDependencies": {
