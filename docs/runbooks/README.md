@@ -2,6 +2,9 @@
 
 Operational procedures belong here once the corresponding system exists.
 
+Current runbooks:
+- [`PRIVATE_ALPHA_OCI_DEPLOYMENT.md`](PRIVATE_ALPHA_OCI_DEPLOYMENT.md): private validation alpha API + PostgreSQL + Cloudflare Tunnel on OCI London (NO LIVE CAPITAL).
+
 Expected future runbooks include:
 - local development/bootstrap;
 - staging deployment and rollback;

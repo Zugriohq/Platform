@@ -1,0 +1,21 @@
+# Cloudflare Tunnel for api.zugrio.xyz. Layer on top of docker-compose.yml:
+#   docker compose -f docker-compose.yml -f docker-compose.tunnel.yml up -d
+#
+# Remotely-managed tunnel: its ingress (api.zugrio.xyz -> http://api:3000) is configured
+# on the Cloudflare side (see infra/cloudflare/README.md). cloudflared only makes
+# outbound connections, so the VM needs no inbound port for the API.
+
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:${CLOUDFLARED_VERSION:-2026.9.3}
+    restart: unless-stopped
+    command: ["tunnel", "--no-autoupdate", "--metrics", "0.0.0.0:2000", "run"]
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?CLOUDFLARE_TUNNEL_TOKEN must be set in .env to run the tunnel}
+    depends_on:
+      api:
+        condition: service_healthy
+    networks: [edge]
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
