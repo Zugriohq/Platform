@@ -63,6 +63,56 @@ describe("derived structural alpha replay", () => {
     expect(held.marketFacts.some(fact => fact.label === "RETEST HELD")).toBe(true);
   });
 
+  it("adds FVG context only after the causal third bar, then later revisit facts", () => {
+    const before = buildDerivedStructuralReplayFrame(1);
+    expect(before.imbalanceFacts.some(fact => fact.concept === "FVG")).toBe(false);
+
+    const formed = buildDerivedStructuralReplayFrame(2);
+    expect(formed.imbalanceFacts.some(fact =>
+      fact.concept === "FVG" &&
+      fact.definitionId === "derived-alpha:fvg:wick-gap:v1"
+    )).toBe(true);
+
+    const revisited = buildDerivedStructuralReplayFrame(6);
+    expect(revisited.imbalanceFacts.some(fact =>
+      fact.concept === "FVG_TOUCH" || fact.concept === "FVG_FULL_FILL"
+    )).toBe(true);
+
+    const partial = buildDerivedStructuralReplayFrame(8);
+    expect(partial.imbalanceFacts.some(fact => fact.concept === "FVG_PARTIAL_FILL")).toBe(true);
+  });
+
+  it("derives equal highs only after the second pivot confirms, then a later sweep/reclaim", () => {
+    const beforeEqualHigh = buildDerivedStructuralReplayFrame(5);
+    expect(beforeEqualHigh.equalLiquidityFacts.some(fact => fact.concept === "EQUAL_HIGHS")).toBe(false);
+
+    const equalHigh = buildDerivedStructuralReplayFrame(6);
+    expect(equalHigh.equalLiquidityFacts.some(fact =>
+      fact.concept === "EQUAL_HIGHS" &&
+      fact.definitionId === "derived-alpha:equal-liquidity:v1"
+    )).toBe(true);
+    expect(equalHigh.liquiditySweepFacts).toEqual([]);
+
+    const swept = buildDerivedStructuralReplayFrame(7);
+    expect(swept.liquiditySweepFacts.some(fact =>
+      fact.concept === "LIQUIDITY_SWEEP" &&
+      fact.label === "HIGH SWEEP / RECLAIM"
+    )).toBe(true);
+  });
+
+  it("projects liquidity and imbalance facts through the engine chart scene with no authority effect", () => {
+    const scene = buildDerivedStructuralReplayFrame(7).scene;
+    const equalHigh = scene.primitives.find(primitive => primitive.concept === "EQUAL_HIGHS");
+    const sweep = scene.primitives.find(primitive => primitive.concept === "LIQUIDITY_SWEEP");
+    const fvg = scene.primitives.find(primitive => primitive.concept === "FVG");
+
+    expect(equalHigh).toMatchObject({ layer: "LIQUIDITY", authorityEffect: "NONE" });
+    expect(sweep).toMatchObject({ layer: "LIQUIDITY", authorityEffect: "NONE" });
+    expect(fvg).toMatchObject({ layer: "IMBALANCE", authorityEffect: "NONE" });
+    expect(scene.authority).toBe("RESEARCH_ONLY");
+    expect(scene.liveCapitalAuthority).toBe(false);
+  });
+
   it("feeds the existing DecisionCase lifecycle from generated engine evidence", () => {
     const scenario = alphaScenarios.find(item => item.id === DERIVED_STRUCTURAL_SCENARIO_ID)!;
 
