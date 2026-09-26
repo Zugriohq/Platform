@@ -97,7 +97,7 @@ describe("research trendline facts",()=>{
       maturity:"RESEARCH_DERIVED",
       knownAt:"2026-09-24T08:25:01Z",
       definitionId:"trendline:fixture:v1",
-      maturity:"RESEARCH_DERIVED",
+      sourceFactIds:["low-1","low-2","low-3"],
       authorityEffect:"NONE",
     });
   });
@@ -200,6 +200,7 @@ describe("research trendline facts",()=>{
     expect(broken.fact).toMatchObject({
       concept:"TRENDLINE_BREAK",
       maturity:"RESEARCH_DERIVED",
+      sourceFactIds:[line!.factId],
       authority:"RESEARCH_ONLY",
       authorityEffect:"NONE",
     });
@@ -295,6 +296,7 @@ describe("research trendline facts",()=>{
     const scene=projectMarketMapToChartScene(map);
     expect(scene.primitives.find(item=>item.concept==="TRENDLINE_SUPPORT")).toMatchObject({
       layer:"STRUCTURE",
+      sourceFactIds:[line!.factId,"low-1","low-2","low-3"],
       authorityEffect:"NONE",
     });
     expect(scene.primitives.find(item=>item.concept==="TRENDLINE_TOUCH")).toMatchObject({
