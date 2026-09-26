@@ -82,6 +82,19 @@ describe("derived structural alpha replay", () => {
     expect(partial.imbalanceFacts.some(fact => fact.concept === "FVG_PARTIAL_FILL")).toBe(true);
   });
 
+  it("keeps each FVG revisit progression monotonic and terminal after full fill", () => {
+    const late = buildDerivedStructuralReplayFrame(8);
+    const fullFills = late.imbalanceFacts.filter(fact => fact.concept === "FVG_FULL_FILL");
+    expect(fullFills).toHaveLength(1);
+
+    const terminalFvgId = fullFills[0]!.factId.split(":M5:0825")[0];
+    const laterDowngrade = late.imbalanceFacts.some(fact =>
+      (fact.concept === "FVG_TOUCH" || fact.concept === "FVG_PARTIAL_FILL") &&
+      fact.factId.startsWith(terminalFvgId)
+    );
+    expect(laterDowngrade).toBe(false);
+  });
+
   it("derives equal highs only after the second pivot confirms, then a later sweep/reclaim", () => {
     const beforeEqualHigh = buildDerivedStructuralReplayFrame(5);
     expect(beforeEqualHigh.equalLiquidityFacts.some(fact => fact.concept === "EQUAL_HIGHS")).toBe(false);
