@@ -11,6 +11,7 @@ import type { ScenarioSummary } from "@zugrio/alpha-api-contract";
 import {
   LOCAL_REPLAY_LABEL,
   createConfiguredAlphaApiClient,
+  type AlphaApiClient,
 } from "./cloud";
 
 const STATE_LABELS: Record<StructuralState, string> = {
@@ -146,8 +147,13 @@ function failureReason(status: CloudUiStatus): string | undefined {
   return "reason" in status ? status.reason : undefined;
 }
 
-export function App() {
-  const apiClient = useMemo(() => createConfiguredAlphaApiClient(), []);
+export interface AppProps {
+  /** Test seam only; production builds use the build-configured client. */
+  readonly apiClient?: AlphaApiClient;
+}
+
+export function App({ apiClient: injectedClient }: AppProps = {}) {
+  const apiClient = useMemo(() => injectedClient ?? createConfiguredAlphaApiClient(), [injectedClient]);
   const cloudConfigured = apiClient.baseUrl !== undefined;
 
   const [scenarioIndex, setScenarioIndex] = useState(0);
