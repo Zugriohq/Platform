@@ -97,6 +97,7 @@ describe("research trendline facts",()=>{
       maturity:"RESEARCH_DERIVED",
       knownAt:"2026-09-24T08:25:01Z",
       definitionId:"trendline:fixture:v1",
+      maturity:"RESEARCH_DERIVED",
       authorityEffect:"NONE",
     });
   });
