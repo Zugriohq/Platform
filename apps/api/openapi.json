@@ -1,0 +1,1774 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "HealthController_health",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "status",
+                        "service",
+                        "version",
+                        "persistence",
+                        "database"
+                      ],
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded"
+                          ]
+                        },
+                        "service": {
+                          "type": "string",
+                          "enum": [
+                            "zugrio-api"
+                          ]
+                        },
+                        "version": {
+                          "type": "string"
+                        },
+                        "persistence": {
+                          "type": "string",
+                          "enum": [
+                            "postgres",
+                            "memory"
+                          ]
+                        },
+                        "database": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "unavailable"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database unreachable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "status",
+                        "service",
+                        "version",
+                        "persistence",
+                        "database"
+                      ],
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded"
+                          ]
+                        },
+                        "service": {
+                          "type": "string",
+                          "enum": [
+                            "zugrio-api"
+                          ]
+                        },
+                        "version": {
+                          "type": "string"
+                        },
+                        "persistence": {
+                          "type": "string",
+                          "enum": [
+                            "postgres",
+                            "memory"
+                          ]
+                        },
+                        "database": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "unavailable"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Liveness plus database reachability (used by Docker and through the tunnel)",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/v1/alpha/scenarios": {
+      "get": {
+        "operationId": "AlphaController_listScenarios",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "title",
+                          "description",
+                          "bundle",
+                          "frameCount"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "bundle": {
+                            "type": "object",
+                            "required": [
+                              "id",
+                              "version",
+                              "strategy",
+                              "instrument",
+                              "market",
+                              "horizon",
+                              "evidenceStatus"
+                            ],
+                            "properties": {
+                              "id": {
+                                "type": "string"
+                              },
+                              "version": {
+                                "type": "string"
+                              },
+                              "strategy": {
+                                "type": "string"
+                              },
+                              "instrument": {
+                                "type": "string"
+                              },
+                              "market": {
+                                "type": "string"
+                              },
+                              "horizon": {
+                                "type": "string"
+                              },
+                              "evidenceStatus": {
+                                "type": "string",
+                                "enum": [
+                                  "VALIDATION_ONLY"
+                                ]
+                              }
+                            }
+                          },
+                          "frameCount": {
+                            "type": "integer",
+                            "minimum": 1
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "List validation replay scenarios",
+        "tags": [
+          "private-validation-alpha"
+        ]
+      }
+    },
+    "/v1/alpha/scenarios/{scenarioId}": {
+      "get": {
+        "operationId": "AlphaController_getScenario",
+        "parameters": [
+          {
+            "name": "scenarioId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "title",
+                        "description",
+                        "bundle",
+                        "frameCount",
+                        "frames"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "bundle": {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "version",
+                            "strategy",
+                            "instrument",
+                            "market",
+                            "horizon",
+                            "evidenceStatus"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "version": {
+                              "type": "string"
+                            },
+                            "strategy": {
+                              "type": "string"
+                            },
+                            "instrument": {
+                              "type": "string"
+                            },
+                            "market": {
+                              "type": "string"
+                            },
+                            "horizon": {
+                              "type": "string"
+                            },
+                            "evidenceStatus": {
+                              "type": "string",
+                              "enum": [
+                                "VALIDATION_ONLY"
+                              ]
+                            }
+                          }
+                        },
+                        "frameCount": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "frames": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "timestamp",
+                              "price",
+                              "setupQualified",
+                              "locationQualified",
+                              "triggerQualified",
+                              "currentConditionsValid",
+                              "invalidated",
+                              "note"
+                            ],
+                            "properties": {
+                              "timestamp": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "price": {
+                                "type": "number"
+                              },
+                              "setupQualified": {
+                                "type": "boolean"
+                              },
+                              "locationQualified": {
+                                "type": "boolean"
+                              },
+                              "triggerQualified": {
+                                "type": "boolean"
+                              },
+                              "currentConditionsValid": {
+                                "type": "boolean"
+                              },
+                              "invalidated": {
+                                "type": "boolean"
+                              },
+                              "note": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get a validation replay scenario with all frames",
+        "tags": [
+          "private-validation-alpha"
+        ]
+      }
+    },
+    "/v1/alpha/scenarios/{scenarioId}/frames/{frameIndex}": {
+      "get": {
+        "operationId": "AlphaController_getFrameDecisionCase",
+        "parameters": [
+          {
+            "name": "scenarioId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "frameIndex",
+            "required": true,
+            "in": "path",
+            "description": "Zero-based replay frame index",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "Deterministic `@zugrio/decision-core` DecisionCase for one replay frame.",
+                      "required": [
+                        "caseId",
+                        "bundle",
+                        "current",
+                        "state",
+                        "reason",
+                        "history",
+                        "authority"
+                      ],
+                      "properties": {
+                        "caseId": {
+                          "type": "string"
+                        },
+                        "bundle": {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "version",
+                            "strategy",
+                            "instrument",
+                            "market",
+                            "horizon",
+                            "evidenceStatus"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "version": {
+                              "type": "string"
+                            },
+                            "strategy": {
+                              "type": "string"
+                            },
+                            "instrument": {
+                              "type": "string"
+                            },
+                            "market": {
+                              "type": "string"
+                            },
+                            "horizon": {
+                              "type": "string"
+                            },
+                            "evidenceStatus": {
+                              "type": "string",
+                              "enum": [
+                                "VALIDATION_ONLY"
+                              ]
+                            }
+                          }
+                        },
+                        "current": {
+                          "type": "object",
+                          "required": [
+                            "timestamp",
+                            "price",
+                            "setupQualified",
+                            "locationQualified",
+                            "triggerQualified",
+                            "currentConditionsValid",
+                            "invalidated",
+                            "note"
+                          ],
+                          "properties": {
+                            "timestamp": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "price": {
+                              "type": "number"
+                            },
+                            "setupQualified": {
+                              "type": "boolean"
+                            },
+                            "locationQualified": {
+                              "type": "boolean"
+                            },
+                            "triggerQualified": {
+                              "type": "boolean"
+                            },
+                            "currentConditionsValid": {
+                              "type": "boolean"
+                            },
+                            "invalidated": {
+                              "type": "boolean"
+                            },
+                            "note": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "FORMING",
+                            "READY",
+                            "TRIGGERED",
+                            "PASS"
+                          ]
+                        },
+                        "reason": {
+                          "type": "string"
+                        },
+                        "history": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "timestamp",
+                              "state",
+                              "reason",
+                              "price"
+                            ],
+                            "properties": {
+                              "timestamp": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "state": {
+                                "type": "string",
+                                "enum": [
+                                  "FORMING",
+                                  "READY",
+                                  "TRIGGERED",
+                                  "PASS"
+                                ]
+                              },
+                              "reason": {
+                                "type": "string"
+                              },
+                              "price": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Deterministic decision-core DecisionCase for one replay frame (not persisted)",
+        "tags": [
+          "private-validation-alpha"
+        ]
+      }
+    },
+    "/v1/alpha/decision-cases": {
+      "post": {
+        "description": "Idempotent per scenario/frame/bundle version: repeating the request returns the original case with 200. Only NO_LIVE_CAPITAL validation cases can be created.",
+        "operationId": "AlphaController_materialize",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "scenarioId",
+                  "frameIndex"
+                ],
+                "properties": {
+                  "scenarioId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "frameIndex": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Case already existed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "created",
+                        "decisionCase"
+                      ],
+                      "properties": {
+                        "created": {
+                          "type": "boolean",
+                          "description": "false when an identical case already existed."
+                        },
+                        "decisionCase": {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "decisionCoreCaseId",
+                            "scenarioId",
+                            "frameIndex",
+                            "bundle",
+                            "authority",
+                            "projection",
+                            "events",
+                            "createdAt",
+                            "updatedAt",
+                            "consistentWithDecisionCore"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "decisionCoreCaseId": {
+                              "type": "string"
+                            },
+                            "scenarioId": {
+                              "type": "string"
+                            },
+                            "frameIndex": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "bundle": {
+                              "type": "object",
+                              "required": [
+                                "id",
+                                "version",
+                                "strategy",
+                                "instrument",
+                                "market",
+                                "horizon",
+                                "evidenceStatus"
+                              ],
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "version": {
+                                  "type": "string"
+                                },
+                                "strategy": {
+                                  "type": "string"
+                                },
+                                "instrument": {
+                                  "type": "string"
+                                },
+                                "market": {
+                                  "type": "string"
+                                },
+                                "horizon": {
+                                  "type": "string"
+                                },
+                                "evidenceStatus": {
+                                  "type": "string",
+                                  "enum": [
+                                    "VALIDATION_ONLY"
+                                  ]
+                                }
+                              }
+                            },
+                            "authority": {
+                              "type": "string",
+                              "enum": [
+                                "NO_LIVE_CAPITAL"
+                              ]
+                            },
+                            "projection": {
+                              "type": "object",
+                              "required": [
+                                "state",
+                                "reason",
+                                "current"
+                              ],
+                              "properties": {
+                                "state": {
+                                  "type": "string",
+                                  "enum": [
+                                    "FORMING",
+                                    "READY",
+                                    "TRIGGERED",
+                                    "PASS"
+                                  ]
+                                },
+                                "reason": {
+                                  "type": "string"
+                                },
+                                "current": {
+                                  "type": "object",
+                                  "required": [
+                                    "timestamp",
+                                    "price",
+                                    "setupQualified",
+                                    "locationQualified",
+                                    "triggerQualified",
+                                    "currentConditionsValid",
+                                    "invalidated",
+                                    "note"
+                                  ],
+                                  "properties": {
+                                    "timestamp": {
+                                      "type": "string",
+                                      "format": "date-time"
+                                    },
+                                    "price": {
+                                      "type": "number"
+                                    },
+                                    "setupQualified": {
+                                      "type": "boolean"
+                                    },
+                                    "locationQualified": {
+                                      "type": "boolean"
+                                    },
+                                    "triggerQualified": {
+                                      "type": "boolean"
+                                    },
+                                    "currentConditionsValid": {
+                                      "type": "boolean"
+                                    },
+                                    "invalidated": {
+                                      "type": "boolean"
+                                    },
+                                    "note": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "events": {
+                              "type": "array",
+                              "description": "Append-only ledger ordered by sequence (ADR-0002).",
+                              "items": {
+                                "type": "object",
+                                "required": [
+                                  "sequence",
+                                  "eventType",
+                                  "occurredAt",
+                                  "recordedAt",
+                                  "state",
+                                  "reason",
+                                  "price"
+                                ],
+                                "properties": {
+                                  "sequence": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "eventType": {
+                                    "type": "string",
+                                    "enum": [
+                                      "REPLAY_STATE_CLASSIFIED"
+                                    ]
+                                  },
+                                  "occurredAt": {
+                                    "type": "string",
+                                    "format": "date-time"
+                                  },
+                                  "recordedAt": {
+                                    "type": "string",
+                                    "format": "date-time"
+                                  },
+                                  "state": {
+                                    "type": "string",
+                                    "enum": [
+                                      "FORMING",
+                                      "READY",
+                                      "TRIGGERED",
+                                      "PASS"
+                                    ]
+                                  },
+                                  "reason": {
+                                    "type": "string"
+                                  },
+                                  "price": {
+                                    "type": "number"
+                                  }
+                                }
+                              }
+                            },
+                            "createdAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "updatedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "consistentWithDecisionCore": {
+                              "type": "boolean",
+                              "description": "Whether re-running decision-core reproduces the stored projection and ledger."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Case created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "created",
+                        "decisionCase"
+                      ],
+                      "properties": {
+                        "created": {
+                          "type": "boolean",
+                          "description": "false when an identical case already existed."
+                        },
+                        "decisionCase": {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "decisionCoreCaseId",
+                            "scenarioId",
+                            "frameIndex",
+                            "bundle",
+                            "authority",
+                            "projection",
+                            "events",
+                            "createdAt",
+                            "updatedAt",
+                            "consistentWithDecisionCore"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "decisionCoreCaseId": {
+                              "type": "string"
+                            },
+                            "scenarioId": {
+                              "type": "string"
+                            },
+                            "frameIndex": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "bundle": {
+                              "type": "object",
+                              "required": [
+                                "id",
+                                "version",
+                                "strategy",
+                                "instrument",
+                                "market",
+                                "horizon",
+                                "evidenceStatus"
+                              ],
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "version": {
+                                  "type": "string"
+                                },
+                                "strategy": {
+                                  "type": "string"
+                                },
+                                "instrument": {
+                                  "type": "string"
+                                },
+                                "market": {
+                                  "type": "string"
+                                },
+                                "horizon": {
+                                  "type": "string"
+                                },
+                                "evidenceStatus": {
+                                  "type": "string",
+                                  "enum": [
+                                    "VALIDATION_ONLY"
+                                  ]
+                                }
+                              }
+                            },
+                            "authority": {
+                              "type": "string",
+                              "enum": [
+                                "NO_LIVE_CAPITAL"
+                              ]
+                            },
+                            "projection": {
+                              "type": "object",
+                              "required": [
+                                "state",
+                                "reason",
+                                "current"
+                              ],
+                              "properties": {
+                                "state": {
+                                  "type": "string",
+                                  "enum": [
+                                    "FORMING",
+                                    "READY",
+                                    "TRIGGERED",
+                                    "PASS"
+                                  ]
+                                },
+                                "reason": {
+                                  "type": "string"
+                                },
+                                "current": {
+                                  "type": "object",
+                                  "required": [
+                                    "timestamp",
+                                    "price",
+                                    "setupQualified",
+                                    "locationQualified",
+                                    "triggerQualified",
+                                    "currentConditionsValid",
+                                    "invalidated",
+                                    "note"
+                                  ],
+                                  "properties": {
+                                    "timestamp": {
+                                      "type": "string",
+                                      "format": "date-time"
+                                    },
+                                    "price": {
+                                      "type": "number"
+                                    },
+                                    "setupQualified": {
+                                      "type": "boolean"
+                                    },
+                                    "locationQualified": {
+                                      "type": "boolean"
+                                    },
+                                    "triggerQualified": {
+                                      "type": "boolean"
+                                    },
+                                    "currentConditionsValid": {
+                                      "type": "boolean"
+                                    },
+                                    "invalidated": {
+                                      "type": "boolean"
+                                    },
+                                    "note": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "events": {
+                              "type": "array",
+                              "description": "Append-only ledger ordered by sequence (ADR-0002).",
+                              "items": {
+                                "type": "object",
+                                "required": [
+                                  "sequence",
+                                  "eventType",
+                                  "occurredAt",
+                                  "recordedAt",
+                                  "state",
+                                  "reason",
+                                  "price"
+                                ],
+                                "properties": {
+                                  "sequence": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "eventType": {
+                                    "type": "string",
+                                    "enum": [
+                                      "REPLAY_STATE_CLASSIFIED"
+                                    ]
+                                  },
+                                  "occurredAt": {
+                                    "type": "string",
+                                    "format": "date-time"
+                                  },
+                                  "recordedAt": {
+                                    "type": "string",
+                                    "format": "date-time"
+                                  },
+                                  "state": {
+                                    "type": "string",
+                                    "enum": [
+                                      "FORMING",
+                                      "READY",
+                                      "TRIGGERED",
+                                      "PASS"
+                                    ]
+                                  },
+                                  "reason": {
+                                    "type": "string"
+                                  },
+                                  "price": {
+                                    "type": "number"
+                                  }
+                                }
+                              }
+                            },
+                            "createdAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "updatedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "consistentWithDecisionCore": {
+                              "type": "boolean",
+                              "description": "Whether re-running decision-core reproduces the stored projection and ledger."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Persist a validation Decision Case for a known scenario frame",
+        "tags": [
+          "private-validation-alpha"
+        ]
+      }
+    },
+    "/v1/alpha/decision-cases/{caseId}": {
+      "get": {
+        "operationId": "AlphaController_getDecisionCase",
+        "parameters": [
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      }
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "decisionCoreCaseId",
+                        "scenarioId",
+                        "frameIndex",
+                        "bundle",
+                        "authority",
+                        "projection",
+                        "events",
+                        "createdAt",
+                        "updatedAt",
+                        "consistentWithDecisionCore"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "decisionCoreCaseId": {
+                          "type": "string"
+                        },
+                        "scenarioId": {
+                          "type": "string"
+                        },
+                        "frameIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "bundle": {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "version",
+                            "strategy",
+                            "instrument",
+                            "market",
+                            "horizon",
+                            "evidenceStatus"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "version": {
+                              "type": "string"
+                            },
+                            "strategy": {
+                              "type": "string"
+                            },
+                            "instrument": {
+                              "type": "string"
+                            },
+                            "market": {
+                              "type": "string"
+                            },
+                            "horizon": {
+                              "type": "string"
+                            },
+                            "evidenceStatus": {
+                              "type": "string",
+                              "enum": [
+                                "VALIDATION_ONLY"
+                              ]
+                            }
+                          }
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        },
+                        "projection": {
+                          "type": "object",
+                          "required": [
+                            "state",
+                            "reason",
+                            "current"
+                          ],
+                          "properties": {
+                            "state": {
+                              "type": "string",
+                              "enum": [
+                                "FORMING",
+                                "READY",
+                                "TRIGGERED",
+                                "PASS"
+                              ]
+                            },
+                            "reason": {
+                              "type": "string"
+                            },
+                            "current": {
+                              "type": "object",
+                              "required": [
+                                "timestamp",
+                                "price",
+                                "setupQualified",
+                                "locationQualified",
+                                "triggerQualified",
+                                "currentConditionsValid",
+                                "invalidated",
+                                "note"
+                              ],
+                              "properties": {
+                                "timestamp": {
+                                  "type": "string",
+                                  "format": "date-time"
+                                },
+                                "price": {
+                                  "type": "number"
+                                },
+                                "setupQualified": {
+                                  "type": "boolean"
+                                },
+                                "locationQualified": {
+                                  "type": "boolean"
+                                },
+                                "triggerQualified": {
+                                  "type": "boolean"
+                                },
+                                "currentConditionsValid": {
+                                  "type": "boolean"
+                                },
+                                "invalidated": {
+                                  "type": "boolean"
+                                },
+                                "note": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "events": {
+                          "type": "array",
+                          "description": "Append-only ledger ordered by sequence (ADR-0002).",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "sequence",
+                              "eventType",
+                              "occurredAt",
+                              "recordedAt",
+                              "state",
+                              "reason",
+                              "price"
+                            ],
+                            "properties": {
+                              "sequence": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "eventType": {
+                                "type": "string",
+                                "enum": [
+                                  "REPLAY_STATE_CLASSIFIED"
+                                ]
+                              },
+                              "occurredAt": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "recordedAt": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "state": {
+                                "type": "string",
+                                "enum": [
+                                  "FORMING",
+                                  "READY",
+                                  "TRIGGERED",
+                                  "PASS"
+                                ]
+                              },
+                              "reason": {
+                                "type": "string"
+                              },
+                              "price": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "consistentWithDecisionCore": {
+                          "type": "boolean",
+                          "description": "Whether re-running decision-core reproduces the stored projection and ledger."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Reconstruct a persisted Decision Case with its append-only event history",
+        "tags": [
+          "private-validation-alpha"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Zugrio API — private validation alpha",
+    "description": "Validation-only control plane. Every response carries NO_LIVE_CAPITAL / VALIDATION_ONLY metadata. No live market data, broker connection or trade execution exists behind this API.",
+    "version": "0.1.0-alpha.1",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [
+    {
+      "url": "https://api.zugrio.xyz"
+    }
+  ],
+  "components": {
+    "schemas": {}
+  }
+}

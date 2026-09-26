@@ -1,0 +1,81 @@
+// Zugrio private-validation-alpha persistence.
+//
+// ADR-0002: decision events are append-only; the case projection may update; outcome
+// must not rewrite original reasoning. Append-only and identity immutability are
+// enforced in PostgreSQL itself (see prisma/migrations/*_decision_case_ledger), not
+// only in application code.
+//
+// Deliberately absent: accounts, orders, positions, balances, sizing or any other
+// capital semantics. Gate 4 capital authority is not authorized.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// The only authority value the alpha schema can store.
+enum CapitalAuthority {
+  NO_LIVE_CAPITAL
+}
+
+enum OpportunityState {
+  FORMING
+  READY
+  TRIGGERED
+  PASS
+}
+
+enum DecisionEventType {
+  REPLAY_STATE_CLASSIFIED
+}
+
+model DecisionCase {
+  id                 String           @id @default(uuid()) @db.Uuid
+  /// decision-core identity (`scenarioId:frameTimestamp`).
+  decisionCoreCaseId String           @map("decision_core_case_id")
+  scenarioId         String           @map("scenario_id")
+  frameIndex         Int              @map("frame_index")
+  bundleId           String           @map("bundle_id")
+  bundleVersion      String           @map("bundle_version")
+  /// Immutable copy of the trade bundle the case was classified against.
+  bundle             Json
+  authority          CapitalAuthority @default(NO_LIVE_CAPITAL)
+  releaseChannel     String           @map("release_channel")
+
+  // Read-optimized projection (may be updated; the ledger may not).
+  projectionState    OpportunityState @map("projection_state")
+  projectionReason   String           @map("projection_reason")
+  projectionSnapshot Json             @map("projection_snapshot")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  events DecisionEvent[]
+
+  @@unique([scenarioId, frameIndex, bundleId, bundleVersion], map: "decision_case_scenario_frame_bundle_key")
+  @@map("decision_case")
+}
+
+model DecisionEvent {
+  id         BigInt            @id @default(autoincrement())
+  caseId     String            @map("case_id") @db.Uuid
+  sequence   Int
+  eventType  DecisionEventType @map("event_type")
+  /// Replay frame timestamp the classification applies to.
+  occurredAt DateTime          @map("occurred_at") @db.Timestamptz(3)
+  recordedAt DateTime          @default(now()) @map("recorded_at") @db.Timestamptz(3)
+  state      OpportunityState
+  reason     String
+  price      Decimal           @db.Decimal(18, 8)
+
+  decisionCase DecisionCase @relation(fields: [caseId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([caseId, sequence], map: "decision_event_case_sequence_key")
+  @@map("decision_event")
+}
