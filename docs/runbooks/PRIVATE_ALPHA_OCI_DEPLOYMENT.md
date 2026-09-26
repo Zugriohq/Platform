@@ -89,17 +89,28 @@ docker compose logs --tail=50 api                 # JSON logs
 The API must not be reachable on the VM's public IP: `curl -m 5 http://<vm-public-ip>:3000/health`
 from outside must fail.
 
-## 6. Cloudflare Tunnel startup
+## 6. Cloudflare Tunnel startup and public activation
 
-Create the tunnel and `api.zugrio.xyz` route as described in
-`infra/cloudflare/README.md` (disconnected until a connector runs). Then:
+`api.zugrio.xyz` is published **only after** the origin is proven healthy. Full commands
+are in `infra/cloudflare/README.md`:
 
-```bash
-nano .env                                          # set CLOUDFLARE_TUNNEL_TOKEN
-docker compose -f docker-compose.yml -f docker-compose.tunnel.yml up -d
-docker compose -f docker-compose.yml -f docker-compose.tunnel.yml logs --tail=50 cloudflared
-./smoke-test.sh https://api.zugrio.xyz
-```
+1. **Phase 1 (any time, before the VM):** create tunnel `zugrio-alpha-api` and its ingress
+   config through the API. **No DNS record.** Nothing public changes.
+2. **Phase 2 (this VM, after section 5 passes):** set `CLOUDFLARE_TUNNEL_TOKEN` in `.env`
+   (`nano .env`), then:
+
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.tunnel.yml up -d
+   docker compose -f docker-compose.yml -f docker-compose.tunnel.yml logs --tail=50 cloudflared
+   ```
+   Confirm the tunnel status is `healthy` with at least one connection (README, Phase 2).
+3. **Phase 3 (the only public change):** check that no `api` record exists, create the
+   proxied CNAME `api → <tunnel-id>.cfargotunnel.com`, then verify from outside the VM:
+
+   ```bash
+   ./smoke-test.sh https://api.zugrio.xyz
+   ```
+4. Only then build desktop releases with `VITE_ZUGRIO_API_BASE_URL=https://api.zugrio.xyz`.
 
 For all later commands, use both files, e.g. `alias dc='docker compose -f docker-compose.yml -f docker-compose.tunnel.yml'`.
 
