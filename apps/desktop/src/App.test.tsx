@@ -228,6 +228,20 @@ describe("App decision source", () => {
     )).toBe(true);
   });
 
+  it("renders the engine-owned trendline break from the cloud scene", async () => {
+    const api = cloudApi();
+    await renderApp(createAlphaApiClient({ baseUrl: API, fetch: api.fetchImpl }));
+    await waitFor(() => heading() !== undefined, "cloud decision rendered");
+
+    for (let step = 0; step < 19; step += 1) await click("NEXT");
+
+    expect(text()).toContain("TRENDLINE SUPPORT");
+    expect(text()).toContain("SUPPORT CLOSE BREAK");
+    expect(api.calls.some((call) =>
+      call.path === `/v1/alpha/scenarios/${firstScenario.id}/frames/19/chart-scene`
+    )).toBe(true);
+  });
+
   it("fails closed when the scenario list carries non-validation metadata", async () => {
     const api = cloudApi((path) =>
       path === "/v1/alpha/scenarios"
