@@ -2324,3 +2324,45 @@ footer>div a{color:#78838d}
     letter-spacing:-.045em;
   }
 }
+
+
+/* ── HEADLINE ZERO-LAYOUT-SHIFT ───────────────────────────────────────────
+   Rolling copy is visually animated but fully removed from document flow.
+   ───────────────────────────────────────────────────────────────────────── */
+.hero-headline{
+  height:1.98em;
+  min-height:1.98em;
+}
+.hero-headline-window{
+  position:relative;
+  width:100%;
+  height:1.98em;
+  min-height:1.98em;
+  overflow:hidden;
+  padding:0;
+}
+.hero-headline-frame{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:.06em;
+}
+
+@media(max-width:720px){
+  .hero-headline,
+  .hero-headline-window{
+    height:2.06em;
+    min-height:2.06em;
+  }
+  .hero-headline-frame{gap:.08em}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .hero-headline-window{overflow:hidden}
+}
