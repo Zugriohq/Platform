@@ -36,6 +36,7 @@ const measurementDefinition: ResearchRegimeMeasurementDefinition = {
   definitionId: "regime-measurements:fixture:v1",
   lookbackBars: 3,
   baselineBars: 2,
+  maxLatestBarAgeMs: 60_000,
 };
 
 const classificationDefinition: ResearchRegimeClassificationDefinition = {
@@ -133,6 +134,17 @@ describe("canonical regime research evidence", () => {
     }
   });
 
+  it("does not let a later request time renew an old bounded window", () => {
+    const result = computeRegimeMeasurements({
+      timeframe:"M5",
+      evaluatedAt:"2026-09-24T09:30:00Z",
+      bars:expansionBars,
+      definition:measurementDefinition,
+    });
+    expect(result.status).toBe("DATA_UNAVAILABLE");
+    expect(result.reasons).toContain("LATEST_BAR_TOO_OLD");
+  });
+
   it("classifies only through profile-owned threshold predicates", () => {
     const measurements = computeRegimeMeasurements({
       timeframe:"M5",
@@ -183,6 +195,36 @@ describe("canonical regime research evidence", () => {
     expect(classification.status).toBe("UNCERTAIN");
     expect(classification.regime).toBeNull();
     expect(classification.reasons).toContain("AMBIGUOUS_REGIME_RULE_MATCH");
+  });
+
+  it("changes classification identity when threshold contents change even if a caller forgets to bump the profile version", () => {
+    const measurements = computeRegimeMeasurements({
+      timeframe:"M5",
+      evaluatedAt:expansionBars[4].knownAt,
+      bars:expansionBars,
+      definition:measurementDefinition,
+    });
+    const first = classifyCanonicalRegime({
+      assessment:measurements,
+      definition:classificationDefinition,
+    });
+    const changedThreshold = classifyCanonicalRegime({
+      assessment:measurements,
+      definition:{
+        ...classificationDefinition,
+        rules:[{
+          ...classificationDefinition.rules[0]!,
+          predicates:[
+            {
+              ...classificationDefinition.rules[0]!.predicates[0]!,
+              threshold:0.81,
+            },
+            classificationDefinition.rules[0]!.predicates[1]!,
+          ],
+        }, classificationDefinition.rules[1]!],
+      },
+    });
+    expect(first.classificationId).not.toBe(changedThreshold.classificationId);
   });
 
   it("changes classification identity when the versioned profile changes", () => {

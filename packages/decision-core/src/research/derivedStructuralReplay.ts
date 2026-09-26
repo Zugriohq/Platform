@@ -176,6 +176,7 @@ const regimeMeasurementDefinition: ResearchRegimeMeasurementDefinition = {
   definitionId: "derived-alpha:regime-measurements:v1",
   lookbackBars: 3,
   baselineBars: 2,
+  maxLatestBarAgeMs: 60_000,
 };
 
 const regimeClassificationDefinition: ResearchRegimeClassificationDefinition = {
