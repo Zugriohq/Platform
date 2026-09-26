@@ -117,6 +117,19 @@ describe("research trendline facts",()=>{
     expect(trendlinePriceAt(line,"2026-09-24T08:30:00Z")).toBeCloseTo(1.1030,8);
   });
 
+  it("enforces minimum separation across both gaps in the three-anchor sequence",()=>{
+    const tooClose=[
+      supportPivots[0],
+      supportPivots[1],
+      pivot("low-too-close","SWING_LOW",1.1012,"2026-09-24T08:11:00Z","2026-09-24T08:16:01Z"),
+    ];
+    expect(deriveConfirmedTrendlines({
+      evaluatedAt:"2026-09-24T08:20:01Z",
+      pivots:tooClose,
+      definition:derivation,
+    })).toEqual([]);
+  });
+
   it("rejects morphology/advisory swing facts as trendline anchors",()=>{
     const morphology=pivot(
       "low-morphology",
@@ -211,6 +224,20 @@ describe("research trendline facts",()=>{
       "2026-09-24T08:30:01Z",
       1.1024,1.1030,1.1018,1.1020,
     ),interaction).status).toBe("NO_INTERACTION");
+  });
+
+  it("fails closed when interaction derivation is evaluated before the line itself is knowable",()=>{
+    const [line]=deriveConfirmedTrendlines({
+      evaluatedAt:"2026-09-24T08:25:01Z",
+      pivots:supportPivots,
+      definition:derivation,
+    });
+    expect(deriveTrendlineInteractions({
+      evaluatedAt:"2026-09-24T08:20:01Z",
+      trendline:line!,
+      bars:[],
+      definition:interaction,
+    })).toEqual([]);
   });
 
   it("terminates chronological interaction derivation after the first close-break",()=>{
