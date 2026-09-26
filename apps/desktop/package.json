@@ -8,9 +8,11 @@
     "build:renderer": "vite build",
     "build:electron": "tsc -p tsconfig.electron.json",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.electron.json --noEmit",
-    "dist:win": "pnpm build && electron-builder --win portable"
+    "dist:win": "pnpm build && electron-builder --win portable",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@zugrio/alpha-api-contract": "workspace:*",
     "@zugrio/decision-core": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
