@@ -54,13 +54,30 @@ export function assessRequiredTimeframes(
 
   const reasons: { timeframe: string; code: TimeframeEvidenceReasonCode }[] = [];
   const usedEvidenceIds: string[] = [];
+  const relevantEvidence = evidence.filter(point => required.includes(point.timeframe));
+  const seenEvidenceIds = new Set<string>();
+
+  for (const point of relevantEvidence) {
+    if (!point.evidenceId) throw new Error("timeframe evidenceId must be non-empty");
+    if (seenEvidenceIds.has(point.evidenceId)) {
+      throw new Error(`duplicate timeframe evidenceId: ${point.evidenceId}`);
+    }
+    seenEvidenceIds.add(point.evidenceId);
+    const sourceClosedAt = epoch(point.sourceClosedAt, "sourceClosedAt");
+    const knownAt = epoch(point.knownAt, "knownAt");
+    if (knownAt < sourceClosedAt) {
+      throw new Error(`timeframe evidence cannot be known before source close: ${point.evidenceId}`);
+    }
+  }
 
   for (const timeframe of required) {
-    const available = evidence
+    const available = relevantEvidence
       .filter((point) => point.timeframe === timeframe && epoch(point.knownAt, "knownAt") <= evaluatedAt)
       .sort((a, b) => {
         const byKnownAt = epoch(a.knownAt, "knownAt") - epoch(b.knownAt, "knownAt");
         if (byKnownAt !== 0) return byKnownAt;
+        const bySourceClose = epoch(a.sourceClosedAt, "sourceClosedAt") - epoch(b.sourceClosedAt, "sourceClosedAt");
+        if (bySourceClose !== 0) return bySourceClose;
         return a.evidenceId.localeCompare(b.evidenceId);
       })
       .at(-1);

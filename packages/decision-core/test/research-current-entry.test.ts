@@ -141,4 +141,30 @@ describe("research current-entry recheck", () => {
       sourceBarClosedAt: "2026-09-24T08:20:00Z",
     }, input())).toThrow(/sourceBarClosedAt cannot follow confirmedAt/);
   });
+  it("rejects internally inconsistent FRESH/current evidence", () => {
+    expect(() => recheckCurrentEntry(event, input({
+      quote: {
+        status: "FRESH",
+        quoteAt: null,
+        evidenceId: "fresh-without-time",
+        knownAt: "2026-09-24T08:20:00Z",
+      },
+    }))).toThrow(/FRESH quote requires quoteAt/);
+
+    expect(() => recheckCurrentEntry(event, input({
+      geometryCurrent: {
+        ...predicate("geometry"),
+        knownAt: "2026-09-24T08:16:59Z",
+      },
+    }))).toThrow(/recheck evidence predates the entry event/);
+
+    expect(() => recheckCurrentEntry(event, input({
+      quote: {
+        status: "FRESH",
+        quoteAt: "2026-09-24T08:16:59Z",
+        evidenceId: "pre-entry-quote",
+        knownAt: "2026-09-24T08:20:00Z",
+      },
+    }))).toThrow(/FRESH quote cannot predate the entry event/);
+  });
 });

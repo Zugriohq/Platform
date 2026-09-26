@@ -92,4 +92,60 @@ describe("research timeframe evidence gate", () => {
     expect(result.status).toBe("AVAILABLE");
     expect(result.requiredTimeframes).toEqual(["M5", "M15"]);
   });
+  it("rejects relevant timeframe evidence known before its source bar closed", () => {
+    expect(() => assessRequiredTimeframes(
+      "2026-09-24T08:20:00Z",
+      ["M5"],
+      [{
+        ...point("M5", "FRESH_COMPLETE", "2026-09-24T08:19:59Z", "m5-impossible"),
+        sourceClosedAt:"2026-09-24T08:20:00Z",
+      }],
+    )).toThrow(/cannot be known before source close/);
+  });
+
+  it("does not let malformed undeclared timeframe evidence become a universal gate", () => {
+    const result = assessRequiredTimeframes(
+      "2026-09-24T08:20:00Z",
+      ["M5"],
+      [
+        point("M5", "FRESH_COMPLETE"),
+        {
+          ...point("MN", "FRESH_COMPLETE", "2026-09-24T08:00:00Z", "monthly-impossible"),
+          sourceClosedAt:"2026-09-24T09:00:00Z",
+        },
+      ],
+    );
+    expect(result.status).toBe("AVAILABLE");
+    expect(result.usedEvidenceIds).toEqual(["M5:FRESH_COMPLETE"]);
+  });
+
+  it("rejects duplicate relevant evidence identities", () => {
+    expect(() => assessRequiredTimeframes(
+      "2026-09-24T08:20:00Z",
+      ["M5"],
+      [
+        point("M5", "FRESH_COMPLETE", "2026-09-24T08:19:00Z", "duplicate"),
+        point("M5", "STALE", "2026-09-24T08:20:00Z", "duplicate"),
+      ],
+    )).toThrow(/duplicate timeframe evidenceId/);
+  });
+
+  it("uses source-close time to break identical knownAt ties", () => {
+    const result = assessRequiredTimeframes(
+      "2026-09-24T08:20:00Z",
+      ["M5"],
+      [
+        {
+          ...point("M5", "STALE", "2026-09-24T08:20:00Z", "older-source"),
+          sourceClosedAt:"2026-09-24T08:15:00Z",
+        },
+        {
+          ...point("M5", "FRESH_COMPLETE", "2026-09-24T08:20:00Z", "newer-source"),
+          sourceClosedAt:"2026-09-24T08:20:00Z",
+        },
+      ],
+    );
+    expect(result.status).toBe("AVAILABLE");
+    expect(result.usedEvidenceIds).toEqual(["newer-source"]);
+  });
 });

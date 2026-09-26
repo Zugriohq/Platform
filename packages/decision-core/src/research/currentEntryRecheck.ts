@@ -85,6 +85,9 @@ export function recheckCurrentEntry(
   validateKnownAt(input.targetRunwayAvailable, evaluatedAt);
   validateKnownAt(input.continuityOk, evaluatedAt);
 
+  if (input.quote.status === "FRESH" && input.quote.quoteAt === null) {
+    throw new Error("FRESH quote requires quoteAt");
+  }
   if (input.quote.quoteAt && epoch(input.quote.quoteAt, "quoteAt") > evaluatedAt) {
     throw new Error("quoteAt cannot be in the future relative to evaluatedAt");
   }
@@ -110,6 +113,27 @@ export function recheckCurrentEntry(
   }
   if (confirmedAt > evaluatedAt) {
     throw new Error("entryEvent.confirmedAt cannot be in the future relative to evaluatedAt");
+  }
+
+  const recheckEvidence = [
+    input.quote,
+    input.entryFreshness,
+    input.geometryCurrent,
+    input.costsWithinBudget,
+    input.targetRunwayAvailable,
+    input.continuityOk,
+  ];
+  for (const evidence of recheckEvidence) {
+    if (epoch(evidence.knownAt, "recheck evidence knownAt") < confirmedAt) {
+      throw new Error(`current-entry recheck evidence predates the entry event: ${evidence.evidenceId}`);
+    }
+  }
+  if (
+    input.quote.status === "FRESH" &&
+    input.quote.quoteAt !== null &&
+    epoch(input.quote.quoteAt, "quoteAt") < confirmedAt
+  ) {
+    throw new Error("FRESH quote cannot predate the entry event");
   }
 
   const reasons: CurrentEntryReasonCode[] = [];

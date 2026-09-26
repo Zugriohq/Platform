@@ -152,6 +152,19 @@ describe("research market map", () => {
     });
     expect(equal?.concept).toBe("EQUAL_HIGHS");
     expect(equal?.geometry).toEqual({type:"ZONE",low:1.1,high:1.1003});
+
+    expect(identifyEqualLevelPair(first, first, {
+      definitionId:"eqh:no-self-pair",
+      tolerance:0.0004,
+    })).toBeNull();
+
+    expect(identifyEqualLevelPair(first, {
+      ...second,
+      geometry:{...second.geometry, time:first.geometry.type === "POINT" ? first.geometry.time : "2026-09-24T07:00:00Z"},
+    }, {
+      definitionId:"eqh:no-same-pivot-time",
+      tolerance:0.0004,
+    })).toBeNull();
   });
 
   it("detects a sweep as wick penetration plus close reclaim, without claiming motive", () => {
@@ -172,6 +185,26 @@ describe("research market map", () => {
     expect(sweep?.concept).toBe("LIQUIDITY_SWEEP");
     expect(sweep?.label).toContain("SWEEP");
     expect(sweep?.authorityEffect).toBe("NONE");
+
+    const hindsightLevel = { ...level, knownAt:"2026-09-24T10:00:00Z" };
+    expect(detectLiquiditySweep(hindsightLevel, {
+      ...bar("too-early-sweep",1.1010,1.0990,20),
+      close:1.1001,
+    }, {
+      definitionId:"sweep:no-hindsight:v1",
+      penetrationTolerance:0.0001,
+    })).toBeNull();
+
+    expect(detectLiquiditySweep({
+      ...level,
+      sourceEvidenceIds:["evidence:sweep"],
+    }, {
+      ...bar("sweep",1.1010,1.0990,20),
+      close:1.1001,
+    }, {
+      definitionId:"sweep:no-self-evidence:v1",
+      penetrationTolerance:0.0001,
+    })).toBeNull();
   });
 
   it("projects engine facts into semantic chart primitives without letting the UI own analysis", () => {
@@ -227,5 +260,24 @@ describe("research market map", () => {
       facts:[future],
       strategyLens:lens,
     })).toThrow(/future market-map fact/);
+  });
+  it("rejects market-map point/path geometry that occurs after its claimed knownAt", () => {
+    const futureGeometry: ResearchMarketStructureFact = {
+      factId:"future-geometry", concept:"SWING_HIGH", maturity:"DETERMINISTIC_FACT", scale:"EXTERNAL",
+      timeframe:"M5", side:"SELL", knownAt:"2026-09-24T09:00:00Z",
+      definitionId:"pivot:v1", sourceEvidenceIds:["x"],
+      geometry:{type:"POINT",time:"2026-09-24T09:05:00Z",price:1.2},
+      label:"IMPOSSIBLE", authority:"RESEARCH_ONLY", authorityEffect:"NONE",
+    };
+
+    expect(() => buildResearchMarketMap({
+      mapId:"map-impossible-geometry",
+      instrument:"EURUSD",
+      timeframe:"M5",
+      evaluatedAt:"2026-09-24T09:10:00Z",
+      regime:null,
+      facts:[futureGeometry],
+      strategyLens:lens,
+    })).toThrow(/geometry cannot occur after fact knownAt/);
   });
 });

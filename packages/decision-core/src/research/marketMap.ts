@@ -487,6 +487,11 @@ export function identifyEqualLevelPair(
   if (first.scale !== second.scale || first.timeframe !== second.timeframe) return null;
   if (first.concept !== "SWING_HIGH" && first.concept !== "SWING_LOW") return null;
   if (first.geometry.type !== "POINT" || second.geometry.type !== "POINT") return null;
+  if (first.factId === second.factId) return null;
+
+  const firstTime = epoch(first.geometry.time, "first.geometry.time");
+  const secondTime = epoch(second.geometry.time, "second.geometry.time");
+  if (firstTime === secondTime) return null;
 
   const distance = Math.abs(first.geometry.price - second.geometry.price);
   if (distance > definition.tolerance) return null;
@@ -535,6 +540,11 @@ export function detectLiquiditySweep(
   if (bar.dataStatus !== "FRESH_COMPLETE") return null;
   if (level.geometry.type !== "POINT" && level.geometry.type !== "ZONE") return null;
 
+  const levelKnownAt = epoch(level.knownAt, "level.knownAt");
+  const barClosedAt = epoch(bar.sourceClosedAt, "bar.sourceClosedAt");
+  if (barClosedAt <= levelKnownAt) return null;
+  if (level.sourceEvidenceIds.includes(bar.evidenceId)) return null;
+
   const levelHigh = level.geometry.type === "POINT" ? level.geometry.price : level.geometry.high;
   const levelLow = level.geometry.type === "POINT" ? level.geometry.price : level.geometry.low;
 
@@ -582,8 +592,18 @@ export function buildResearchMarketMap(input: {
 }): ResearchMarketMap {
   epoch(input.evaluatedAt, "evaluatedAt");
   for (const fact of input.facts) {
-    if (epoch(fact.knownAt, "fact.knownAt") > epoch(input.evaluatedAt, "evaluatedAt")) {
+    const factKnownAt = epoch(fact.knownAt, "fact.knownAt");
+    if (factKnownAt > epoch(input.evaluatedAt, "evaluatedAt")) {
       throw new Error(`future market-map fact is not knowable yet: ${fact.factId}`);
+    }
+    if (fact.geometry.type === "POINT" && epoch(fact.geometry.time, "fact.geometry.time") > factKnownAt) {
+      throw new Error(`market-map point geometry cannot occur after fact knownAt: ${fact.factId}`);
+    }
+    if (
+      fact.geometry.type === "PATH" &&
+      fact.geometry.points.some(point => epoch(point.time, "fact.geometry.points.time") > factKnownAt)
+    ) {
+      throw new Error(`market-map path geometry cannot occur after fact knownAt: ${fact.factId}`);
     }
   }
   if (input.regime && epoch(input.regime.knownAt, "regime.knownAt") > epoch(input.evaluatedAt, "evaluatedAt")) {
