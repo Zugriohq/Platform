@@ -2144,6 +2144,7 @@
                         "regimeEvidenceId",
                         "regimeDefinitionId",
                         "regimeKnownAt",
+                        "regimeContext",
                         "routeContext",
                         "primitives",
                         "authority",
@@ -2246,6 +2247,51 @@
                                 "UNVALIDATED_CANDIDATE_SET"
                               ],
                               "nullable": true
+                            }
+                          }
+                        },
+                        "regimeContext": {
+                          "type": "object",
+                          "required": [
+                            "status",
+                            "measurementId",
+                            "profileId",
+                            "profileVersion",
+                            "matchingRuleIds",
+                            "reasons"
+                          ],
+                          "properties": {
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "CLASSIFIED",
+                                "UNCERTAIN",
+                                "UNAVAILABLE"
+                              ]
+                            },
+                            "measurementId": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "profileId": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "profileVersion": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "matchingRuleIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "reasons": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
                             }
                           }
                         }
