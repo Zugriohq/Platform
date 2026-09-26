@@ -96,6 +96,33 @@ describe("createAlphaApiClient", () => {
     expect(result.data.primitives.every(item => item.authorityEffect === "NONE")).toBe(true);
   });
 
+  it("accepts engine-owned trendline paths and later break facts without fitting lines locally", async () => {
+    const scenario = alphaScenarios.find(item => item.id === DERIVED_STRUCTURAL_SCENARIO_ID)!;
+    const scene = JSON.parse(JSON.stringify(buildReplayChartScene(scenario, 19)));
+    expect(scene.primitives.some((item: { concept: string; geometry: { type: string } }) =>
+      item.concept === "TRENDLINE_SUPPORT" && item.geometry.type === "PATH"
+    )).toBe(true);
+    expect(scene.primitives.some((item: { concept: string; label: string }) =>
+      item.concept === "TRENDLINE_BREAK" && item.label === "SUPPORT CLOSE BREAK"
+    )).toBe(true);
+
+    const { impl } = fakeFetch(() => json(200, { meta: ALPHA_RESPONSE_META, data: scene }));
+    const client = createAlphaApiClient({ baseUrl: "https://api.zugrio.xyz", fetch: impl });
+    const result = await client.getFrameChartScene(scenario.id, 19);
+
+    expect(result.status).toBe("ok");
+    if (result.status !== "ok") throw new Error("expected cloud chart scene");
+    expect(result.data.primitives.some(item =>
+      item.concept === "TRENDLINE_SUPPORT" &&
+      item.layer === "STRUCTURE" &&
+      item.geometry.type === "PATH"
+    )).toBe(true);
+    expect(result.data.primitives.some(item =>
+      item.concept === "TRENDLINE_BREAK" && item.layer === "STRUCTURE"
+    )).toBe(true);
+    expect(result.data.primitives.every(item => item.authorityEffect === "NONE")).toBe(true);
+  });
+
   it("rejects malformed chart primitives even when alpha metadata is valid", async () => {
     const scene = JSON.parse(JSON.stringify(buildReplayChartScene(staleEntryScenario, 4)));
     scene.primitives[0].authorityEffect = "ALLOW";
