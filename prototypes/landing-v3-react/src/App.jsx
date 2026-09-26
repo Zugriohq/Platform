@@ -107,7 +107,7 @@ const STORY = [
 
 const HERO_HEADLINES = [
   ["Don’t trade the signal.", "Trade what’s still true."],
-  ["The market changes.", "Your decision should keep up."],
+  ["The market changes.", "Your decision should too."],
 ];
 
 const PROBLEM_CHAIN = [
