@@ -38,7 +38,7 @@ function PriceField({ scenario, frame }: { scenario: ReplayScenario; frame: numb
       })}
     </svg>
     <div className="chart-watermark">REPLAY / NOT LIVE DATA</div>
-    <div className="chart-evidence">
+    <div className="chart-evidence" aria-label="Current replay evidence">
       <span className={current?.retestObserved ? "evidence-chip on" : "evidence-chip"}>RETEST</span>
       <span className={current?.triggerQualified ? "evidence-chip on" : "evidence-chip"}>TRIGGER</span>
       <span className={current?.currentConditionsValid ? "evidence-chip on" : "evidence-chip stale"}>RECHECK</span>
@@ -59,7 +59,9 @@ export function App() {
 
   return <main className="app-shell">
     <header className="topbar">
-      <div className="brand">ZUGRIO</div>
+      <div className="brand">
+        <img src="./brand/zugrio-wordmark-flat-white.svg" alt="Zugrio" />
+      </div>
       <div className="release-chip">PRIVATE VALIDATION / ALPHA</div>
       <div className="topbar-right">NO LIVE CAPITAL</div>
     </header>
