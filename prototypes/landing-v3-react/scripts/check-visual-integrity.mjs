@@ -62,6 +62,7 @@ requireText(
   "The mobile hero must retain the tested fluid type scale for 320–420px widths."
 );
 
+forbidText(app, "if (prefersReduced || !introComplete)", "Reduced-motion may remove the roll animation, but it must not freeze the headline content.");
 forbidText(css, "WHOLE-PAGE INTEGRATION PASS", "Do not restore the deprecated late integration override layer.");
 forbidText(css, "max-width:1380px", "A 1380px content rail would reintroduce section-edge drift.");
 forbidText(css, "max-width:1340px", "A 1340px content rail would reintroduce section-edge drift.");

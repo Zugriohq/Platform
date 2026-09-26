@@ -448,14 +448,14 @@ export default function App() {
   ], []);
 
   useEffect(() => {
-    if (prefersReduced || !introComplete) return undefined;
+    if (!introComplete) return undefined;
 
     const timer = window.setInterval(() => {
       setHeadlineIndex((current) => (current + 1) % HERO_HEADLINES.length);
-    }, 5200);
+    }, 4200);
 
     return () => window.clearInterval(timer);
-  }, [prefersReduced, introComplete]);
+  }, [introComplete]);
 
   return (
     <>
@@ -493,7 +493,6 @@ export default function App() {
 
             <motion.h1
               className="hero-headline"
-              aria-live="polite"
               aria-label={HERO_HEADLINES[headlineIndex].join(" ")}
               variants={{ hidden:{opacity:0,y:18,filter:"blur(7px)"},show:{opacity:1,y:0,filter:"blur(0px)"} }}
               transition={{ duration: .78, ease: [0.16,1,0.3,1] }}
