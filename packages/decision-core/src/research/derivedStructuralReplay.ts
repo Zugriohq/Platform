@@ -18,6 +18,12 @@ import {
   type ResearchFvgRevisitDefinition,
 } from "./imbalanceFacts.js";
 import {
+  deriveConfirmedTrendlines,
+  deriveTrendlineInteractions,
+  type ResearchTrendlineDerivationDefinition,
+  type ResearchTrendlineInteractionDefinition,
+} from "./trendlineFacts.js";
+import {
   projectMarketMapToChartScene,
   type EngineChartRegimeContext,
   type EngineChartRouteContext,
@@ -205,6 +211,127 @@ const bars: readonly ResearchStructureBar[] = [
     knownAt: "2026-09-24T08:40:01Z",
     dataStatus: "FRESH_COMPLETE",
   },
+  {
+    evidenceId: "ohlc-0840",
+    sourceBarId: "EURUSD:M5:0840",
+    open: 1.17558,
+    high: 1.17610,
+    low: 1.17540,
+    close: 1.17590,
+    sourceClosedAt: "2026-09-24T08:45:00Z",
+    knownAt: "2026-09-24T08:45:01Z",
+    dataStatus: "FRESH_COMPLETE",
+  },
+  {
+    evidenceId: "ohlc-0845",
+    sourceBarId: "EURUSD:M5:0845",
+    open: 1.17590,
+    high: 1.17630,
+    low: 1.17580,
+    close: 1.17615,
+    sourceClosedAt: "2026-09-24T08:50:00Z",
+    knownAt: "2026-09-24T08:50:01Z",
+    dataStatus: "FRESH_COMPLETE",
+  },
+  {
+    evidenceId: "ohlc-0850",
+    sourceBarId: "EURUSD:M5:0850",
+    open: 1.17615,
+    high: 1.17635,
+    low: 1.17590,
+    close: 1.17610,
+    sourceClosedAt: "2026-09-24T08:55:00Z",
+    knownAt: "2026-09-24T08:55:01Z",
+    dataStatus: "FRESH_COMPLETE",
+  },
+  {
+    evidenceId: "ohlc-0855",
+    sourceBarId: "EURUSD:M5:0855",
+    open: 1.17610,
+    high: 1.17625,
+    low: 1.17555,
+    close: 1.17590,
+    sourceClosedAt: "2026-09-24T09:00:00Z",
+    knownAt: "2026-09-24T09:00:01Z",
+    dataStatus: "FRESH_COMPLETE",
+  },
+  {
+    evidenceId: "ohlc-0900",
+    sourceBarId: "EURUSD:M5:0900",
+    open: 1.17590,
+    high: 1.17630,
+    low: 1.17590,
+    close: 1.17620,
+    sourceClosedAt: "2026-09-24T09:05:00Z",
+    knownAt: "2026-09-24T09:05:01Z",
+    dataStatus: "FRESH_COMPLETE",
+  },
+  {
+    evidenceId: "ohlc-0905",
+    sourceBarId: "EURUSD:M5:0905",
+    open: 1.17620,
+    high: 1.17645,
+    low: 1.17600,
+    close: 1.17630,
+    sourceClosedAt: "2026-09-24T09:10:00Z",
+    knownAt: "2026-09-24T09:10:01Z",
+    dataStatus: "FRESH_COMPLETE",
+  },
+  {
+    evidenceId: "ohlc-0910",
+    sourceBarId: "EURUSD:M5:0910",
+    open: 1.17630,
+    high: 1.17635,
+    low: 1.17570,
+    close: 1.17600,
+    sourceClosedAt: "2026-09-24T09:15:00Z",
+    knownAt: "2026-09-24T09:15:01Z",
+    dataStatus: "FRESH_COMPLETE",
+  },
+  {
+    evidenceId: "ohlc-0915",
+    sourceBarId: "EURUSD:M5:0915",
+    open: 1.17600,
+    high: 1.17640,
+    low: 1.17595,
+    close: 1.17630,
+    sourceClosedAt: "2026-09-24T09:20:00Z",
+    knownAt: "2026-09-24T09:20:01Z",
+    dataStatus: "FRESH_COMPLETE",
+  },
+  {
+    evidenceId: "ohlc-0920",
+    sourceBarId: "EURUSD:M5:0920",
+    open: 1.17630,
+    high: 1.17645,
+    low: 1.17578,
+    close: 1.17610,
+    sourceClosedAt: "2026-09-24T09:25:00Z",
+    knownAt: "2026-09-24T09:25:01Z",
+    dataStatus: "FRESH_COMPLETE",
+  },
+  {
+    evidenceId: "ohlc-0925",
+    sourceBarId: "EURUSD:M5:0925",
+    open: 1.17610,
+    high: 1.17630,
+    low: 1.17575,
+    close: 1.17588,
+    sourceClosedAt: "2026-09-24T09:30:00Z",
+    knownAt: "2026-09-24T09:30:01Z",
+    dataStatus: "FRESH_COMPLETE",
+  },
+  {
+    evidenceId: "ohlc-0930",
+    sourceBarId: "EURUSD:M5:0930",
+    open: 1.17588,
+    high: 1.17600,
+    low: 1.17560,
+    close: 1.17580,
+    sourceClosedAt: "2026-09-24T09:35:00Z",
+    knownAt: "2026-09-24T09:35:01Z",
+    dataStatus: "FRESH_COMPLETE",
+  },
 ] as const;
 
 const frames: readonly ReplayFrame[] = [
@@ -217,6 +344,17 @@ const frames: readonly ReplayFrame[] = [
   { evaluatedAt: "2026-09-24T08:30:01Z" },
   { evaluatedAt: "2026-09-24T08:35:01Z" },
   { evaluatedAt: "2026-09-24T08:40:01Z" },
+  { evaluatedAt: "2026-09-24T08:45:01Z" },
+  { evaluatedAt: "2026-09-24T08:50:01Z" },
+  { evaluatedAt: "2026-09-24T08:55:01Z" },
+  { evaluatedAt: "2026-09-24T09:00:01Z" },
+  { evaluatedAt: "2026-09-24T09:05:01Z" },
+  { evaluatedAt: "2026-09-24T09:10:01Z" },
+  { evaluatedAt: "2026-09-24T09:15:01Z" },
+  { evaluatedAt: "2026-09-24T09:20:01Z" },
+  { evaluatedAt: "2026-09-24T09:25:01Z" },
+  { evaluatedAt: "2026-09-24T09:30:01Z" },
+  { evaluatedAt: "2026-09-24T09:35:01Z" },
 ] as const;
 
 const breakDefinition: ResearchStructuralBreakDefinition = {
@@ -274,6 +412,22 @@ const fvgRevisitDefinition: ResearchFvgRevisitDefinition = {
   definitionId: "derived-alpha:fvg-revisit:v1",
   partialFillRule: "CLOSE_INSIDE_ZONE",
   fullFillRule: "WICK_REACH_FAR_BOUNDARY",
+};
+
+const trendlineDefinition: ResearchTrendlineDerivationDefinition = {
+  definitionId: "derived-alpha:trendline:three-anchor:v1",
+  pairing: "ADJACENT_SAME_SIDE_CONFIRMED_PIVOTS",
+  minimumAnchorSeparationMs: 10 * 60 * 1000,
+  anchorTolerance: 0.00002,
+  allowedScales: ["EXTERNAL"],
+};
+
+const trendlineInteractionDefinition: ResearchTrendlineInteractionDefinition = {
+  definitionId: "derived-alpha:trendline-interaction:v1",
+  touchTolerance: 0.00003,
+  penetrationBuffer: 0.00005,
+  closeBreakBuffer: 0.00005,
+  breakRule: "CLOSE_BEYOND",
 };
 
 const regimeMeasurementDefinition: ResearchRegimeMeasurementDefinition = {
@@ -409,6 +563,29 @@ function deriveLiquidityContextAt(
     definition: liquiditySweepDefinition,
   });
   return { equalLevels, sweeps };
+}
+
+function deriveTrendlineContextAt(
+  evaluatedAt: string,
+  pivots: readonly ResearchMarketStructureFact[],
+): {
+  trendlines: readonly ResearchMarketStructureFact[];
+  interactions: readonly ResearchMarketStructureFact[];
+} {
+  const trendlines = deriveConfirmedTrendlines({
+    evaluatedAt,
+    pivots,
+    definition: trendlineDefinition,
+  });
+  const interactions = trendlines.flatMap(trendline =>
+    deriveTrendlineInteractions({
+      evaluatedAt,
+      trendline,
+      bars: barsKnownBy(evaluatedAt),
+      definition: trendlineInteractionDefinition,
+    })
+  );
+  return { trendlines, interactions };
 }
 
 function deriveImbalanceContextAt(
@@ -603,6 +780,8 @@ export interface DerivedStructuralReplayFrame {
   readonly equalLiquidityFacts: readonly ResearchMarketStructureFact[];
   readonly liquiditySweepFacts: readonly ResearchMarketStructureFact[];
   readonly imbalanceFacts: readonly ResearchMarketStructureFact[];
+  readonly trendlineFacts: readonly ResearchMarketStructureFact[];
+  readonly trendlineInteractionFacts: readonly ResearchMarketStructureFact[];
   readonly marketFacts: readonly ResearchMarketStructureFact[];
   readonly scene: EngineChartScene;
 }
@@ -622,10 +801,13 @@ export function buildDerivedStructuralReplayFrame(
   const level = confirmedLevelAt(evaluatedAt);
   const liquidityContext = deriveLiquidityContextAt(evaluatedAt, pivots);
   const imbalanceFacts = deriveImbalanceContextAt(evaluatedAt);
+  const trendlineContext = deriveTrendlineContextAt(evaluatedAt, pivots);
   const facts: ResearchMarketStructureFact[] = [
     ...liquidityContext.equalLevels,
     ...liquidityContext.sweeps,
     ...imbalanceFacts,
+    ...trendlineContext.trendlines,
+    ...trendlineContext.interactions,
   ];
   if (level) facts.push(level);
 
@@ -689,6 +871,8 @@ export function buildDerivedStructuralReplayFrame(
     equalLiquidityFacts: liquidityContext.equalLevels,
     liquiditySweepFacts: liquidityContext.sweeps,
     imbalanceFacts,
+    trendlineFacts: trendlineContext.trendlines,
+    trendlineInteractionFacts: trendlineContext.interactions,
     marketFacts: map.facts,
     scene: projectMarketMapToChartScene(
       map,
@@ -780,11 +964,11 @@ export function createDerivedStructuralReplayScenario(
 ): ReplayScenario {
   return {
     id: DERIVED_STRUCTURAL_SCENARIO_ID,
-    version: "0.1.0-alpha.5",
+    version: "0.1.0-alpha.6",
     caseId: "case-alpha-eurusd-derived-001",
-    title: "Derived structure → liquidity → imbalance context from OHLC",
+    title: "Derived structure → liquidity → imbalance → trendline context from OHLC",
     description:
-      "A fabricated point-in-time validation replay whose structure, BOS/retest lifecycle, canonical regime, equal-liquidity, sweep/reclaim and FVG context are derived by the research engine from immutable OHLC evidence.",
+      "A fabricated point-in-time validation replay whose structure, BOS/retest lifecycle, canonical regime, liquidity, imbalance and three-anchor trendline interactions are derived by the research engine from immutable OHLC evidence.",
     bundle,
     evidence: buildGeneratedEvidence(),
     frames,
