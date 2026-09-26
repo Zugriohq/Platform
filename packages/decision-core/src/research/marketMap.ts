@@ -19,6 +19,9 @@ export type MarketStructureConcept =
   | "MSS"
   | "TRENDLINE_SUPPORT"
   | "TRENDLINE_RESISTANCE"
+  | "TRENDLINE_TOUCH"
+  | "TRENDLINE_PENETRATION"
+  | "TRENDLINE_BREAK"
   | "CHANNEL_SUPPORT"
   | "CHANNEL_RESISTANCE"
   | "LIQUIDITY_SWEEP"
@@ -378,6 +381,7 @@ export function buildTrendlineCandidateFromPivots(
   }
   if (first.concept !== second.concept) return null;
   if (first.concept !== "SWING_HIGH" && first.concept !== "SWING_LOW") return null;
+  if (first.maturity !== "DETERMINISTIC_FACT" || second.maturity !== "DETERMINISTIC_FACT") return null;
   if (first.scale !== second.scale || first.timeframe !== second.timeframe) return null;
   if (first.geometry.type !== "POINT" || second.geometry.type !== "POINT") return null;
 
@@ -424,6 +428,7 @@ export function confirmTrendlineWithPivot(
     throw new Error("anchorTolerance must be finite and >= 0");
   }
   if (confirmingPivot.geometry.type !== "POINT") return null;
+  if (confirmingPivot.maturity !== "DETERMINISTIC_FACT") return null;
   if (confirmingPivot.scale !== candidate.scale || confirmingPivot.timeframe !== candidate.timeframe) return null;
 
   const requiredConcept = candidate.side === "SUPPORT" ? "SWING_LOW" : "SWING_HIGH";
@@ -462,7 +467,7 @@ export function confirmTrendlineWithPivot(
         ...candidate.geometry.points,
         {
           time: confirmingPivot.geometry.time,
-          price: confirmingPivot.geometry.price,
+          price: expected,
         },
       ],
     },
