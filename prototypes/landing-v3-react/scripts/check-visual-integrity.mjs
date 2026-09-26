@@ -36,9 +36,10 @@ requireText(
 );
 requireText(
   app,
-  '["The market changes.", "Your decision should too."]',
+  '["Markets change.", "Your decision should too."]',
   "The secondary rolling hero claim changed or was removed."
 );
+requireText(app, "HERO_HEADLINES.map((headline, index)", "Both hero headline states must remain permanently mounted in the fixed overlay viewport.");
 requireText(
   app,
   "setHeadlineIndex((current) => (current + 1) % HERO_HEADLINES.length)",
