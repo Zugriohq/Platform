@@ -2366,3 +2366,19 @@ footer>div a{color:#78838d}
 @media(prefers-reduced-motion:reduce){
   .hero-headline-window{overflow:hidden}
 }
+
+
+/* ── HEADLINE PERMANENT OVERLAY STATES ───────────────────────────────────
+   Both headline states remain mounted in one immutable viewport.
+   ───────────────────────────────────────────────────────────────────────── */
+.hero-headline-window{isolation:isolate}
+.hero-headline-frame{
+  pointer-events:none;
+  will-change:transform,opacity,filter;
+}
+.hero-headline-frame.is-active{z-index:2}
+.hero-headline-frame.is-inactive{z-index:1}
+
+@media(max-width:720px){
+  .hero h1{font-size:clamp(24px,7.9vw,38px)}
+}
