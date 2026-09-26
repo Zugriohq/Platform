@@ -17,18 +17,46 @@ export type MarketStructureConcept =
   | "BOS"
   | "CHOCH"
   | "MSS"
+  | "TRENDLINE_SUPPORT"
+  | "TRENDLINE_RESISTANCE"
+  | "CHANNEL_SUPPORT"
+  | "CHANNEL_RESISTANCE"
   | "LIQUIDITY_SWEEP"
   | "FAKEOUT"
   | "INDUCEMENT"
   | "DISPLACEMENT"
   | "FVG"
   | "ORDER_BLOCK"
+  | "BREAKER_BLOCK"
+  | "MITIGATION_BLOCK"
   | "MITIGATION"
   | "RANGE_HIGH"
   | "RANGE_LOW"
   | "BREAKOUT"
   | "RETEST"
   | "CONTINUATION"
+  | "DOUBLE_TOP"
+  | "DOUBLE_BOTTOM"
+  | "HEAD_AND_SHOULDERS"
+  | "INVERSE_HEAD_AND_SHOULDERS"
+  | "RISING_WEDGE"
+  | "FALLING_WEDGE"
+  | "ASCENDING_TRIANGLE"
+  | "DESCENDING_TRIANGLE"
+  | "SYMMETRICAL_TRIANGLE"
+  | "FLAG"
+  | "PENNANT"
+  | "DOJI"
+  | "HAMMER"
+  | "SHOOTING_STAR"
+  | "BULLISH_ENGULFING"
+  | "BEARISH_ENGULFING"
+  | "INSIDE_BAR"
+  | "OUTSIDE_BAR"
+  | "MORNING_STAR"
+  | "EVENING_STAR"
+  | "THREE_WHITE_SOLDIERS"
+  | "THREE_BLACK_CROWS"
   | "ELLIOTT_WAVE";
 
 export type ResearchConceptMaturity =
@@ -294,6 +322,64 @@ export function detectConfirmedPivots(
     if (byKnownAt !== 0) return byKnownAt;
     return a.factId.localeCompare(b.factId);
   });
+}
+
+
+export interface TrendlineDefinition {
+  readonly definitionId: string;
+  readonly minimumAnchorSeparationMs: number;
+}
+
+/**
+ * Builds deterministic trendline geometry only from two already-confirmed pivots.
+ * It does not search arbitrary points, score a line, or treat the line as support/
+ * resistance authority. A later touch/hold/break must be observed separately.
+ */
+export function buildTrendlineFromPivots(
+  first: ResearchMarketStructureFact,
+  second: ResearchMarketStructureFact,
+  definition: TrendlineDefinition,
+): ResearchMarketStructureFact | null {
+  if (!definition.definitionId) throw new Error("trendline definitionId must be non-empty");
+  if (!Number.isFinite(definition.minimumAnchorSeparationMs) || definition.minimumAnchorSeparationMs < 0) {
+    throw new Error("minimumAnchorSeparationMs must be finite and >= 0");
+  }
+  if (first.concept !== second.concept) return null;
+  if (first.concept !== "SWING_HIGH" && first.concept !== "SWING_LOW") return null;
+  if (first.scale !== second.scale || first.timeframe !== second.timeframe) return null;
+  if (first.geometry.type !== "POINT" || second.geometry.type !== "POINT") return null;
+
+  const firstTime = epoch(first.geometry.time, "first.geometry.time");
+  const secondTime = epoch(second.geometry.time, "second.geometry.time");
+  if (secondTime <= firstTime) return null;
+  if (secondTime - firstTime < definition.minimumAnchorSeparationMs) return null;
+
+  const concept = first.concept === "SWING_LOW" ? "TRENDLINE_SUPPORT" : "TRENDLINE_RESISTANCE";
+  const side = first.concept === "SWING_LOW" ? "BUY" : "SELL";
+
+  return {
+    factId: `trendline:${definition.definitionId}:${first.factId}:${second.factId}`,
+    concept,
+    maturity: "DETERMINISTIC_FACT",
+    scale: first.scale,
+    timeframe: first.timeframe,
+    side,
+    knownAt: epoch(first.knownAt, "first.knownAt") >= epoch(second.knownAt, "second.knownAt")
+      ? first.knownAt
+      : second.knownAt,
+    definitionId: definition.definitionId,
+    sourceEvidenceIds: [...new Set([...first.sourceEvidenceIds, ...second.sourceEvidenceIds])],
+    geometry: {
+      type: "PATH",
+      points: [
+        { time: first.geometry.time, price: first.geometry.price },
+        { time: second.geometry.time, price: second.geometry.price },
+      ],
+    },
+    label: concept.replaceAll("_", " "),
+    authority: "RESEARCH_ONLY",
+    authorityEffect: "NONE",
+  };
 }
 
 export interface EqualLevelPairDefinition {

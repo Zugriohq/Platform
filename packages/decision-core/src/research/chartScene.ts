@@ -13,6 +13,7 @@ export type ChartSemanticLayer =
   | "LIQUIDITY"
   | "IMBALANCE"
   | "SETUP"
+  | "PATTERN"
   | "ENTRY"
   | "INVALIDATION"
   | "OBJECTIVE"
@@ -40,6 +41,7 @@ export interface EngineChartPrimitive {
     | "LIQUIDITY"
     | "IMBALANCE"
     | "SETUP"
+    | "PATTERN"
     | "ADVISORY";
   readonly authorityEffect: "NONE";
 }
@@ -63,6 +65,10 @@ function layerForFact(fact: ResearchMarketStructureFact): ChartSemanticLayer {
     case "BOS":
     case "CHOCH":
     case "MSS":
+    case "TRENDLINE_SUPPORT":
+    case "TRENDLINE_RESISTANCE":
+    case "CHANNEL_SUPPORT":
+    case "CHANNEL_RESISTANCE":
     case "RANGE_HIGH":
     case "RANGE_LOW":
     case "BREAKOUT":
@@ -75,12 +81,37 @@ function layerForFact(fact: ResearchMarketStructureFact): ChartSemanticLayer {
       return "LIQUIDITY";
     case "FVG":
     case "ORDER_BLOCK":
+    case "BREAKER_BLOCK":
+    case "MITIGATION_BLOCK":
     case "MITIGATION":
       return "IMBALANCE";
     case "DISPLACEMENT":
     case "RETEST":
     case "CONTINUATION":
       return "SETUP";
+    case "DOUBLE_TOP":
+    case "DOUBLE_BOTTOM":
+    case "HEAD_AND_SHOULDERS":
+    case "INVERSE_HEAD_AND_SHOULDERS":
+    case "RISING_WEDGE":
+    case "FALLING_WEDGE":
+    case "ASCENDING_TRIANGLE":
+    case "DESCENDING_TRIANGLE":
+    case "SYMMETRICAL_TRIANGLE":
+    case "FLAG":
+    case "PENNANT":
+    case "DOJI":
+    case "HAMMER":
+    case "SHOOTING_STAR":
+    case "BULLISH_ENGULFING":
+    case "BEARISH_ENGULFING":
+    case "INSIDE_BAR":
+    case "OUTSIDE_BAR":
+    case "MORNING_STAR":
+    case "EVENING_STAR":
+    case "THREE_WHITE_SOLDIERS":
+    case "THREE_BLACK_CROWS":
+      return "PATTERN";
     case "ELLIOTT_WAVE":
       return "ADVISORY";
   }
@@ -91,6 +122,7 @@ function styleForFact(fact: ResearchMarketStructureFact): EngineChartPrimitive["
   if (layer === "LIQUIDITY") return "LIQUIDITY";
   if (layer === "IMBALANCE") return "IMBALANCE";
   if (layer === "SETUP") return "SETUP";
+  if (layer === "PATTERN") return "PATTERN";
   if (layer === "ADVISORY") return "ADVISORY";
   return fact.scale === "EXTERNAL" ? "STRUCTURE_PRIMARY" : "STRUCTURE_SECONDARY";
 }
