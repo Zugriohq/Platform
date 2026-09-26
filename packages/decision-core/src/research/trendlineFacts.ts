@@ -221,7 +221,7 @@ export function assessTrendlineInteraction(
     fact:{
       factId:`trendline-interaction:${definition.definitionId}:${trendline.factId}:${bar.sourceBarId}:${status}`,
       concept,
-      maturity:"DETERMINISTIC_FACT",
+      maturity:"RESEARCH_DERIVED",
       scale:trendline.scale,
       timeframe:trendline.timeframe,
       side,
