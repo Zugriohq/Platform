@@ -8,6 +8,7 @@ import {
 } from "./marketMap.js";
 import {
   projectMarketMapToChartScene,
+  type EngineChartRegimeContext,
   type EngineChartRouteContext,
   type EngineChartScene,
 } from "./chartScene.js";
@@ -309,6 +310,19 @@ function regimeAt(evaluatedAt: string): ResearchCanonicalRegimeResult {
   });
 }
 
+function chartRegimeContext(
+  regime: ResearchCanonicalRegimeResult,
+): EngineChartRegimeContext {
+  return {
+    status: regime.status,
+    measurementId: regime.measurementId,
+    profileId: regime.profileId,
+    profileVersion: regime.profileVersion,
+    matchingRuleIds: regime.matchingRuleIds,
+    reasons: regime.reasons,
+  };
+}
+
 function routeContextFor(
   regime: ResearchCanonicalRegimeResult,
 ): {
@@ -504,7 +518,11 @@ export function buildDerivedStructuralReplayFrame(
     classificationFact,
     lifecycle,
     marketFacts: map.facts,
-    scene: projectMarketMapToChartScene(map, routeContext.scene),
+    scene: projectMarketMapToChartScene(
+      map,
+      routeContext.scene,
+      chartRegimeContext(regime),
+    ),
   };
 }
 
