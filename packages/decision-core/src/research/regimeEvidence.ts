@@ -18,6 +18,11 @@ export interface ResearchRegimeMeasurementDefinition {
   readonly lookbackBars: number;
   /** Number of immediately preceding completed bars used as the range baseline. */
   readonly baselineBars: number;
+  /**
+   * Data-health bound owned by the measurement/profile definition. A later
+   * request cannot make an old last bar current again.
+   */
+  readonly maxLatestBarAgeMs: number;
 }
 
 export interface ResearchRegimeMeasurements {
@@ -111,6 +116,9 @@ function validateMeasurementDefinition(
   if (!Number.isInteger(definition.baselineBars) || definition.baselineBars < 1) {
     throw new Error("regime baselineBars must be an integer >= 1");
   }
+  if (!Number.isFinite(definition.maxLatestBarAgeMs) || definition.maxLatestBarAgeMs < 0) {
+    throw new Error("regime maxLatestBarAgeMs must be finite and >= 0");
+  }
 }
 
 function mean(values: readonly number[]): number {
@@ -155,6 +163,7 @@ export function computeRegimeMeasurements(input: {
   const evaluatedAt = epoch(input.evaluatedAt, "evaluatedAt");
   const seenEvidence = new Set<string>();
   const seenBars = new Set<string>();
+  const seenCloseTimes = new Set<string>();
 
   for (const bar of input.bars) {
     validateResearchStructureBar(bar);
@@ -167,8 +176,12 @@ export function computeRegimeMeasurements(input: {
     if (seenBars.has(bar.sourceBarId)) {
       throw new Error(`duplicate regime sourceBarId: ${bar.sourceBarId}`);
     }
+    if (seenCloseTimes.has(bar.sourceClosedAt)) {
+      throw new Error(`duplicate regime sourceClosedAt: ${bar.sourceClosedAt}`);
+    }
     seenEvidence.add(bar.evidenceId);
     seenBars.add(bar.sourceBarId);
+    seenCloseTimes.add(bar.sourceClosedAt);
   }
 
   const knowable = input.bars
@@ -193,6 +206,18 @@ export function computeRegimeMeasurements(input: {
   }
 
   const bounded = knowable.slice(-required);
+  const latest = bounded.at(-1);
+  if (!latest) throw new Error("regime bounded window unexpectedly empty");
+  if (evaluatedAt - epoch(latest.knownAt, "latest.knownAt") > input.definition.maxLatestBarAgeMs) {
+    return {
+      status: "DATA_UNAVAILABLE",
+      measurements: null,
+      reasons: ["LATEST_BAR_TOO_OLD"],
+      authority: "RESEARCH_ONLY",
+      liveCapitalAuthority: false,
+    };
+  }
+
   const unavailable = bounded.filter(bar => bar.dataStatus !== "FRESH_COMPLETE");
   if (unavailable.length > 0) {
     return {
@@ -281,6 +306,26 @@ function predicateMatches(
   }
 }
 
+function classificationDefinitionFingerprint(
+  definition: ResearchRegimeClassificationDefinition,
+): string {
+  return definition.rules
+    .map(rule => {
+      const predicates = rule.predicates
+        .map(predicate => [
+          predicate.measurement,
+          predicate.operator,
+          String(predicate.threshold),
+          predicate.thresholdProvenanceId,
+        ].join("~"))
+        .sort()
+        .join("&");
+      return [rule.ruleId, rule.regime, predicates].join("=");
+    })
+    .sort()
+    .join("|");
+}
+
 function validateClassificationDefinition(
   definition: ResearchRegimeClassificationDefinition,
 ): void {
@@ -323,6 +368,7 @@ export function classifyCanonicalRegime(input: {
     input.definition.definitionId,
     input.definition.profileId,
     input.definition.profileVersion,
+    classificationDefinitionFingerprint(input.definition),
   ].join(":");
 
   if (input.assessment.status !== "AVAILABLE" || !input.assessment.measurements) {
