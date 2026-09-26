@@ -31,6 +31,20 @@ async function brevo(env, path, init = {}) {
   return response.json().catch(() => null);
 }
 
+async function syncContact(env, email) {
+  const listId = Number(env.BREVO_LIST_ID);
+  if (!Number.isInteger(listId) || listId < 1) throw new Error("brevo_list_id_invalid");
+
+  await brevo(env, "/contacts", {
+    method: "POST",
+    body: JSON.stringify({
+      email,
+      listIds: [listId],
+      updateEnabled: true,
+    }),
+  });
+}
+
 async function isBlacklisted(env, email) {
   const encoded = encodeURIComponent(email);
   const contact = await brevo(env, "/contacts/" + encoded + "?identifierType=email_id");
@@ -62,6 +76,92 @@ async function sendTemplate(env, row, templateId, templateKey) {
   });
 }
 
+async function recoverMissingWelcomes(env, now, limit) {
+  if (String(env.BREVO_EA00_RECOVERY_ENABLED || "").toLowerCase() !== "true") return 0;
+  if (limit < 1) return 0;
+
+  const templateId = Number(env.BREVO_WELCOME_TEMPLATE_ID);
+  if (!Number.isInteger(templateId) || templateId < 1) {
+    console.log("ea00_recovery_missing_template");
+    return 0;
+  }
+
+  const rows = await env.DB.prepare(
+    `SELECT id, email, market, style, mode, country
+     FROM waitlist
+     WHERE consent = 1
+       AND email_unsubscribed_at IS NULL
+       AND welcome_sent_at IS NULL
+       AND NOT EXISTS (
+         SELECT 1
+         FROM email_send_log
+         WHERE email_send_log.waitlist_id = waitlist.id
+           AND email_send_log.template_key = 'EA00'
+           AND email_send_log.status = 'sent'
+       )
+     ORDER BY created_at ASC
+     LIMIT ?`
+  ).bind(Math.min(limit, 50)).all();
+
+  let sent = 0;
+
+  for (const row of rows.results || []) {
+    try {
+      await syncContact(env, row.email);
+      await env.DB.prepare(
+        "UPDATE waitlist SET brevo_synced_at = ?, email_last_error = NULL WHERE id = ?"
+      ).bind(now.toISOString(), row.id).run();
+
+      if (await isBlacklisted(env, row.email)) {
+        await env.DB.prepare(
+          `UPDATE waitlist
+           SET email_unsubscribed_at = ?, email_next_at = NULL, email_last_error = NULL
+           WHERE id = ?`
+        ).bind(now.toISOString(), row.id).run();
+        continue;
+      }
+
+      const result = await sendTemplate(env, row, templateId, "EA00");
+      const messageId = result?.messageId ? String(result.messageId).slice(0, 200) : "";
+      const nextAt = new Date(now.getTime() + DAY).toISOString();
+
+      await env.DB.batch([
+        env.DB.prepare(
+          `UPDATE waitlist
+           SET welcome_sent_at = ?,
+               email_sequence_step = 1,
+               email_next_at = ?,
+               email_last_error = NULL
+           WHERE id = ?`
+        ).bind(now.toISOString(), nextAt, row.id),
+        env.DB.prepare(
+          `INSERT INTO email_send_log
+           (waitlist_id, email, template_key, provider_message_id, status, sent_at)
+           VALUES (?, ?, 'EA00', ?, 'sent', ?)`
+        ).bind(row.id, row.email, messageId, now.toISOString()),
+      ]);
+
+      sent += 1;
+    } catch (error) {
+      const message = (error?.message || String(error)).slice(0, 500);
+      console.error("ea00_recovery_failed", row.id, message);
+
+      await env.DB.batch([
+        env.DB.prepare(
+          "UPDATE waitlist SET email_last_error = ? WHERE id = ?"
+        ).bind(("EA00:" + message).slice(0, 500), row.id),
+        env.DB.prepare(
+          `INSERT INTO email_send_log
+           (waitlist_id, email, template_key, status, error)
+           VALUES (?, ?, 'EA00', 'failed', ?)`
+        ).bind(row.id, row.email, message),
+      ]);
+    }
+  }
+
+  return sent;
+}
+
 function utcDayStartIso(now = new Date()) {
   return new Date(Date.UTC(
     now.getUTCFullYear(),
@@ -86,14 +186,19 @@ async function runLifecycle(env) {
   ).bind(start).first();
 
   const sentToday = Number(countRow?.count || 0);
-  const remaining = Math.max(0, dailyCap - sentToday);
+  let remaining = Math.max(0, dailyCap - sentToday);
   if (!remaining) {
     console.log("email_daily_cap_reached", { sentToday, dailyCap });
     return;
   }
 
-  const batchSize = Math.min(remaining, 50);
   const now = new Date();
+
+  const recovered = await recoverMissingWelcomes(env, now, remaining);
+  remaining = Math.max(0, remaining - recovered);
+  if (!remaining) return;
+
+  const batchSize = Math.min(remaining, 50);
 
   const due = await env.DB.prepare(
     `SELECT id, email, market, style, mode, country, email_sequence_step, email_next_at
@@ -180,7 +285,9 @@ export default {
     const configured = Boolean(
       env.DB &&
       env.BREVO_API_KEY &&
+      env.BREVO_LIST_ID &&
       env.BREVO_SENDER_EMAIL &&
+      env.BREVO_WELCOME_TEMPLATE_ID &&
       env.BREVO_TEMPLATE_EA01 &&
       env.BREVO_TEMPLATE_EA02 &&
       env.BREVO_TEMPLATE_EA03 &&
@@ -192,6 +299,7 @@ export default {
       ok: true,
       configured,
       service: "zugrio-brevo-lifecycle",
+      ea00RecoveryEnabled: String(env.BREVO_EA00_RECOVERY_ENABLED || "").toLowerCase() === "true",
     }, {
       headers: { "cache-control": "no-store" },
     });
