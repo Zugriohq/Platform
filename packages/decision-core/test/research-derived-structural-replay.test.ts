@@ -126,6 +126,60 @@ describe("derived structural alpha replay", () => {
     expect(scene.liveCapitalAuthority).toBe(false);
   });
 
+  it("does not hindsight-fill a trendline before the third confirmed anchor is knowable", () => {
+    const before = buildDerivedStructuralReplayFrame(15);
+    expect(before.trendlineFacts.some(fact => fact.concept === "TRENDLINE_SUPPORT")).toBe(false);
+
+    const confirmed = buildDerivedStructuralReplayFrame(16);
+    const support = confirmed.trendlineFacts.find(fact => fact.concept === "TRENDLINE_SUPPORT");
+    expect(support).toMatchObject({
+      definitionId: "derived-alpha:trendline:three-anchor:v1",
+      knownAt: "2026-09-24T09:20:01Z",
+      maturity: "RESEARCH_DERIVED",
+      authorityEffect: "NONE",
+    });
+    expect(support?.geometry.type).toBe("PATH");
+  });
+
+  it("derives later trendline touch, penetration and close-break only from later closed bars", () => {
+    expect(buildDerivedStructuralReplayFrame(16).trendlineInteractionFacts).toEqual([]);
+
+    const touched = buildDerivedStructuralReplayFrame(17);
+    expect(touched.trendlineInteractionFacts.some(fact =>
+      fact.concept === "TRENDLINE_TOUCH" && fact.label === "SUPPORT TOUCH"
+    )).toBe(true);
+
+    const penetrated = buildDerivedStructuralReplayFrame(18);
+    expect(penetrated.trendlineInteractionFacts.some(fact =>
+      fact.concept === "TRENDLINE_PENETRATION" && fact.label === "SUPPORT PENETRATION"
+    )).toBe(true);
+    expect(penetrated.trendlineInteractionFacts.some(fact => fact.concept === "TRENDLINE_BREAK")).toBe(false);
+
+    const broken = buildDerivedStructuralReplayFrame(19);
+    expect(broken.trendlineInteractionFacts.some(fact =>
+      fact.concept === "TRENDLINE_BREAK" && fact.label === "SUPPORT CLOSE BREAK"
+    )).toBe(true);
+  });
+
+  it("projects the confirmed line and later break through the engine chart scene", () => {
+    const scene = buildDerivedStructuralReplayFrame(19).scene;
+    const line = scene.primitives.find(primitive => primitive.concept === "TRENDLINE_SUPPORT");
+    const broken = scene.primitives.find(primitive => primitive.concept === "TRENDLINE_BREAK");
+
+    expect(line).toMatchObject({
+      layer: "STRUCTURE",
+      scale: "EXTERNAL",
+      authorityEffect: "NONE",
+    });
+    expect(line?.geometry.type).toBe("PATH");
+    expect(broken).toMatchObject({
+      layer: "STRUCTURE",
+      label: "SUPPORT CLOSE BREAK",
+      authorityEffect: "NONE",
+    });
+    expect(scene.liveCapitalAuthority).toBe(false);
+  });
+
   it("feeds the existing DecisionCase lifecycle from generated engine evidence", () => {
     const scenario = alphaScenarios.find(item => item.id === DERIVED_STRUCTURAL_SCENARIO_ID)!;
 
