@@ -75,6 +75,20 @@ describe("research equal-liquidity and sweep derivation",()=>{
     expect(levels[0]?.knownAt).toBe(second.knownAt);
   });
 
+  it("does not promote non-deterministic swing morphology into equal liquidity",()=>{
+    const first=pivot("h1","SWING_HIGH",1.1000,"2026-09-24T08:00:00Z","2026-09-24T08:05:01Z");
+    const second={
+      ...pivot("h2","SWING_HIGH",1.1001,"2026-09-24T08:15:00Z","2026-09-24T08:20:01Z"),
+      maturity:"MORPHOLOGY_ONLY" as const,
+    };
+
+    expect(deriveEqualLiquidityLevels({
+      evaluatedAt:"2026-09-24T08:20:01Z",
+      pivots:[first,second],
+      definition:equalDefinition,
+    })).toEqual([]);
+  });
+
   it("keeps tolerance profile-owned instead of hard-coding equal levels",()=>{
     const first=pivot("h1","SWING_HIGH",1.1000,"2026-09-24T08:00:00Z","2026-09-24T08:05:01Z");
     const second=pivot("h2","SWING_HIGH",1.1003,"2026-09-24T08:15:00Z","2026-09-24T08:20:01Z");
@@ -137,6 +151,36 @@ describe("research equal-liquidity and sweep derivation",()=>{
     expect(sweeps).toHaveLength(1);
     expect(sweeps[0]?.concept).toBe("LIQUIDITY_SWEEP");
     expect(sweeps[0]?.label).toBe("HIGH SWEEP / RECLAIM");
+  });
+
+  it("mirrors low-side penetration and reclaim",()=>{
+    const levels=deriveEqualLiquidityLevels({
+      evaluatedAt:"2026-09-24T08:20:01Z",
+      pivots:[
+        pivot("l1","SWING_LOW",1.0900,"2026-09-24T08:00:00Z","2026-09-24T08:05:01Z"),
+        pivot("l2","SWING_LOW",1.0901,"2026-09-24T08:15:00Z","2026-09-24T08:20:01Z"),
+      ],
+      definition:equalDefinition,
+    });
+
+    const sweeps=deriveLiquiditySweeps({
+      evaluatedAt:"2026-09-24T08:25:01Z",
+      levels,
+      bars:[bar(
+        "low-sweep",
+        "2026-09-24T08:25:00Z",
+        "2026-09-24T08:25:01Z",
+        1.0906,1.0896,1.0901,
+      )],
+      definition:{definitionId:"sweep:v1",penetrationTolerance:0.0001},
+    });
+
+    expect(sweeps).toHaveLength(1);
+    expect(sweeps[0]).toMatchObject({
+      concept:"LIQUIDITY_SWEEP",
+      side:"BUY",
+      label:"LOW SWEEP / RECLAIM",
+    });
   });
 
   it("fails closed on non-fresh sweep bars",()=>{
