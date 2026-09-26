@@ -74,7 +74,11 @@ describe("research structural lifecycle observer", () => {
   it("does not make retest mandatory: continuation is observable only when explicitly enabled for research", () => {
     const disabled = observeStructuralLifecycle(seed, [
       observation("cont", "m5:0805", "2026-09-24T08:10:00Z", "2026-09-24T08:10:01Z", {
-        continuationHeld: true,
+        continuation: {
+          validSideHeld: true,
+          extensionBudgetOk: true,
+          extensionBudgetProvenanceId: "extension-budget:fixture:v1",
+        },
         confirmRoute: "CONTINUATION",
       }),
     ]);
@@ -85,7 +89,11 @@ describe("research structural lifecycle observer", () => {
     const researchSeed = { ...seed, candidateId: "candidate:continuation", continuationReferenceEnabled: true };
     const enabled = observeStructuralLifecycle(researchSeed, [
       observation("cont-held", "m5:0805", "2026-09-24T08:10:00Z", "2026-09-24T08:10:01Z", {
-        continuationHeld: true,
+        continuation: {
+          validSideHeld: true,
+          extensionBudgetOk: true,
+          extensionBudgetProvenanceId: "extension-budget:fixture:v1",
+        },
       }),
       observation("cont-confirm", "m5:0810", "2026-09-24T08:15:00Z", "2026-09-24T08:15:01Z", {
         confirmRoute: "CONTINUATION",
@@ -95,6 +103,34 @@ describe("research structural lifecycle observer", () => {
     expect(enabled.lifecycle).toBe("LIFECYCLE_CONFIRMED");
     expect(enabled.confirmedRoute).toBe("CONTINUATION");
     expect(enabled.routeState.continuation).toBe("CONTINUATION_HELD");
+  });
+
+  it("refuses continuation when its frozen valid-side/extension predicates fail", () => {
+    const researchSeed = { ...seed, candidateId: "candidate:continuation-guard", continuationReferenceEnabled: true };
+
+    const invalidSide = observeStructuralLifecycle(researchSeed, [
+      observation("cont-invalid-side", "m5:0805", "2026-09-24T08:10:00Z", "2026-09-24T08:10:01Z", {
+        continuation: {
+          validSideHeld: false,
+          extensionBudgetOk: true,
+          extensionBudgetProvenanceId: "extension-budget:fixture:v1",
+        },
+      }),
+    ]);
+    expect(invalidSide.lifecycle).toBe("BREAK_CONFIRMED");
+    expect(invalidSide.trace.some(event => event.reasonCode === "CONTINUATION_VALID_SIDE_FAILED")).toBe(true);
+
+    const overExtended = observeStructuralLifecycle(researchSeed, [
+      observation("cont-overextended", "m5:0805", "2026-09-24T08:10:00Z", "2026-09-24T08:10:01Z", {
+        continuation: {
+          validSideHeld: true,
+          extensionBudgetOk: false,
+          extensionBudgetProvenanceId: "extension-budget:fixture:v1",
+        },
+      }),
+    ]);
+    expect(overExtended.lifecycle).toBe("BREAK_CONFIRMED");
+    expect(overExtended.trace.some(event => event.reasonCode === "EXTENSION_BUDGET_FAILED")).toBe(true);
   });
 
   it("has no hidden eight-bar or candle-count expiry", () => {
