@@ -107,6 +107,9 @@ function layerForFact(fact: ResearchMarketStructureFact): ChartSemanticLayer {
     case "INDUCEMENT":
       return "LIQUIDITY";
     case "FVG":
+    case "FVG_TOUCH":
+    case "FVG_PARTIAL_FILL":
+    case "FVG_FULL_FILL":
     case "ORDER_BLOCK":
     case "BREAKER_BLOCK":
     case "MITIGATION_BLOCK":
