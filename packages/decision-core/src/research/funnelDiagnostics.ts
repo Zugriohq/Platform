@@ -71,8 +71,17 @@ export function diagnoseResearchFunnel(input: {
       .reverse()
       .find(event => event.reasonCode !== "NO_STRUCTURAL_CHANGE");
 
+    const nonTerminalStage: ResearchFunnelStage =
+      input.lifecycle.lifecycle === "BREAK_CONFIRMED"
+        ? "BREAK_CONFIRMED"
+        : input.lifecycle.lifecycle === "RETEST_TOUCHED"
+          ? "RETEST_TOUCHED"
+          : input.lifecycle.lifecycle === "RETEST_HELD"
+            ? "RETEST_HELD"
+            : "CONTINUATION_HELD";
+
     return {
-      stage: input.lifecycle.lifecycle,
+      stage: nonTerminalStage,
       candidateId: input.lifecycle.candidateId,
       summary: `Structural lifecycle currently stops at ${input.lifecycle.lifecycle}.`,
       blockers: lastMeaningful ? [lastMeaningful.reasonCode] : [],
