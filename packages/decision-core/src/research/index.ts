@@ -8,3 +8,4 @@ export * from "./chartScene.js";
 export * from "./contextualPatterns.js";
 export * from "./alphaScene.js";
 export * from "./strategyRegimePlaybook.js";
+export * from "./objectiveEngine.js";
