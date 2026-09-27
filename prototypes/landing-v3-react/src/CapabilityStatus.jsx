@@ -86,12 +86,14 @@ export function ReadinessMeta() {
 }
 
 export function ReadinessLegend() {
+  const statusesShownHere = ["validation", "planned", "locked"];
+
   return (
     <div className="readiness-legend" aria-label="Readiness status meanings">
-      {Object.entries(STATUS_LABELS).map(([status, label], index) => (
+      {statusesShownHere.map((status, index) => (
         <div className="readiness-legend-row" data-readiness-status={status} key={status}>
           <span>{String(index + 1).padStart(2, "0")}</span>
-          <b>{label}</b>
+          <b>{STATUS_LABELS[status]}</b>
           <p>{STATUS_DESCRIPTIONS[status]}</p>
           {status === "locked" && <LockKeyhole size={11} aria-hidden="true" />}
         </div>
