@@ -157,7 +157,7 @@ const FAQ_ITEMS = [
   {
     code: "PASS",
     question: "What happens when nothing qualifies?",
-    answer: "Zugrio can return PASS. No trade is a valid decision.",
+    answer: "Zugrio can return No trade. Standing aside is a valid decision.",
   },
   {
     code: "REPLAY",
