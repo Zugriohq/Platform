@@ -57,7 +57,7 @@ const CASES = {
     currentNorm: 84,
     rr: "0.67R",
     copy: "The signal stays on record. The current entry no longer qualifies.",
-    action: "Pass · Reassess",
+    action: "Stand aside · Reassess",
   },
 };
 
@@ -155,7 +155,7 @@ const FAQ_ITEMS = [
     answer: "Custom Strategy is part of the broader Zugrio direction, but it is not part of the first release.",
   },
   {
-    code: "PASS",
+    code: "NO TRADE",
     question: "What happens when nothing qualifies?",
     answer: "Zugrio can return No trade. Standing aside is a valid decision.",
   },
@@ -510,8 +510,8 @@ export default function App() {
         <motion.section className="decision-quality" id="decision-quality" {...sectionReveal}>
           <div className="dq-intro">
             <div className="kicker">NOT ONE SCORE</div>
-            <h2>Your P&amp;L tells you the outcome. It doesn’t tell you what needs fixing.</h2>
-            <p>Zugrio separates the trade into four questions rather than collapsing everything into win or loss.</p>
+            <h2>P&amp;L is the result. Not the diagnosis.</h2>
+            <p>Zugrio separates strategy quality, process, execution and outcome so you can see what actually needs fixing.</p>
           </div>
 
           <div className="dq-audit" aria-label="Illustrative four-part decision audit">
@@ -624,7 +624,7 @@ export default function App() {
               <h2>Know what’s live. And what isn’t.</h2>
             </div>
             <div>
-              <p>Some of this is close. Some isn’t available yet. Here’s exactly what is in validation, what is planned, and what is deliberately locked.</p>
+              <p>Some of this is coming soon. Most isn’t available yet. Here’s exactly what is in validation, planned, or deliberately locked.</p>
               <ReadinessMeta />
             </div>
           </div>
