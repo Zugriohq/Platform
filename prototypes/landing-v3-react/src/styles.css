@@ -3064,7 +3064,7 @@ footer>div a:after{bottom:9px}
 }
 .decision-delta>div:last-child{text-align:right}
 .decision-delta>i{
-  color:#69747f;
+  color:var(--muted);
   font-style:normal;
   font-size:14px;
 }
