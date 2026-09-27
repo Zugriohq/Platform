@@ -113,6 +113,18 @@ button:focus-visible,summary:focus-visible{outline-offset:2px}
   max-width:var(--max);
 }
 .product-shell{
+  container:shell/inline-size;
+  /* Density tokens. The pinned story shell lowers these on short laptop viewports. */
+  --chart-h:340px;
+  --row-y:12px;
+  --focus-min:248px;
+  --panel-pad:24px;
+  --insp-pad:22px;
+  --top-h:54px;
+  --switch-h:47px;
+  --ctrl-h:50px;
+  --ctrl-pad:10px;
+  --ctrl-btn:36px;
   border:1px solid var(--line2);
   border-radius:22px;
   overflow:hidden;
@@ -120,7 +132,7 @@ button:focus-visible,summary:focus-visible{outline-offset:2px}
   box-shadow:0 60px 120px rgba(0,0,0,.48),0 1px 0 rgba(255,255,255,.05) inset;
 }
 .shell-top{
-  height:54px;
+  height:var(--top-h);
   display:grid;
   grid-template-columns:1fr auto auto;
   gap:20px;
@@ -181,7 +193,7 @@ button:focus-visible,summary:focus-visible{outline-offset:2px}
   background:transparent;
   color:var(--muted);
   border-radius:0;
-  min-height:47px;
+  min-height:var(--switch-h);
   padding:11px 11px 10px;
   font-size:var(--fs-meta);
 }
@@ -215,11 +227,11 @@ button:focus-visible,summary:focus-visible{outline-offset:2px}
 .case-grid{
   display:grid;
   grid-template-columns:minmax(0,1fr) 350px;
-  min-height:540px;
+  min-height:0;
 }
 .chart-panel{
   min-width:0;
-  padding:24px;
+  padding:var(--panel-pad);
   border-right:1px solid var(--line);
 }
 .chart-head{
@@ -260,7 +272,7 @@ button:focus-visible,summary:focus-visible{outline-offset:2px}
   padding-top:12px;
 }
 .inspector{
-  padding:22px;
+  padding:var(--insp-pad);
   background:linear-gradient(180deg,#0d1116,#0b0f14);
   display:flex;
   flex-direction:column;
@@ -288,7 +300,7 @@ button:focus-visible,summary:focus-visible{outline-offset:2px}
   display:flex;
   justify-content:space-between;
   gap:16px;
-  padding:10px 0;
+  padding:calc(var(--row-y) - 2px) 0;
   border-bottom:1px solid rgba(255,255,255,.035);
 }
 .decision-identity>div:last-child{
@@ -307,9 +319,9 @@ button:focus-visible,summary:focus-visible{outline-offset:2px}
 }
 .decision-focus{
   position:relative;
-  min-height:276px;
-  margin-top:18px;
-  padding-top:16px;
+  min-height:var(--focus-min);
+  margin-top:calc(var(--row-y) + 6px);
+  padding-top:calc(var(--row-y) + 4px);
   overflow:hidden;
 }
 .decision-focus:before{
@@ -326,7 +338,7 @@ button:focus-visible,summary:focus-visible{outline-offset:2px}
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:16px;
+  margin-bottom:calc(var(--row-y) + 4px);
   font:var(--fs-label) var(--mono);
   letter-spacing:.1em;
   color:var(--subtle);
@@ -340,7 +352,7 @@ button:focus-visible,summary:focus-visible{outline-offset:2px}
   grid-template-columns:1fr 1.3fr;
   gap:14px;
   align-items:baseline;
-  padding:12px 0;
+  padding:var(--row-y) 0;
   border-bottom:1px solid var(--line);
 }
 .market-lens span,.current-recheck span{
@@ -362,7 +374,7 @@ button:focus-visible,summary:focus-visible{outline-offset:2px}
 }
 .state-sequence span{
   position:relative;
-  padding:12px 5px;
+  padding:var(--row-y) 5px;
   text-align:center;
   font-size:var(--fs-label);
   letter-spacing:.1em;
@@ -452,7 +464,7 @@ button:focus-visible,summary:focus-visible{outline-offset:2px}
   border-bottom:1px solid var(--line2);
 }
 .control-ladder span{
-  padding:12px 5px;
+  padding:var(--row-y) 5px;
   text-align:center;
   border-right:1px solid var(--line);
   color:var(--subtle);
@@ -505,7 +517,7 @@ button:focus-visible,summary:focus-visible{outline-offset:2px}
   grid-template-columns:42px 54px 1fr;
   gap:10px;
   align-items:center;
-  padding:11px 0;
+  padding:calc(var(--row-y) - 1px) 0;
   border-bottom:1px solid var(--line);
 }
 .decision-ledger time{
@@ -546,9 +558,9 @@ button:focus-visible,summary:focus-visible{outline-offset:2px}
   display:flex;
   align-items:center;
   border-top:1px solid var(--line);
-  min-height:50px;
+  min-height:var(--ctrl-h);
   gap:15px;
-  padding:10px 14px;
+  padding:var(--ctrl-pad) 14px;
   background:linear-gradient(180deg,#0a0d11,#080b0f);
 }
 .shell-controls button{
@@ -558,7 +570,7 @@ button:focus-visible,summary:focus-visible{outline-offset:2px}
   letter-spacing:.09em;
   color:var(--subtle);
   border-radius:0;
-  min-height:36px;
+  min-height:var(--ctrl-btn);
   padding:5px 0;
   font-size:var(--fs-meta);
   line-height:1.2;
@@ -612,6 +624,61 @@ button:focus-visible,summary:focus-visible{outline-offset:2px}
 .shell-brand>span:last-child{
   border-left:1px solid var(--line2);
   padding-left:10px;
+}
+@media (min-width:1051px) and (max-height:820px){
+  .story-visual .product-shell{
+    --chart-h:290px;
+    --row-y:9px;
+    --focus-min:214px;
+    --panel-pad:20px;
+    --insp-pad:18px;
+    --top-h:48px;
+    --switch-h:43px;
+    --ctrl-h:46px;
+    --ctrl-pad:8px;
+  }
+}
+@media (min-width:1051px) and (max-height:700px){
+  .story-visual .product-shell{
+    --chart-h:222px;
+    --row-y:6px;
+    --focus-min:172px;
+    --panel-pad:16px;
+    --insp-pad:14px;
+    --top-h:44px;
+    --switch-h:40px;
+    --ctrl-h:42px;
+    --ctrl-pad:5px;
+    --ctrl-btn:30px;
+  }
+}
+@media (min-width:1051px) and (max-height:640px){
+  .story-visual .product-shell{
+    --chart-h:190px;
+    --row-y:5px;
+    --focus-min:150px;
+  }
+}
+/* Narrow story column (e.g. 1366px wide at 125% scaling): give the chart the room. */
+@media (min-width:1051px){
+  @container shell (max-width:700px){
+    .case-grid{
+      grid-template-columns:minmax(0,1fr) 290px;
+    }
+    .chart-panel{
+      --panel-pad:16px;
+    }
+    .inspector{
+      --insp-pad:16px;
+    }
+    .market-context-line{
+      display:none;
+    }
+    .chart-legend{
+      gap:4px 14px;
+      letter-spacing:.05em;
+    }
+  }
 }
 @media (max-width:1050px){
   .case-grid{
@@ -723,13 +790,56 @@ button:focus-visible,summary:focus-visible{outline-offset:2px}
     font-size:var(--fs-label);
   }
 }
-.chart{width:100%;height:360px;margin-top:20px}
+/* Chart. Annotations live in a legend above the plot and in a right-hand tag gutter, never on top of candles. */
+.chart{
+  width:100%;
+  height:var(--chart-h);
+  margin-top:6px;
+  overflow:visible;
+}
+.chart-legend{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px 20px;
+  margin:0;
+  padding:0;
+  list-style:none;
+  color:var(--subtle);
+  font-size:var(--fs-label);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.chart-legend li{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+.chart-legend b{
+  color:var(--text);
+  font:600 var(--fs-label) var(--mono);
+  letter-spacing:.02em;
+}
+.lg{
+  display:inline-block;
+  flex:0 0 auto;
+  width:18px;
+  height:0;
+  border-top:1.5px dashed #8b95a3;
+}
+.lg-bos{
+  border-top:1.5px dotted #8b95a3;
+}
+.lg-zone{
+  width:14px;
+  height:9px;
+  border:0;
+  border-radius:2px;
+  background:rgba(231,237,244,.2);
+}
 .grid-line{stroke:#1d232b;stroke-width:1}
-.area{fill:url(#area)}
-.price-line{fill:none;stroke:#e9eef4;stroke-width:2.2}
-.frozen-line{stroke:#777f8d;stroke-width:1.2;stroke-dasharray:5 6}
+.frozen-line{stroke:#8b95a3;stroke-width:1.2;stroke-dasharray:5 6}
 .current-line{stroke:#f3f5f7;stroke-width:1.15}
-.svg-label{fill:#8a94a1;font-size:var(--fs-meta)}.svg-label.strong{fill:#f5f7fa}
+.tag-leader{fill:none;stroke:#59636e;stroke-width:1}
 .problem{max-width:var(--max);margin:0 auto;padding:150px 24px 140px;border-top:1px solid var(--line)}
 .problem-intro{display:grid;grid-template-columns:minmax(0,.78fr) minmax(0,1.22fr);column-gap:72px;align-items:start}
 .problem-intro .kicker{grid-column:1}
@@ -793,7 +903,11 @@ button:focus-visible,summary:focus-visible{outline-offset:2px}
   max-width:var(--max);margin:0 auto;display:grid;
   grid-template-columns:minmax(0,1.18fr) minmax(380px,.82fr);gap:72px;padding:0 24px
 }
-.story-visual{position:sticky;top:88px;height:max-content;padding:38px 0 96px}
+.story-visual{position:sticky;top:88px;height:max-content;padding:28px 0 72px}
+/* Too short to pin a workspace at all (e.g. 1366px wide at 125% scaling): let it scroll with the page. */
+@media (min-width:1051px) and (max-height:590px){
+  .story-visual{position:relative;top:auto}
+}
 .story-copy{padding:0 0 110px}
 .story-step{
   position:relative;min-height:76vh;display:flex;flex-direction:column;justify-content:center;
@@ -1366,15 +1480,13 @@ footer>div{display:flex;gap:16px;font-size:var(--fs-meta);color:var(--muted)}
 .hero h1 span{display:inline-block}
 
 /* Candlestick system */
-.chart{overflow:visible}
 .candle-wick{stroke-width:1.2}
 .candle-wick.up{stroke:#c9d0d6}.candle-wick.down{stroke:#77808a}
 .candle-body.up{fill:#e8edf1}.candle-body.down{fill:#6e7782}
 .structure-line{stroke:#6f7883;stroke-width:1;stroke-dasharray:2 5}
 .stop-line{stroke:var(--adverse);stroke-width:1;stroke-dasharray:3 4;opacity:.7}
 .target-line{stroke:var(--holding);stroke-width:1;stroke-dasharray:3 4;opacity:.72}
-.current-line{stroke:#f3f5f7;stroke-width:1.15}
-.chart-tag,.axis-label{fill:#7f8994;font-size:var(--fs-label);letter-spacing:.08em;text-transform:uppercase}
+.axis-label{fill:#8b95a3;font-size:var(--fs-label);letter-spacing:.08em;text-transform:uppercase}
 .current-label{fill:#f3f5f7}.stop-label{fill:var(--adverse)}.target-label{fill:var(--holding)}
 .crosshair line{stroke:#78818b;stroke-width:.8;stroke-dasharray:2 4}
 .crosshair circle{fill:#f2f4f6}
