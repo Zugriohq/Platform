@@ -120,8 +120,9 @@ export function deriveConfirmedTrendlines(input:{
   validateDerivationDefinition(input.definition);
   const evaluatedAt=epoch(input.evaluatedAt,"evaluatedAt");
 
-  const usable=dedupeById(input.pivots,fact=>fact.factId,"pivot fact")
-    .filter(fact =>
+  // Filter to what is knowable at evaluatedAt BEFORE integrity checks, so a
+  // revision that only becomes known later can never affect an earlier frame.
+  const usable=dedupeById(input.pivots.filter(fact =>
       (fact.concept==="SWING_LOW"||fact.concept==="SWING_HIGH") &&
       fact.maturity==="DETERMINISTIC_FACT" &&
       fact.geometry.type==="POINT" &&
@@ -130,7 +131,7 @@ export function deriveConfirmedTrendlines(input:{
       epoch(fact.knownAt,"fact.knownAt")<=evaluatedAt &&
       // geometry later than knowledge is non-causal and never an anchor
       pointTime(fact)<=epoch(fact.knownAt,"fact.knownAt")
-    );
+    ),fact=>fact.factId,"pivot fact");
 
   const groups=new Map<string,ResearchMarketStructureFact[]>();
   for(const fact of usable){
@@ -213,6 +214,23 @@ export function trendlinePriceAt(
   return first.price+slope*(target-firstTime);
 }
 
+function validateInteractableTrendline(trendline:ResearchMarketStructureFact):number{
+  if(
+    trendline.concept!=="TRENDLINE_SUPPORT" &&
+    trendline.concept!=="TRENDLINE_RESISTANCE"
+  ) throw new Error("trendline interaction requires support/resistance trendline fact");
+  if(trendline.geometry.type!=="PATH") throw new Error("trendline interaction requires PATH geometry");
+  if(trendline.maturity!=="RESEARCH_DERIVED"){
+    throw new Error(`trendline interaction requires a RESEARCH_DERIVED line, got ${trendline.maturity}`);
+  }
+  const lineKnownAt=epoch(trendline.knownAt,"trendline.knownAt");
+  if(trendline.geometry.points.some(point=>epoch(point.time,"trendline point")>lineKnownAt)){
+    throw new Error(`trendline geometry is later than its knownAt: ${trendline.factId}`);
+  }
+
+  return lineKnownAt;
+}
+
 /**
  * Evaluates one later closed bar against an already-known trendline.
  *
@@ -227,18 +245,7 @@ export function assessTrendlineInteraction(
   validateInteractionDefinition(definition);
   validateResearchStructureBar(bar);
 
-  if(
-    trendline.concept!=="TRENDLINE_SUPPORT" &&
-    trendline.concept!=="TRENDLINE_RESISTANCE"
-  ) throw new Error("trendline interaction requires support/resistance trendline fact");
-  if(trendline.geometry.type!=="PATH") throw new Error("trendline interaction requires PATH geometry");
-  if(trendline.maturity!=="RESEARCH_DERIVED"){
-    throw new Error(`trendline interaction requires a RESEARCH_DERIVED line, got ${trendline.maturity}`);
-  }
-  const lineKnownAt=epoch(trendline.knownAt,"trendline.knownAt");
-  if(trendline.geometry.points.some(point=>epoch(point.time,"trendline point")>lineKnownAt)){
-    throw new Error(`trendline geometry is later than its knownAt: ${trendline.factId}`);
-  }
+  const lineKnownAt=validateInteractableTrendline(trendline);
 
   const linePrice=trendlinePriceAt(trendline,bar.sourceClosedAt);
   const none=():ResearchTrendlineInteractionAssessment=>({
@@ -309,8 +316,8 @@ export function assessTrendlineInteraction(
  * Emits interaction events in knowledge order and terminates the line lifecycle
  * after the first known close-break. Repeated touches/penetrations remain historical facts.
  * Nothing after the terminating break (including further breaks) is emitted.
- * Only bars known by evaluatedAt participate; identical re-deliveries of a bar
- * collapse, conflicting revisions of one sourceBarId fail closed.
+ * Only FRESH_COMPLETE bars known by evaluatedAt participate; identical
+ * re-deliveries collapse, conflicting complete revisions of one sourceBarId fail closed.
  */
 export function deriveTrendlineInteractions(input:{
   readonly evaluatedAt:string;
@@ -319,8 +326,15 @@ export function deriveTrendlineInteractions(input:{
   readonly definition:ResearchTrendlineInteractionDefinition;
 }):readonly ResearchMarketStructureFact[]{
   const evaluatedAt=epoch(input.evaluatedAt,"evaluatedAt");
+  validateInteractionDefinition(input.definition);
+  validateInteractableTrendline(input.trendline);
   if(epoch(input.trendline.knownAt,"trendline.knownAt")>evaluatedAt) return [];
-  const known=input.bars.filter(bar=>epoch(bar.knownAt,"bar.knownAt")<=evaluatedAt);
+  // Only fresh, complete bars known by evaluatedAt can advance the lifecycle.
+  // In-progress/stale snapshots are dropped before the integrity check, so an
+  // INCOMPLETE snapshot and its final bar never register as a conflict.
+  const knownAny=input.bars.filter(bar=>epoch(bar.knownAt,"bar.knownAt")<=evaluatedAt);
+  for(const bar of knownAny) validateResearchStructureBar(bar);
+  const known=knownAny.filter(bar=>bar.dataStatus==="FRESH_COMPLETE");
   const bars=[...dedupeById(known,bar=>bar.sourceBarId,"source bar")]
     .sort((a,b)=>{
       // Knowledge order first: the lifecycle advances as evidence becomes known,
