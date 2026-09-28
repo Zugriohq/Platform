@@ -86,3 +86,17 @@ describe("ADV round 2 line validation",()=>{
     expect(()=>deriveTrendlineInteractions({evaluatedAt:k(60),trendline:{...L!,knownAt:k(12)},bars:[],definition:interaction})).toThrow();
   });
 });
+
+describe("ADV round 3 pivot knowledge",()=>{
+  it("R3-1 a pivot is never known before every bar in its window is known",async()=>{
+    const { detectConfirmedPivots } = await import("../src/index.js");
+    const bars=[
+      bar("p0",t(5),k(200),1.1010,1.1015,1.1005,1.1010),  // left bar delivered late
+      bar("p1",t(10),k(10),1.1005,1.1008,1.0990,1.1000),  // pivot low
+      bar("p2",t(15),k(15),1.1000,1.1012,1.0998,1.1010),  // confirming bar
+    ];
+    const pivots=detectConfirmedPivots("M5",bars,[{definitionId:"piv:v1",scale:"EXTERNAL",leftBars:1,rightBars:1}]);
+    const low=pivots.find(p=>p.concept==="SWING_LOW");
+    expect(low?.knownAt).toBe(k(200));
+  });
+});

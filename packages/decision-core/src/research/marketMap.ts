@@ -323,7 +323,10 @@ export function detectConfirmedPivots(
         right.every(bar => source.low < bar.low);
 
       const sourceEvidenceIds = window.map(bar => bar.evidenceId);
-      const knownAt = confirmingBar.knownAt;
+      const knownAt = window.reduce(
+        (latest, bar) => (epoch(bar.knownAt, "knownAt") > epoch(latest, "knownAt") ? bar.knownAt : latest),
+        confirmingBar.knownAt,
+      );
 
       if (highConfirmed) {
         facts.push({
