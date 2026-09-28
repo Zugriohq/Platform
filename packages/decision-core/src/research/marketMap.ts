@@ -9,67 +9,102 @@ export type CanonicalRegime =
 
 export type StructureScale = "INTERNAL" | "INTERMEDIATE" | "EXTERNAL";
 
-export type MarketStructureConcept =
-  | "SWING_HIGH"
-  | "SWING_LOW"
-  | "EQUAL_HIGHS"
-  | "EQUAL_LOWS"
-  | "BOS"
-  | "CHOCH"
-  | "MSS"
-  | "TRENDLINE_SUPPORT"
-  | "TRENDLINE_RESISTANCE"
-  | "TRENDLINE_TOUCH"
-  | "TRENDLINE_PENETRATION"
-  | "TRENDLINE_BREAK"
-  | "CHANNEL_SUPPORT"
-  | "CHANNEL_RESISTANCE"
-  | "LIQUIDITY_SWEEP"
-  | "FAKEOUT"
-  | "INDUCEMENT"
-  | "DISPLACEMENT"
-  | "FVG"
-  | "FVG_TOUCH"
-  | "FVG_PARTIAL_FILL"
-  | "FVG_FULL_FILL"
-  | "ORDER_BLOCK"
-  | "BREAKER_BLOCK"
-  | "MITIGATION_BLOCK"
-  | "MITIGATION"
-  | "RANGE_HIGH"
-  | "RANGE_LOW"
-  | "BREAKOUT"
-  | "RETEST"
-  | "CONTINUATION"
-  | "DOUBLE_TOP"
-  | "DOUBLE_BOTTOM"
-  | "HEAD_AND_SHOULDERS"
-  | "INVERSE_HEAD_AND_SHOULDERS"
-  | "RISING_WEDGE"
-  | "FALLING_WEDGE"
-  | "ASCENDING_TRIANGLE"
-  | "DESCENDING_TRIANGLE"
-  | "SYMMETRICAL_TRIANGLE"
-  | "FLAG"
-  | "PENNANT"
-  | "DOJI"
-  | "HAMMER"
-  | "SHOOTING_STAR"
-  | "BULLISH_ENGULFING"
-  | "BEARISH_ENGULFING"
-  | "INSIDE_BAR"
-  | "OUTSIDE_BAR"
-  | "MORNING_STAR"
-  | "EVENING_STAR"
-  | "THREE_WHITE_SOLDIERS"
-  | "THREE_BLACK_CROWS"
-  | "ELLIOTT_WAVE";
+export const MARKET_STRUCTURE_CONCEPTS = [
+  "SWING_HIGH",
+  "SWING_LOW",
+  "EQUAL_HIGHS",
+  "EQUAL_LOWS",
+  "BOS",
+  "CHOCH",
+  "MSS",
+  "TRENDLINE_SUPPORT",
+  "TRENDLINE_RESISTANCE",
+  "TRENDLINE_TOUCH",
+  "TRENDLINE_PENETRATION",
+  "TRENDLINE_BREAK",
+  "CHANNEL_SUPPORT",
+  "CHANNEL_RESISTANCE",
+  "LIQUIDITY_SWEEP",
+  "FAKEOUT",
+  "INDUCEMENT",
+  "DISPLACEMENT",
+  "FVG",
+  "FVG_TOUCH",
+  "FVG_PARTIAL_FILL",
+  "FVG_FULL_FILL",
+  "ORDER_BLOCK",
+  "BREAKER_BLOCK",
+  "MITIGATION_BLOCK",
+  "MITIGATION",
+  "RANGE_HIGH",
+  "RANGE_LOW",
+  "BREAKOUT",
+  "RETEST",
+  "CONTINUATION",
+  "DOUBLE_TOP",
+  "DOUBLE_BOTTOM",
+  "HEAD_AND_SHOULDERS",
+  "INVERSE_HEAD_AND_SHOULDERS",
+  "RISING_WEDGE",
+  "FALLING_WEDGE",
+  "ASCENDING_TRIANGLE",
+  "DESCENDING_TRIANGLE",
+  "SYMMETRICAL_TRIANGLE",
+  "FLAG",
+  "PENNANT",
+  "DOJI",
+  "HAMMER",
+  "SHOOTING_STAR",
+  "BULLISH_ENGULFING",
+  "BEARISH_ENGULFING",
+  "INSIDE_BAR",
+  "OUTSIDE_BAR",
+  "MORNING_STAR",
+  "EVENING_STAR",
+  "THREE_WHITE_SOLDIERS",
+  "THREE_BLACK_CROWS",
+  "ELLIOTT_WAVE",
+] as const;
 
-export type ResearchConceptMaturity =
-  | "DETERMINISTIC_FACT"
-  | "MORPHOLOGY_ONLY"
-  | "RESEARCH_DERIVED"
-  | "ADVISORY_ONLY";
+export type MarketStructureConcept = (typeof MARKET_STRUCTURE_CONCEPTS)[number];
+
+export const RESEARCH_CONCEPT_MATURITIES = [
+  "DETERMINISTIC_FACT",
+  "MORPHOLOGY_ONLY",
+  "RESEARCH_DERIVED",
+  "ADVISORY_ONLY",
+] as const;
+
+export type ResearchConceptMaturity = (typeof RESEARCH_CONCEPT_MATURITIES)[number];
+
+/**
+ * Concepts whose maturity is capped at RESEARCH_DERIVED. A trendline is fitted
+ * from confirmed pivots under a profile-owned tolerance, and every interaction
+ * with it inherits that research status: deterministic arithmetic on a research
+ * line does not make the result a deterministic market fact.
+ */
+export const RESEARCH_DERIVED_CEILING_CONCEPTS = [
+  "TRENDLINE_SUPPORT",
+  "TRENDLINE_RESISTANCE",
+  "TRENDLINE_TOUCH",
+  "TRENDLINE_PENETRATION",
+  "TRENDLINE_BREAK",
+] as const satisfies readonly MarketStructureConcept[];
+
+export function exceedsConceptMaturityCeiling(concept: string, maturity: string): boolean {
+  return (RESEARCH_DERIVED_CEILING_CONCEPTS as readonly string[]).includes(concept) &&
+    maturity === "DETERMINISTIC_FACT";
+}
+
+/**
+ * Slack for binary floating-point noise when comparing prices against a
+ * profile-owned tolerance or buffer. It is a representation guard (about
+ * 1e-12 relative), orders of magnitude below any instrument tick; it is not a
+ * tuning parameter and never widens a tolerance in any economically meaningful way.
+ */
+export function priceComparisonSlack(...values: readonly number[]): number {
+  return 1e-12 * Math.max(1, ...values.map(value => Math.abs(value)));
+}
 
 export type MarketMapGeometry =
   | {
@@ -394,6 +429,10 @@ export function buildTrendlineCandidateFromPivots(
   const secondTime = epoch(second.geometry.time, "second.geometry.time");
   if (secondTime <= firstTime) return null;
   if (secondTime - firstTime < definition.minimumAnchorSeparationMs) return null;
+  // An anchor whose geometry is later than the moment it claims to be known is non-causal.
+  if (firstTime > epoch(first.knownAt, "first.knownAt") || secondTime > epoch(second.knownAt, "second.knownAt")) {
+    return null;
+  }
 
   const side = first.concept === "SWING_LOW" ? "SUPPORT" : "RESISTANCE";
 
@@ -447,10 +486,12 @@ export function confirmTrendlineWithPivot(
   const secondTime = epoch(second.time, "trendline second anchor time");
   const thirdTime = epoch(confirmingPivot.geometry.time, "confirming pivot time");
   if (thirdTime <= secondTime) return null;
+  if (thirdTime > epoch(confirmingPivot.knownAt, "confirmingPivot.knownAt")) return null;
 
   const slope = (second.price - first.price) / (secondTime - firstTime);
   const expected = first.price + slope * (thirdTime - firstTime);
-  if (Math.abs(confirmingPivot.geometry.price - expected) > definition.anchorTolerance) return null;
+  const slack = priceComparisonSlack(confirmingPivot.geometry.price, expected, first.price, second.price);
+  if (Math.abs(confirmingPivot.geometry.price - expected) > definition.anchorTolerance + slack) return null;
 
   const concept = candidate.side === "SUPPORT" ? "TRENDLINE_SUPPORT" : "TRENDLINE_RESISTANCE";
 

@@ -134,6 +134,35 @@ describe("createAlphaApiClient", () => {
     });
   });
 
+  it("rejects unsupported chart primitives and promoted trendline maturity", async () => {
+    const scenario = alphaScenarios.find(item => item.id === DERIVED_STRUCTURAL_SCENARIO_ID)!;
+    const base = JSON.parse(JSON.stringify(buildReplayChartScene(scenario, 19)));
+    const rejected = {
+      status: "rejected",
+      reason: "Response payload does not satisfy the expected alpha contract",
+    };
+    const fetchScene = async (scene: unknown) => {
+      const { impl } = fakeFetch(() => json(200, { meta: ALPHA_RESPONSE_META, data: scene }));
+      return createAlphaApiClient({ baseUrl: "https://api.zugrio.xyz", fetch: impl })
+        .getFrameChartScene(scenario.id, 19);
+    };
+
+    expect((await fetchScene(base)).status).toBe("ok");
+
+    const unsupported = JSON.parse(JSON.stringify(base));
+    unsupported.primitives[0].concept = "TRENDLINE_CHANNEL_WEDGE";
+    expect(await fetchScene(unsupported)).toEqual(rejected);
+
+    for (const concept of ["TRENDLINE_SUPPORT", "TRENDLINE_TOUCH", "TRENDLINE_PENETRATION", "TRENDLINE_BREAK"]) {
+      const promoted = JSON.parse(JSON.stringify(base));
+      const index = promoted.primitives.findIndex((item: { concept: string }) => item.concept === concept);
+      if (index < 0) continue;
+      expect(promoted.primitives[index].maturity).toBe("RESEARCH_DERIVED");
+      promoted.primitives[index].maturity = "DETERMINISTIC_FACT";
+      expect(await fetchScene(promoted)).toEqual(rejected);
+    }
+  });
+
   it("rejects malformed or causally impossible regime-route scene context", async () => {
     const base = JSON.parse(JSON.stringify(buildReplayChartScene(staleEntryScenario, 4)));
 

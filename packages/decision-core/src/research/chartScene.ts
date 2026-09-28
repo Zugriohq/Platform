@@ -1,12 +1,32 @@
-import type {
-  MarketMapGeometry,
-  MarketStructureConcept,
-  ResearchConceptMaturity,
-  ResearchMarketMap,
-  ResearchMarketStructureFact,
-  ResearchEntryRouteFamily,
-  StructureScale,
+import {
+  MARKET_STRUCTURE_CONCEPTS,
+  exceedsConceptMaturityCeiling,
+  type MarketMapGeometry,
+  type MarketStructureConcept,
+  type ResearchConceptMaturity,
+  type ResearchMarketMap,
+  type ResearchMarketStructureFact,
+  type ResearchEntryRouteFamily,
+  type StructureScale,
 } from "./marketMap.js";
+
+/**
+ * Every concept an engine chart primitive may carry. Clients validate against
+ * this list so an unsupported primitive is rejected instead of rendered.
+ */
+export const ENGINE_CHART_PRIMITIVE_CONCEPTS = [
+  ...MARKET_STRUCTURE_CONCEPTS,
+  "REGIME",
+  "STRUCTURAL_LIFECYCLE",
+  "ENTRY_STATUS",
+] as const satisfies readonly EngineChartPrimitive["concept"][];
+
+export function isEngineChartPrimitiveConcept(
+  value: unknown,
+): value is EngineChartPrimitive["concept"] {
+  return typeof value === "string" &&
+    (ENGINE_CHART_PRIMITIVE_CONCEPTS as readonly string[]).includes(value);
+}
 
 export type ChartSemanticLayer =
   | "REGIME"
@@ -199,6 +219,13 @@ export function projectMarketMapToChartScene(
     reasons: marketMap.regime ? ["REGIME_FACT_PRESENT"] : ["REGIME_UNAVAILABLE"],
   },
 ): EngineChartScene {
+  for (const fact of marketMap.facts) {
+    if (exceedsConceptMaturityCeiling(fact.concept, fact.maturity)) {
+      throw new Error(
+        `maturity escalation refused: ${fact.concept} is capped at RESEARCH_DERIVED (${fact.factId})`,
+      );
+    }
+  }
   const primitives: EngineChartPrimitive[] = marketMap.facts.map((fact) => ({
     primitiveId: `primitive:${fact.factId}`,
     layer: layerForFact(fact),

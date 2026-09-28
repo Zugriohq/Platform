@@ -22,6 +22,11 @@ import {
   type ScenarioDetail,
   type ScenarioSummary,
 } from "@zugrio/alpha-api-contract";
+import {
+  RESEARCH_CONCEPT_MATURITIES,
+  exceedsConceptMaturityCeiling,
+  isEngineChartPrimitiveConcept,
+} from "@zugrio/decision-core";
 
 export type CloudResult<T> =
   | { readonly status: "ok"; readonly source: "CLOUD"; readonly meta: AlphaResponseMeta; readonly data: T; readonly httpStatus: number }
@@ -216,7 +221,7 @@ function isEngineChartScenePayload(value: unknown): value is EngineChartScene {
   }
 
   const layers = ["REGIME","STRUCTURE","LIQUIDITY","IMBALANCE","SETUP","PATTERN","ENTRY","INVALIDATION","OBJECTIVE","DIAGNOSTIC","ADVISORY"] as const;
-  const maturities = ["DETERMINISTIC_FACT","MORPHOLOGY_ONLY","RESEARCH_DERIVED","ADVISORY_ONLY"] as const;
+  const maturities = RESEARCH_CONCEPT_MATURITIES;
   const scales = ["INTERNAL","INTERMEDIATE","EXTERNAL"] as const;
   const visibility = ["PRIMARY","SECONDARY","DETAIL"] as const;
   const styleTokens = ["STRUCTURE_PRIMARY","STRUCTURE_SECONDARY","LIQUIDITY","IMBALANCE","SETUP","PATTERN","ENTRY","ADVISORY"] as const;
@@ -226,8 +231,11 @@ function isEngineChartScenePayload(value: unknown): value is EngineChartScene {
     if (
       !isNonEmptyString(primitive.primitiveId) ||
       !oneOf(primitive.layer, layers) ||
-      !isNonEmptyString(primitive.concept) ||
+      !isEngineChartPrimitiveConcept(primitive.concept) ||
       !oneOf(primitive.maturity, maturities) ||
+      // Research-derived concepts (trendlines and their interactions) may never
+      // arrive promoted to DETERMINISTIC_FACT.
+      exceedsConceptMaturityCeiling(primitive.concept, primitive.maturity) ||
       !(primitive.scale === null || oneOf(primitive.scale, scales)) ||
       !isNonEmptyString(primitive.label) ||
       !isIsoTime(primitive.knownAt) ||

@@ -1,6 +1,7 @@
 import {
   buildTrendlineCandidateFromPivots,
   confirmTrendlineWithPivot,
+  priceComparisonSlack,
   validateResearchStructureBar,
   type ResearchMarketStructureFact,
   type ResearchStructureBar,
@@ -64,9 +65,52 @@ function validateInteractionDefinition(definition:ResearchTrendlineInteractionDe
   if(definition.breakRule!=="CLOSE_BEYOND") throw new Error("unsupported trendline breakRule");
 }
 
+function canonicalJson(value:unknown):string{
+  if(Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  if(value!==null&&typeof value==="object"){
+    const record=value as Record<string,unknown>;
+    return `{${Object.keys(record).filter(key=>record[key]!==undefined).sort()
+      .map(key=>`${JSON.stringify(key)}:${canonicalJson(record[key])}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function sameJson(a:unknown,b:unknown):boolean{
+  return canonicalJson(a)===canonicalJson(b);
+}
+
 /**
- * Derives three-anchor trendlines from adjacent, already-confirmed deterministic
- * same-side pivots. Future pivots cannot improve an earlier evaluated frame.
+ * Identical re-deliveries of the same fact collapse to one; two different
+ * payloads under one id are an evidence-integrity failure and fail closed.
+ */
+function dedupeById<T>(items:readonly T[],idOf:(item:T)=>string,label:string):readonly T[]{
+  const byId=new Map<string,T>();
+  for(const item of items){
+    const id=idOf(item);
+    const existing=byId.get(id);
+    if(existing===undefined){ byId.set(id,item); continue; }
+    if(!sameJson(existing,item)) throw new Error(`conflicting ${label} payloads share id: ${id}`);
+  }
+  return [...byId.values()];
+}
+
+function groupKey(fact:ResearchMarketStructureFact):string{
+  // Pivot definition version is part of the key: anchors from different pivot
+  // definitions (or versions) are never mixed into one line.
+  return [fact.timeframe,fact.scale??"NONE",fact.concept,fact.definitionId].join("|");
+}
+
+/**
+ * Derives three-anchor trendlines from already-confirmed deterministic same-side
+ * pivots, point-in-time.
+ *
+ * Each confirming (third) pivot is paired with the two latest same-group pivots
+ * whose geometry precedes it AND that were already known when the third pivot
+ * became known. "Adjacent" therefore means adjacent in the knowledge state at the
+ * moment of confirmation. This makes derivation monotonic in evaluatedAt: a pivot
+ * that arrives late can create new lines, but can never retract or reshape a line
+ * that an earlier frame already knew. The line is straight through anchors 1 and
+ * 2; the third anchor only confirms it (its stored point is the projection).
  */
 export function deriveConfirmedTrendlines(input:{
   readonly evaluatedAt:string;
@@ -76,26 +120,21 @@ export function deriveConfirmedTrendlines(input:{
   validateDerivationDefinition(input.definition);
   const evaluatedAt=epoch(input.evaluatedAt,"evaluatedAt");
 
-  const usable=input.pivots
+  const usable=dedupeById(input.pivots,fact=>fact.factId,"pivot fact")
     .filter(fact =>
       (fact.concept==="SWING_LOW"||fact.concept==="SWING_HIGH") &&
       fact.maturity==="DETERMINISTIC_FACT" &&
       fact.geometry.type==="POINT" &&
       fact.scale!==null &&
       input.definition.allowedScales.includes(fact.scale) &&
-      epoch(fact.knownAt,"fact.knownAt")<=evaluatedAt
-    )
-    .sort((a,b)=>{
-      const keyA=[a.timeframe,a.scale??"NONE",a.concept].join("|");
-      const keyB=[b.timeframe,b.scale??"NONE",b.concept].join("|");
-      if(keyA!==keyB) return keyA.localeCompare(keyB);
-      const byTime=pointTime(a)-pointTime(b);
-      return byTime!==0?byTime:a.factId.localeCompare(b.factId);
-    });
+      epoch(fact.knownAt,"fact.knownAt")<=evaluatedAt &&
+      // geometry later than knowledge is non-causal and never an anchor
+      pointTime(fact)<=epoch(fact.knownAt,"fact.knownAt")
+    );
 
   const groups=new Map<string,ResearchMarketStructureFact[]>();
   for(const fact of usable){
-    const key=[fact.timeframe,fact.scale??"NONE",fact.concept].join("|");
+    const key=groupKey(fact);
     const group=groups.get(key)??[];
     group.push(fact);
     groups.set(key,group);
@@ -104,18 +143,36 @@ export function deriveConfirmedTrendlines(input:{
   const facts:ResearchMarketStructureFact[]=[];
   const ids=new Set<string>();
   for(const group of groups.values()){
-    for(let index=2;index<group.length;index+=1){
-      const first=group[index-2];
-      const second=group[index-1];
-      const third=group[index];
-      if(!first||!second||!third) continue;
+    const seenTimes=new Map<number,string>();
+    for(const fact of group){
+      const time=pointTime(fact);
+      const other=seenTimes.get(time);
+      if(other!==undefined){
+        throw new Error(`ambiguous same-side pivots at one time in one group: ${other}, ${fact.factId}`);
+      }
+      seenTimes.set(time,fact.factId);
+    }
+
+    for(const third of group){
+      const thirdTime=pointTime(third);
+      const thirdKnownAt=epoch(third.knownAt,"third.knownAt");
+      const predecessors=group
+        .filter(fact=>
+          fact.factId!==third.factId &&
+          pointTime(fact)<thirdTime &&
+          epoch(fact.knownAt,"fact.knownAt")<=thirdKnownAt
+        )
+        .sort((a,b)=>pointTime(a)-pointTime(b));
+      if(predecessors.length<2) continue;
+      const first=predecessors[predecessors.length-2]!;
+      const second=predecessors[predecessors.length-1]!;
 
       const candidate=buildTrendlineCandidateFromPivots(first,second,{
         definitionId:input.definition.definitionId,
         minimumAnchorSeparationMs:input.definition.minimumAnchorSeparationMs,
       });
       if(!candidate) continue;
-      if(pointTime(third)-pointTime(second)<input.definition.minimumAnchorSeparationMs) continue;
+      if(thirdTime-pointTime(second)<input.definition.minimumAnchorSeparationMs) continue;
 
       const confirmed=confirmTrendlineWithPivot(candidate,third,{
         definitionId:input.definition.definitionId,
@@ -175,6 +232,13 @@ export function assessTrendlineInteraction(
     trendline.concept!=="TRENDLINE_RESISTANCE"
   ) throw new Error("trendline interaction requires support/resistance trendline fact");
   if(trendline.geometry.type!=="PATH") throw new Error("trendline interaction requires PATH geometry");
+  if(trendline.maturity!=="RESEARCH_DERIVED"){
+    throw new Error(`trendline interaction requires a RESEARCH_DERIVED line, got ${trendline.maturity}`);
+  }
+  const lineKnownAt=epoch(trendline.knownAt,"trendline.knownAt");
+  if(trendline.geometry.points.some(point=>epoch(point.time,"trendline point")>lineKnownAt)){
+    throw new Error(`trendline geometry is later than its knownAt: ${trendline.factId}`);
+  }
 
   const linePrice=trendlinePriceAt(trendline,bar.sourceClosedAt);
   const none=():ResearchTrendlineInteractionAssessment=>({
@@ -187,20 +251,22 @@ export function assessTrendlineInteraction(
 
   if(bar.dataStatus!=="FRESH_COMPLETE") return none();
 
-  const lineKnownAt=epoch(trendline.knownAt,"trendline.knownAt");
   const barClosedAt=epoch(bar.sourceClosedAt,"bar.sourceClosedAt");
   if(barClosedAt<=lineKnownAt||trendline.sourceEvidenceIds.includes(bar.evidenceId)) return none();
 
+  // Boundaries are exact at the declared buffer; slack only absorbs binary
+  // float noise from projecting the line, never a meaningful price distance.
+  const slack=priceComparisonSlack(linePrice,bar.high,bar.low,bar.close);
   const support=trendline.concept==="TRENDLINE_SUPPORT";
   const closeBreak=support
-    ? bar.close<linePrice-definition.closeBreakBuffer
-    : bar.close>linePrice+definition.closeBreakBuffer;
+    ? bar.close<linePrice-definition.closeBreakBuffer-slack
+    : bar.close>linePrice+definition.closeBreakBuffer+slack;
   const penetration=support
-    ? bar.low<linePrice-definition.penetrationBuffer
-    : bar.high>linePrice+definition.penetrationBuffer;
-  const touch=support
-    ? bar.low<=linePrice+definition.touchTolerance && bar.high>=linePrice-definition.touchTolerance
-    : bar.high>=linePrice-definition.touchTolerance && bar.low<=linePrice+definition.touchTolerance;
+    ? bar.low<linePrice-definition.penetrationBuffer-slack
+    : bar.high>linePrice+definition.penetrationBuffer+slack;
+  const touch=
+    bar.low<=linePrice+definition.touchTolerance+slack &&
+    bar.high>=linePrice-definition.touchTolerance-slack;
 
   const status:ResearchTrendlineInteractionAssessment["status"]=
     closeBreak?"CLOSE_BREAK":penetration?"PENETRATION":touch?"TOUCH":"NO_INTERACTION";
@@ -240,8 +306,11 @@ export function assessTrendlineInteraction(
 }
 
 /**
- * Emits chronological interaction events and terminates the line lifecycle after
- * the first close-break. Repeated touches/penetrations remain historical facts.
+ * Emits interaction events in knowledge order and terminates the line lifecycle
+ * after the first known close-break. Repeated touches/penetrations remain historical facts.
+ * Nothing after the terminating break (including further breaks) is emitted.
+ * Only bars known by evaluatedAt participate; identical re-deliveries of a bar
+ * collapse, conflicting revisions of one sourceBarId fail closed.
  */
 export function deriveTrendlineInteractions(input:{
   readonly evaluatedAt:string;
@@ -251,9 +320,14 @@ export function deriveTrendlineInteractions(input:{
 }):readonly ResearchMarketStructureFact[]{
   const evaluatedAt=epoch(input.evaluatedAt,"evaluatedAt");
   if(epoch(input.trendline.knownAt,"trendline.knownAt")>evaluatedAt) return [];
-  const bars=input.bars
-    .filter(bar=>epoch(bar.knownAt,"bar.knownAt")<=evaluatedAt)
+  const known=input.bars.filter(bar=>epoch(bar.knownAt,"bar.knownAt")<=evaluatedAt);
+  const bars=[...dedupeById(known,bar=>bar.sourceBarId,"source bar")]
     .sort((a,b)=>{
+      // Knowledge order first: the lifecycle advances as evidence becomes known,
+      // so a late-delivered bar can never retract an interaction or break that an
+      // earlier frame already knew. For in-order feeds this equals close order.
+      const byKnown=epoch(a.knownAt,"bar.knownAt")-epoch(b.knownAt,"bar.knownAt");
+      if(byKnown!==0) return byKnown;
       const byClose=epoch(a.sourceClosedAt,"sourceClosedAt")-epoch(b.sourceClosedAt,"sourceClosedAt");
       return byClose!==0?byClose:a.sourceBarId.localeCompare(b.sourceBarId);
     });
