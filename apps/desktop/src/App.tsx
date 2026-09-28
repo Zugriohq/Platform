@@ -6,7 +6,6 @@ import {
   type DecisionCase,
   type EngineChartScene,
   type ReplayScenario,
-  type StructuralLifecycle,
   type StructuralState,
 } from "@zugrio/decision-core";
 import type { ScenarioSummary } from "@zugrio/alpha-api-contract";
@@ -15,6 +14,11 @@ import {
   createConfiguredAlphaApiClient,
   type AlphaApiClient,
 } from "./cloud";
+import { ChartModeControls, ResearchInspector } from "./chart/ChartControls";
+import { EngineChart } from "./chart/EngineChart";
+import type { TracePoint } from "./chart/geometry";
+import type { ChartMode } from "./chart/modes";
+import { prepareSceneForRender } from "./chart/sceneGuard";
 
 const STATE_LABELS: Record<StructuralState, string> = {
   STRUCTURAL_CANDIDATE: "STRUCTURAL CANDIDATE",
@@ -43,12 +47,6 @@ function stateLabel(state: StructuralState | null): string {
   return state ? STATE_LABELS[state] : "NO ACTIVE STRUCTURAL STATE";
 }
 
-function lifecycleAtLeastRetest(lifecycle: StructuralLifecycle | null): boolean {
-  return lifecycle === "RETEST_TOUCHED" ||
-    lifecycle === "RETEST_HELD" ||
-    lifecycle === "LIFECYCLE_CONFIRMED";
-}
-
 function formatValue(value: string | boolean | number | null): string {
   if (value === null) return "UNAVAILABLE";
   if (typeof value === "boolean") return value ? "OBSERVED" : "NOT OBSERVED";
@@ -58,92 +56,6 @@ function formatValue(value: string | boolean | number | null): string {
 
 function EvidenceRow({ label, value }: { label: string; value: string }) {
   return <div className="evidence-row"><span>{label}</span><strong>{value}</strong></div>;
-}
-
-function PriceField({
-  decisions,
-  scenes,
-  frame,
-}: {
-  decisions: readonly DecisionCase[];
-  scenes: readonly EngineChartScene[];
-  frame: number;
-}) {
-  const visible = decisions.slice(0, frame + 1);
-  const visibleScenes = scenes.slice(0, frame + 1);
-  const plotted = visible
-    .map((item, index) => ({
-      snapshot: item.current,
-      scene: visibleScenes[index],
-    }))
-    .filter((item) => item.snapshot.price !== null);
-
-  const prices = plotted.map((item) => item.snapshot.price as number);
-  const min = prices.length > 0 ? Math.min(...prices) - 0.0005 : 0;
-  const max = prices.length > 0 ? Math.max(...prices) + 0.0005 : 1;
-  const range = Math.max(max - min, 0.0001);
-  const coords = prices.map((price, index) => {
-    const x = prices.length === 1 ? 20 : 20 + (index / (prices.length - 1)) * 720;
-    const y = 220 - ((price - min) / range) * 170;
-    return `${x},${y}`;
-  });
-
-  const decision = decisions[frame];
-  const current = decision?.current;
-  const retestObserved = current ? lifecycleAtLeastRetest(current.lifecycle) : false;
-  const entryClass =
-    current?.currentEntryStatus === "CURRENT"
-      ? "evidence-chip on"
-      : current?.currentEntryStatus === "STALE"
-        ? "evidence-chip stale"
-        : "evidence-chip";
-  const entryLabel =
-    current?.currentEntryStatus === "CURRENT"
-      ? "ENTRY CURRENT"
-      : current?.currentEntryStatus === "STALE"
-        ? "ENTRY STALE"
-        : "NO ENTRY";
-
-  return <div className="chart-shell">
-    <div className="chart-grid" />
-    <svg viewBox="0 0 760 250" role="img" aria-label="Point-in-time replay price trace">
-      <polyline points={coords.join(" ")} fill="none" stroke="currentColor" strokeWidth="2.2" vectorEffect="non-scaling-stroke" />
-      {coords.map((pair, index) => {
-        const [x,y] = pair.split(",");
-        const scene = plotted[index]?.scene;
-        const meaningful = (scene?.primitives ?? [])
-          .filter(primitive => primitive.visibility === "PRIMARY")
-          .map(primitive => primitive.label);
-        return <g key={pair + index}>
-          <circle cx={x} cy={y} r={index === coords.length - 1 ? 4.5 : 2.4} fill="currentColor" />
-          {meaningful.map((label, labelIndex) => <g key={label}>
-            <line x1={x} y1={Number(y) - 8} x2={x} y2={Number(y) - 29 - labelIndex * 19} className="annotation-line" />
-            <rect
-              x={Math.max(4, Math.min(620, Number(x) - 42))}
-              y={Number(y) - 47 - labelIndex * 19}
-              width="118"
-              height="16"
-              rx="8"
-              className="annotation-badge"
-            />
-            <text
-              x={Math.max(12, Math.min(628, Number(x) - 34))}
-              y={Number(y) - 36 - labelIndex * 19}
-              className="annotation-text"
-            >
-              {label}
-            </text>
-          </g>)}
-        </g>;
-      })}
-    </svg>
-    <div className="chart-watermark">POINT-IN-TIME REPLAY / NOT LIVE DATA</div>
-    <div className="chart-evidence" aria-label="Current replay evidence">
-      <span className={retestObserved ? "evidence-chip on" : "evidence-chip"}>RETEST</span>
-      <span className={current?.entryEventObserved ? "evidence-chip on" : "evidence-chip"}>ENTRY EVENT</span>
-      <span className={entryClass}>{entryLabel}</span>
-    </div>
-  </div>;
 }
 
 function failureReason(status: CloudUiStatus): string | undefined {
@@ -168,6 +80,8 @@ export function App({ apiClient: injectedClient }: AppProps = {}) {
   const [cloudStatus, setCloudStatus] = useState<CloudUiStatus>({ status: cloudConfigured ? "loading" : "idle" });
   const [recordStatus, setRecordStatus] = useState<RecordStatus>({ status: "idle" });
   const [retryNonce, setRetryNonce] = useState(0);
+  const [chartMode, setChartMode] = useState<ChartMode>("CLEAN");
+  const [selectedPrimitiveId, setSelectedPrimitiveId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!cloudConfigured) return;
@@ -281,6 +195,24 @@ export function App({ apiClient: injectedClient }: AppProps = {}) {
   const decision = decisions[safeFrame];
   const scene = scenes[safeFrame];
   const scope = scenario?.bundle.identity.scope;
+
+  // Presentation boundary: the scene must belong to the displayed frame and pass
+  // the renderer's fail-closed checks before anything is drawn.
+  const prepared = useMemo(
+    () => prepareSceneForRender(scene, decision?.current.evaluatedAt),
+    [scene, decision],
+  );
+  // Replay trace: each frame's own evaluatedAt/price, up to and including the displayed frame only.
+  const trace = useMemo<readonly TracePoint[]>(
+    () => decisions
+      .slice(0, safeFrame + 1)
+      .filter(item => item.current.price !== null)
+      .map(item => ({ time: item.current.evaluatedAt, price: item.current.price as number })),
+    [decisions, safeFrame],
+  );
+  const selectedInScene = prepared.ok && prepared.primitives.some(primitive => primitive.primitiveId === selectedPrimitiveId)
+    ? selectedPrimitiveId
+    : null;
 
   const sidebarItems = cloudConfigured
     ? cloudSummaries
@@ -421,7 +353,29 @@ export function App({ apiClient: injectedClient }: AppProps = {}) {
           <span>Valid structure and trade geometry. No validated pWin/EV is available for this setup.</span>
         </div> : null}
 
-        <PriceField decisions={decisions} scenes={scenes} frame={safeFrame} />
+        <div className="chart-head">
+          <div className="panel-kicker">ENGINE CHART SCENE</div>
+          <ChartModeControls mode={chartMode} onChange={setChartMode} />
+        </div>
+        {prepared.ok
+          ? <EngineChart
+              prepared={prepared}
+              trace={trace}
+              mode={chartMode}
+              selectedId={selectedInScene}
+              onSelect={setSelectedPrimitiveId}
+            />
+          : <div className="chart-shell chart-rejected" role="alert">
+              <strong>CHART REJECTED</strong>
+              <span>{prepared.reason} Nothing from this scene is drawn.</span>
+            </div>}
+        {chartMode === "RESEARCH" && prepared.ok ? <ResearchInspector
+          scene={prepared.scene}
+          primitives={prepared.primitives}
+          parents={prepared.parents}
+          selectedId={selectedInScene}
+          onSelect={setSelectedPrimitiveId}
+        /> : null}
 
         <div className="replay-strip">
           <button onClick={() => setFrame(value => Math.max(0, value - 1))} disabled={safeFrame === 0}>PREV</button>
@@ -458,7 +412,6 @@ export function App({ apiClient: injectedClient }: AppProps = {}) {
             <EvidenceRow label="Eligibility" value={formatValue(decision.current.eligibility)} />
             <EvidenceRow label="Regime evidence" value={formatValue(decision.current.regimeStatus)} />
             <EvidenceRow label="Lifecycle" value={formatValue(decision.current.lifecycle)} />
-            <EvidenceRow label="Retest" value={lifecycleAtLeastRetest(decision.current.lifecycle) ? "OBSERVED" : "NOT YET"} />
             <EvidenceRow label="Entry event" value={decision.current.entryEventObserved ? "FIXTURE OBSERVED" : "NOT OBSERVED"} />
             <EvidenceRow label="Current entry" value={formatValue(decision.current.currentEntryStatus)} />
             <EvidenceRow label="Outcome" value={formatValue(decision.outcome)} />

@@ -53,3 +53,67 @@
 .market-context strong{display:block;margin-top:7px;color:#d4dae0;font:700 9px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.035em;overflow-wrap:anywhere}
 .market-context small{display:block;margin-top:5px;color:#59646f;font:600 7px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em}
 .market-context-routes strong{color:#bec6cd}
+
+/* Engine chart scene (Lane C). Presentation only: every mark is an engine primitive. */
+.chart-head{display:flex;justify-content:space-between;align-items:center;margin:0 0 10px}
+.chart-modes{display:flex;gap:2px;padding:3px;border:1px solid #1f2730;border-radius:999px;background:#07090c}
+.chart-mode{border:0;border-radius:999px;background:transparent;padding:7px 12px;color:#6c7781;font:700 8.5px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;cursor:pointer}
+.chart-mode:hover{color:#b8c0c7}
+.chart-mode.active{background:#dfe3e7;color:#07090c}
+.chart-mode:focus-visible,.fact-row:focus-visible{outline:2px solid #e4e8eb;outline-offset:2px}
+/* SVG groups do not draw outlines in Chromium: focus is shown on the fact's own marks. */
+.prim:focus{outline:none}
+.prim:focus-visible{opacity:1}
+.prim:focus-visible .prim-line,.prim:focus-visible .prim-path,.prim:focus-visible .prim-zone,.prim:focus-visible .prim-mark{stroke:#ffffff;stroke-width:3;paint-order:stroke}
+.chart-shell{height:auto;padding:10px 12px 30px}
+.chart-shell svg{position:static;display:block;width:100%;height:auto;inset:auto;overflow:visible}
+.chart-rejected{min-height:220px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:10px;padding:32px}
+.chart-rejected strong{color:#d9dee2;font:700 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em}
+.chart-rejected span{max-width:680px;color:#7f8a94;font-size:12px;line-height:1.55;overflow-wrap:anywhere}
+.price-axis line{stroke:#141a21;stroke-width:1}
+.price-axis text{fill:#5b6670;font:600 10.5px ui-monospace,SFMono-Regular,Menlo,monospace}
+.trace polyline{fill:none;stroke:#aab3bb;stroke-width:1.6;stroke-linejoin:round;opacity:.9}
+.trace circle{fill:#f1f3f5}
+.prim{--c:#cfd5da;color:var(--c)}
+.prim .prim-line,.prim .prim-path{stroke:var(--c);fill:none;stroke-linecap:round}
+.prim .prim-zone{fill:var(--c);stroke:var(--c)}
+.prim .prim-mark{fill:#07090c;stroke:var(--c);stroke-width:1.6}
+.tok-structure-primary{--c:#dde2e6}
+.tok-structure-secondary{--c:#8f99a3}
+.tok-liquidity{--c:#9db3c8}
+.tok-imbalance{--c:#bfae8c}
+.tok-setup{--c:#c6ccd2}
+.tok-pattern{--c:#7c8690}
+.tok-entry{--c:#eef0f2}
+.tok-advisory{--c:#5d6771}
+.emph-historical{opacity:.36}
+.emph-current{opacity:1}
+.mode-research .prim{cursor:pointer}
+.mode-research .prim:hover{opacity:1}
+.prim.is-selected{opacity:1}
+.prim.is-selected .prim-line,.prim.is-selected .prim-path,.prim.is-selected .prim-zone,.prim.is-selected .prim-mark{stroke:#ffffff;stroke-width:2.4}
+.label-leader{stroke:#46515b;stroke-width:.8}
+.label-box{fill:#0b0f14;stroke:#2c3640;stroke-width:.8}
+.label-text{fill:#c3cad0;font:700 11px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em}
+.callout-layer .label-box{stroke:#58636d}
+.callout-layer .label-text{fill:#e6e9ec}
+.callout-marker circle{fill:#e6e9ec}
+.callout-marker text{fill:#07090c;font:800 9px ui-monospace,SFMono-Regular,Menlo,monospace}
+.chart-watermark{right:18px;bottom:10px}
+.chart-collapsed{position:absolute;left:18px;bottom:10px;color:#505b65;font:700 8.5px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.1em}
+.callout-legend{position:absolute;left:18px;bottom:8px;display:flex;gap:14px;margin:0;padding:0;list-style:none;counter-reset:callout;max-width:calc(100% - 330px);overflow:hidden}
+.callout-legend li{counter-increment:callout;color:#8a949d;font:700 8.5px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.callout-legend li::before{content:counter(callout) " ";color:#e6e9ec}
+.research-inspector{margin-top:12px;display:grid;grid-template-columns:minmax(220px,.9fr) minmax(280px,1.3fr) minmax(240px,1fr);gap:1px;border:1px solid #202832;border-radius:20px;overflow:hidden;background:#1a2129}
+.research-inspector>div{background:#090c10;padding:18px;min-width:0}
+.inspect-facts ol{list-style:none;margin:12px 0 0;padding:0;max-height:320px;overflow:auto;display:grid;gap:2px}
+.fact-row{width:100%;display:grid;gap:4px;text-align:left;border:1px solid transparent;border-radius:10px;background:transparent;padding:8px 10px;color:#c6cdd3;cursor:pointer}
+.fact-row:hover{background:#0f141a}
+.fact-row.selected{background:#121820;border-color:#35404a}
+.fact-row span{font:700 9.5px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere}
+.fact-row small{color:#5d6873;font:600 7.5px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.1em}
+.research-inspector dl{margin:12px 0 0;display:grid;gap:0}
+.inspect-field{display:grid;grid-template-columns:118px 1fr;gap:10px;padding:7px 0;border-top:1px solid #161d24}
+.inspect-field dt{color:#5d6873;font:700 7.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase}
+.inspect-field dd{margin:0;color:#c3cad0;font:600 9px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+.inspect-empty{margin:12px 0 0;color:#66717b;font-size:12px;line-height:1.5}

@@ -311,3 +311,160 @@ describe("App decision source", () => {
     expect(text()).not.toContain("Decision Case recorded");
   });
 });
+
+function drawnIds(): string[] {
+  return [...(container?.querySelectorAll("[data-primitive-id]") ?? [])].map(item => item.getAttribute("data-primitive-id") ?? "");
+}
+
+function modeButton(mode: string): HTMLButtonElement {
+  const found = container?.querySelector(`.chart-modes button[aria-pressed]:is(.chart-mode)`) && [...container!.querySelectorAll(".chart-modes button")].find(item => item.textContent === mode);
+  if (!found) throw new Error(`mode ${mode} not found`);
+  return found as HTMLButtonElement;
+}
+
+async function chooseMode(mode: string) {
+  await act(async () => { modeButton(mode).dispatchEvent(new MouseEvent("click", { bubbles: true })); });
+}
+
+async function goToFrame(index: number) {
+  const input = container!.querySelector('input[aria-label="Replay frame"]') as HTMLInputElement;
+  await act(async () => {
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+    setter.call(input, String(index));
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+}
+
+function expectedIds(frameIndex: number, visibility: readonly string[] = ["PRIMARY"]): string[] {
+  return buildReplayChartScene(firstScenario, frameIndex).primitives
+    .filter(item => item.layer !== "REGIME" && visibility.includes(item.visibility))
+    .map(item => item.primitiveId)
+    .sort();
+}
+
+describe("Engine chart (Lane C)", () => {
+  it("1: CLEAN is the default mode and every mode control exposes its pressed state", async () => {
+    await renderApp(createAlphaApiClient({ baseUrl: undefined }));
+    expect(modeButton("CLEAN").getAttribute("aria-pressed")).toBe("true");
+    for (const mode of ["EXPLAIN", "STRUCTURE", "RESEARCH"]) expect(modeButton(mode).getAttribute("aria-pressed")).toBe("false");
+    await chooseMode("STRUCTURE");
+    expect(modeButton("STRUCTURE").getAttribute("aria-pressed")).toBe("true");
+    expect(modeButton("CLEAN").getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("4/2: STRUCTURE reveals engine SECONDARY facts hidden from CLEAN; CLEAN and EXPLAIN draw the same facts", async () => {
+    await renderApp(createAlphaApiClient({ baseUrl: undefined }));
+    await goToFrame(19);
+    const clean = drawnIds().sort();
+    expect(clean).toEqual(expectedIds(19));
+    await chooseMode("EXPLAIN");
+    expect(drawnIds().sort()).toEqual(clean);
+    await chooseMode("STRUCTURE");
+    expect(drawnIds().sort()).toEqual(expectedIds(19, ["PRIMARY", "SECONDARY"]));
+    expect(drawnIds().length).toBeGreaterThan(clean.length);
+  });
+
+  it("5: RESEARCH exposes the selected fact's engine provenance and the scene authority", async () => {
+    await renderApp(createAlphaApiClient({ baseUrl: undefined }));
+    await goToFrame(19);
+    await chooseMode("RESEARCH");
+    const target = buildReplayChartScene(firstScenario, 19).primitives.find(item => item.concept === "TRENDLINE_BREAK")!;
+    const row = [...container!.querySelectorAll(".fact-row")].find(item => item.querySelector("span")?.textContent === target.label)!;
+    await act(async () => { row.dispatchEvent(new MouseEvent("click", { bubbles: true })); });
+    const detail = container!.querySelector(".inspect-detail")!.textContent!;
+    expect(detail).toContain(target.primitiveId);
+    expect(detail).toContain(target.knownAt);
+    expect(detail).toContain("RESEARCH_DERIVED");
+    for (const id of target.sourceFactIds) expect(detail).toContain(id);
+    for (const id of target.sourceEvidenceIds) expect(detail).toContain(id);
+    expect(container!.querySelector(".inspect-scene")!.textContent).toContain("RESEARCH_ONLY");
+    expect(container!.querySelector(".inspect-scene")!.textContent).toContain("Live capital authorityfalse");
+  });
+
+  it("45-47: scrubbing back shows only that frame's facts; forward again reconstructs the later frame", async () => {
+    await renderApp(createAlphaApiClient({ baseUrl: undefined }));
+    await chooseMode("STRUCTURE");
+    await goToFrame(19);
+    const later = drawnIds().sort();
+    await goToFrame(3);
+    expect(drawnIds().sort()).toEqual(expectedIds(3, ["PRIMARY", "SECONDARY"]));
+    for (const id of drawnIds()) expect(expectedIds(3, ["PRIMARY", "SECONDARY"])).toContain(id);
+    await goToFrame(19);
+    expect(drawnIds().sort()).toEqual(later);
+  });
+
+  it("changing chart mode makes no API call and records the same case", async () => {
+    const api = cloudApi();
+    await renderApp(createAlphaApiClient({ baseUrl: API, fetch: api.fetchImpl }));
+    await waitFor(() => heading() !== undefined, "cloud decision rendered");
+    const before = api.calls.length;
+    for (const mode of ["EXPLAIN", "STRUCTURE", "RESEARCH", "CLEAN"]) await chooseMode(mode);
+    expect(api.calls.length).toBe(before);
+    await chooseMode("RESEARCH");
+    await click("NEXT");
+    await click("RECORD CASE");
+    await waitFor(() => text().includes("Decision Case recorded"), "record success");
+    expect(api.calls.filter(call => call.method === "POST")).toEqual([
+      { method: "POST", path: "/v1/alpha/decision-cases", body: { scenarioId: firstScenario.id, frameIndex: 1 } },
+    ]);
+  });
+
+  it("24: a cloud scene for the wrong frame is rejected, not drawn as current", async () => {
+    const api = cloudApi(path => {
+      const match = /^\/v1\/alpha\/scenarios\/([^/]+)\/frames\/(\d+)\/chart-scene$/.exec(path);
+      if (!match || Number(match[2]) !== 5) return undefined;
+      return { status: 200, body: { meta: ALPHA_RESPONSE_META, data: buildReplayChartScene(firstScenario, 4) } };
+    });
+    await renderApp(createAlphaApiClient({ baseUrl: API, fetch: api.fetchImpl }));
+    await waitFor(() => heading() !== undefined, "cloud decision rendered");
+    await goToFrame(4);
+    expect(text()).not.toContain("CHART REJECTED");
+    await goToFrame(5);
+    expect(text()).toContain("CHART REJECTED");
+    expect(text()).toContain("different frame");
+    expect(drawnIds()).toEqual([]);
+  });
+
+  it("34/35: a duplicated cloud primitive is drawn once; a conflicting duplicate rejects the chart", async () => {
+    const scene4 = buildReplayChartScene(firstScenario, 4);
+    const first = scene4.primitives.find(item => item.visibility === "PRIMARY" && item.layer !== "REGIME")!;
+    const api = cloudApi(path => {
+      if (path.endsWith("/frames/4/chart-scene")) return { status: 200, body: { meta: ALPHA_RESPONSE_META, data: { ...scene4, primitives: [...scene4.primitives, first] } } };
+      if (path.endsWith("/frames/5/chart-scene")) {
+        const scene5 = buildReplayChartScene(firstScenario, 5);
+        const clash = { ...scene5.primitives.find(item => item.layer !== "REGIME")!, label: "CONFLICTING COPY" };
+        return { status: 200, body: { meta: ALPHA_RESPONSE_META, data: { ...scene5, primitives: [...scene5.primitives, clash] } } };
+      }
+      return undefined;
+    });
+    await renderApp(createAlphaApiClient({ baseUrl: API, fetch: api.fetchImpl }));
+    await waitFor(() => heading() !== undefined, "cloud decision rendered");
+    await goToFrame(4);
+    expect(drawnIds().filter(id => id === first.primitiveId)).toHaveLength(1);
+    await goToFrame(5);
+    expect(text()).toContain("CHART REJECTED");
+    expect(text()).toContain("Conflicting chart primitives");
+    expect(drawnIds()).toEqual([]);
+  });
+
+  it("the chart shows engine lifecycle values directly and no UI-derived RETEST verdict", async () => {
+    await renderApp(createAlphaApiClient({ baseUrl: undefined }));
+    expect(container!.querySelector(".chart-evidence")).toBeNull();
+    expect([...container!.querySelectorAll(".evidence-row span")].map(item => item.textContent)).not.toContain("Retest");
+  });
+
+  it("keeps the private-alpha / no-live-capital boundary and no execution language", async () => {
+    await renderApp(createAlphaApiClient({ baseUrl: undefined }));
+    for (const mode of ["CLEAN", "EXPLAIN", "STRUCTURE", "RESEARCH"]) {
+      await chooseMode(mode);
+      expect(text()).toContain("PRIVATE VALIDATION / ALPHA");
+      expect(text()).toContain("NO LIVE CAPITAL");
+      expect(text()).toContain("NOT LIVE DATA");
+      // Only the Lane C surfaces; the existing footer legitimately disclaims FIRE/execution.
+      const chartText = [...container!.querySelectorAll(".chart-head, .chart-shell, .research-inspector")]
+        .map(item => item.textContent).join(" ");
+      expect(chartText).not.toMatch(/TRADE NOW|BUY NOW|SELL NOW|EXECUTE|\bFIRE\b|PROBABILITY|WIN RATE|CONFIDENCE/i);
+    }
+  });
+});
+
