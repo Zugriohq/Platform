@@ -1,3 +1,5 @@
+import { dedupeById } from "./canonicalJson.js";
+
 export type CanonicalRegime =
   | "TRENDING"
   | "MEAN_REVERTING"
@@ -269,6 +271,51 @@ function validateDefinition(definition: PivotDefinition): void {
 }
 
 /**
+ * Reduces the supplied bars to one slot per sourceBarId.
+ *
+ * - A single version keeps its slot unchanged.
+ * - INCOMPLETE versions are in-progress observations of the bar. Once a
+ *   FRESH_COMPLETE version is supplied they are superseded by it; until then one
+ *   of them keeps the bar's slot, so every window containing it stays unconfirmed.
+ * - FRESH_COMPLETE versions: identical re-deliveries collapse; any difference
+ *   (including knownAt) fails closed.
+ * - Every version must agree on sourceClosedAt, and STALE/GAP never share a
+ *   sourceBarId with another version (both fail closed).
+ */
+function oneSlotPerSourceBar(bars: readonly ResearchStructureBar[]): ResearchStructureBar[] {
+  const versionsById = new Map<string, ResearchStructureBar[]>();
+  for (const bar of bars) {
+    const versions = versionsById.get(bar.sourceBarId) ?? [];
+    versions.push(bar);
+    versionsById.set(bar.sourceBarId, versions);
+  }
+
+  const slots: ResearchStructureBar[] = [];
+  for (const [sourceBarId, versions] of versionsById) {
+    const [first] = versions;
+    if (!first) continue;
+    if (versions.length === 1) {
+      slots.push(first);
+      continue;
+    }
+    if (versions.some(bar => bar.dataStatus !== "FRESH_COMPLETE" && bar.dataStatus !== "INCOMPLETE")) {
+      throw new Error(`duplicate sourceBarId: ${sourceBarId}`);
+    }
+    const closedAt = epoch(first.sourceClosedAt, "sourceClosedAt");
+    if (versions.some(bar => epoch(bar.sourceClosedAt, "sourceClosedAt") !== closedAt)) {
+      throw new Error(`conflicting sourceClosedAt for sourceBarId: ${sourceBarId}`);
+    }
+    const [completed] = dedupeById(
+      versions.filter(bar => bar.dataStatus === "FRESH_COMPLETE"),
+      bar => bar.sourceBarId,
+      "completed source bar",
+    );
+    slots.push(completed ?? first);
+  }
+  return slots;
+}
+
+/**
  * Confirmed, non-repainting pivots using rightmost-plateau semantics:
  * ties are allowed on the left and must be strictly cleared on the right.
  *
@@ -282,15 +329,12 @@ export function detectConfirmedPivots(
 ): readonly ResearchMarketStructureFact[] {
   if (!timeframe.trim()) throw new Error("timeframe must be non-empty");
 
-  const ids = new Set<string>();
-  for (const bar of bars) {
-    validateResearchStructureBar(bar);
-    if (ids.has(bar.sourceBarId)) throw new Error(`duplicate sourceBarId: ${bar.sourceBarId}`);
-    ids.add(bar.sourceBarId);
-  }
+  // Every supplied bar is validated, whatever its status: malformed non-final
+  // input fails closed rather than being discarded.
+  for (const bar of bars) validateResearchStructureBar(bar);
   for (const definition of definitions) validateDefinition(definition);
 
-  const ordered = [...bars].sort((a, b) => {
+  const ordered = oneSlotPerSourceBar(bars).sort((a, b) => {
     const byClose = epoch(a.sourceClosedAt, "sourceClosedAt") - epoch(b.sourceClosedAt, "sourceClosedAt");
     if (byClose !== 0) return byClose;
     return a.sourceBarId.localeCompare(b.sourceBarId);

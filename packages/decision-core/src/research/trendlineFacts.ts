@@ -7,6 +7,7 @@ import {
   type ResearchStructureBar,
   type StructureScale,
 } from "./marketMap.js";
+import { dedupeById } from "./canonicalJson.js";
 
 export interface ResearchTrendlineDerivationDefinition {
   readonly definitionId: string;
@@ -63,35 +64,6 @@ function validateInteractionDefinition(definition:ResearchTrendlineInteractionDe
   validateNonNegative(definition.penetrationBuffer,"penetrationBuffer");
   validateNonNegative(definition.closeBreakBuffer,"closeBreakBuffer");
   if(definition.breakRule!=="CLOSE_BEYOND") throw new Error("unsupported trendline breakRule");
-}
-
-function canonicalJson(value:unknown):string{
-  if(Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
-  if(value!==null&&typeof value==="object"){
-    const record=value as Record<string,unknown>;
-    return `{${Object.keys(record).filter(key=>record[key]!==undefined).sort()
-      .map(key=>`${JSON.stringify(key)}:${canonicalJson(record[key])}`).join(",")}}`;
-  }
-  return JSON.stringify(value);
-}
-
-function sameJson(a:unknown,b:unknown):boolean{
-  return canonicalJson(a)===canonicalJson(b);
-}
-
-/**
- * Identical re-deliveries of the same fact collapse to one; two different
- * payloads under one id are an evidence-integrity failure and fail closed.
- */
-function dedupeById<T>(items:readonly T[],idOf:(item:T)=>string,label:string):readonly T[]{
-  const byId=new Map<string,T>();
-  for(const item of items){
-    const id=idOf(item);
-    const existing=byId.get(id);
-    if(existing===undefined){ byId.set(id,item); continue; }
-    if(!sameJson(existing,item)) throw new Error(`conflicting ${label} payloads share id: ${id}`);
-  }
-  return [...byId.values()];
 }
 
 function groupKey(fact:ResearchMarketStructureFact):string{
