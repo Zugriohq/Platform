@@ -98,3 +98,6 @@ describe('Version and numeric boundary guards',()=>{
 describe('Pending-risk contradiction regression',()=>{
  it.each(['BUY','SELL'] as const)('pending %s cannot claim protected profit before filling',side=>{const x=withFills([fill({status:'PENDING',side,entry:100,originalStop:side==='BUY'?95:105,currentStop:side==='BUY'?102:98})]);x.account.theses[0].side=side;if(side==='SELL'){x.account.theses.push({...x.account.theses[0],id:'parent-other',side:'BUY'});x.proposal.thesisId='parent-other';}expect(assess(x).reasons).toContain('PENDING_STOP_GEOMETRY');});
 });
+
+
+it('overflow diagnostics never publish non-finite numeric wire values',()=>{const x=account();x.proposal.units=1e308;x.proposal.valuePerPriceUnit=1e308;const r=assess(x);expect(r.researchAdmission).toBe('BLOCK');expect(r.reasons).toContain('EXPOSURE_OVERFLOW');expect(r.exposure).toBeNull();expect(r.normalized).toBeNull();});

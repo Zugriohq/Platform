@@ -46,16 +46,16 @@ The implementation owner performed a second pass. A separate reviewing agent ins
 | Label added exposure CORE to bypass pyramiding | Existing active thesis requires ADD_ON assessment. |
 | Historical child economics use profit-side original stop | Original child stop must be adverse; original geometry retained. |
 | Child observation follows account capture / field skew | Snapshot source-time and exposure-skew rejection. |
-| Tick products or closed-fill sums overflow finite operands | Derived distance, geometry, exposure and quantity finiteness checks. |
+| Tick products or closed-fill sums overflow finite operands | Derived distance, geometry, exposure and quantity finiteness checks; non-finite diagnostics are withheld rather than serialized. |
 | Pending order claims a protected profit-side stop before fill | Fail closed on BUY and SELL pending stop contradictions. |
 | Material model changes retain original TradeBundle version | Version-content registry rejects altered complete bundle. |
 | Future data, timestamp reorder, stale market/account, family/horizon leakage, duplicate/replayed intent, account-field contamination, cache history mutation, failed reclaim, chase, local child stop vs parent, campaign completion | Regression cases reject unsafe combinations; immutable prior results retained. |
 
-Independent review after fixes: **58/58 Lane B core tests passed**; all material findings from that review resolved. No live-capital authority widening observed.
+Independent review after fixes: **59/59 Lane B core tests passed**; all material findings from that review resolved. No live-capital authority widening observed.
 
 ## Local verification after fixes
 
-- `pnpm test`: **285 passed, 6 skipped, 0 failed** — decision-core 221, API contract 3, API 32, desktop 22, release tooling 7. The 6 skipped cases are PostgreSQL integration tests; no local PostgreSQL/Docker service is available.
+- `pnpm test`: **286 passed, 6 skipped, 0 failed** — decision-core 222, API contract 3, API 32, desktop 22, release tooling 7. The 6 skipped cases are PostgreSQL integration tests; no local PostgreSQL/Docker service is available.
 - Explicit `node --test scripts/release/rc.test.mjs`: **7/7 passed** (also included in the total above).
 - `pnpm typecheck`: passed across all workspace packages, API and desktop.
 - `pnpm build`: passed for packages, API, desktop renderer and Electron TypeScript.

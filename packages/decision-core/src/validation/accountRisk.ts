@@ -118,7 +118,7 @@ export function evaluateAccountRisk(account: AccountState, policy: RiskPolicy, p
   if(lastClosed && (!policy.allowCampaignReentry || candidate.geometry===null || instant(candidate.geometry.frozenAt)<=instant(lastClosed.closedAt!))) reasons.push('FRESH_CAMPAIGN_ENTRY_REQUIRED');
   if(now-instant(proposal.marginEstimateAt)>policy.accountMaxAgeMs) reasons.push('STALE_MARGIN_ESTIMATE');
   // Reject non-finite derived arithmetic as well as malformed input numbers.
-  if([...Object.values(exposure).filter((v):v is number=>typeof v==='number'),...child.flatMap(c=>[c.currentRisk,c.originalRisk]),...Object.values(normalized).filter((v):v is number=>v!==null)].some(v=>!Number.isFinite(v))) reasons.push('EXPOSURE_OVERFLOW');
+  if([...Object.values(exposure).filter((v):v is number=>typeof v==='number'),...child.flatMap(c=>[c.currentRisk,c.originalRisk]),...Object.values(normalized).filter((v):v is number=>v!==null)].some(v=>!Number.isFinite(v))) return immutable({...base,reasons:[...reasons,'EXPOSURE_OVERFLOW']});
   return immutable({...base,capital,exposure,normalized,researchAdmission:reasons.length?'BLOCK':'PASS',reasons:reasons.length?reasons:['RESEARCH_RISK_CHECKS_PASSED']});
 }
 function validateAccount(a:AccountState,p:RiskPolicy,q:ResearchRiskProposal,c:EntryCandidate):void {
