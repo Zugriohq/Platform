@@ -21,6 +21,8 @@ describe("OpenAPI contract", () => {
       "/health",
       "/v1/alpha/decision-cases",
       "/v1/alpha/decision-cases/{caseId}",
+      "/v1/alpha/engine-validation/scenarios",
+      "/v1/alpha/engine-validation/scenarios/{scenarioId}/frames/{frameIndex}",
       "/v1/alpha/scenarios",
       "/v1/alpha/scenarios/{scenarioId}",
       "/v1/alpha/scenarios/{scenarioId}/frames/{frameIndex}",
@@ -28,3 +30,4 @@ describe("OpenAPI contract", () => {
     ]);
   });
 });
+

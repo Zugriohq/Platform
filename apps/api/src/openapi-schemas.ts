@@ -197,6 +197,12 @@ export function envelope(data: Schema): Schema {
 }
 
 export const schemas = {
+  laneBScenarios: { type: 'array', items: {type:'object', required:['id','route','family','horizon','frameCount'], properties:{id:{type:'string'},route:{type:'string',enum:['CONTINUATION_RETEST','REVERSAL_RECLAIM']},family:{type:'string'},horizon:{type:'string'},frameCount:{type:'integer',minimum:1}}}},
+  laneBFrame: {type:'object',required:['scenarioId','frameIndex','evidenceStatus','entry','accountRisk','authority','liveCapitalAuthority'],properties:{
+    scenarioId:{type:'string'},frameIndex:{type:'integer',minimum:0}, evidenceStatus:{type:'string',enum:['FABRICATED_MECHANICAL_VALIDATION']}, authority:{type:'string',enum:['NO_LIVE_CAPITAL']},liveCapitalAuthority:{type:'boolean',enum:[false]},
+    entry:decisionCoreObject('EntryCandidate (validation/entryGrammar.ts)',['key','opportunityId','state','stages','evaluatedAt','knownAt','authority','liveCapitalAuthority','modelScored'],{authority:{type:'string',enum:['RESEARCH_ONLY']},liveCapitalAuthority:{type:'boolean',enum:[false]},modelScored:{type:'boolean',enum:[false]},state:{type:'string',enum:['STRUCTURAL_CANDIDATE','STRUCTURAL_WATCH','STRUCTURAL_READY']}}),
+    accountRisk:decisionCoreObject('AccountRiskAssessment (validation/accountRisk.ts)',['accountId','snapshotId','researchAdmission','reasons','brokerReported','normalized','exposure','authority','liveCapitalAuthority'],{authority:{type:'string',enum:['RESEARCH_ONLY']},liveCapitalAuthority:{type:'boolean',enum:[false]},researchAdmission:{type:'string',enum:['PASS','BLOCK']}})
+  }},
   health: {
     type: "object",
     required: ["status", "service", "version", "persistence", "database"],
@@ -316,3 +322,4 @@ export const schemas = {
     properties: { statusCode: { type: "integer" }, message: {}, error: { type: "string" } },
   },
 } satisfies Record<string, Schema>;
+
