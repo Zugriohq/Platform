@@ -2,7 +2,7 @@ import { useMemo, type KeyboardEvent } from "react";
 import type { EngineChartPrimitive } from "@zugrio/decision-core";
 import { anchorFor, buildScale, formatPrice, horizontalSpan, priceTicks, PLOT, type ChartScale, type TracePoint } from "./geometry";
 import { DEFAULT_LAYOUT, layoutLabels, type LabelBox } from "./layout";
-import { MAX_CALLOUTS, selectChartPrimitives, type ChartMode } from "./modes";
+import { MAX_CALLOUTS, selectChartPrimitives, type Callout, type ChartMode } from "./modes";
 import type { RenderableScene } from "./sceneGuard";
 import { STYLE_TOKENS } from "./styleTokens";
 
@@ -56,9 +56,23 @@ function Shape({ primitive, scale }: { primitive: EngineChartPrimitive; scale: C
   }
 }
 
-function LabelLayer({ boxes, numbered }: { boxes: readonly LabelBox[]; numbered: boolean }) {
+function LabelLayer({
+  boxes,
+  numbered,
+  kindOf,
+}: {
+  boxes: readonly LabelBox[];
+  numbered: boolean;
+  kindOf?: ReadonlyMap<string, Callout["kind"]>;
+}) {
   return <g className={numbered ? "callout-layer" : "label-layer"}>
-    {boxes.map((box, index) => <g key={box.id} data-label-for={box.id} data-placed={String(box.placed)}>
+    {boxes.map((box, index) => <g
+      key={box.id}
+      data-label-for={box.id}
+      data-placed={String(box.placed)}
+      data-callout-kind={kindOf?.get(box.id)}
+      className={kindOf ? "callout-" + (kindOf.get(box.id) ?? "RECENT").toLowerCase() : undefined}
+    >
       {numbered ? <g className="callout-marker">
         <circle cx={box.anchorX} cy={box.anchorY} r={CALLOUT_MARKER_RADIUS} />
         <text x={box.anchorX} y={box.anchorY + 3.4} textAnchor="middle">{index + 1}</text>
@@ -105,7 +119,7 @@ export function EngineChart({ prepared, trace, mode, selectedId, onSelect }: Eng
   const calloutBoxes = useMemo(() => {
     if (!scale) return [];
     return layoutLabels(
-      selection.callouts.slice(0, MAX_CALLOUTS).map(primitive => {
+      selection.callouts.slice(0, MAX_CALLOUTS).map(({ primitive }) => {
         const anchor = anchorFor(primitive, scale);
         return { id: primitive.primitiveId, anchorX: anchor.x, anchorY: anchor.y, text: primitive.label };
       }),
@@ -113,6 +127,11 @@ export function EngineChart({ prepared, trace, mode, selectedId, onSelect }: Eng
       { ...DEFAULT_LAYOUT, maxPlaced: MAX_CALLOUTS, anchorClearance: CALLOUT_MARKER_RADIUS + 2 },
     );
   }, [selection, scale]);
+
+  const calloutKinds = useMemo(
+    () => new Map(selection.callouts.map(callout => [callout.primitive.primitiveId, callout.kind])),
+    [selection],
+  );
 
   if (!scale) {
     return <div className="chart-shell chart-rejected" role="alert">
@@ -134,7 +153,8 @@ export function EngineChart({ prepared, trace, mode, selectedId, onSelect }: Eng
   }
 
   return <div className={"chart-shell mode-" + mode.toLowerCase()} data-chart-mode={mode}>
-    <svg viewBox={`0 0 ${PLOT.width} ${PLOT.height}`} role="img" aria-label={`Engine chart scene, ${mode.toLowerCase()} view`}>
+    {/* Outside RESEARCH the chart is one image; in RESEARCH its facts are buttons, so it is a group. */}
+    <svg viewBox={`0 0 ${PLOT.width} ${PLOT.height}`} role={interactive ? "group" : "img"} aria-label={`Engine chart scene, ${mode.toLowerCase()} view`}>
       <g className="price-axis" aria-hidden="true">
         {priceTicks(scale).map(price => <g key={price}>
           <line x1={PLOT.left} x2={PLOT.width - PLOT.right} y1={scale.y(price)} y2={scale.y(price)} />
@@ -144,7 +164,8 @@ export function EngineChart({ prepared, trace, mode, selectedId, onSelect }: Eng
 
       <g className="primitive-layer">
         {selection.drawn.map(primitive => {
-          const selected = primitive.primitiveId === selectedId;
+          // Selection is a RESEARCH inspection aid only; other modes never emphasise it.
+          const selected = interactive && primitive.primitiveId === selectedId;
           return <g
             key={primitive.primitiveId}
             className={[
@@ -177,12 +198,19 @@ export function EngineChart({ prepared, trace, mode, selectedId, onSelect }: Eng
         {last ? <circle cx={scale.x(last.time)} cy={scale.y(last.price)} r={3.6} /> : null}
       </g> : null}
 
-      {mode === "EXPLAIN" ? <LabelLayer boxes={calloutBoxes} numbered /> : <LabelLayer boxes={labelBoxes} numbered={false} />}
+      {mode === "EXPLAIN" ? <LabelLayer boxes={calloutBoxes} numbered kindOf={calloutKinds} /> : <LabelLayer boxes={labelBoxes} numbered={false} />}
     </svg>
     <div className="chart-watermark">POINT-IN-TIME REPLAY · ENGINE-OWNED FACTS · NOT LIVE DATA</div>
-    {mode === "EXPLAIN" && calloutBoxes.length > 0 ? <ol className="callout-legend" aria-label="Causal callouts">
-      {calloutBoxes.map(box => <li key={box.id} title={byId.get(box.id)?.label}>{box.text}</li>)}
-    </ol> : null}
+    {mode === "EXPLAIN" && calloutBoxes.length > 0 ? <div className="callout-legend" aria-label="Callouts">
+      {(["LINEAGE", "RECENT"] as const).map(kind => {
+        const items = calloutBoxes.map((box, index) => ({ box, number: index + 1 })).filter(item => calloutKinds.get(item.box.id) === kind);
+        if (items.length === 0) return null;
+        return <div key={kind} className={"legend-group legend-" + kind.toLowerCase()}>
+          <span>{kind === "LINEAGE" ? "ENGINE LINEAGE" : "OTHER RECENT FACTS · NOT IN THIS LINEAGE"}</span>
+          <ol>{items.map(({ box, number }) => <li key={box.id} value={number} title={byId.get(box.id)?.label}>{box.text}</li>)}</ol>
+        </div>;
+      })}
+    </div> : null}
     {hiddenLabels > 0 ? <div className="chart-collapsed">{hiddenLabels} labels collapsed · inspect in RESEARCH</div> : null}
   </div>;
 }

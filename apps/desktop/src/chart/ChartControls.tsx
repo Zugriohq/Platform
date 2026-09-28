@@ -3,7 +3,7 @@ import { CHART_MODES, type ChartMode } from "./modes";
 
 const MODE_HINT: Record<ChartMode, string> = {
   CLEAN: "Primary engine facts only",
-  EXPLAIN: "Up to five causal callouts from engine lineage",
+  EXPLAIN: "Up to five callouts: the newest fact's engine lineage, then other recent facts",
   STRUCTURE: "Full structural map",
   RESEARCH: "Provenance inspection",
 };

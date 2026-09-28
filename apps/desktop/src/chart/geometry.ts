@@ -90,6 +90,8 @@ export function buildScale(
     t0 -= 30_000;
     t1 += 30_000;
   }
+  // Finite inputs can still overflow a span (e.g. ±1e308): never emit NaN coordinates.
+  if (!Number.isFinite(p1 - p0) || !Number.isFinite(t1 - t0)) return null;
   const innerWidth = plot.width - plot.left - plot.right;
   const innerHeight = plot.height - plot.top - plot.bottom;
   return {

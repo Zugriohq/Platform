@@ -1,4 +1,5 @@
 import {
+  RESEARCH_CONCEPT_MATURITIES,
   exceedsConceptMaturityCeiling,
   isEngineChartPrimitiveConcept,
   type EngineChartPrimitive,
@@ -24,12 +25,18 @@ export type RenderableScene =
 
 const LAYERS = new Set(["REGIME","STRUCTURE","LIQUIDITY","IMBALANCE","SETUP","PATTERN","ENTRY","INVALIDATION","OBJECTIVE","DIAGNOSTIC","ADVISORY"]);
 const VISIBILITY = new Set(["PRIMARY","SECONDARY","DETAIL"]);
+const SCALES = new Set(["INTERNAL","INTERMEDIATE","EXTERNAL"]);
+const MATURITIES = new Set<string>(RESEARCH_CONCEPT_MATURITIES);
 const STYLE_TOKENS = new Set(["STRUCTURE_PRIMARY","STRUCTURE_SECONDARY","LIQUIDITY","IMBALANCE","SETUP","PATTERN","ENTRY","ADVISORY"]);
 
 function time(value: unknown): number | null {
   if (typeof value !== "string") return null;
   const parsed = Date.parse(value);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function stringArray(value: unknown): value is readonly string[] {
+  return Array.isArray(value) && value.every(item => typeof item === "string" && item.length > 0);
 }
 
 function finite(value: unknown): value is number {
@@ -104,19 +111,30 @@ export function prepareSceneForRender(
     return { ok: false, reason: "Chart scene was evaluated for a different frame than the one displayed." };
   }
 
+  if (!Array.isArray(scene.primitives)) return { ok: false, reason: "Chart scene has no primitive list." };
   const byId = new Map<string, EngineChartPrimitive>();
   const signatureById = new Map<string, string>();
-  for (const primitive of scene.primitives) {
+  for (const primitive of scene.primitives as readonly EngineChartPrimitive[]) {
+    if (primitive === null || typeof primitive !== "object") return { ok: false, reason: "Chart primitive is not an object." };
     const id = primitive.primitiveId;
+    if (typeof id !== "string" || id.length === 0) return { ok: false, reason: "Chart primitive has no id." };
     const signature = canonical(primitive);
     const seen = signatureById.get(id);
     if (seen !== undefined) {
       if (seen !== signature) return { ok: false, reason: `Conflicting chart primitives share id ${id}.` };
       continue; // exact duplicate: one identity, drawn once
     }
-    if (typeof id !== "string" || id.length === 0) return { ok: false, reason: "Chart primitive has no id." };
     if (!isEngineChartPrimitiveConcept(primitive.concept)) return { ok: false, reason: `Unsupported chart primitive concept ${String(primitive.concept)}.` };
     if (!LAYERS.has(primitive.layer)) return { ok: false, reason: `Unsupported chart layer on ${id}.` };
+    // REGIME is context, never price geometry: the concept and the layer must agree.
+    if ((primitive.concept === "REGIME") !== (primitive.layer === "REGIME")) {
+      return { ok: false, reason: `Chart primitive ${id} mixes the REGIME concept and layer.` };
+    }
+    if (!MATURITIES.has(primitive.maturity)) return { ok: false, reason: `Unsupported maturity on ${id}.` };
+    if (!(primitive.scale === null || SCALES.has(primitive.scale))) return { ok: false, reason: `Unsupported structure scale on ${id}.` };
+    if (typeof primitive.label !== "string" || primitive.label.trim().length === 0) return { ok: false, reason: `Chart primitive ${id} has no label.` };
+    if (!stringArray(primitive.sourceFactIds)) return { ok: false, reason: `Chart primitive ${id} has malformed sourceFactIds.` };
+    if (!stringArray(primitive.sourceEvidenceIds)) return { ok: false, reason: `Chart primitive ${id} has malformed sourceEvidenceIds.` };
     if (!VISIBILITY.has(primitive.visibility)) return { ok: false, reason: `Unsupported visibility on ${id}.` };
     if (!STYLE_TOKENS.has(primitive.styleToken)) return { ok: false, reason: `Unsupported style token on ${id}.` };
     if (primitive.authorityEffect !== "NONE") return { ok: false, reason: `Chart primitive ${id} claims an authority effect.` };
@@ -127,7 +145,7 @@ export function prepareSceneForRender(
     if (knownAt === null || knownAt > sceneTime) return { ok: false, reason: `Chart primitive ${id} is not known at the scene time.` };
     const geometry = checkGeometry(primitive);
     if (typeof geometry === "string") return { ok: false, reason: `Chart primitive ${id}: ${geometry}.` };
-    if (primitive.layer !== "REGIME" && geometry.latest !== null && geometry.latest > knownAt) {
+    if (geometry.latest !== null && geometry.latest > knownAt) {
       return { ok: false, reason: `Chart primitive ${id} has geometry later than its knownAt.` };
     }
     byId.set(id, primitive);

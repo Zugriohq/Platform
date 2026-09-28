@@ -210,6 +210,8 @@ export function App({ apiClient: injectedClient }: AppProps = {}) {
       .map(item => ({ time: item.current.evaluatedAt, price: item.current.price as number })),
     [decisions, safeFrame],
   );
+  const trusted = prepared.ok ? prepared.scene : undefined;
+  const unavailable = scene && !prepared.ok ? "SCENE REJECTED" : "UNAVAILABLE";
   const selectedInScene = prepared.ok && prepared.primitives.some(primitive => primitive.primitiveId === selectedPrimitiveId)
     ? selectedPrimitiveId
     : null;
@@ -322,29 +324,32 @@ export function App({ apiClient: injectedClient }: AppProps = {}) {
           </Fragment>)}
         </div>
 
+        {/* Context comes only from a scene that passed the presentation guard for this frame. */}
         <div className="market-context" aria-label="Engine market context">
           <div>
             <span>STRATEGY</span>
-            <strong>{scene ? `${scene.strategyId} · v${scene.strategyVersion}` : "UNAVAILABLE"}</strong>
+            <strong>{trusted ? `${trusted.strategyId} · v${trusted.strategyVersion}` : unavailable}</strong>
           </div>
           <i />
           <div>
             <span>CANONICAL REGIME</span>
-            <strong>{scene?.regimeLabel ?? scene?.regimeContext.status ?? "UNAVAILABLE"}</strong>
-            {scene?.regimeDefinitionId ? <small>{scene.regimeDefinitionId}</small> : null}
-            {scene?.regimeContext.profileId ? <small>{scene.regimeContext.profileId} · v{scene.regimeContext.profileVersion}</small> : null}
+            <strong>{trusted ? trusted.regimeLabel ?? trusted.regimeContext.status : unavailable}</strong>
+            {trusted?.regimeDefinitionId ? <small>{trusted.regimeDefinitionId}</small> : null}
+            {trusted?.regimeContext.profileId ? <small>{trusted.regimeContext.profileId} · v{trusted.regimeContext.profileVersion}</small> : null}
           </div>
           <i />
           <div className="market-context-routes">
             <span>ELIGIBLE RESEARCH ROUTES</span>
             <strong>
-              {scene?.routeContext.status === "ROUTES_AVAILABLE"
-                ? scene.routeContext.families.map(item => item.replaceAll("_", " ")).join(" · ")
-                : scene?.routeContext.status === "NO_DECLARED_ROUTE"
-                  ? "NO DECLARED ROUTE"
-                  : "UNAVAILABLE"}
+              {!trusted
+                ? unavailable
+                : trusted.routeContext.status === "ROUTES_AVAILABLE"
+                  ? trusted.routeContext.families.map(item => item.replaceAll("_", " ")).join(" · ")
+                  : trusted.routeContext.status === "NO_DECLARED_ROUTE"
+                    ? "NO DECLARED ROUTE"
+                    : "UNAVAILABLE"}
             </strong>
-            {scene?.routeContext.calibrationStatus ? <small>UNVALIDATED CANDIDATE SET</small> : null}
+            {trusted?.routeContext.calibrationStatus ? <small>UNVALIDATED CANDIDATE SET</small> : null}
           </div>
         </div>
 

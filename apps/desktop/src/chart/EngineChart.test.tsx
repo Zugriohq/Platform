@@ -149,6 +149,35 @@ describe("EngineChart rendering", () => {
     expect(node("break")!.querySelector("title")!.textContent).toBe("SUPPORT CLOSE BREAK");
   });
 
+  it("REVIEW-6: the SVG is an image outside RESEARCH and an interactive group inside it", async () => {
+    await render("CLEAN");
+    expect(container!.querySelector("svg")!.getAttribute("role")).toBe("img");
+    await act(async () => root?.unmount());
+    container?.remove();
+    await render("RESEARCH");
+    expect(container!.querySelector("svg")!.getAttribute("role")).toBe("group");
+  });
+
+  it("REVIEW-3: a selection is only drawn in RESEARCH", async () => {
+    await render("CLEAN", () => {}, "primitive:swing-high");
+    expect(container!.querySelectorAll(".is-selected")).toHaveLength(0);
+    await act(async () => root?.unmount());
+    container?.remove();
+    await render("RESEARCH", () => {}, "primitive:swing-high");
+    expect(node("swing-high")!.classList.contains("is-selected")).toBe(true);
+  });
+
+  it("REVIEW-2: EXPLAIN distinguishes lineage callouts from recent unlinked ones", async () => {
+    await render("EXPLAIN");
+    const lineage = [...container!.querySelectorAll('[data-callout-kind="LINEAGE"]')].map(item => item.getAttribute("data-label-for"));
+    const recent = [...container!.querySelectorAll('[data-callout-kind="RECENT"]')].map(item => item.getAttribute("data-label-for"));
+    // newest PRIMARY fact is the close break; its lineage in-scene is the trendline and the swing low
+    expect(lineage).toEqual(["primitive:swing-low", "primitive:tl", "primitive:break"]);
+    expect(recent.length).toBe(2);
+    for (const id of recent) expect(lineage).not.toContain(id);
+    expect(container!.querySelector(".callout-legend")!.textContent).toContain("NOT IN THIS LINEAGE");
+  });
+
   it("RESEARCH makes facts keyboard-selectable; other modes are not tab stops", async () => {
     const selected: string[] = [];
     await render("RESEARCH", id => selected.push(id));

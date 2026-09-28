@@ -317,7 +317,7 @@ function drawnIds(): string[] {
 }
 
 function modeButton(mode: string): HTMLButtonElement {
-  const found = container?.querySelector(`.chart-modes button[aria-pressed]:is(.chart-mode)`) && [...container!.querySelectorAll(".chart-modes button")].find(item => item.textContent === mode);
+  const found = [...(container?.querySelectorAll(".chart-modes button") ?? [])].find(item => item.textContent === mode);
   if (!found) throw new Error(`mode ${mode} not found`);
   return found as HTMLButtonElement;
 }
@@ -465,6 +465,136 @@ describe("Engine chart (Lane C)", () => {
         .map(item => item.textContent).join(" ");
       expect(chartText).not.toMatch(/TRADE NOW|BUY NOW|SELL NOW|EXECUTE|\bFIRE\b|PROBABILITY|WIN RATE|CONFIDENCE/i);
     }
+  });
+});
+
+
+function delayedApi(delayFor: (path: string) => number) {
+  const inner = cloudApi();
+  const fetchImpl = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const ms = delayFor(new URL(String(input)).pathname);
+    if (ms > 0) await new Promise(resolve => setTimeout(resolve, ms));
+    return inner.fetchImpl(input, init);
+  }) as typeof fetch;
+  return { fetchImpl, calls: inner.calls };
+}
+
+async function chooseScenario(index: number) {
+  const buttons = container!.querySelectorAll(".case-button");
+  await act(async () => { buttons[index]!.dispatchEvent(new MouseEvent("click", { bubbles: true })); });
+}
+
+async function settle(ms: number) {
+  await act(async () => { await new Promise(resolve => setTimeout(resolve, ms)); });
+}
+
+describe("Engine chart races (Lane C independent pass)", () => {
+  const second = alphaScenarios[1] as ReplayScenario;
+  const secondIds = (frameIndex: number) => buildReplayChartScene(second, frameIndex).primitives
+    .filter(item => item.layer !== "REGIME" && item.visibility === "PRIMARY").map(item => item.primitiveId).sort();
+
+  it("a slow scenario A load that resolves after switching to B never replaces B's chart", async () => {
+    const api = delayedApi(path => path.includes(`/scenarios/${firstScenario.id}/frames`) ? 120 : 0);
+    await renderApp(createAlphaApiClient({ baseUrl: API, fetch: api.fetchImpl }));
+    await waitFor(() => (container?.querySelectorAll(".case-button").length ?? 0) > 1, "scenario list");
+    await chooseScenario(1); // switch while A's frames are still in flight
+    await waitFor(() => heading() === `${CLOUD_MARK} ${second.title}`, "scenario B rendered");
+    await settle(300); // let A's late responses land
+    expect(heading()).toBe(`${CLOUD_MARK} ${second.title}`);
+    expect(drawnIds().sort()).toEqual(secondIds(0));
+    expect(text()).not.toContain("CHART REJECTED");
+  });
+
+  it("frame responses arriving in reverse order are still bound to their own frames", async () => {
+    const api = delayedApi(path => {
+      const match = /\/frames\/(\d+)(\/chart-scene)?$/.exec(path);
+      return match ? (25 - Number(match[1])) * 6 : 0;
+    });
+    await renderApp(createAlphaApiClient({ baseUrl: API, fetch: api.fetchImpl }));
+    await waitFor(() => heading() !== undefined, "cloud decision rendered");
+    for (let frame = 0; frame < firstScenario.frames.length; frame += 1) {
+      await goToFrame(frame);
+      expect(text(), `frame ${frame}`).not.toContain("CHART REJECTED");
+      expect(drawnIds().sort(), `frame ${frame}`).toEqual(expectedIds(frame));
+    }
+  });
+
+  it("rapid random scrubbing always shows exactly the displayed frame's facts", async () => {
+    await renderApp(createAlphaApiClient({ baseUrl: undefined }));
+    for (const mode of ["STRUCTURE", "EXPLAIN"]) {
+      await chooseMode(mode);
+      let seed = 17;
+      const next = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed % firstScenario.frames.length; };
+      for (let step = 0; step < 60; step += 1) {
+        const frame = next();
+        await goToFrame(frame);
+        const visibility = mode === "STRUCTURE" ? ["PRIMARY", "SECONDARY"] : ["PRIMARY"];
+        expect(drawnIds().sort(), `${mode} step ${step} frame ${frame}`).toEqual(expectedIds(frame, visibility));
+        expect(container!.querySelectorAll(".callout-marker").length).toBeLessThanOrEqual(5);
+      }
+    }
+  });
+
+  it("several frame changes inside one React batch settle on the last frame only", async () => {
+    await renderApp(createAlphaApiClient({ baseUrl: undefined }));
+    const input = container!.querySelector('input[aria-label="Replay frame"]') as HTMLInputElement;
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+    await act(async () => {
+      for (const frame of [19, 2, 15, 7]) {
+        setter.call(input, String(frame));
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    });
+    expect(drawnIds().sort()).toEqual(expectedIds(7));
+  });
+
+  it("a selected fact does not carry into a scenario or frame that lacks it", async () => {
+    await renderApp(createAlphaApiClient({ baseUrl: undefined }));
+    await goToFrame(19);
+    await chooseMode("RESEARCH");
+    const row = [...container!.querySelectorAll(".fact-row")].at(-1)!;
+    await act(async () => { row.dispatchEvent(new MouseEvent("click", { bubbles: true })); });
+    expect(container!.querySelector(".inspect-detail dl")).not.toBeNull();
+    await goToFrame(0);
+    expect(container!.querySelector(".inspect-detail")!.textContent).toContain("Select a fact");
+    await chooseScenario(1);
+    expect(container!.querySelector(".inspect-detail")!.textContent).toContain("Select a fact");
+    expect(container!.querySelectorAll(".prim.is-selected")).toHaveLength(0);
+  });
+});
+
+describe("Engine chart independent-review regressions", () => {
+  it("REVIEW-1: a rejected scene does not feed the regime / route / strategy strip", async () => {
+    const scene3 = buildReplayChartScene(firstScenario, 3);
+    expect(scene3.regimeLabel).not.toBeNull();
+    const clash = { ...scene3.primitives.find(item => item.layer !== "REGIME")!, label: "CONFLICT" };
+    const api = cloudApi(path => path.endsWith("/frames/3/chart-scene")
+      ? { status: 200, body: { meta: ALPHA_RESPONSE_META, data: { ...scene3, primitives: [...scene3.primitives, clash] } } }
+      : undefined);
+    await renderApp(createAlphaApiClient({ baseUrl: API, fetch: api.fetchImpl }));
+    await waitFor(() => heading() !== undefined, "cloud decision rendered");
+    await goToFrame(3);
+    expect(text()).toContain("CHART REJECTED");
+    const strip = container!.querySelector(".market-context")!.textContent!;
+    expect(strip).not.toContain(scene3.regimeLabel!);
+    expect(strip).not.toContain(scene3.regimeDefinitionId!);
+    expect(strip).not.toContain(scene3.strategyId);
+    expect(strip).toContain("SCENE REJECTED");
+  });
+
+  it("REVIEW-3: a RESEARCH selection is not emphasised after switching mode or frame", async () => {
+    await renderApp(createAlphaApiClient({ baseUrl: undefined }));
+    await goToFrame(19);
+    await chooseMode("RESEARCH");
+    const first = container!.querySelector(".fact-row")!;
+    await act(async () => { first.dispatchEvent(new MouseEvent("click", { bubbles: true })); });
+    expect(container!.querySelectorAll(".prim.is-selected").length).toBeLessThanOrEqual(1);
+    for (const mode of ["CLEAN", "EXPLAIN", "STRUCTURE"]) {
+      await chooseMode(mode);
+      expect(container!.querySelectorAll(".is-selected"), mode).toHaveLength(0);
+    }
+    await goToFrame(10);
+    expect(container!.querySelectorAll(".is-selected")).toHaveLength(0);
   });
 });
 

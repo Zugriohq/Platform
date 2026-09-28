@@ -167,6 +167,24 @@ describe("scene guard (presentation boundary)", () => {
     expect(rejected([prim("a", { knownAt: t(20) }), prim("b", { knownAt: t(15), sourceFactIds: ["b", "a"] })])).toMatch(/known after it/);
   });
 
+  it("REVIEW-4: REGIME concept and REGIME layer must agree", () => {
+    expect(rejected([prim("r", { concept: "REGIME", layer: "STRUCTURE", sourceFactIds: [], geometry: { type: "LEVEL", price: 0 } })])).toMatch(/REGIME/);
+    expect(rejected([prim("x", { concept: "BOS", layer: "REGIME", maturity: "RESEARCH_DERIVED" })])).toMatch(/REGIME/);
+  });
+
+  it("REVIEW-5: malformed fields fail closed instead of crashing or reordering", () => {
+    expect(rejected([prim("a", { sourceFactIds: undefined as never })])).toMatch(/sourceFactIds/);
+    expect(rejected([prim("a", { sourceEvidenceIds: "ev" as never })])).toMatch(/sourceEvidenceIds/);
+    expect(rejected([prim("a", { sourceFactIds: ["a", 7 as never] })])).toMatch(/sourceFactIds/);
+    expect(rejected([prim("a", { scale: "GALACTIC" as never })])).toMatch(/scale/);
+    expect(rejected([prim("a", { label: "" })])).toMatch(/label/);
+    expect(rejected([prim("a", { label: 5 as never })])).toMatch(/label/);
+    expect(rejected([prim("a", { maturity: "PROMOTED_XYZ" as never })])).toMatch(/maturity/);
+    expect(rejected([prim("a", { knownAt: 12 as never })])).toMatch(/not known/);
+    expect(rejected([prim("a", { primitiveId: 42 as never })])).toMatch(/no id/);
+    expect(prepareSceneForRender({ ...scene([]), primitives: null as never }, AT).ok).toBe(false);
+  });
+
   it("does not mutate the scene it validates", () => {
     const input = scene([prim("b", { knownAt: t(20) }), prim("a")]);
     const snapshot = JSON.stringify(input);
@@ -248,10 +266,10 @@ describe("mode selection", () => {
 
   it("29: EXPLAIN never exceeds five callouts and they are in causal order", () => {
     const callouts = select("EXPLAIN").callouts;
-    expect(callouts.length).toBe(MAX_CALLOUTS);
-    const order = prepared.primitives.map(item => item.primitiveId);
-    const positions = callouts.map(item => order.indexOf(item.primitiveId));
-    expect(positions).toEqual([...positions].sort((a, b) => a - b));
+    // No lineage among these facts: the five newest PRIMARY facts, all marked RECENT, oldest first.
+    expect(callouts.map(item => [item.primitive.primitiveId, item.kind])).toEqual(
+      ["p2", "p3", "p4", "p5", "p6"].map(id => [`primitive:${id}`, "RECENT"]),
+    );
     expect(selectChartPrimitives(ready(denseScene()).primitives, ready(denseScene()).parents, "EXPLAIN").callouts.length).toBeLessThanOrEqual(MAX_CALLOUTS);
   });
 
@@ -260,8 +278,23 @@ describe("mode selection", () => {
     const noise = Array.from({ length: 6 }, (_, index) => prim(`noise${index}`, { knownAt: t(10 + index) }));
     const leaf = prim("leaf", { knownAt: t(30), sourceFactIds: ["leaf", "base"] });
     const chosen = selectChartPrimitives(ready([base, ...noise, leaf]).primitives, ready([base, ...noise, leaf]).parents, "EXPLAIN").callouts;
-    expect(chosen.map(item => item.primitiveId)).toContain("primitive:base");
-    expect(chosen.at(-1)?.primitiveId).toBe("primitive:leaf");
+    expect(chosen.filter(item => item.kind === "LINEAGE").map(item => item.primitive.primitiveId)).toEqual(["primitive:base", "primitive:leaf"]);
+    expect(chosen.filter(item => item.kind === "RECENT").map(item => item.primitive.primitiveId)).toEqual(["primitive:noise3", "primitive:noise4", "primitive:noise5"]);
+  });
+
+  it("REVIEW-2: lineage is traced through non-PRIMARY links and never mixed with unrelated recent facts", () => {
+    const a = prim("a", { knownAt: t(1), geometry: { type: "POINT", time: t(0), price: 1.1 } });
+    const b = prim("b", { knownAt: t(2), visibility: "SECONDARY", sourceFactIds: ["b", "a"], geometry: { type: "POINT", time: t(1), price: 1.1 } });
+    const unrelated = ["d", "e", "f", "g"].map((id, index) => prim(id, { knownAt: t(10 + index) }));
+    const c = prim("c", { knownAt: t(30), sourceFactIds: ["c", "b"] });
+    const scene = ready([a, b, ...unrelated, c]);
+    const callouts = selectChartPrimitives(scene.primitives, scene.parents, "EXPLAIN").callouts;
+    expect(callouts.map(item => [item.primitive.primitiveId, item.kind])).toEqual([
+      ["primitive:a", "LINEAGE"], ["primitive:c", "LINEAGE"],
+      ["primitive:e", "RECENT"], ["primitive:f", "RECENT"], ["primitive:g", "RECENT"],
+    ]);
+    // SECONDARY links are traversed but never drawn as EXPLAIN callouts
+    expect(callouts.some(item => item.primitive.primitiveId === "primitive:b")).toBe(false);
   });
 
   it("44: history is de-emphasised, never removed; RESEARCH still exposes it", () => {
@@ -277,7 +310,7 @@ describe("mode selection", () => {
       const a = select(mode);
       const b = selectChartPrimitives(again.primitives, again.parents, mode);
       expect(b.drawn.map(item => item.primitiveId)).toEqual(a.drawn.map(item => item.primitiveId));
-      expect(b.callouts.map(item => item.primitiveId)).toEqual(a.callouts.map(item => item.primitiveId));
+      expect(b.callouts.map(item => [item.primitive.primitiveId, item.kind])).toEqual(a.callouts.map(item => [item.primitive.primitiveId, item.kind]));
       expect(b.labelled).toEqual(a.labelled);
     }
   });
@@ -337,6 +370,8 @@ describe("geometry mapping", () => {
       expect(flat.p1).toBeGreaterThan(flat.p0);
     }
     expect(buildScale([], [], AT)).toBeNull();
+    // REVIEW (nit 9): finite but overflowing ranges must not leak NaN into the SVG
+    expect(buildScale([{ time: t(0), price: -1e308 }, { time: t(1), price: 1e308 }], [], t(1))).toBeNull();
   });
 });
 
@@ -425,7 +460,7 @@ describe("label and callout layout", () => {
     const scale = buildScale([], prepared.primitives, AT)!;
     for (const mode of ["CLEAN", "EXPLAIN", "STRUCTURE", "RESEARCH"] as const) {
       const selection = selectChartPrimitives(prepared.primitives, prepared.parents, mode);
-      const requests = (mode === "EXPLAIN" ? selection.callouts : selection.labelled.map(id => prepared.primitives.find(item => item.primitiveId === id)!))
+      const requests = (mode === "EXPLAIN" ? selection.callouts.map(item => item.primitive) : selection.labelled.map(id => prepared.primitives.find(item => item.primitiveId === id)!))
         .map(item => ({ id: item.primitiveId, ...(({ x, y }) => ({ anchorX: x, anchorY: y }))(anchorFor(item, scale)), text: item.label }));
       const boxes = layoutLabels(requests, bounds);
       expect(boxes.filter(box => box.placed).length).toBeLessThanOrEqual(DEFAULT_LAYOUT.maxPlaced);
