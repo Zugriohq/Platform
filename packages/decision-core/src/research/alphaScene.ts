@@ -1,5 +1,5 @@
 import type { ChartAnnotation, ReplayScenario } from "../types.js";
-import { buildDecisionCase } from "../evaluate.js";
+import { buildDecisionCase, snapshotAt } from "../evaluate.js";
 import type {
   ChartSemanticLayer,
   EngineChartPrimitive,
@@ -12,9 +12,15 @@ import {
 
 function primitiveFor(
   annotation: ChartAnnotation,
-  price: number | null,
+  scenario: ReplayScenario,
 ): EngineChartPrimitive | null {
-  if (price === null) return null;
+  // A primitive's geometry must be anchored to what was knowable when the
+  // annotation itself became known, never to the price of a later replay frame.
+  // This keeps already-known chart geometry immutable while scrubbing forward.
+  const evidenceAtFact = snapshotAt(scenario, annotation.knownAt);
+  const price = evidenceAtFact.price;
+  const priceEvidence = evidenceAtFact.evidenceRefs.PRICE;
+  if (price === null || !priceEvidence) return null;
 
   const concept =
     annotation.kind === "ENTRY_STATUS"
@@ -39,7 +45,7 @@ function primitiveFor(
       price,
     },
     sourceFactIds: [],
-    sourceEvidenceIds: [annotation.evidenceId],
+    sourceEvidenceIds: [annotation.evidenceId, priceEvidence.evidenceId],
     visibility: "PRIMARY",
     styleToken: annotation.kind === "ENTRY_STATUS" ? "ENTRY" : "SETUP",
     authorityEffect: "NONE",
@@ -63,7 +69,7 @@ export function buildReplayChartScene(
 
   const decision = buildDecisionCase(scenario, frameIndex);
   const primitives = decision.annotations
-    .map(annotation => primitiveFor(annotation, decision.current.price))
+    .map(annotation => primitiveFor(annotation, scenario))
     .filter((item): item is EngineChartPrimitive => item !== null);
 
   return {
