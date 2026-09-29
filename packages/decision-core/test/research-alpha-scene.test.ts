@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   alphaScenarios,
   buildReplayChartScene,
+  currentEntryScenario,
   staleEntryScenario,
 } from "../src/index.js";
 
@@ -81,17 +82,19 @@ describe("alpha engine-owned chart scene", () => {
     expect(lifecycleLater?.geometry).toEqual(lifecycleEarly?.geometry);
     expect(lifecycleLater?.sourceEvidenceIds).toEqual(["lifecycle-0815", "price-0815"]);
 
-    const entryEarly = buildReplayChartScene(staleEntryScenario, 5)
-      .primitives.find((primitive) => primitive.primitiveId === "alpha-primitive:entry-status-0817");
-    const entryLater = buildReplayChartScene(staleEntryScenario, 7)
-      .primitives.find((primitive) => primitive.primitiveId === "alpha-primitive:entry-status-0817");
+    // Use the scenario where the same CURRENT entry-status fact remains active
+    // into a later frame; staleEntryScenario legitimately supersedes 0817 with 0820.
+    const entryEarly = buildReplayChartScene(currentEntryScenario, 5)
+      .primitives.find((primitive) => primitive.primitiveId === "alpha-primitive:entry-status-0917");
+    const entryLater = buildReplayChartScene(currentEntryScenario, 6)
+      .primitives.find((primitive) => primitive.primitiveId === "alpha-primitive:entry-status-0917");
 
     expect(entryEarly?.geometry).toEqual({
       type: "POINT",
-      time: "2026-09-24T08:17:00Z",
-      price: 1.1772,
+      time: "2026-09-24T09:17:00Z",
+      price: 1.1770,
     });
     expect(entryLater?.geometry).toEqual(entryEarly?.geometry);
-    expect(entryLater?.sourceEvidenceIds).toEqual(["entry-status-0817", "price-0817"]);
+    expect(entryLater?.sourceEvidenceIds).toEqual(["entry-status-0917", "price-0917"]);
   });
 });
