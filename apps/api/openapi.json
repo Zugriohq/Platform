@@ -58,7 +58,8 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "object",
@@ -159,7 +160,8 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "object",
@@ -272,7 +274,8 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "array",
@@ -424,7 +427,8 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "object",
@@ -636,7 +640,8 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "object",
@@ -842,6 +847,302 @@
         ]
       }
     },
+    "/v1/alpha/scenarios/{scenarioId}/frames/{frameIndex}/chart-scene": {
+      "get": {
+        "operationId": "AlphaController_getFrameChartScene",
+        "parameters": [
+          {
+            "name": "scenarioId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "frameIndex",
+            "required": true,
+            "in": "path",
+            "description": "Zero-based replay frame index",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "`EngineChartScene` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                      "required": [
+                        "sceneId",
+                        "instrument",
+                        "timeframe",
+                        "evaluatedAt",
+                        "strategyId",
+                        "strategyVersion",
+                        "regimeLabel",
+                        "regimeEvidenceId",
+                        "regimeDefinitionId",
+                        "regimeKnownAt",
+                        "regimeContext",
+                        "routeContext",
+                        "primitives",
+                        "authority",
+                        "liveCapitalAuthority"
+                      ],
+                      "properties": {
+                        "strategyVersion": {
+                          "type": "string"
+                        },
+                        "regimeLabel": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "regimeEvidenceId": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "regimeDefinitionId": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "regimeKnownAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        },
+                        "regimeContext": {
+                          "type": "object",
+                          "required": [
+                            "status",
+                            "measurementId",
+                            "profileId",
+                            "profileVersion",
+                            "matchingRuleIds",
+                            "reasons"
+                          ],
+                          "properties": {
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "CLASSIFIED",
+                                "UNCERTAIN",
+                                "UNAVAILABLE"
+                              ]
+                            },
+                            "measurementId": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "profileId": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "profileVersion": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "matchingRuleIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "reasons": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "routeContext": {
+                          "type": "object",
+                          "required": [
+                            "status",
+                            "families",
+                            "calibrationStatus"
+                          ],
+                          "properties": {
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "UNAVAILABLE",
+                                "ROUTES_AVAILABLE",
+                                "NO_DECLARED_ROUTE"
+                              ]
+                            },
+                            "families": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "enum": [
+                                  "BREAKOUT_CONTINUATION",
+                                  "BREAKOUT_RETEST",
+                                  "BOS_RETEST",
+                                  "CHOCH_RETEST",
+                                  "MSS_RETEST",
+                                  "LIQUIDITY_SWEEP_REVERSAL",
+                                  "FAKEOUT_REVERSAL",
+                                  "FVG_MITIGATION",
+                                  "TREND_CONTINUATION",
+                                  "RANGE_MEAN_REVERSION",
+                                  "COMPRESSION_BREAKOUT_WATCH"
+                                ]
+                              }
+                            },
+                            "calibrationStatus": {
+                              "type": "string",
+                              "enum": [
+                                "UNVALIDATED_CANDIDATE_SET"
+                              ],
+                              "nullable": true
+                            }
+                          }
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "RESEARCH_ONLY"
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "primitives": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "description": "`EngineChartPrimitive` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                            "required": [
+                              "primitiveId",
+                              "layer",
+                              "concept",
+                              "maturity",
+                              "label",
+                              "knownAt",
+                              "geometry",
+                              "sourceFactIds",
+                              "sourceEvidenceIds",
+                              "visibility",
+                              "styleToken",
+                              "authorityEffect"
+                            ],
+                            "properties": {},
+                            "additionalProperties": true
+                          }
+                        }
+                      },
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Engine-owned semantic chart scene for one replay frame",
+        "tags": [
+          "private-validation-alpha"
+        ]
+      }
+    },
     "/v1/alpha/decision-cases": {
       "post": {
         "description": "Idempotent per scenario/frame/bundle version: repeating the request returns the original case with 200. Only NO_LIVE_CAPITAL validation cases can be created.",
@@ -925,7 +1226,8 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "object",
@@ -1294,7 +1596,8 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "object",
@@ -1704,7 +2007,8 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "object",
@@ -2053,9 +2357,117 @@
         ]
       }
     },
-    "/v1/alpha/scenarios/{scenarioId}/frames/{frameIndex}/chart-scene": {
+    "/v1/alpha/engine-validation/scenarios": {
       "get": {
-        "operationId": "AlphaController_getFrameChartScene",
+        "operationId": "LaneBController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "route",
+                          "family",
+                          "horizon",
+                          "frameCount"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "route": {
+                            "type": "string",
+                            "enum": [
+                              "CONTINUATION_RETEST",
+                              "REVERSAL_RECLAIM"
+                            ]
+                          },
+                          "family": {
+                            "type": "string"
+                          },
+                          "horizon": {
+                            "type": "string"
+                          },
+                          "frameCount": {
+                            "type": "integer",
+                            "minimum": 1
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "List fabricated shared-entry/account-risk validation replays",
+        "tags": [
+          "private-validation-alpha"
+        ]
+      }
+    },
+    "/v1/alpha/engine-validation/scenarios/{scenarioId}/frames/{frameIndex}": {
+      "get": {
+        "description": "Fabricated mechanical validation only. Does not size, reserve, persist an order or execute. Repeated reads reuse canonical engine state.",
+        "operationId": "LaneBController_frame",
         "parameters": [
           {
             "name": "scenarioId",
@@ -2069,7 +2481,6 @@
             "name": "frameIndex",
             "required": true,
             "in": "path",
-            "description": "Zero-based replay frame index",
             "schema": {
               "type": "integer"
             }
@@ -2128,33 +2539,38 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "object",
-                      "description": "`EngineChartScene` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                       "required": [
-                        "sceneId",
-                        "instrument",
-                        "timeframe",
-                        "evaluatedAt",
-                        "strategyId",
-                        "strategyVersion",
-                        "regimeLabel",
-                        "regimeEvidenceId",
-                        "regimeDefinitionId",
-                        "regimeKnownAt",
-                        "regimeContext",
-                        "routeContext",
-                        "primitives",
+                        "scenarioId",
+                        "frameIndex",
+                        "evidenceStatus",
+                        "entry",
+                        "accountRisk",
                         "authority",
                         "liveCapitalAuthority"
                       ],
                       "properties": {
+                        "scenarioId": {
+                          "type": "string"
+                        },
+                        "frameIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "FABRICATED_MECHANICAL_VALIDATION"
+                          ]
+                        },
                         "authority": {
                           "type": "string",
                           "enum": [
-                            "RESEARCH_ONLY"
+                            "NO_LIVE_CAPITAL"
                           ]
                         },
                         "liveCapitalAuthority": {
@@ -2163,140 +2579,88 @@
                             false
                           ]
                         },
-                        "primitives": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "description": "`EngineChartPrimitive` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
-                            "required": [
-                              "primitiveId",
-                              "layer",
-                              "concept",
-                              "maturity",
-                              "label",
-                              "knownAt",
-                              "geometry",
-                              "sourceFactIds",
-                              "sourceEvidenceIds",
-                              "visibility",
-                              "styleToken",
-                              "authorityEffect"
-                            ],
-                            "properties": {},
-                            "additionalProperties": true
-                          }
-                        },
-                        "strategyVersion": {
-                          "type": "string"
-                        },
-                        "regimeLabel": {
-                          "type": "string",
-                          "nullable": true
-                        },
-                        "regimeEvidenceId": {
-                          "type": "string",
-                          "nullable": true
-                        },
-                        "regimeDefinitionId": {
-                          "type": "string",
-                          "nullable": true
-                        },
-                        "regimeKnownAt": {
-                          "type": "string",
-                          "format": "date-time",
-                          "nullable": true
-                        },
-                        "routeContext": {
+                        "entry": {
                           "type": "object",
+                          "description": "`EntryCandidate (validation/entryGrammar.ts)` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                           "required": [
-                            "status",
-                            "families",
-                            "calibrationStatus"
+                            "key",
+                            "opportunityId",
+                            "state",
+                            "stages",
+                            "evaluatedAt",
+                            "knownAt",
+                            "authority",
+                            "liveCapitalAuthority",
+                            "modelScored"
                           ],
                           "properties": {
-                            "status": {
+                            "authority": {
                               "type": "string",
                               "enum": [
-                                "UNAVAILABLE",
-                                "ROUTES_AVAILABLE",
-                                "NO_DECLARED_ROUTE"
+                                "RESEARCH_ONLY"
                               ]
                             },
-                            "families": {
-                              "type": "array",
-                              "items": {
-                                "type": "string",
-                                "enum": [
-                                  "BREAKOUT_CONTINUATION",
-                                  "BREAKOUT_RETEST",
-                                  "BOS_RETEST",
-                                  "CHOCH_RETEST",
-                                  "MSS_RETEST",
-                                  "LIQUIDITY_SWEEP_REVERSAL",
-                                  "FAKEOUT_REVERSAL",
-                                  "FVG_MITIGATION",
-                                  "TREND_CONTINUATION",
-                                  "RANGE_MEAN_REVERSION",
-                                  "COMPRESSION_BREAKOUT_WATCH"
-                                ]
-                              }
+                            "liveCapitalAuthority": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
                             },
-                            "calibrationStatus": {
+                            "modelScored": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "state": {
                               "type": "string",
                               "enum": [
-                                "UNVALIDATED_CANDIDATE_SET"
-                              ],
-                              "nullable": true
+                                "STRUCTURAL_CANDIDATE",
+                                "STRUCTURAL_WATCH",
+                                "STRUCTURAL_READY"
+                              ]
                             }
-                          }
+                          },
+                          "additionalProperties": true
                         },
-                        "regimeContext": {
+                        "accountRisk": {
                           "type": "object",
+                          "description": "`AccountRiskAssessment (validation/accountRisk.ts)` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
                           "required": [
-                            "status",
-                            "measurementId",
-                            "profileId",
-                            "profileVersion",
-                            "matchingRuleIds",
-                            "reasons"
+                            "accountId",
+                            "snapshotId",
+                            "researchAdmission",
+                            "reasons",
+                            "brokerReported",
+                            "normalized",
+                            "exposure",
+                            "authority",
+                            "liveCapitalAuthority"
                           ],
                           "properties": {
-                            "status": {
+                            "authority": {
                               "type": "string",
                               "enum": [
-                                "CLASSIFIED",
-                                "UNCERTAIN",
-                                "UNAVAILABLE"
+                                "RESEARCH_ONLY"
                               ]
                             },
-                            "measurementId": {
+                            "liveCapitalAuthority": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "researchAdmission": {
                               "type": "string",
-                              "nullable": true
-                            },
-                            "profileId": {
-                              "type": "string",
-                              "nullable": true
-                            },
-                            "profileVersion": {
-                              "type": "string",
-                              "nullable": true
-                            },
-                            "matchingRuleIds": {
-                              "type": "array",
-                              "items": {
-                                "type": "string"
-                              }
-                            },
-                            "reasons": {
-                              "type": "array",
-                              "items": {
-                                "type": "string"
-                              }
+                              "enum": [
+                                "PASS",
+                                "BLOCK"
+                              ]
                             }
-                          }
+                          },
+                          "additionalProperties": true
                         }
-                      },
-                      "additionalProperties": true
+                      }
                     }
                   }
                 }
@@ -2342,7 +2706,7 @@
             }
           }
         },
-        "summary": "Engine-owned semantic chart scene for one replay frame",
+        "summary": "Evaluate a research-only shared entry and downstream account-risk frame",
         "tags": [
           "private-validation-alpha"
         ]

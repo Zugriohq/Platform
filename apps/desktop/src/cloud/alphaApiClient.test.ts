@@ -43,6 +43,16 @@ describe("createAlphaApiClient", () => {
     expect(calls).toHaveLength(0);
   });
 
+
+
+  it("rejects otherwise-valid responses whose alpha metadata carries an unknown authority field", async () => {
+    const decision = JSON.parse(JSON.stringify(buildDecisionCase(staleEntryScenario, 4)));
+    const meta = { ...ALPHA_RESPONSE_META, executionAuthority: "LIVE" };
+    const { impl } = fakeFetch(() => json(200, { meta, data: decision }));
+    const client = createAlphaApiClient({ baseUrl: "https://api.zugrio.xyz", fetch: impl });
+    expect(await client.getFrameDecisionCase(staleEntryScenario.id, 4)).toMatchObject({ status: "rejected" });
+  });
+
   it("returns typed decision-core cases from the cloud", async () => {
     const decision = JSON.parse(JSON.stringify(buildDecisionCase(staleEntryScenario, 4)));
     const { impl, calls } = fakeFetch(() => json(200, { meta: ALPHA_RESPONSE_META, data: decision }));
@@ -96,6 +106,33 @@ describe("createAlphaApiClient", () => {
     expect(result.data.primitives.every(item => item.authorityEffect === "NONE")).toBe(true);
   });
 
+  it("accepts engine-owned trendline paths and later break facts without fitting lines locally", async () => {
+    const scenario = alphaScenarios.find(item => item.id === DERIVED_STRUCTURAL_SCENARIO_ID)!;
+    const scene = JSON.parse(JSON.stringify(buildReplayChartScene(scenario, 19)));
+    expect(scene.primitives.some((item: { concept: string; geometry: { type: string } }) =>
+      item.concept === "TRENDLINE_SUPPORT" && item.geometry.type === "PATH"
+    )).toBe(true);
+    expect(scene.primitives.some((item: { concept: string; label: string }) =>
+      item.concept === "TRENDLINE_BREAK" && item.label === "SUPPORT CLOSE BREAK"
+    )).toBe(true);
+
+    const { impl } = fakeFetch(() => json(200, { meta: ALPHA_RESPONSE_META, data: scene }));
+    const client = createAlphaApiClient({ baseUrl: "https://api.zugrio.xyz", fetch: impl });
+    const result = await client.getFrameChartScene(scenario.id, 19);
+
+    expect(result.status).toBe("ok");
+    if (result.status !== "ok") throw new Error("expected cloud chart scene");
+    expect(result.data.primitives.some(item =>
+      item.concept === "TRENDLINE_SUPPORT" &&
+      item.layer === "STRUCTURE" &&
+      item.geometry.type === "PATH"
+    )).toBe(true);
+    expect(result.data.primitives.some(item =>
+      item.concept === "TRENDLINE_BREAK" && item.layer === "STRUCTURE"
+    )).toBe(true);
+    expect(result.data.primitives.every(item => item.authorityEffect === "NONE")).toBe(true);
+  });
+
   it("rejects malformed chart primitives even when alpha metadata is valid", async () => {
     const scene = JSON.parse(JSON.stringify(buildReplayChartScene(staleEntryScenario, 4)));
     scene.primitives[0].authorityEffect = "ALLOW";
@@ -105,6 +142,35 @@ describe("createAlphaApiClient", () => {
       status: "rejected",
       reason: "Response payload does not satisfy the expected alpha contract",
     });
+  });
+
+  it("rejects unsupported chart primitives and promoted trendline maturity", async () => {
+    const scenario = alphaScenarios.find(item => item.id === DERIVED_STRUCTURAL_SCENARIO_ID)!;
+    const base = JSON.parse(JSON.stringify(buildReplayChartScene(scenario, 19)));
+    const rejected = {
+      status: "rejected",
+      reason: "Response payload does not satisfy the expected alpha contract",
+    };
+    const fetchScene = async (scene: unknown) => {
+      const { impl } = fakeFetch(() => json(200, { meta: ALPHA_RESPONSE_META, data: scene }));
+      return createAlphaApiClient({ baseUrl: "https://api.zugrio.xyz", fetch: impl })
+        .getFrameChartScene(scenario.id, 19);
+    };
+
+    expect((await fetchScene(base)).status).toBe("ok");
+
+    const unsupported = JSON.parse(JSON.stringify(base));
+    unsupported.primitives[0].concept = "TRENDLINE_CHANNEL_WEDGE";
+    expect(await fetchScene(unsupported)).toEqual(rejected);
+
+    for (const concept of ["TRENDLINE_SUPPORT", "TRENDLINE_TOUCH", "TRENDLINE_PENETRATION", "TRENDLINE_BREAK"]) {
+      const promoted = JSON.parse(JSON.stringify(base));
+      const index = promoted.primitives.findIndex((item: { concept: string }) => item.concept === concept);
+      if (index < 0) continue;
+      expect(promoted.primitives[index].maturity).toBe("RESEARCH_DERIVED");
+      promoted.primitives[index].maturity = "DETERMINISTIC_FACT";
+      expect(await fetchScene(promoted)).toEqual(rejected);
+    }
   });
 
   it("rejects malformed or causally impossible regime-route scene context", async () => {

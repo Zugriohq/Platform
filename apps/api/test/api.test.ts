@@ -108,6 +108,36 @@ describe("alpha API (memory persistence)", () => {
     )).toBe(true);
   });
 
+  it("returns causal trendline geometry and later interactions through the cloud chart-scene route", async () => {
+    const before = await api.request(
+      `/v1/alpha/scenarios/${DERIVED_STRUCTURAL_SCENARIO_ID}/frames/15/chart-scene`,
+    );
+    expect(before.status).toBe(200);
+    expect(before.body.data.primitives.some((item: { concept: string }) =>
+      item.concept === "TRENDLINE_SUPPORT"
+    )).toBe(false);
+
+    const confirmed = await api.request(
+      `/v1/alpha/scenarios/${DERIVED_STRUCTURAL_SCENARIO_ID}/frames/16/chart-scene`,
+    );
+    expect(confirmed.status).toBe(200);
+    expect(confirmed.body.data.primitives.some((item: { concept: string; geometry: { type: string } }) =>
+      item.concept === "TRENDLINE_SUPPORT" && item.geometry.type === "PATH"
+    )).toBe(true);
+
+    const broken = await api.request(
+      `/v1/alpha/scenarios/${DERIVED_STRUCTURAL_SCENARIO_ID}/frames/19/chart-scene`,
+    );
+    expect(broken.status).toBe(200);
+    expect(broken.body.meta).toEqual(ALPHA_RESPONSE_META);
+    expect(broken.body.data.primitives.some((item: { concept: string; label: string }) =>
+      item.concept === "TRENDLINE_BREAK" && item.label === "SUPPORT CLOSE BREAK"
+    )).toBe(true);
+    expect(broken.body.data.primitives.every((item: { authorityEffect: string }) =>
+      item.authorityEffect === "NONE"
+    )).toBe(true);
+  });
+
   it("returns PASS as an outcome while preserving structural readiness when the entry goes stale", async () => {
     const { body } = await api.request(`/v1/alpha/scenarios/${staleEntryScenario.id}/frames/6`);
     expect(body.data.structuralState).toBe("STRUCTURAL_READY");

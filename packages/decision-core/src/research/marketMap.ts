@@ -1,3 +1,5 @@
+import { dedupeById } from "./canonicalJson.js";
+
 export type CanonicalRegime =
   | "TRENDING"
   | "MEAN_REVERTING"
@@ -9,64 +11,102 @@ export type CanonicalRegime =
 
 export type StructureScale = "INTERNAL" | "INTERMEDIATE" | "EXTERNAL";
 
-export type MarketStructureConcept =
-  | "SWING_HIGH"
-  | "SWING_LOW"
-  | "EQUAL_HIGHS"
-  | "EQUAL_LOWS"
-  | "BOS"
-  | "CHOCH"
-  | "MSS"
-  | "TRENDLINE_SUPPORT"
-  | "TRENDLINE_RESISTANCE"
-  | "CHANNEL_SUPPORT"
-  | "CHANNEL_RESISTANCE"
-  | "LIQUIDITY_SWEEP"
-  | "FAKEOUT"
-  | "INDUCEMENT"
-  | "DISPLACEMENT"
-  | "FVG"
-  | "FVG_TOUCH"
-  | "FVG_PARTIAL_FILL"
-  | "FVG_FULL_FILL"
-  | "ORDER_BLOCK"
-  | "BREAKER_BLOCK"
-  | "MITIGATION_BLOCK"
-  | "MITIGATION"
-  | "RANGE_HIGH"
-  | "RANGE_LOW"
-  | "BREAKOUT"
-  | "RETEST"
-  | "CONTINUATION"
-  | "DOUBLE_TOP"
-  | "DOUBLE_BOTTOM"
-  | "HEAD_AND_SHOULDERS"
-  | "INVERSE_HEAD_AND_SHOULDERS"
-  | "RISING_WEDGE"
-  | "FALLING_WEDGE"
-  | "ASCENDING_TRIANGLE"
-  | "DESCENDING_TRIANGLE"
-  | "SYMMETRICAL_TRIANGLE"
-  | "FLAG"
-  | "PENNANT"
-  | "DOJI"
-  | "HAMMER"
-  | "SHOOTING_STAR"
-  | "BULLISH_ENGULFING"
-  | "BEARISH_ENGULFING"
-  | "INSIDE_BAR"
-  | "OUTSIDE_BAR"
-  | "MORNING_STAR"
-  | "EVENING_STAR"
-  | "THREE_WHITE_SOLDIERS"
-  | "THREE_BLACK_CROWS"
-  | "ELLIOTT_WAVE";
+export const MARKET_STRUCTURE_CONCEPTS = [
+  "SWING_HIGH",
+  "SWING_LOW",
+  "EQUAL_HIGHS",
+  "EQUAL_LOWS",
+  "BOS",
+  "CHOCH",
+  "MSS",
+  "TRENDLINE_SUPPORT",
+  "TRENDLINE_RESISTANCE",
+  "TRENDLINE_TOUCH",
+  "TRENDLINE_PENETRATION",
+  "TRENDLINE_BREAK",
+  "CHANNEL_SUPPORT",
+  "CHANNEL_RESISTANCE",
+  "LIQUIDITY_SWEEP",
+  "FAKEOUT",
+  "INDUCEMENT",
+  "DISPLACEMENT",
+  "FVG",
+  "FVG_TOUCH",
+  "FVG_PARTIAL_FILL",
+  "FVG_FULL_FILL",
+  "ORDER_BLOCK",
+  "BREAKER_BLOCK",
+  "MITIGATION_BLOCK",
+  "MITIGATION",
+  "RANGE_HIGH",
+  "RANGE_LOW",
+  "BREAKOUT",
+  "RETEST",
+  "CONTINUATION",
+  "DOUBLE_TOP",
+  "DOUBLE_BOTTOM",
+  "HEAD_AND_SHOULDERS",
+  "INVERSE_HEAD_AND_SHOULDERS",
+  "RISING_WEDGE",
+  "FALLING_WEDGE",
+  "ASCENDING_TRIANGLE",
+  "DESCENDING_TRIANGLE",
+  "SYMMETRICAL_TRIANGLE",
+  "FLAG",
+  "PENNANT",
+  "DOJI",
+  "HAMMER",
+  "SHOOTING_STAR",
+  "BULLISH_ENGULFING",
+  "BEARISH_ENGULFING",
+  "INSIDE_BAR",
+  "OUTSIDE_BAR",
+  "MORNING_STAR",
+  "EVENING_STAR",
+  "THREE_WHITE_SOLDIERS",
+  "THREE_BLACK_CROWS",
+  "ELLIOTT_WAVE",
+] as const;
 
-export type ResearchConceptMaturity =
-  | "DETERMINISTIC_FACT"
-  | "MORPHOLOGY_ONLY"
-  | "RESEARCH_DERIVED"
-  | "ADVISORY_ONLY";
+export type MarketStructureConcept = (typeof MARKET_STRUCTURE_CONCEPTS)[number];
+
+export const RESEARCH_CONCEPT_MATURITIES = [
+  "DETERMINISTIC_FACT",
+  "MORPHOLOGY_ONLY",
+  "RESEARCH_DERIVED",
+  "ADVISORY_ONLY",
+] as const;
+
+export type ResearchConceptMaturity = (typeof RESEARCH_CONCEPT_MATURITIES)[number];
+
+/**
+ * Concepts whose maturity is capped at RESEARCH_DERIVED. A trendline is fitted
+ * from confirmed pivots under a profile-owned tolerance, and every interaction
+ * with it inherits that research status: deterministic arithmetic on a research
+ * line does not make the result a deterministic market fact.
+ */
+export const RESEARCH_DERIVED_CEILING_CONCEPTS = [
+  "TRENDLINE_SUPPORT",
+  "TRENDLINE_RESISTANCE",
+  "TRENDLINE_TOUCH",
+  "TRENDLINE_PENETRATION",
+  "TRENDLINE_BREAK",
+] as const satisfies readonly MarketStructureConcept[];
+
+export function exceedsConceptMaturityCeiling(concept: string, maturity: string): boolean {
+  return (RESEARCH_DERIVED_CEILING_CONCEPTS as readonly string[]).includes(concept) &&
+    maturity === "DETERMINISTIC_FACT";
+}
+
+/**
+ * Slack for binary floating-point noise when comparing prices against a
+ * profile-owned tolerance or buffer. It is a representation guard (about
+ * 1e-12 relative), orders of magnitude below any instrument tick; it is not a
+ * tuning parameter and never widens a tolerance in any economically meaningful way.
+ */
+export function priceComparisonSlack(...values: readonly number[]): number {
+  return 1e-12 * Math.max(1, ...values.map(value => Math.abs(value)));
+}
 
 export type MarketMapGeometry =
   | {
@@ -104,6 +144,11 @@ export interface ResearchMarketStructureFact {
   readonly side: "BUY" | "SELL" | "NEUTRAL";
   readonly knownAt: string;
   readonly definitionId: string;
+  /**
+   * Upstream market-fact lineage when this fact is derived from already-known
+   * facts. Raw OHLC-derived facts may omit it and rely on sourceEvidenceIds.
+   */
+  readonly sourceFactIds?: readonly string[];
   readonly sourceEvidenceIds: readonly string[];
   readonly geometry: MarketMapGeometry;
   readonly label: string;
@@ -226,6 +271,51 @@ function validateDefinition(definition: PivotDefinition): void {
 }
 
 /**
+ * Reduces the supplied bars to one slot per sourceBarId.
+ *
+ * - A single version keeps its slot unchanged.
+ * - INCOMPLETE versions are in-progress observations of the bar. Once a
+ *   FRESH_COMPLETE version is supplied they are superseded by it; until then one
+ *   of them keeps the bar's slot, so every window containing it stays unconfirmed.
+ * - FRESH_COMPLETE versions: identical re-deliveries collapse; any difference
+ *   (including knownAt) fails closed.
+ * - Every version must agree on sourceClosedAt, and STALE/GAP never share a
+ *   sourceBarId with another version (both fail closed).
+ */
+function oneSlotPerSourceBar(bars: readonly ResearchStructureBar[]): ResearchStructureBar[] {
+  const versionsById = new Map<string, ResearchStructureBar[]>();
+  for (const bar of bars) {
+    const versions = versionsById.get(bar.sourceBarId) ?? [];
+    versions.push(bar);
+    versionsById.set(bar.sourceBarId, versions);
+  }
+
+  const slots: ResearchStructureBar[] = [];
+  for (const [sourceBarId, versions] of versionsById) {
+    const [first] = versions;
+    if (!first) continue;
+    if (versions.length === 1) {
+      slots.push(first);
+      continue;
+    }
+    if (versions.some(bar => bar.dataStatus !== "FRESH_COMPLETE" && bar.dataStatus !== "INCOMPLETE")) {
+      throw new Error(`duplicate sourceBarId: ${sourceBarId}`);
+    }
+    const closedAt = epoch(first.sourceClosedAt, "sourceClosedAt");
+    if (versions.some(bar => epoch(bar.sourceClosedAt, "sourceClosedAt") !== closedAt)) {
+      throw new Error(`conflicting sourceClosedAt for sourceBarId: ${sourceBarId}`);
+    }
+    const [completed] = dedupeById(
+      versions.filter(bar => bar.dataStatus === "FRESH_COMPLETE"),
+      bar => bar.sourceBarId,
+      "completed source bar",
+    );
+    slots.push(completed ?? first);
+  }
+  return slots;
+}
+
+/**
  * Confirmed, non-repainting pivots using rightmost-plateau semantics:
  * ties are allowed on the left and must be strictly cleared on the right.
  *
@@ -239,15 +329,12 @@ export function detectConfirmedPivots(
 ): readonly ResearchMarketStructureFact[] {
   if (!timeframe.trim()) throw new Error("timeframe must be non-empty");
 
-  const ids = new Set<string>();
-  for (const bar of bars) {
-    validateResearchStructureBar(bar);
-    if (ids.has(bar.sourceBarId)) throw new Error(`duplicate sourceBarId: ${bar.sourceBarId}`);
-    ids.add(bar.sourceBarId);
-  }
+  // Every supplied bar is validated, whatever its status: malformed non-final
+  // input fails closed rather than being discarded.
+  for (const bar of bars) validateResearchStructureBar(bar);
   for (const definition of definitions) validateDefinition(definition);
 
-  const ordered = [...bars].sort((a, b) => {
+  const ordered = oneSlotPerSourceBar(bars).sort((a, b) => {
     const byClose = epoch(a.sourceClosedAt, "sourceClosedAt") - epoch(b.sourceClosedAt, "sourceClosedAt");
     if (byClose !== 0) return byClose;
     return a.sourceBarId.localeCompare(b.sourceBarId);
@@ -280,7 +367,10 @@ export function detectConfirmedPivots(
         right.every(bar => source.low < bar.low);
 
       const sourceEvidenceIds = window.map(bar => bar.evidenceId);
-      const knownAt = confirmingBar.knownAt;
+      const knownAt = window.reduce(
+        (latest, bar) => (epoch(bar.knownAt, "knownAt") > epoch(latest, "knownAt") ? bar.knownAt : latest),
+        confirmingBar.knownAt,
+      );
 
       if (highConfirmed) {
         facts.push({
@@ -378,6 +468,7 @@ export function buildTrendlineCandidateFromPivots(
   }
   if (first.concept !== second.concept) return null;
   if (first.concept !== "SWING_HIGH" && first.concept !== "SWING_LOW") return null;
+  if (first.maturity !== "DETERMINISTIC_FACT" || second.maturity !== "DETERMINISTIC_FACT") return null;
   if (first.scale !== second.scale || first.timeframe !== second.timeframe) return null;
   if (first.geometry.type !== "POINT" || second.geometry.type !== "POINT") return null;
 
@@ -385,6 +476,10 @@ export function buildTrendlineCandidateFromPivots(
   const secondTime = epoch(second.geometry.time, "second.geometry.time");
   if (secondTime <= firstTime) return null;
   if (secondTime - firstTime < definition.minimumAnchorSeparationMs) return null;
+  // An anchor whose geometry is later than the moment it claims to be known is non-causal.
+  if (firstTime > epoch(first.knownAt, "first.knownAt") || secondTime > epoch(second.knownAt, "second.knownAt")) {
+    return null;
+  }
 
   const side = first.concept === "SWING_LOW" ? "SUPPORT" : "RESISTANCE";
 
@@ -424,6 +519,7 @@ export function confirmTrendlineWithPivot(
     throw new Error("anchorTolerance must be finite and >= 0");
   }
   if (confirmingPivot.geometry.type !== "POINT") return null;
+  if (confirmingPivot.maturity !== "DETERMINISTIC_FACT") return null;
   if (confirmingPivot.scale !== candidate.scale || confirmingPivot.timeframe !== candidate.timeframe) return null;
 
   const requiredConcept = candidate.side === "SUPPORT" ? "SWING_LOW" : "SWING_HIGH";
@@ -437,10 +533,12 @@ export function confirmTrendlineWithPivot(
   const secondTime = epoch(second.time, "trendline second anchor time");
   const thirdTime = epoch(confirmingPivot.geometry.time, "confirming pivot time");
   if (thirdTime <= secondTime) return null;
+  if (thirdTime > epoch(confirmingPivot.knownAt, "confirmingPivot.knownAt")) return null;
 
   const slope = (second.price - first.price) / (secondTime - firstTime);
   const expected = first.price + slope * (thirdTime - firstTime);
-  if (Math.abs(confirmingPivot.geometry.price - expected) > definition.anchorTolerance) return null;
+  const slack = priceComparisonSlack(confirmingPivot.geometry.price, expected, first.price, second.price);
+  if (Math.abs(confirmingPivot.geometry.price - expected) > definition.anchorTolerance + slack) return null;
 
   const concept = candidate.side === "SUPPORT" ? "TRENDLINE_SUPPORT" : "TRENDLINE_RESISTANCE";
 
@@ -455,6 +553,7 @@ export function confirmTrendlineWithPivot(
       ? candidate.knownAt
       : confirmingPivot.knownAt,
     definitionId: definition.definitionId,
+    sourceFactIds: [...candidate.anchorFactIds, confirmingPivot.factId],
     sourceEvidenceIds: [...new Set([...candidate.anchorEvidenceIds, ...confirmingPivot.sourceEvidenceIds])],
     geometry: {
       type: "PATH",
@@ -462,7 +561,7 @@ export function confirmTrendlineWithPivot(
         ...candidate.geometry.points,
         {
           time: confirmingPivot.geometry.time,
-          price: confirmingPivot.geometry.price,
+          price: expected,
         },
       ],
     },

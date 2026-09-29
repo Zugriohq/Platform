@@ -55,9 +55,12 @@ export interface AlphaEnvelope<T> {
 export function isAlphaResponseMeta(value: unknown): value is AlphaResponseMeta {
   if (typeof value !== "object" || value === null) return false;
   const meta = value as Record<string, unknown>;
-  return (Object.keys(ALPHA_RESPONSE_META) as (keyof AlphaResponseMeta)[]).every(
-    (key) => meta[key] === ALPHA_RESPONSE_META[key],
-  );
+  const expectedKeys = Object.keys(ALPHA_RESPONSE_META) as (keyof AlphaResponseMeta)[];
+  const actualKeys = Object.keys(meta);
+  if (actualKeys.length !== expectedKeys.length || actualKeys.some((key) => !expectedKeys.includes(key as keyof AlphaResponseMeta))) {
+    return false;
+  }
+  return expectedKeys.every((key) => meta[key] === ALPHA_RESPONSE_META[key]);
 }
 
 export interface HealthStatus {
@@ -143,6 +146,8 @@ export interface MaterializeDecisionCaseResult {
 }
 
 export const ALPHA_API_PATHS = {
+  engineValidationScenarios: () => "/v1/alpha/engine-validation/scenarios",
+  engineValidationFrame: (scenarioId: string, frameIndex: number) => `/v1/alpha/engine-validation/scenarios/${encodeURIComponent(scenarioId)}/frames/${frameIndex}`,
   health: () => "/health",
   scenarios: () => "/v1/alpha/scenarios",
   scenario: (scenarioId: string) => `/v1/alpha/scenarios/${encodeURIComponent(scenarioId)}`,
@@ -153,3 +158,8 @@ export const ALPHA_API_PATHS = {
   decisionCases: () => "/v1/alpha/decision-cases",
   decisionCase: (caseId: string) => `/v1/alpha/decision-cases/${encodeURIComponent(caseId)}`,
 } as const;
+
+
+/** Lane B research payloads retain decision-core ownership. */
+export type { LaneBValidationFrame, EntryCandidate, AccountRiskAssessment, MarketStateKey, StrategyStateKey } from "@zugrio/decision-core";
+export type LaneBScenarioSummary = (typeof import("@zugrio/decision-core").laneBScenarios)[number];
