@@ -105,6 +105,34 @@ describe('Lane D integration seam negative controls',()=>{
  });
 });
 
+
+describe('Lane D terminal entry-lifecycle negative controls',()=>{
+ it('a stop-invalidating close before reaction cannot be forgotten and later resurrect the same binding',()=>{
+  const i=input();
+  i.markets[2].bars[4]={...i.markets[2].bars[4],open:109,high:109,low:100,close:104};
+  const result=new SharedEntryEngine().evaluate(i);
+  expect(result.reasons).toContain('CHILD_INVALIDATED');
+  expect(result.state).not.toBe('STRUCTURAL_READY');
+ });
+ it('touching the structural objective on the reaction bar is terminal before later confirmation',()=>{
+  const i=input();
+  i.markets[2].bars[4]={...i.markets[2].bars[4],high:140};
+  const result=new SharedEntryEngine().evaluate(i);
+  expect(result.reasons).toContain('OBJECTIVE_ALREADY_REACHED');
+  expect(result.state).not.toBe('STRUCTURAL_READY');
+ });
+ it('a nearer objective learned after the original objective removes current runway',()=>{
+  const i=input();
+  const context=i.markets.find((m:any)=>m.timeframe==='H1');
+  context.bars[3]={...context.bars[3],high:115};
+  context.bars[4]={...context.bars[4],high:120};
+  context.bars[5]={...context.bars[5],high:115};
+  const result=new SharedEntryEngine().evaluate(i);
+  expect(result.reasons).toContain('NEARER_OBJECTIVE_EXISTS');
+  expect(result.state).not.toBe('STRUCTURAL_READY');
+ });
+});
+
 describe('Version and numeric boundary guards',()=>{
  it('material model rollover requires a new complete TradeBundle version',()=>{const e=new SharedEntryEngine(),i=input();e.evaluate(i);i.model.version='2';i.model.stopTicks=6;expect(()=>e.evaluate(i)).toThrow(/TradeBundle/);});
  it('feature version rollover isolates facts and preserves old snapshots',()=>{const store=new SharedMarketStore(),i=input().markets[0];const a=store.materialize(i);i.featureDefinition.version='2';i.pivots[0].leftBars=2;const b=store.materialize(i);expect(b.key).not.toBe(a.key);expect(store.computationCount).toBe(2);expect(a.pivots[0]?.leftBars).toBe(1);});
