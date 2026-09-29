@@ -133,6 +133,19 @@ describe('Lane D terminal entry-lifecycle negative controls',()=>{
  });
 });
 
+
+describe('Lane D provenance boundary negative control',()=>{
+ it('keeps raw bar evidence out of factIds and labels it explicitly as evidenceIds',()=>{
+  const result=new SharedEntryEngine().evaluate(input());
+  const reaction=result.stages.find(s=>s.stage==='Reaction / Confirmation') as any;
+  const current=result.stages.find(s=>s.stage==='Current Entry') as any;
+  expect(reaction.factIds).toEqual([]);
+  expect(reaction.evidenceIds).toEqual(['M1:e5','M1:e6']);
+  expect(current.factIds).toEqual([]);
+  expect(current.evidenceIds).toEqual(['M1:e7']);
+ });
+});
+
 describe('Version and numeric boundary guards',()=>{
  it('material model rollover requires a new complete TradeBundle version',()=>{const e=new SharedEntryEngine(),i=input();e.evaluate(i);i.model.version='2';i.model.stopTicks=6;expect(()=>e.evaluate(i)).toThrow(/TradeBundle/);});
  it('feature version rollover isolates facts and preserves old snapshots',()=>{const store=new SharedMarketStore(),i=input().markets[0];const a=store.materialize(i);i.featureDefinition.version='2';i.pivots[0].leftBars=2;const b=store.materialize(i);expect(b.key).not.toBe(a.key);expect(store.computationCount).toBe(2);expect(a.pivots[0]?.leftBars).toBe(1);});
