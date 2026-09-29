@@ -1,0 +1,50 @@
+# Zugrio private validation alpha — DATABASE host of the two-VM zero-cost topology
+# (OCI Always Free VM.Standard.E2.1.Micro, 1 GB RAM). NO LIVE CAPITAL.
+# See docs/runbooks/PRIVATE_ALPHA_OCI_SPLIT_MICRO.md. The API host runs ../api.
+#
+#   cp .env.example .env && chmod 600 .env && edit .env    # never commit .env
+#   docker compose up -d
+#
+# PostgreSQL is published only on the VM's private VCN address (ZUGRIO_DB_BIND_ADDR).
+# OCI maps the public IP onto that same private address, so exposure is controlled by
+# (1) the subnet security list: 5432 only from the API VM, and
+# (2) restrict-postgres-source.sh: host firewall drop for every other source.
+
+name: zugrio-alpha-db
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    # Sized for a 1 GB VM that runs nothing else. The official image enforces
+    # scram-sha-256 password authentication for all non-local connections.
+    command:
+      - postgres
+      - -c
+      - shared_buffers=128MB
+      - -c
+      - max_connections=40
+      - -c
+      - password_encryption=scram-sha-256
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-zugrio}
+      POSTGRES_USER: ${POSTGRES_USER:-zugrio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+    ports:
+      - "${ZUGRIO_DB_BIND_ADDR:?ZUGRIO_DB_BIND_ADDR must be the DB VM private IP}:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    shm_size: 128mb
+    logging:
+      driver: json-file
+      options: { max-size: "20m", max-file: "5" }
+
+volumes:
+  pgdata:
+    name: zugrio-alpha-pgdata

@@ -133,6 +133,91 @@ jobs:
       - if: always()
         run: docker compose down -v
 
+  # Two-VM zero-cost topology (OCI Always Free E2.1.Micro x2): infra/oci/split/{db,api}.
+  # One runner plays both hosts: PostgreSQL is published on the runner's primary IP (the
+  # DB VM's private IP in production) and the API stack reaches it over that address.
+  compose-split-smoke:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/oci/split
+    steps:
+      - uses: actions/checkout@v4
+      - name: Write both host .env files
+        run: |
+          set -euo pipefail
+          host_ip="$(hostname -I | awk '{print $1}')"
+          pw="$(openssl rand -hex 32)"
+          printf 'POSTGRES_PASSWORD=%s\nZUGRIO_DB_BIND_ADDR=%s\nZUGRIO_BACKUP_DIR=%s\n' "$pw" "$host_ip" "$RUNNER_TEMP/backups" > db/.env
+          printf 'POSTGRES_PASSWORD=%s\nZUGRIO_DB_HOST=%s\nZUGRIO_API_LOCAL_PORT=3000\n' "$pw" "$host_ip" > api/.env
+          echo "HOST_IP=$host_ip" >> "$GITHUB_ENV"
+      - name: DB host — postgres published on the private address only
+        working-directory: infra/oci/split/db
+        run: |
+          set -euo pipefail
+          docker compose up -d
+          ../../../../.github/scripts/wait-for-healthy.sh zugrio-alpha-db-postgres-1 120
+          test "$(docker compose port postgres 5432)" = "$HOST_IP:5432"
+      - name: API host — migrate + api against the remote database
+        working-directory: infra/oci/split/api
+        run: |
+          set -euo pipefail
+          docker compose up -d --build
+          ../../../../.github/scripts/wait-for-healthy.sh zugrio-alpha-api-1 300
+          docker compose ps -a
+          test "$(docker inspect -f '{{.State.ExitCode}}' zugrio-alpha-migrate-1)" = 0
+          docker compose port api 3000 | grep -q '^127.0.0.1:'
+      - name: Tunnel overlay composes with the API host and demands a token
+        working-directory: infra/oci/split/api
+        run: |
+          set -euo pipefail
+          CLOUDFLARE_TUNNEL_TOKEN=placeholder docker compose -f docker-compose.yml -f ../../docker-compose.tunnel.yml config --quiet
+          if docker compose -f docker-compose.yml -f ../../docker-compose.tunnel.yml config --quiet 2>/dev/null; then
+            echo "tunnel overlay must refuse to start without CLOUDFLARE_TUNNEL_TOKEN"; exit 1
+          fi
+      - name: DB firewall admits the API network and drops other sources
+        run: |
+          set -euo pipefail
+          api_subnet="$(docker network inspect zugrio-alpha_edge -f '{{(index .IPAM.Config 0).Subnet}}')"
+          sudo ./db/restrict-postgres-source.sh "$api_subnet"
+          sudo ./db/restrict-postgres-source.sh "$api_subnet"
+          test "$(sudo iptables -S DOCKER-USER | grep -c -- '--ctorigdstport 5432')" = 1
+          if sudo ./db/restrict-postgres-source.sh 0.0.0.0/0; then echo "must refuse 0.0.0.0/0"; exit 1; fi
+          docker network create --subnet 10.99.0.0/24 not-the-api
+          if docker run --rm --network not-the-api postgres:16-alpine pg_isready -h "$HOST_IP" -t 5; then
+            echo "postgres reachable from a non-API source"; exit 1
+          fi
+          docker run --rm --network zugrio-alpha_edge postgres:16-alpine pg_isready -h "$HOST_IP" -t 5
+      - name: Smoke test
+        working-directory: infra/oci/split/api
+        run: ./smoke-test.sh http://127.0.0.1:3000
+      - name: Persistence survives API and database restarts
+        run: |
+          set -euo pipefail
+          (cd api && docker compose restart api)
+          ../../../.github/scripts/wait-for-healthy.sh zugrio-alpha-api-1 120
+          (cd api && ./smoke-test.sh http://127.0.0.1:3000) | tee smoke-api-restart.log
+          grep -q 'created=false' smoke-api-restart.log
+          (cd db && docker compose restart postgres)
+          ../../../.github/scripts/wait-for-healthy.sh zugrio-alpha-db-postgres-1 120
+          (cd api && ./smoke-test.sh http://127.0.0.1:3000) | tee smoke-db-restart.log
+          grep -q 'created=false' smoke-db-restart.log
+      - name: Backup on the DB host produces a restorable dump
+        working-directory: infra/oci/split/db
+        run: |
+          set -euo pipefail
+          ./backup-postgres.sh
+          dump="$(ls -1t "$RUNNER_TEMP"/backups/zugrio-*.dump | head -1)"
+          docker compose exec -T postgres pg_restore --list < "$dump" | grep -q decision_event
+      - if: failure()
+        run: |
+          (cd api && docker compose logs) || true
+          (cd db && docker compose logs) || true
+      - if: always()
+        run: |
+          (cd api && docker compose down -v) || true
+          (cd db && docker compose down -v) || true
+
   windows-portable:
     runs-on: windows-latest
     needs: validate
