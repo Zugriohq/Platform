@@ -50,7 +50,7 @@ export interface EntryCandidate {
   readonly parentContext: { readonly factId: string; readonly invalidation: number; readonly timeframe: string; readonly knownAt: string } | null;
   readonly reasons: readonly string[];
   readonly geometry: { readonly entryReference: number; readonly childInvalidation: number; readonly objective: number; readonly frozenAt: string } | null;
-  readonly stages: readonly { readonly stage: 'Context' | 'Location' | 'Reaction / Confirmation' | 'Current Entry' | 'Invalidation' | 'Objective' | 'Management'; readonly factIds: readonly string[] }[];
+  readonly stages: readonly { readonly stage: 'Context' | 'Location' | 'Reaction / Confirmation' | 'Current Entry' | 'Invalidation' | 'Objective' | 'Management'; readonly factIds: readonly string[]; readonly evidenceIds: readonly string[] }[];
   readonly management: { readonly timeframe: string; readonly policy: 'OBSERVE_CHILD_SEPARATELY_FROM_PARENT' };
   readonly authority: 'RESEARCH_ONLY'; readonly liveCapitalAuthority: false; readonly modelScored: false;
 }
@@ -121,11 +121,12 @@ function interpret(i: EntryEvaluationInput, markets: readonly SharedMarketState[
   const fact=(m:SharedMarketState,id:string)=>m.facts.find(f=>f.factId===id);
   const contextFact=fact(context,i.binding.contextFactId), locationFact=fact(location,i.binding.locationFactId), objectiveFact=fact(context,i.binding.objectiveFactId);
   const stages: EntryCandidate['stages'] = [
-    {stage:'Context',factIds:contextFact?[contextFact.factId]:[]},
-    {stage:'Location',factIds:locationFact?[locationFact.factId]:[]},
-    {stage:'Reaction / Confirmation',factIds:[]}, {stage:'Current Entry',factIds:[]},
-    {stage:'Invalidation',factIds:locationFact?[locationFact.factId]:[]},
-    {stage:'Objective',factIds:objectiveFact?[objectiveFact.factId]:[]}, {stage:'Management',factIds:[]}];
+    {stage:'Context',factIds:contextFact?[contextFact.factId]:[],evidenceIds:contextFact?.sourceEvidenceIds??[]},
+    {stage:'Location',factIds:locationFact?[locationFact.factId]:[],evidenceIds:locationFact?.sourceEvidenceIds??[]},
+    {stage:'Reaction / Confirmation',factIds:[],evidenceIds:[]}, {stage:'Current Entry',factIds:[],evidenceIds:[]},
+    {stage:'Invalidation',factIds:locationFact?[locationFact.factId]:[],evidenceIds:locationFact?.sourceEvidenceIds??[]},
+    {stage:'Objective',factIds:objectiveFact?[objectiveFact.factId]:[],evidenceIds:objectiveFact?.sourceEvidenceIds??[]},
+    {stage:'Management',factIds:[],evidenceIds:[]}];
   const base:EntryCandidate={key,opportunityId:canonical([i.model.strategy,i.model.tradeBundle,i.binding]),instrument:i.instrument.instrument,side:i.binding.side,
     strategy:ref(i.model.strategy),tradeBundle:ref(i.model.tradeBundle),entryModel:ref(i.model),familyProfile:ref(i.family),horizonProfile:ref(i.horizon),timeframes:i.timeframes,
     calibration:ref(i.model.calibration),calibrationStatus:'UNVALIDATED_RESEARCH',marketKeys:markets.map(m=>m.key).sort(),evaluatedAt,
@@ -188,5 +189,5 @@ function interpret(i: EntryEvaluationInput, markets: readonly SharedMarketState[
     costsWithinBudget:predicate(true),targetRunwayAvailable:predicate(sign*(objective-current.close)>=i.model.minimumRunwayTicks*i.instrument.tickSize),continuityOk:predicate(true)});
   return {...base,state:currentEntry.status==='CURRENT'?'STRUCTURAL_READY':'STRUCTURAL_WATCH',geometry,currentEntry,
     reasons:currentEntry.status==='CURRENT'?['STRUCTURAL_READY_NOT_MODEL_SCORED']:currentEntry.reasons,
-    stages:stages.map(s=>s.stage==='Reaction / Confirmation'?{...s,factIds:[reaction!.evidenceId,confirmation!.evidenceId]}:s.stage==='Current Entry'?{...s,factIds:[current.evidenceId]}:s)};
+    stages:stages.map(s=>s.stage==='Reaction / Confirmation'?{...s,factIds:[],evidenceIds:[reaction!.evidenceId,confirmation!.evidenceId]}:s.stage==='Current Entry'?{...s,factIds:[],evidenceIds:[current.evidenceId]}:s)};
 }
