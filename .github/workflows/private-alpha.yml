@@ -187,11 +187,14 @@ jobs:
           done
           cp api/.env api/.env.good
           sed -i 's/^ZUGRIO_DB_HOST=.*/ZUGRIO_DB_HOST=8.8.8.8/' api/.env
-          if (cd api && docker compose up preflight); then echo "API preflight must reject public DB host"; exit 1; fi
+          # `up` alone exits 0 whatever the one-shot returns; --exit-code-from propagates it.
+          rc=0; (cd api && docker compose up --exit-code-from preflight preflight) || rc=$?
+          test "$rc" = 64 || { echo "API preflight must reject public DB host with 64 (got $rc)"; exit 1; }
           mv api/.env.good api/.env
           cp db/.env db/.env.good
           sed -i 's/^ZUGRIO_DB_BIND_ADDR=.*/ZUGRIO_DB_BIND_ADDR=0.0.0.0/' db/.env
-          if (cd db && docker compose up preflight); then echo "DB preflight must reject wildcard bind"; exit 1; fi
+          rc=0; (cd db && docker compose up --exit-code-from preflight preflight) || rc=$?
+          test "$rc" = 64 || { echo "DB preflight must reject wildcard bind with 64 (got $rc)"; exit 1; }
           mv db/.env.good db/.env
       - name: DB firewall admits only the API source /32 and drops other sources
         run: |
