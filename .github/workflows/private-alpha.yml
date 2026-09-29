@@ -181,7 +181,8 @@ jobs:
           api_subnet="$(docker network inspect zugrio-alpha_edge -f '{{(index .IPAM.Config 0).Subnet}}')"
           sudo ./db/restrict-postgres-source.sh "$api_subnet"
           sudo ./db/restrict-postgres-source.sh "$api_subnet"
-          test "$(sudo iptables -t raw -S PREROUTING | grep -c -- '--dport 5432')" = 1
+          sudo iptables -t raw -S PREROUTING
+          test "$(sudo iptables -t raw -S PREROUTING | grep -- '--dport 5432' | grep -c -- '--dst-type LOCAL')" = 1
           if sudo ./db/restrict-postgres-source.sh 0.0.0.0/0; then echo "must refuse 0.0.0.0/0"; exit 1; fi
           docker network create --subnet 10.99.0.0/24 not-the-api
           if docker run --rm --network not-the-api postgres:16-alpine pg_isready -h "$HOST_IP" -t 5; then
