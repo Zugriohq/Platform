@@ -158,6 +158,7 @@ jobs:
           docker compose up -d
           ../../../../.github/scripts/wait-for-healthy.sh zugrio-alpha-db-postgres-1 120
           test "$(docker compose port postgres 5432)" = "$HOST_IP:5432"
+          docker compose exec -T postgres sh -ec 'grep -Eq "^host[[:space:]]+all[[:space:]]+all[[:space:]]+all[[:space:]]+scram-sha-256" "$PGDATA/pg_hba.conf"'
       - name: API host — migrate + api against the remote database
         working-directory: infra/oci/split/api
         run: |
@@ -185,6 +186,11 @@ jobs:
           for bad in 0.0.0.0/0 10.0.0.0/24 8.8.8.8/32; do
             if ./validate-private-ip.sh "$bad" cidr32; then echo "must refuse $bad"; exit 1; fi
           done
+          pw="$(grep '^POSTGRES_PASSWORD=' api/.env | cut -d= -f2-)"
+          for c in zugrio-alpha-preflight-1 zugrio-alpha-db-preflight-1; do
+            cmd="$(docker inspect -f '{{json .Config.Cmd}}' "$c")"
+            if grep -Fq "$pw" <<<"$cmd"; then echo "secret leaked into $c command"; exit 1; fi
+          done
           cp api/.env api/.env.good
           sed -i 's/^ZUGRIO_DB_HOST=.*/ZUGRIO_DB_HOST=8.8.8.8/' api/.env
           # `up` alone exits 0 whatever the one-shot returns; --exit-code-from propagates it.
@@ -211,6 +217,14 @@ jobs:
           if sudo ./db/restrict-postgres-source.sh 0.0.0.0/0; then echo "must refuse 0.0.0.0/0"; exit 1; fi
           if sudo ./db/restrict-postgres-source.sh 8.8.8.8/32; then echo "must refuse public source"; exit 1; fi
           if sudo ./db/restrict-postgres-source.sh 10.99.0.0/24; then echo "must require /32"; exit 1; fi
+          # Reconfiguration replaces the old allowed source rather than accumulating
+          # contradictory stale negated-source rules.
+          sudo ./db/restrict-postgres-source.sh 10.42.99.99/32
+          sudo iptables -t raw -S ZUGRIO_PG_GUARD | grep -q -- '-s 10.42.99.99/32 -j RETURN'
+          if sudo iptables -t raw -S ZUGRIO_PG_GUARD | grep -q -- "-s $api_ip/32 -j RETURN"; then
+            echo "old API source remained after replacement"; exit 1
+          fi
+          sudo ./db/restrict-postgres-source.sh "$api_ip/32"
           docker network create --subnet 10.99.0.0/24 not-the-api
           if docker run --rm --network not-the-api postgres:16-alpine pg_isready -h "$HOST_IP" -t 5; then
             echo "postgres reachable from a non-API source"; exit 1
