@@ -1,0 +1,35 @@
+{
+  "name": "@zugrio/api",
+  "version": "0.1.0-alpha.1",
+  "private": true,
+  "type": "module",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "prisma generate && tsc -p tsconfig.build.json",
+    "typecheck": "prisma generate && tsc -p tsconfig.json --noEmit",
+    "test": "prisma generate && vitest run",
+    "start": "node dist/main.js",
+    "prisma:validate": "prisma validate",
+    "migrate:deploy": "prisma migrate deploy",
+    "openapi:write": "node dist/write-openapi.js"
+  },
+  "dependencies": {
+    "@nestjs/common": "^12.0.0",
+    "@nestjs/core": "^12.0.0",
+    "@nestjs/platform-express": "^12.0.0",
+    "@nestjs/swagger": "^12.0.0",
+    "@prisma/adapter-pg": "7.10.0",
+    "@prisma/client": "7.10.0",
+    "@zugrio/alpha-api-contract": "workspace:*",
+    "@zugrio/decision-core": "workspace:*",
+    "prisma": "7.10.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^22",
+    "@types/pg": "^8",
+    "pg": "^8"
+  }
+}
