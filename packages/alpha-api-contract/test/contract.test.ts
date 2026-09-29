@@ -19,6 +19,7 @@ describe("alpha response meta", () => {
     expect(isAlphaResponseMeta({ ...ALPHA_RESPONSE_META, liveData: true })).toBe(false);
     expect(isAlphaResponseMeta({ ...ALPHA_RESPONSE_META, authority: "LIVE" })).toBe(false);
     expect(isAlphaResponseMeta({ ...ALPHA_RESPONSE_META, liveData: undefined })).toBe(false);
+    expect(isAlphaResponseMeta({ ...ALPHA_RESPONSE_META, executionAuthority: "LIVE" })).toBe(false);
     expect(isAlphaResponseMeta(null)).toBe(false);
   });
 

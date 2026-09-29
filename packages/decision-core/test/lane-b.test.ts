@@ -89,6 +89,22 @@ describe('Independent reviewer reproductions',()=>{
 });
 
 
+describe('Lane D integration seam negative controls',()=>{
+ it('rejects a parent context that was already invalidated by the time its delayed pivot became knowable',()=>{
+  const i=input();
+  const context=i.markets.find((m:any)=>m.timeframe==='H1');
+  // b2 is the parent SWING_LOW. Its right-side confirmer b3 closes at minute 3
+  // but is only learned at minute 4, so the pivot becomes knowable at minute 4.
+  context.bars[2].knownAt=validationTime(4);
+  // b4 also closes/is known at minute 4 and has already closed through the
+  // parent invalidation. At the instant the pivot becomes knowable, it is invalid.
+  context.bars[3]={...context.bars[3],open:100,high:105,low:80,close:85};
+  const result=new SharedEntryEngine().evaluate(i);
+  expect(result.reasons).toContain('PARENT_CONTEXT_INVALID');
+  expect(result.state).not.toBe('STRUCTURAL_READY');
+ });
+});
+
 describe('Version and numeric boundary guards',()=>{
  it('material model rollover requires a new complete TradeBundle version',()=>{const e=new SharedEntryEngine(),i=input();e.evaluate(i);i.model.version='2';i.model.stopTicks=6;expect(()=>e.evaluate(i)).toThrow(/TradeBundle/);});
  it('feature version rollover isolates facts and preserves old snapshots',()=>{const store=new SharedMarketStore(),i=input().markets[0];const a=store.materialize(i);i.featureDefinition.version='2';i.pivots[0].leftBars=2;const b=store.materialize(i);expect(b.key).not.toBe(a.key);expect(store.computationCount).toBe(2);expect(a.pivots[0]?.leftBars).toBe(1);});

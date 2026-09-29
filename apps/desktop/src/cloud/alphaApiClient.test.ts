@@ -43,6 +43,16 @@ describe("createAlphaApiClient", () => {
     expect(calls).toHaveLength(0);
   });
 
+
+
+  it("rejects otherwise-valid responses whose alpha metadata carries an unknown authority field", async () => {
+    const decision = JSON.parse(JSON.stringify(buildDecisionCase(staleEntryScenario, 4)));
+    const meta = { ...ALPHA_RESPONSE_META, executionAuthority: "LIVE" };
+    const { impl } = fakeFetch(() => json(200, { meta, data: decision }));
+    const client = createAlphaApiClient({ baseUrl: "https://api.zugrio.xyz", fetch: impl });
+    expect(await client.getFrameDecisionCase(staleEntryScenario.id, 4)).toMatchObject({ status: "rejected" });
+  });
+
   it("returns typed decision-core cases from the cloud", async () => {
     const decision = JSON.parse(JSON.stringify(buildDecisionCase(staleEntryScenario, 4)));
     const { impl, calls } = fakeFetch(() => json(200, { meta: ALPHA_RESPONSE_META, data: decision }));
