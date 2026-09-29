@@ -43,9 +43,9 @@ OCI maps each VM's public IP onto its private IP, so binding Postgres to the pri
 ## 1. Both VMs
 
 ```bash
-# Private repository: configure a read-only GitHub deploy key on the VM first.
-# Never paste the private key into chat or an issue.
-git clone git@github.com:Zugriohq/Platform.git ~/Platform
+# Repository visibility is currently public, so no GitHub credential is required.
+# If the repository is later made private, use a read-only deploy key instead.
+git clone https://github.com/Zugriohq/Platform.git ~/Platform
 cd ~/Platform && git checkout release/private-validation-alpha-2026-09-28
 git rev-parse HEAD                     # must equal the approved release SHA
 ./infra/oci/bootstrap-ubuntu.sh        # Docker Engine + Compose, /srv/zugrio/backups
