@@ -175,20 +175,44 @@ jobs:
           if docker compose -f docker-compose.yml -f ../../docker-compose.tunnel.yml config --quiet 2>/dev/null; then
             echo "tunnel overlay must refuse to start without CLOUDFLARE_TUNNEL_TOKEN"; exit 1
           fi
-      - name: DB firewall admits the API network and drops other sources
+      - name: Split env guards reject public/wildcard addresses
         run: |
           set -euo pipefail
-          api_subnet="$(docker network inspect zugrio-alpha_edge -f '{{(index .IPAM.Config 0).Subnet}}')"
-          sudo ./db/restrict-postgres-source.sh "$api_subnet"
-          sudo ./db/restrict-postgres-source.sh "$api_subnet"
+          ./validate-private-ip.sh "$HOST_IP" ip
+          for bad in 8.8.8.8 0.0.0.0 127.0.0.1 169.254.1.1; do
+            if ./validate-private-ip.sh "$bad" ip; then echo "must refuse $bad"; exit 1; fi
+          done
+          for bad in 0.0.0.0/0 10.0.0.0/24 8.8.8.8/32; do
+            if ./validate-private-ip.sh "$bad" cidr32; then echo "must refuse $bad"; exit 1; fi
+          done
+          cp api/.env api/.env.good
+          sed -i 's/^ZUGRIO_DB_HOST=.*/ZUGRIO_DB_HOST=8.8.8.8/' api/.env
+          if (cd api && docker compose up preflight); then echo "API preflight must reject public DB host"; exit 1; fi
+          mv api/.env.good api/.env
+          cp db/.env db/.env.good
+          sed -i 's/^ZUGRIO_DB_BIND_ADDR=.*/ZUGRIO_DB_BIND_ADDR=0.0.0.0/' db/.env
+          if (cd db && docker compose up preflight); then echo "DB preflight must reject wildcard bind"; exit 1; fi
+          mv db/.env.good db/.env
+      - name: DB firewall admits only the API source /32 and drops other sources
+        run: |
+          set -euo pipefail
+          api_ip="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' zugrio-alpha-api-1)"
+          ./validate-private-ip.sh "$api_ip" ip
+          sudo ./db/restrict-postgres-source.sh "$api_ip/32"
+          sudo ./db/restrict-postgres-source.sh "$api_ip/32"
           sudo iptables -t raw -S PREROUTING
-          test "$(sudo iptables -t raw -S PREROUTING | grep -- '--dport 5432' | grep -c -- '--dst-type LOCAL')" = 1
+          sudo iptables -t raw -S ZUGRIO_PG_GUARD
+          test "$(sudo iptables -t raw -S PREROUTING | grep -c 'zugrio-postgres-guard')" = 1
+          test "$(sudo iptables -t raw -S ZUGRIO_PG_GUARD | grep -c -- "-s $api_ip/32 -j RETURN")" = 1
+          test "$(sudo iptables -t raw -S ZUGRIO_PG_GUARD | grep -c -- '-j DROP')" = 1
           if sudo ./db/restrict-postgres-source.sh 0.0.0.0/0; then echo "must refuse 0.0.0.0/0"; exit 1; fi
+          if sudo ./db/restrict-postgres-source.sh 8.8.8.8/32; then echo "must refuse public source"; exit 1; fi
+          if sudo ./db/restrict-postgres-source.sh 10.99.0.0/24; then echo "must require /32"; exit 1; fi
           docker network create --subnet 10.99.0.0/24 not-the-api
           if docker run --rm --network not-the-api postgres:16-alpine pg_isready -h "$HOST_IP" -t 5; then
             echo "postgres reachable from a non-API source"; exit 1
           fi
-          docker run --rm --network zugrio-alpha_edge postgres:16-alpine pg_isready -h "$HOST_IP" -t 5
+          docker run --rm --network "container:zugrio-alpha-api-1" postgres:16-alpine pg_isready -h "$HOST_IP" -t 5
       - name: Smoke test
         working-directory: infra/oci/split/api
         run: ./smoke-test.sh http://127.0.0.1:3000

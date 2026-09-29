@@ -28,6 +28,24 @@ x-database-url: &database-url
   DATABASE_URL: postgresql://${POSTGRES_USER:-zugrio}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}@${ZUGRIO_DB_HOST:?ZUGRIO_DB_HOST must be the DB VM private IP}:5432/${POSTGRES_DB:-zugrio}
 
 services:
+  # Mandatory fail-closed boundary. A public/wildcard DB address or placeholder password
+  # must fail before migrations or the API can start.
+  preflight:
+    <<: [*api-image, *hardening]
+    restart: "no"
+    environment:
+      ZUGRIO_DB_HOST: ${ZUGRIO_DB_HOST:?ZUGRIO_DB_HOST must be the DB VM private IP}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+    volumes:
+      - ../validate-private-ip.sh:/preflight/validate-private-ip.sh:ro
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        case "$POSTGRES_PASSWORD" in replace-*|"") echo "refusing placeholder PostgreSQL password" >&2; exit 64;; esac
+        exec /preflight/validate-private-ip.sh "$ZUGRIO_DB_HOST" ip
+    networks: [edge]
+
   # One-shot: applies committed Prisma migrations (including the ADR-0002 ledger guards)
   # before the API starts. Re-running it is a no-op when the schema is current.
   migrate:
@@ -36,6 +54,9 @@ services:
     restart: "no"
     environment:
       <<: *database-url
+    depends_on:
+      preflight:
+        condition: service_completed_successfully
     networks: [edge]
 
   api:

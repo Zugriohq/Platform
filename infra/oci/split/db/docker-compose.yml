@@ -13,6 +13,24 @@
 name: zugrio-alpha-db
 
 services:
+  # Mandatory fail-closed boundary. The DB listener must bind to an RFC1918 address and
+  # a real password before PostgreSQL is allowed to start.
+  preflight:
+    image: postgres:16-alpine
+    restart: "no"
+    environment:
+      ZUGRIO_DB_BIND_ADDR: ${ZUGRIO_DB_BIND_ADDR:?ZUGRIO_DB_BIND_ADDR must be the DB VM private IP}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    volumes:
+      - ../validate-private-ip.sh:/preflight/validate-private-ip.sh:ro
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        case "$POSTGRES_PASSWORD" in replace-*|"") echo "refusing placeholder PostgreSQL password" >&2; exit 64;; esac
+        exec /preflight/validate-private-ip.sh "$ZUGRIO_DB_BIND_ADDR" ip
+
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
@@ -32,6 +50,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
     ports:
       - "${ZUGRIO_DB_BIND_ADDR:?ZUGRIO_DB_BIND_ADDR must be the DB VM private IP}:5432:5432"
+    depends_on:
+      preflight:
+        condition: service_completed_successfully
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:

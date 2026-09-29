@@ -27,7 +27,7 @@ shared scripts, so there is one implementation of each. CI job `compose-split-sm
 | `aarch64` | `x86_64` | E2.1.Micro is AMD. The image is multi-arch; CI builds and tests amd64. |
 | Postgres on an internal Docker network | Postgres published on the DB VM's **private VCN IP** | It must cross hosts. |
 | No DB port anywhere | tcp/5432 reachable **only from the API VM** | Enforced by the subnet security list **and** `restrict-postgres-source.sh`. |
-| 12 GB RAM | 1 GB RAM each + 4 GiB swap | Swap is for the one-off image build; runtime fits in RAM. |
+| 12 GB RAM | 1 GB RAM each + 4 GiB swap | Swap supports the one-off build. Real-VM runtime viability must be measured before DNS activation. |
 | DB traffic stays in one kernel | DB traffic crosses the VCN in plaintext (scram-sha-256 auth) | Same subnet, no public route. TLS between VMs is a follow-up. |
 
 ## 0. Network (OCI console, once)
@@ -43,7 +43,9 @@ OCI maps each VM's public IP onto its private IP, so binding Postgres to the pri
 ## 1. Both VMs
 
 ```bash
-git clone https://github.com/Zugriohq/Platform.git ~/Platform
+# Private repository: configure a read-only GitHub deploy key on the VM first.
+# Never paste the private key into chat or an issue.
+git clone git@github.com:Zugriohq/Platform.git ~/Platform
 cd ~/Platform && git checkout release/private-validation-alpha-2026-09-28
 git rev-parse HEAD                     # must equal the approved release SHA
 ./infra/oci/bootstrap-ubuntu.sh        # Docker Engine + Compose, /srv/zugrio/backups
@@ -59,7 +61,10 @@ Verify: `docker version`, `docker compose version`, `uname -m` → `x86_64`, `fr
 cd ~/Platform/infra/oci/split/db
 cp .env.example .env && chmod 600 .env
 sed -i "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$(openssl rand -hex 32)/" .env
-sed -i "s/^ZUGRIO_DB_BIND_ADDR=.*/ZUGRIO_DB_BIND_ADDR=$(hostname -I | awk '{print $1}')/" .env
+# Set ZUGRIO_DB_BIND_ADDR to the exact PRIVATE IP shown in the OCI instance/VNIC page.
+# Do not derive it from hostname -I: Docker/extra interfaces make that ambiguous.
+nano .env
+../validate-private-ip.sh "$(grep '^ZUGRIO_DB_BIND_ADDR=' .env | cut -d= -f2-)" ip
 docker compose up -d
 docker compose ps                                   # postgres: healthy
 docker compose port postgres 5432                   # <db-private-ip>:5432, never 0.0.0.0
@@ -75,6 +80,7 @@ Transfer the password to the API VM without displaying it in chat or GitHub: cop
 cd ~/Platform/infra/oci/split/api
 cp .env.example .env && chmod 600 .env
 nano .env        # POSTGRES_PASSWORD = the DB VM value; ZUGRIO_DB_HOST = <db-vm-private-ip>
+../validate-private-ip.sh "$(grep '^ZUGRIO_DB_HOST=' .env | cut -d= -f2-)" ip
 sed -i "s/^ZUGRIO_API_IMAGE=.*/ZUGRIO_API_IMAGE=zugrio-api:$(git rev-parse --short HEAD)/" .env
 docker compose build api                 # native amd64 build; slow on 1 GB, uses swap
 docker compose up -d                     # migrate (one-shot) → api
@@ -82,6 +88,14 @@ docker compose ps -a                     # migrate: Exited (0); api: healthy
 curl -fsS http://127.0.0.1:3000/health | jq
 ./smoke-test.sh
 docker compose restart api && sleep 20 && ./smoke-test.sh     # expect created=false
+
+# Resource gate on the real 1 GB host. Record this evidence before public activation.
+free -h
+docker stats --no-stream
+docker inspect -f '{{.RestartCount}}' zugrio-alpha-api-1
+sudo dmesg --ctime | grep -Ei 'out of memory|oom-kill|killed process' || true
+# Stop if the API is restart-looping, the kernel reports OOM, or normal smoke traffic
+# causes sustained memory pressure. Swap is not permission to accept an unstable runtime.
 ```
 
 `migrate` needs the DB VM up. Start the DB VM first after any full outage.
@@ -120,5 +134,6 @@ contract (`https://api.zugrio.xyz`) and desktop builds do not change.
 
 - Two single points of failure instead of one; 1 GB RAM per host.
 - Plaintext PostgreSQL protocol across the VCN (password auth, subnet-local, firewalled).
-- `restrict-postgres-source.sh` adds a rule; it does not remove a rule for an old source.
-  After changing the API VM IP: `sudo iptables -t raw -S PREROUTING`, delete the stale rule, re-run.
+- The host firewall accepts only an RFC1918 API-VM `/32` and replaces the prior allowed
+  source on re-run. OCI security-list ingress must be updated first if the API private IP changes.
+- Real E2.1.Micro CPU/RAM performance remains an activation gate until measured on both VMs.
