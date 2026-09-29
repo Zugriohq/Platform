@@ -11,6 +11,9 @@ Zugrio Desktop ─HTTPS─▶ api.zugrio.xyz ─Cloudflare Tunnel─▶ OCI VM (
                                                              └─ cloudflared (outbound only)
 ```
 
+Zero-cost fallback while A1 capacity or budget is unavailable: two Always Free E2.1.Micro
+VMs (API host + DB host), see `PRIVATE_ALPHA_OCI_SPLIT_MICRO.md`.
+
 Repository files: `infra/oci/` (Compose, scripts, `.env.example`), `infra/cloudflare/`
 (tunnel config and activation), `apps/api/Dockerfile`, `apps/api/prisma/` (schema and migrations).
 
