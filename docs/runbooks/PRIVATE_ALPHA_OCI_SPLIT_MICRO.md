@@ -121,4 +121,4 @@ contract (`https://api.zugrio.xyz`) and desktop builds do not change.
 - Two single points of failure instead of one; 1 GB RAM per host.
 - Plaintext PostgreSQL protocol across the VCN (password auth, subnet-local, firewalled).
 - `restrict-postgres-source.sh` adds a rule; it does not remove a rule for an old source.
-  After changing the API VM IP: `sudo iptables -S DOCKER-USER`, delete the stale rule, re-run.
+  After changing the API VM IP: `sudo iptables -t raw -S PREROUTING`, delete the stale rule, re-run.
