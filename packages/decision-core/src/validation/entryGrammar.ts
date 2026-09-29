@@ -145,8 +145,14 @@ function interpret(i: EntryEvaluationInput, markets: readonly SharedMarketState[
   const stop=level-sign*i.model.stopTicks*i.instrument.tickSize;
   finite(stop,'child invalidation');
   const contextLevel=point(contextFact);
-  // Current higher-timeframe closure owns context invalidation; child bars cannot rewrite it.
-  if(context.bars.some(b=>instant(b.sourceClosedAt)>instant(contextFact.knownAt) && sign*(b.close-contextLevel)<=0)) return {...base,reasons:['PARENT_CONTEXT_INVALID']};
+  const contextSourceAt=contextFact.geometry.type==='POINT'?contextFact.geometry.time:null;
+  if(contextSourceAt===null) throw new Error('Parent context requires point geometry');
+  // Parent validity is measured from the market event that formed the context fact,
+  // not from when a delayed confirmation finally made that fact knowable. Any
+  // subsequent context close that is already knowable at evaluation time must
+  // therefore be able to invalidate it, including one known at the same instant
+  // the pivot itself becomes knowable.
+  if(context.bars.some(b=>instant(b.sourceClosedAt)>instant(contextSourceAt) && sign*(b.close-contextLevel)<=0)) return {...base,reasons:['PARENT_CONTEXT_INVALID']};
   if(sign*(objective-level)<=0) return {...base,reasons:['OBJECTIVE_GEOMETRY_INVALID']};
   const nearest = context.facts.filter(f=>f.concept===resistance && f.geometry.type==='POINT' && sign*(point(f)-level)>0 && instant(f.knownAt)<=instant(objectiveFact.knownAt)).sort((a,b)=>sign*(point(a)-point(b)))[0];
   if(nearest && point(nearest)!==objective) return {...base,reasons:['NEARER_OBJECTIVE_EXISTS']};
