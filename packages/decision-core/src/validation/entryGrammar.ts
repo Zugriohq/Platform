@@ -154,7 +154,7 @@ function interpret(i: EntryEvaluationInput, markets: readonly SharedMarketState[
   // the pivot itself becomes knowable.
   if(context.bars.some(b=>instant(b.sourceClosedAt)>instant(contextSourceAt) && sign*(b.close-contextLevel)<=0)) return {...base,reasons:['PARENT_CONTEXT_INVALID']};
   if(sign*(objective-level)<=0) return {...base,reasons:['OBJECTIVE_GEOMETRY_INVALID']};
-  const nearest = context.facts.filter(f=>f.concept===resistance && f.geometry.type==='POINT' && sign*(point(f)-level)>0 && instant(f.knownAt)<=instant(objectiveFact.knownAt)).sort((a,b)=>sign*(point(a)-point(b)))[0];
+  const nearest = context.facts.filter(f=>f.concept===resistance && f.geometry.type==='POINT' && sign*(point(f)-level)>0).sort((a,b)=>sign*(point(a)-point(b)))[0];
   if(nearest && point(nearest)!==objective) return {...base,reasons:['NEARER_OBJECTIVE_EXISTS']};
   const start=Math.max(instant(contextFact.knownAt),instant(locationFact.knownAt),instant(objectiveFact.knownAt));
   if(now-start>i.horizon.setupExpiryMs) return {...base,reasons:['SETUP_EXPIRED']};
@@ -162,17 +162,19 @@ function interpret(i: EntryEvaluationInput, markets: readonly SharedMarketState[
   const threshold=i.model.breakTicks*i.instrument.tickSize, tolerance=i.model.touchTicks*i.instrument.tickSize;
   let reaction:ResearchStructureBar|undefined, confirmation:ResearchStructureBar|undefined;
   for(const b of bars) {
+    const extreme=sign===1?b.low:b.high;
+    // Stop invalidation and objective exhaustion are terminal for this binding
+    // from the moment the setup is live. They cannot be forgotten simply
+    // because reaction/confirmation has not yet been recorded.
+    if(sign*(b.close-stop)<=0 || confirmation && sign*(extreme-stop)<=0) return {...base,state:'STRUCTURAL_WATCH',reasons:['CHILD_INVALIDATED']};
+    if(sign*((sign===1?b.high:b.low)-objective)>=0) return {...base,state:'STRUCTURAL_WATCH',reasons:['OBJECTIVE_ALREADY_REACHED']};
     if(!reaction) {
       const prior=entry.bars[entry.bars.indexOf(b)-1];
       if(prior && (i.model.route==='CONTINUATION_RETEST' ? sign*(prior.close-level)<=0 && sign*(b.close-level)>=threshold : sign*(prior.close-level)>=0 && sign*((sign===1?b.low:b.high)-level)<=-threshold)) reaction=b;
       continue;
     }
-    // Terminal failure is sticky for this binding; a later rally cannot resurrect it.
-    if(sign*(b.close-stop)<=0 || confirmation && sign*((sign===1?b.low:b.high)-stop)<=0) return {...base,state:'STRUCTURAL_WATCH',reasons:['CHILD_INVALIDATED']};
-    const extreme=sign===1?b.low:b.high;
     if(!confirmation && sign*(b.close-level)>=threshold && (i.model.route==='REVERSAL_RECLAIM'|| Math.abs(extreme-level)<=tolerance)) confirmation=b;
     if(confirmation && sign*(b.close-level)<0) return {...base,state:'STRUCTURAL_WATCH',reasons:[i.model.route==='REVERSAL_RECLAIM'?'FAILED_RECLAIM':'FAILED_RETEST']};
-    if(confirmation && sign*((sign===1?b.high:b.low)-objective)>=0) return {...base,state:'STRUCTURAL_WATCH',reasons:['OBJECTIVE_ALREADY_REACHED']};
   }
   if(!reaction||!confirmation) return {...base,state:reaction?'STRUCTURAL_WATCH':'STRUCTURAL_CANDIDATE',reasons:[reaction?'CONFIRMATION_REQUIRED':'REACTION_REQUIRED']};
   const current=entry.bars.at(-1)!;
