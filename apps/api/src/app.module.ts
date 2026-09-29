@@ -1,3 +1,4 @@
+import { LaneBController } from "./alpha/lane-b.controller.js";
 import { Inject, Module, type DynamicModule, type OnApplicationShutdown } from "@nestjs/common";
 import { AlphaController } from "./alpha/alpha.controller.js";
 import { DecisionCaseService } from "./alpha/decision-case.service.js";
@@ -22,7 +23,7 @@ export class AppModule implements OnApplicationShutdown {
   static forRoot(config: ApiConfig, store: DecisionCaseStore = createStore(config)): DynamicModule {
     return {
       module: AppModule,
-      controllers: [HealthController, AlphaController],
+      controllers: [HealthController, AlphaController, LaneBController],
       providers: [
         { provide: API_CONFIG, useValue: config },
         { provide: DECISION_CASE_STORE, useValue: store },
@@ -36,3 +37,4 @@ export class AppModule implements OnApplicationShutdown {
     await this.store.close();
   }
 }
+

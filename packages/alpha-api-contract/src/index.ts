@@ -143,6 +143,8 @@ export interface MaterializeDecisionCaseResult {
 }
 
 export const ALPHA_API_PATHS = {
+  engineValidationScenarios: () => "/v1/alpha/engine-validation/scenarios",
+  engineValidationFrame: (scenarioId: string, frameIndex: number) => `/v1/alpha/engine-validation/scenarios/${encodeURIComponent(scenarioId)}/frames/${frameIndex}`,
   health: () => "/health",
   scenarios: () => "/v1/alpha/scenarios",
   scenario: (scenarioId: string) => `/v1/alpha/scenarios/${encodeURIComponent(scenarioId)}`,
@@ -153,3 +155,8 @@ export const ALPHA_API_PATHS = {
   decisionCases: () => "/v1/alpha/decision-cases",
   decisionCase: (caseId: string) => `/v1/alpha/decision-cases/${encodeURIComponent(caseId)}`,
 } as const;
+
+
+/** Lane B research payloads retain decision-core ownership. */
+export type { LaneBValidationFrame, EntryCandidate, AccountRiskAssessment, MarketStateKey, StrategyStateKey } from "@zugrio/decision-core";
+export type LaneBScenarioSummary = (typeof import("@zugrio/decision-core").laneBScenarios)[number];
