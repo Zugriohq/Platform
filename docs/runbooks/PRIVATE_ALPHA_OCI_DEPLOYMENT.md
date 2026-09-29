@@ -36,7 +36,9 @@ publishes the API on `127.0.0.1` only.
 
 ```bash
 ssh ubuntu@<vm-ip>
-git clone git@github.com:Zugriohq/Platform.git ~/Platform   # read-only deploy key recommended
+# Repository visibility is currently public, so no GitHub credential is required.
+# If the repository is later made private, switch this line to the documented read-only deploy-key SSH clone.
+git clone https://github.com/Zugriohq/Platform.git ~/Platform
 cd ~/Platform && git checkout <release-branch-or-tag>
 ./infra/oci/bootstrap-ubuntu.sh        # Docker Engine + Compose plugin, /srv/zugrio/backups
 exit                                   # re-login so the docker group applies
