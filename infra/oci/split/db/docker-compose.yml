@@ -21,15 +21,10 @@ services:
     environment:
       ZUGRIO_DB_BIND_ADDR: ${ZUGRIO_DB_BIND_ADDR:?ZUGRIO_DB_BIND_ADDR must be the DB VM private IP}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
-      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
     volumes:
       - ../validate-private-ip.sh:/preflight/validate-private-ip.sh:ro
-    command:
-      - /bin/sh
-      - -ec
-      - |
-        case "$POSTGRES_PASSWORD" in replace-*|"") echo "refusing placeholder PostgreSQL password" >&2; exit 64;; esac
-        exec /preflight/validate-private-ip.sh "$ZUGRIO_DB_BIND_ADDR" ip
+      - ../validate-split-env.sh:/preflight/validate-split-env.sh:ro
+    command: ["/preflight/validate-split-env.sh", "db"]
 
   postgres:
     image: postgres:16-alpine
@@ -48,6 +43,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-zugrio}
       POSTGRES_USER: ${POSTGRES_USER:-zugrio}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
     ports:
       - "${ZUGRIO_DB_BIND_ADDR:?ZUGRIO_DB_BIND_ADDR must be the DB VM private IP}:5432:5432"
     depends_on:

@@ -38,12 +38,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
     volumes:
       - ../validate-private-ip.sh:/preflight/validate-private-ip.sh:ro
-    command:
-      - /bin/sh
-      - -ec
-      - |
-        case "$POSTGRES_PASSWORD" in replace-*|"") echo "refusing placeholder PostgreSQL password" >&2; exit 64;; esac
-        exec /preflight/validate-private-ip.sh "$ZUGRIO_DB_HOST" ip
+      - ../validate-split-env.sh:/preflight/validate-split-env.sh:ro
+    command: ["/preflight/validate-split-env.sh", "api"]
     networks: [edge]
 
   # One-shot: applies committed Prisma migrations (including the ADR-0002 ledger guards)
