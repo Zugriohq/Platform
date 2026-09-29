@@ -58,7 +58,8 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "object",
@@ -159,7 +160,8 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "object",
@@ -272,7 +274,8 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "array",
@@ -424,7 +427,8 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "object",
@@ -636,7 +640,8 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "object",
@@ -917,7 +922,8 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "object",
@@ -1220,7 +1226,8 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "object",
@@ -1589,7 +1596,8 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "object",
@@ -1999,7 +2007,8 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "object",
@@ -2405,7 +2414,8 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "array",
@@ -2529,7 +2539,8 @@
                             "NO_LIVE_CAPITAL"
                           ]
                         }
-                      }
+                      },
+                      "additionalProperties": false
                     },
                     "data": {
                       "type": "object",

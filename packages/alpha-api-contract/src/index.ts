@@ -55,9 +55,12 @@ export interface AlphaEnvelope<T> {
 export function isAlphaResponseMeta(value: unknown): value is AlphaResponseMeta {
   if (typeof value !== "object" || value === null) return false;
   const meta = value as Record<string, unknown>;
-  return (Object.keys(ALPHA_RESPONSE_META) as (keyof AlphaResponseMeta)[]).every(
-    (key) => meta[key] === ALPHA_RESPONSE_META[key],
-  );
+  const expectedKeys = Object.keys(ALPHA_RESPONSE_META) as (keyof AlphaResponseMeta)[];
+  const actualKeys = Object.keys(meta);
+  if (actualKeys.length !== expectedKeys.length || actualKeys.some((key) => !expectedKeys.includes(key as keyof AlphaResponseMeta))) {
+    return false;
+  }
+  return expectedKeys.every((key) => meta[key] === ALPHA_RESPONSE_META[key]);
 }
 
 export interface HealthStatus {

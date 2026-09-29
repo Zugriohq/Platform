@@ -24,6 +24,7 @@ export const metaSchema: Schema = {
   type: "object",
   description: "Present on every alpha response. Values are fixed; clients must reject anything else.",
   required: ["releaseChannel", "liveData", "liveCapitalAuthority", "evidenceStatus", "authority"],
+  additionalProperties: false,
   properties: {
     releaseChannel: { type: "string", enum: ["private-validation-alpha"] },
     liveData: { type: "boolean", enum: [false] },
@@ -322,4 +323,3 @@ export const schemas = {
     properties: { statusCode: { type: "integer" }, message: {}, error: { type: "string" } },
   },
 } satisfies Record<string, Schema>;
-
