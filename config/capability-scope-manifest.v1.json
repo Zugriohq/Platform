@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "manifest_id": "zugrio-capability-scope-manifest",
   "effective_date": "2026-09-25",
-  "last_verified_date": "2026-09-25",
+  "last_verified_date": "2026-10-02",
   "lifecycle_state": "private_validation",
   "status_vocabulary": [
     "released",
