@@ -690,38 +690,6 @@ export default function App() {
           </div>
         </motion.section>
 
-        <motion.section className="operator" id="operator" {...sectionReveal}>
-          <div className="operator-kicker">
-            <span>WHO IS BUILDING THIS</span>
-            <i aria-hidden="true" />
-            <b>FOUNDER / PRODUCT OPERATOR</b>
-          </div>
-
-          <div className="operator-grid">
-            <div className="operator-copy">
-              <div className="kicker">OPERATOR CONTEXT</div>
-              <h2>Built from the decision problem, not from a signal feed.</h2>
-            </div>
-
-            <div className="operator-profile">
-              <div className="operator-name">
-                <strong>Oluwaniyi “Joba” Oluwajoba</strong>
-                <span>Founder · Zugrio</span>
-              </div>
-              <p>
-                Joba is a product and systems operator with more than eight years across product delivery, technical support and technology education. Zugrio is shaped by first-hand retail-trading workflow: the gap between spotting a setup and making a disciplined, auditable decision as conditions change.
-              </p>
-              <p>
-                The product is being built around that operating problem — market context, strategy rules, current-entry quality, explicit trading authority and a decision history that can be reviewed without hindsight.
-              </p>
-              <div className="operator-links">
-                <a href="https://www.linkedin.com/in/jobaniyi" target="_blank" rel="noreferrer">LinkedIn <ArrowRight size={14} /></a>
-                <a href="https://jobaniyi.github.io/Portfolio/" target="_blank" rel="noreferrer">Product portfolio <ArrowRight size={14} /></a>
-              </div>
-            </div>
-          </div>
-        </motion.section>
-
         <motion.section className="trust-faq" id="faq" {...sectionReveal}>
           <div className="trust-faq-head">
             <div className="kicker">QUESTIONS / TRUST</div>
