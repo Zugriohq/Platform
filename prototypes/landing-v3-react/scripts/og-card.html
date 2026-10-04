@@ -1,0 +1,43 @@
+<!doctype html>
+<!--
+  Source for public/brand/zugrio-og-card.png (1200x630).
+  Composed from canonical brand vectors only (brand/v1.0.0/exports signature metallic
+  wordmark + the site's topography field) and Inter. No AI-generated art is used, per
+  docs/brand/BRAND_ASSET_SOURCE_OF_TRUTH_STANDARD.md. Rebuild: node scripts/build-og-card.mjs
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<style>
+  @font-face{font-family:"InterOG";font-weight:100 900;src:url("../node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2") format("woff2")}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1200px;height:630px;background:#050508;overflow:hidden}
+  .card{position:relative;width:1200px;height:630px;overflow:hidden;font-family:"InterOG",system-ui,sans-serif;color:#f5f5f7;
+    background:
+      radial-gradient(900px 420px at 82% 8%,rgba(200,204,208,.10),transparent 60%),
+      radial-gradient(700px 360px at 8% 100%,rgba(200,204,208,.06),transparent 65%),
+      #050508}
+  .topo{position:absolute;left:-40px;right:-40px;bottom:-30px;height:400px;background:url("../public/brand/market-topography-field.svg") center/cover no-repeat;opacity:1;
+    -webkit-mask-image:linear-gradient(180deg,transparent,#000 38%,#000 100%);mask-image:linear-gradient(180deg,transparent,#000 38%,#000 100%)}
+  .frame{position:absolute;inset:28px;border:1px solid rgba(200,204,208,.16);border-radius:22px}
+  .wm{position:absolute;left:80px;top:70px;width:430px;height:auto;display:block}
+  .eyebrow{position:absolute;left:82px;top:168px;font-size:15px;font-weight:700;letter-spacing:.22em;color:#9aa4b1}
+  h1{position:absolute;left:80px;top:232px;font-size:76px;line-height:1.0;font-weight:800;letter-spacing:-.045em;color:#f5f5f7}
+  h1 span{display:block;background:linear-gradient(180deg,#ffffff 0%,#c8ccd0 58%,#8f979f 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{position:absolute;left:82px;top:424px;font-size:26px;font-weight:500;letter-spacing:-.01em;color:#b4bcc6;max-width:760px;line-height:1.35}
+  .foot{position:absolute;left:82px;bottom:62px;right:82px;display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:700;letter-spacing:.2em;color:#9aa4b1}
+  .foot b{color:#e6e9ec;font-weight:700}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="topo"></div>
+  <div class="frame"></div>
+  <img class="wm" src="../../../brand/v1.0.0/exports/ZUGRIO_WORDMARK_SIGNATURE_METALLIC.svg" alt="Zugrio" />
+  <div class="eyebrow">MARKET-AWARE TRADING INTELLIGENCE</div>
+  <h1>Don’t trade the signal.<span>Trade what’s still true.</span></h1>
+  <div class="sub">Starting with FX, Gold and Synthetic Indices.</div>
+  <div class="foot"><span>PRIVATE VALIDATION</span><b>ZUGRIO.XYZ</b></div>
+</div>
+</body>
+</html>
