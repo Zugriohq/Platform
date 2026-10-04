@@ -117,7 +117,7 @@ const FAQ_ITEMS = [
   {
     code: "ACCESS",
     question: "What can I use today?",
-    answer: "Zugrio is in private validation. The first release starts invite-only on Windows desktop, with Zugrio Core, Signal and Semi-Auto on cTrader. Public trading access is not open yet.",
+    answer: "Nothing is open for public use yet. Zugrio is in private validation, and the current alpha is limited to structural replay on test data for Zugrio Core, with no broker connection. The planned first release is invite-only on Windows desktop with Signal and Semi-Auto on cTrader, followed by Auto. Each capability's current status is shown above.",
   },
   {
     code: "MARKETS",
