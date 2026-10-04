@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "manifest_id": "zugrio-capability-scope-manifest",
   "effective_date": "2026-09-25",
-  "last_verified_date": "2026-10-02",
+  "last_verified_date": "2026-10-04",
   "lifecycle_state": "private_validation",
   "status_vocabulary": [
     "released",
@@ -80,7 +80,7 @@
       "id": "mode.signal",
       "public_name": "Signal",
       "category": "control_mode",
-      "status": "validation",
+      "status": "planned",
       "public_visible": true,
       "scope": "Release 1 control-mode target. No public released scope is claimed by this manifest.",
       "source_refs": [
@@ -92,7 +92,7 @@
       "id": "mode.semi_auto_ctrader",
       "public_name": "Semi-Auto · cTrader",
       "category": "control_mode",
-      "status": "validation",
+      "status": "planned",
       "public_visible": true,
       "scope": "First Release 1 Semi-Auto broker path. Activation remains exact-scope gated.",
       "source_refs": [
@@ -185,7 +185,7 @@
       "id": "intelligence.strategy_health",
       "public_name": "Strategy Health",
       "category": "decision_quality",
-      "status": "validation",
+      "status": "planned",
       "public_visible": true,
       "scope": "Bundle/scope-level Strategy Health is a Release 1 build target where evidence is sufficient; no released public scope claimed.",
       "source_refs": [
@@ -197,7 +197,7 @@
       "id": "behaviour.observations",
       "public_name": "Behaviour Observations",
       "category": "decision_quality",
-      "status": "validation",
+      "status": "planned",
       "public_visible": true,
       "scope": "Release 1 target is factual, evidence-backed observations/advisory only; no emotion inference and no released scope claimed.",
       "source_refs": [
@@ -268,7 +268,7 @@
     },
     {
       "id": "chart.annotations",
-      "public_name": "Live Chart State",
+      "public_name": "Chart State",
       "category": "chart",
       "status": "validation",
       "public_visible": true,
@@ -293,7 +293,7 @@
       "id": "client.web",
       "public_name": "Web",
       "category": "client",
-      "status": "validation",
+      "status": "planned",
       "public_visible": true,
       "scope": "Release 1 web surface target covers public site, account/authentication, entitlement/readiness and desktop access/download; not a full browser trading workspace.",
       "source_refs": [
@@ -316,7 +316,7 @@
       "id": "intelligence.market_drivers",
       "public_name": "Market Drivers",
       "category": "market_intelligence",
-      "status": "validation",
+      "status": "planned",
       "public_visible": true,
       "scope": "Market/instrument context target covering applicable news, economic events/calendar, sessions and related-market evidence where relevant; no released public scope claimed.",
       "source_refs": [
@@ -329,7 +329,7 @@
       "id": "intelligence.current_entry_recheck",
       "public_name": "Current-Entry Re-evaluation",
       "category": "trade_case",
-      "status": "validation",
+      "status": "planned",
       "public_visible": true,
       "scope": "Release 1 product target that preserves the original signal and rechecks current price, costs, freshness, entry geometry and relevant context before the next action; no released public scope claimed.",
       "source_refs": [

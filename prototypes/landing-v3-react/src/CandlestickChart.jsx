@@ -215,7 +215,7 @@ export default function CandlestickChart({ marketKey, caseKey, priceSpec }) {
             <span>C <b>{fmt(hovered.close)}</b></span>
           </>
         ) : (
-          <span>Hover candles to inspect OHLC</span>
+          <span>Tap or hover a candle to inspect OHLC</span>
         )}
       </div>
     </div>

@@ -117,7 +117,7 @@ const FAQ_ITEMS = [
   {
     code: "ACCESS",
     question: "What can I use today?",
-    answer: "Zugrio is in private validation. The first release starts invite-only on Windows desktop, with Zugrio Core, Signal and Semi-Auto on cTrader. Public trading access is not open yet.",
+    answer: "Nothing is open for public use yet. Zugrio is in private validation, and the current alpha is limited to structural replay on test data for Zugrio Core, with no broker connection. The planned first release is invite-only on Windows desktop with Signal and Semi-Auto on cTrader, followed by Auto. Each capability's current status is shown above.",
   },
   {
     code: "MARKETS",
@@ -687,6 +687,31 @@ export default function App() {
               <p>These labels describe availability only. They are not claims about performance, profitability or product quality.</p>
             </div>
             <ReadinessLegend />
+          </div>
+        </motion.section>
+
+        <motion.section className="operator" id="who" {...sectionReveal}>
+          <div className="operator-kicker">
+            <span>WHO IS BUILDING THIS</span>
+            <i aria-hidden="true" />
+          </div>
+
+          <div className="operator-grid">
+            <div className="operator-copy">
+              <h2>Built by traders who know what a drawdown costs.</h2>
+            </div>
+
+            <div className="operator-profile">
+              <p>
+                We have traded real capital through real drawdowns. We know what it’s like to take a good setup late, watch a plan slip under pressure, and close a loss that taught nothing because nothing was recorded.
+              </p>
+              <p>
+                Zugrio is built so discipline doesn’t have to be learned the expensive way. It puts structure around the whole decision: the market the setup comes from, the strategy’s rules, whether the entry still holds, who is allowed to act, and a record you can review without hindsight. Mistakes show up in the process, not only in the account balance.
+              </p>
+              <p>
+                No performance claims. Trading involves risk of loss.
+              </p>
+            </div>
           </div>
         </motion.section>
 
