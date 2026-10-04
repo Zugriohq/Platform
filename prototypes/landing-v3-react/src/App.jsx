@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import {
   ArrowRight, ChevronRight, LockKeyhole, Menu, X
 } from "lucide-react";
@@ -727,6 +727,7 @@ export default function App() {
                 <button
                   type="button"
                   aria-pressed={faqIndex === index}
+                  aria-controls={"faq-answer-" + index}
                   className={faqIndex === index ? "active" : ""}
                   onClick={() => setFaqIndex(index)}
                   key={item.question}
@@ -739,26 +740,24 @@ export default function App() {
             </div>
 
             <div className="trust-answer-wrap">
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.article
-                  className="trust-answer"
-                  key={faqIndex}
-                  aria-live="polite"
-                  initial={{ opacity: 0, y: 12, filter: "blur(5px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, y: -8, filter: "blur(4px)" }}
-                  transition={{ duration: .34, ease: [0.16,1,0.3,1] }}
-                >
-                  <div className="trust-answer-meta">
-                    <span>{String(faqIndex + 1).padStart(2, "0")} / {String(FAQ_ITEMS.length).padStart(2, "0")}</span>
-                    <b>{FAQ_ITEMS[faqIndex].code}</b>
-                  </div>
+              <div aria-live="polite">
+                {FAQ_ITEMS.map((item, index) => (
+                  <article
+                    className="trust-answer"
+                    id={"faq-answer-" + index}
+                    hidden={faqIndex !== index}
+                    key={item.question}
+                  >
+                    <div className="trust-answer-meta">
+                      <span>{String(index + 1).padStart(2, "0")} / {String(FAQ_ITEMS.length).padStart(2, "0")}</span>
+                      <b>{item.code}</b>
+                    </div>
 
-                  <h3>{FAQ_ITEMS[faqIndex].question}</h3>
-                  <p>{FAQ_ITEMS[faqIndex].answer}</p>
-
-                </motion.article>
-              </AnimatePresence>
+                    <h3>{item.question}</h3>
+                    <p>{item.answer}</p>
+                  </article>
+                ))}
+              </div>
 
               <div className="trust-principle">
                 <span>TRUST PRINCIPLE</span>
