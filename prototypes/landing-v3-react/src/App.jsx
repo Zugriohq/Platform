@@ -691,13 +691,9 @@ export default function App() {
         </motion.section>
 
         <motion.section className="operator" id="who" {...sectionReveal}>
-          <div className="operator-kicker">
-            <span>WHO IS BUILDING THIS</span>
-            <i aria-hidden="true" />
-          </div>
-
           <div className="operator-grid">
             <div className="operator-copy">
+              <div className="kicker">WHO IS BUILDING THIS</div>
               <h2>Built by traders who know what a drawdown costs.</h2>
             </div>
 
