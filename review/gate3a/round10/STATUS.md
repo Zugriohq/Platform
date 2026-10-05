@@ -1,6 +1,9 @@
-# Round 10 — REVIEW CANDIDATE
+# Round 10 — SUPERSEDED
 
-Status: **REVIEW CANDIDATE / NOT CLEARED / NOT GOVERNED**
+Status: **SUPERSEDED / NOT CLEARED / NOT GOVERNED** — rejected for freeze by independent review
+(R10-01, R10-02; `INDEPENDENT-REVIEW.md`); remediated in `../round11`. The package is unchanged.
+
+_Original status as committed:_ REVIEW CANDIDATE / NOT CLEARED / NOT GOVERNED
 
 Round 10 supersedes round 9 before round 9's independent review ran. The author ran the reviewer's round-9 checklist against round 9 first, and round 9 failed it:
 - paths under a producer were not treated as write routes;
