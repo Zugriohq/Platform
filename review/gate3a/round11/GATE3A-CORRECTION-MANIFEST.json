@@ -1,0 +1,1345 @@
+{
+  "schema": "zugrio.gate3a-correction-manifest/6",
+  "status": "GATE3A_ROUND11_REVIEW_CANDIDATE_NOT_CLEARED_NOT_GOVERNED",
+  "originalGate3APackageSha256": "1e2d82b0375835ebf68df7aa27abaf2d4ad065efaabb15d3b4c9206ae7ec1714",
+  "supersededCorrectedPackageSha256": [
+    "23a1daeaab89e0ebd23c8f759e969ce08d39f82cac6f757b40c16ed4ed43bd6a",
+    "5470b6fffba349f6ca7b463a65ec018505e1a27cc2de017ccddaf71a7496782c",
+    "372409cd8339c0fb93495c92e5ac622cf1413fcec0154d538bc0aa77b00ccad7",
+    "b5a57406d1275c6026ead1157d34e5ebaa7fcdd394ef5bf20ff452829b6cf6b2",
+    "f0b69e43523d994a5b868df8ca3b112c0adf795ed1564d5f238eb93e70d8b102",
+    "8be267b3535552ace65e700e45f63c46dba6dfc256cc9a77ba642898f0040556",
+    "1f62988ee92dcb0d258836442945a2666e0cf85dd52d719cfd975d795b1f1d80",
+    "67fc846fa67a4137ba6ba0a526f6866aefbc68f10f95c05dab8f65b285af1d59",
+    "8c3a811c2999235833f857c16a4fa3aed591b35b0072271da39291926ee6289e",
+    "fdae009bc59db752367d259391ba5b914690372bc07ab2e0e6cb0e393b1e4ffc"
+  ],
+  "sourceArtifactSha256": "52dcdbcdfdddbaabe24e72a722623ebcd8e678fbdff8e6fa134247752783c178",
+  "productionArtifactChanged": false,
+  "authorityInventoryHash": "8f2db15840c2d2d3e5e6d7c1432797af9a49167815e93f5d71d04f5ba6655eae",
+  "atrSweepHash": "a704fe2b6c1198da3e18524ce471e480a056de515b94e04cb4aa7b4d63fc3616",
+  "totals": {
+    "semanticFields": 47,
+    "authoritySinks": 1005,
+    "reachableAuthoritySinks": 920,
+    "verdictWriteSinks": 39,
+    "gateFieldWriteSinks": 39,
+    "reassignmentSinks": 5,
+    "aliasMemberWriteSinks": 7,
+    "aliasAssignSinks": 1,
+    "schemaFrozenOwners": 10,
+    "inventoryDefects": 0,
+    "atrBindings": 53,
+    "atrConsumerStatements": 96,
+    "atrPermissiveAuthorityBranches": 0,
+    "atrUnresolvedShapes": 0,
+    "testsPassing": 83,
+    "inlineScriptsParsing": 7,
+    "authorityProducerSinks": 687,
+    "brokerOrderFieldSinks": 45,
+    "collectionMutationSinks": 0,
+    "invocationGuardSinks": 1,
+    "dependencyVocabularyEntries": 1367,
+    "authorityBaselineSinks": 1009,
+    "authorityBaselineOwners": 89,
+    "objectAssignLeavesSigned": 89,
+    "thresholdWorksheetRows": 209,
+    "moduleScopeProducers": 146,
+    "dynamicAccessSites": 137,
+    "referenceEscapes": 241,
+    "referenceEscapesNeedingReview": 0
+  },
+  "verdictWriteClosure": {
+    "challengedNames": [
+      "readyOk",
+      "fireOk",
+      "executionEligible",
+      "econOk",
+      "thesisOk",
+      "runwayOk",
+      "stopGeometryOk",
+      "coreOk",
+      "regimeOk",
+      "priceValid",
+      "directEligible",
+      "allValid"
+    ],
+    "mutationControls": [
+      "mysteryAuthorityGate in READY conditional",
+      "mysteryBrokerPermission in broker admission",
+      "secretEdgeFilter(k) in readyOk initializer",
+      "undeclaredProfitFilter(...) in p.executionEligible initializer"
+    ],
+    "legacyRemoveSemantics": "LEGACY_REMOVE means remove legacy authority; migrationDisposition states whether a frozen successor replacement is mandatory."
+  },
+  "nextStep": "INDEPENDENT_REVIEW_OF_ROUND11_AND_ACCEPTANCE_OF_THE_PROPOSED_STOPPING_RULE; IF_ACCEPTED_GATE3A_FREEZES; THEN_GATE3_1_CONSUMER_MAP (provisional draft in review/gate3-1); GATE4_NOT_AUTHORIZED",
+  "round3Closure": {
+    "reviewer": "Claude independent review of package 5470b6ff…",
+    "liveMissesClosed": [
+      {
+        "miss": "undeclared conjunct on feedGate returned coreOk: property",
+        "fix": "GATE_FIELD_WRITE sinks for verdict-shaped properties of every returned record in authority owners",
+        "test": "3A-25"
+      },
+      {
+        "miss": "brand-new field on a live gate returned record",
+        "fix": "GATE_RETURN_SCHEMA frozen from Gate 2.2 for live gate owners; any unregistered field is a defect regardless of name or value",
+        "test": "3A-26"
+      },
+      {
+        "miss": "post-declaration reassignment of a declaration-covered live verdict (computeTargets runwayOk)",
+        "fix": "BARE_REASSIGN write form captured and audited like a declaration",
+        "test": "3A-27"
+      }
+    ],
+    "coherenceFixes": [
+      {
+        "issue": "assessDataHealth sinks UNREACHABLE_LEGACY while in neither published list",
+        "fix": "unreachableByNamedLegacy and unreachableByFallthrough published separately with reachabilityRule",
+        "test": "3A-30"
+      },
+      {
+        "issue": "PRICE_VALID admitted while its named write is logging-only",
+        "fix": "field record names analyze() as the live consumer and distinguishes the finalizeOutcome logging write",
+        "test": "3A-31"
+      }
+    ],
+    "previouslyInvisibleDependenciesClassified": [
+      "coreStrategyEvaluate returned eligible: score>=V5_THRESH.watch -> LEGACY_EVAL_SCORE (live authority gated on the historical WATCH prior)",
+      "feedGate returned coreOk reads executionBars -> CANONICAL_ATR_AVAILABLE",
+      "lifecycle reassigns overlap = b.l<=hi&&b.h>=lo in its touch loop -> LIFECYCLE_STAGE"
+    ],
+    "nonVacuity": {
+      "rows": [
+        {
+          "class": "reported",
+          "mutation": "feedGate coreOk: conjunct",
+          "owner": "feedGate",
+          "beforeFix": "MISSED",
+          "afterFix": "caught"
+        },
+        {
+          "class": "reported",
+          "mutation": "new field on feedGate return",
+          "owner": "feedGate",
+          "beforeFix": "MISSED",
+          "afterFix": "caught"
+        },
+        {
+          "class": "reported",
+          "mutation": "runwayOk reassign (computeTargets)",
+          "owner": "computeTargets",
+          "beforeFix": "MISSED",
+          "afterFix": "caught"
+        },
+        {
+          "class": "generalised",
+          "mutation": "forceExecute:true on broker intent",
+          "owner": "makeIntent",
+          "beforeFix": "MISSED",
+          "afterFix": "caught"
+        },
+        {
+          "class": "generalised",
+          "mutation": "innocuous new field on familyGate",
+          "owner": "familyGate",
+          "beforeFix": "MISSED",
+          "afterFix": "caught"
+        },
+        {
+          "class": "generalised",
+          "mutation": "stopGeometryOk reassign",
+          "owner": "planTradeLevels",
+          "beforeFix": "MISSED",
+          "afterFix": "caught"
+        },
+        {
+          "class": "self-found",
+          "mutation": "lifecycle new field on alias c",
+          "owner": "lifecycle",
+          "beforeFix": "MISSED",
+          "afterFix": "caught"
+        },
+        {
+          "class": "self-found",
+          "mutation": "lifecycle conjunct into c.stage",
+          "owner": "lifecycle",
+          "beforeFix": "MISSED",
+          "afterFix": "caught"
+        },
+        {
+          "class": "self-found",
+          "mutation": "planTradeLevels via Object.assign",
+          "owner": "planTradeLevels",
+          "beforeFix": "MISSED",
+          "afterFix": "caught"
+        },
+        {
+          "class": "self-found",
+          "mutation": "seed record field (spread into lifecycle)",
+          "owner": "seeds",
+          "beforeFix": "MISSED",
+          "afterFix": "caught"
+        },
+        {
+          "class": "self-found",
+          "mutation": "analyze base field (spread into result)",
+          "owner": "analyze",
+          "beforeFix": "MISSED",
+          "afterFix": "caught"
+        }
+      ],
+      "cleanDefectsBefore": 0,
+      "cleanDefectsAfter": 0
+    },
+    "semanticFieldsAdded": 0,
+    "selfFoundGaps": [
+      {
+        "gap": "lifecycle returns its record by alias (return c;) — new fields and conjuncts on c.stage invisible; schema missed 9 fields",
+        "fix": "alias-return tracking: initializer literal + member writes",
+        "test": "3A-33"
+      },
+      {
+        "gap": "planTradeLevels populates its returned p via Object.assign — schema held 5 of 39 fields",
+        "fix": "Object.assign(alias,{...}) folded into alias tracking",
+        "test": "3A-34"
+      },
+      {
+        "gap": "fields entering a live record through ...seed / ...base spread",
+        "fix": "freeze the record at its producer (seeds mk + add()/addResearch() extras; analyze base as returned alias)",
+        "test": "3A-35"
+      }
+    ],
+    "falseClaimsCaught": [
+      "Self-review draft claimed aliased returns do not occur in live gates — false (lifecycle).",
+      "Replacement draft claimed Object.assign does not occur in live gates — false (planTradeLevels)."
+    ],
+    "knownPresentLimits": [
+      "Geometry right-hand sides (rejectionExtreme, level, zoneLow, zoneHigh, touchAt) are schema-frozen but not dependency-closed; rejectionExtreme feeds stop placement. Owned by Gate 3E FrozenTradeGeometry.",
+      "A brand-new live gate owner is held to the schema only if it is also a discovered authority owner."
+    ],
+    "verifiedAbsentToday": [
+      "Object.assign onto a non-alias",
+      "computed keys",
+      "quoted keys",
+      "destructuring reassignment"
+    ]
+  },
+  "round4Closure": {
+    "blockerA": {
+      "defect": "Classifying a dependency name was treated as closing it; producers of classified locals were never inspected.",
+      "fix": "Consumer-driven producer closure: bounded backward authority slice from every reachable sink to its producers, to a fixed point, including cross-function returned fields. AUTHORITY_PRODUCER_WRITE sinks. Bound breach is a defect.",
+      "terminationRule": "Applied to producer sinks only. Closed when the root is a bound name (parameter / callback / loop binder) or a local whose producer is itself a sink. Otherwise must classify.",
+      "bugInFirstVersion": "familyGate.scale still missed: member-prefix resolution (result.specialist = familyGate(...)) only ran when the base had no local producer. Made unconditional.",
+      "mandatoryMutations": [
+        "lifecycle.rejectionExtreme",
+        "familyGate.scale",
+        "plan.costR",
+        "analyze.same"
+      ],
+      "capitalChain": "familyGate.scale -> result.specialist.scale -> result.riskScale -> strategyEvaluation.riskScale -> makeIntent -> riskFraction; all eight familyGate scale branches are producer sinks on the clean artifact."
+    },
+    "tokenizerCorrections": [
+      "object-literal keys no longer read as dependencies",
+      "regex literal contents and flags blanked",
+      "properties read off a call result no longer treated as roots"
+    ],
+    "genuineClassificationsAdded": [
+      "TTI_GEOMETRY.readyMinTP1R -> REWARD_ECONOMIC_QUALITY",
+      "TTI_GEOMETRY.maxStopATR -> STOP_GEOMETRY",
+      "TTI_EXECUTION.spread -> REWARD_ECONOMIC_QUALITY",
+      "PROFILES.* -> PROFILE_SELECTION",
+      "TTI_PROFILE_ENGINE.<engine fn> -> PROFILE_SELECTION",
+      "routeConfirmedReversal state.status -> BROKER_EXECUTION_ADMISSION"
+    ],
+    "researchFlowFinding": {
+      "flow": "updateSignalState passes continuationReference: continuationReferenceEnabled into live TTI_PROFILE_ENGINE.analyze(); result drives lane.state.",
+      "treatment": "Requirement NOT relaxed. 3A-11 pins the flow to that single argument and proves non-influence behaviourally: 0/18 fixtures diverge on the clean artifact; 18/18 diverge when research capture is deliberately re-wired into production.",
+      "gate3BRecommendation": "Remove the continuationReference argument from the live analyze() signature so non-influence becomes structural."
+    },
+    "blockerB": {
+      "defect": "Reviewer-facing handoff and self-review were hand-written and quoted superseded hash 163f6246… and 34 verdict-write sinks.",
+      "fix": "Generator owns the current-evidence block of every formal document and the correction manifest hash/totals. Older material confined to an explicit History heading. 3A-40 enforces; 3A-41 proves the check non-vacuous.",
+      "round3DocsUnderNewCheck": "CLAUDE-REVIEW-HANDOFF stale 163f6246; GATE3A-SELF-REVIEW stale 163f6246 and 34 verdict-write; README stale fa2024ee."
+    },
+    "nonVacuity": {
+      "beforeRound3Scanner": [
+        {
+          "round": "NEW",
+          "mutation": "lifecycle.rejectionExtreme",
+          "caught": false
+        },
+        {
+          "round": "NEW",
+          "mutation": "familyGate.scale (capital sizing)",
+          "caught": false
+        },
+        {
+          "round": "NEW",
+          "mutation": "plan.costR",
+          "caught": false
+        },
+        {
+          "round": "NEW",
+          "mutation": "analyze.same",
+          "caught": false
+        },
+        {
+          "round": "R1",
+          "mutation": "readyOk initializer",
+          "caught": true
+        },
+        {
+          "round": "R1",
+          "mutation": "p.executionEligible",
+          "caught": true
+        },
+        {
+          "round": "R2",
+          "mutation": "split declare-assign",
+          "caught": true
+        },
+        {
+          "round": "R2",
+          "mutation": "ternary",
+          "caught": true
+        },
+        {
+          "round": "R2",
+          "mutation": "one-hop laundering",
+          "caught": true
+        },
+        {
+          "round": "R2",
+          "mutation": "feedGate executionOk",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "feedGate coreOk:",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "new field feedGate",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "runwayOk reassign",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "forceExecute:true",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "hint on familyGate",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "lifecycle alias field",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "lifecycle c.stage conjunct",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "Object.assign field",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "seed record field",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "analyze base field",
+          "caught": true
+        }
+      ],
+      "afterRound4Scanner": [
+        {
+          "round": "NEW",
+          "mutation": "lifecycle.rejectionExtreme",
+          "caught": true
+        },
+        {
+          "round": "NEW",
+          "mutation": "familyGate.scale (capital sizing)",
+          "caught": true
+        },
+        {
+          "round": "NEW",
+          "mutation": "plan.costR",
+          "caught": true
+        },
+        {
+          "round": "NEW",
+          "mutation": "analyze.same",
+          "caught": true
+        },
+        {
+          "round": "R1",
+          "mutation": "readyOk initializer",
+          "caught": true
+        },
+        {
+          "round": "R1",
+          "mutation": "p.executionEligible",
+          "caught": true
+        },
+        {
+          "round": "R2",
+          "mutation": "split declare-assign",
+          "caught": true
+        },
+        {
+          "round": "R2",
+          "mutation": "ternary",
+          "caught": true
+        },
+        {
+          "round": "R2",
+          "mutation": "one-hop laundering",
+          "caught": true
+        },
+        {
+          "round": "R2",
+          "mutation": "feedGate executionOk",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "feedGate coreOk:",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "new field feedGate",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "runwayOk reassign",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "forceExecute:true",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "hint on familyGate",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "lifecycle alias field",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "lifecycle c.stage conjunct",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "Object.assign field",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "seed record field",
+          "caught": true
+        },
+        {
+          "round": "R3",
+          "mutation": "analyze base field",
+          "caught": true
+        }
+      ],
+      "cleanDefectsBefore": 0,
+      "cleanDefectsAfter": 0
+    },
+    "semanticFieldsAdded": 0
+  },
+  "round5Closure": {
+    "question": "Is a function parameter an authority-laundering boundary?",
+    "returnChannel": "Held already in round 4: the producer of a consumed call result is the full call expression including arguments. Proven on real 1-hop (analyze->familyGate, analyze->plan) and 2-hop (updateSignalState->analyze->plan) chains.",
+    "sideEffectChannel": {
+      "finding": "LIVE: updateGARCH writes s.ewmaVar/s.garchVar onto its parameter; recomputeFull reads s.garchVar into scoreVS. Missed by round 4.",
+      "fix": "Writes into a local object and onto a parameter member path are producers of later reads; member-write index across live functions."
+    },
+    "calleeReturns": {
+      "finding": "Calls to artifact-defined functions were excused by name; helper bodies never examined. Missed by round 4.",
+      "fix": "Callee return expressions closed recursively; callee parameters still terminate at arguments already inside the calling sink."
+    },
+    "retraction": "Initially reported coreStrategyEvaluate persistent evidence memory as live laundering. False: its family counts are consumed only by unreachable updateLegacySignalState. 3A-43 pins it as correctly NOT reported.",
+    "ownDefects": [
+      "Duplicate function name atr (top-level vs profile-engine inner arrow) resolved by name; now resolved by containing range.",
+      "First working version was ~20x slower (11.5s vs 0.55s per scan); fixed with per-scan blanking cache and a member-write index; 3A-45 bounds scan time."
+    ],
+    "mapAddition": "GARCH volatility state persisted on the instrument object is a live authority input.",
+    "verifiedLimits": [
+      "Aliased shared state (const st=s; st.x=...) is missed; verified none exists in live code today.",
+      "Trusted intrinsics are trusted by method name, not receiver type.",
+      "Whole-object returns are closed only through their fields."
+    ],
+    "nonVacuity": {
+      "round4Scanner": {
+        "res": [
+          {
+            "round": "R1",
+            "mutation": "readyOk initializer",
+            "caught": true
+          },
+          {
+            "round": "R1",
+            "mutation": "p.executionEligible",
+            "caught": true
+          },
+          {
+            "round": "R2",
+            "mutation": "split declare-assign",
+            "caught": true
+          },
+          {
+            "round": "R2",
+            "mutation": "ternary",
+            "caught": true
+          },
+          {
+            "round": "R2",
+            "mutation": "one-hop laundering",
+            "caught": true
+          },
+          {
+            "round": "R2",
+            "mutation": "feedGate executionOk",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "feedGate coreOk:",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "new field feedGate",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "runwayOk reassign",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "forceExecute:true",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "hint on familyGate",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "lifecycle alias field",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "lifecycle c.stage conjunct",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "Object.assign field",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "seed record field",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "analyze base field",
+            "caught": true
+          },
+          {
+            "round": "R4",
+            "mutation": "lifecycle.rejectionExtreme",
+            "caught": true
+          },
+          {
+            "round": "R4",
+            "mutation": "familyGate.scale (capital)",
+            "caught": true
+          },
+          {
+            "round": "R4",
+            "mutation": "plan.costR",
+            "caught": true
+          },
+          {
+            "round": "R4",
+            "mutation": "analyze.same",
+            "caught": true
+          },
+          {
+            "round": "R5",
+            "mutation": "caller 1-hop -> familyGate",
+            "caught": true
+          },
+          {
+            "round": "R5",
+            "mutation": "caller 1-hop -> plan spread",
+            "caught": true
+          },
+          {
+            "round": "R5",
+            "mutation": "caller 2-hop -> analyze -> plan",
+            "caught": true
+          },
+          {
+            "round": "R5",
+            "mutation": "LIVE side-effect: updateGARCH s.ewmaVar",
+            "caught": false
+          },
+          {
+            "round": "R5",
+            "mutation": "LIVE side-effect: updateGARCH s.garchVar",
+            "caught": false
+          },
+          {
+            "round": "R5",
+            "mutation": "taint inside helper body (1-hop)",
+            "caught": false
+          },
+          {
+            "round": "R5",
+            "mutation": "taint inside helper body (2-hop)",
+            "caught": false
+          }
+        ],
+        "cleanD": 0,
+        "cleanHelper": 0
+      },
+      "round5Scanner": {
+        "res": [
+          {
+            "round": "R1",
+            "mutation": "readyOk initializer",
+            "caught": true
+          },
+          {
+            "round": "R1",
+            "mutation": "p.executionEligible",
+            "caught": true
+          },
+          {
+            "round": "R2",
+            "mutation": "split declare-assign",
+            "caught": true
+          },
+          {
+            "round": "R2",
+            "mutation": "ternary",
+            "caught": true
+          },
+          {
+            "round": "R2",
+            "mutation": "one-hop laundering",
+            "caught": true
+          },
+          {
+            "round": "R2",
+            "mutation": "feedGate executionOk",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "feedGate coreOk:",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "new field feedGate",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "runwayOk reassign",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "forceExecute:true",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "hint on familyGate",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "lifecycle alias field",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "lifecycle c.stage conjunct",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "Object.assign field",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "seed record field",
+            "caught": true
+          },
+          {
+            "round": "R3",
+            "mutation": "analyze base field",
+            "caught": true
+          },
+          {
+            "round": "R4",
+            "mutation": "lifecycle.rejectionExtreme",
+            "caught": true
+          },
+          {
+            "round": "R4",
+            "mutation": "familyGate.scale (capital)",
+            "caught": true
+          },
+          {
+            "round": "R4",
+            "mutation": "plan.costR",
+            "caught": true
+          },
+          {
+            "round": "R4",
+            "mutation": "analyze.same",
+            "caught": true
+          },
+          {
+            "round": "R5",
+            "mutation": "caller 1-hop -> familyGate",
+            "caught": true
+          },
+          {
+            "round": "R5",
+            "mutation": "caller 1-hop -> plan spread",
+            "caught": true
+          },
+          {
+            "round": "R5",
+            "mutation": "caller 2-hop -> analyze -> plan",
+            "caught": true
+          },
+          {
+            "round": "R5",
+            "mutation": "LIVE side-effect: updateGARCH s.ewmaVar",
+            "caught": true
+          },
+          {
+            "round": "R5",
+            "mutation": "LIVE side-effect: updateGARCH s.garchVar",
+            "caught": true
+          },
+          {
+            "round": "R5",
+            "mutation": "taint inside helper body (1-hop)",
+            "caught": true
+          },
+          {
+            "round": "R5",
+            "mutation": "taint inside helper body (2-hop)",
+            "caught": true
+          }
+        ],
+        "cleanD": 0,
+        "cleanHelper": 0
+      }
+    }
+  },
+  "round6Closure": {
+    "requested": "Record both scanner limitations as SCANNER_ASSUMPTION — VALID FOR FROZEN GATE 2.2 ARTIFACT; MUST NOT BE RELIED UPON BY NEW PRODUCTION ARCHITECTURE, mechanically pinned.",
+    "scannerAssumptions": {
+      "A1": "Renamed names for shared state. Verification found a live instance (portfolioCorrelation binds S[k] as proposed). Guard: parameter aliases accessed by member, and renamed shared-state reads whose canonical-name writers are not all closed. Silent on Gate 2.2; loud on a violating fixture.",
+      "A2": "Intrinsics trusted by method name. Seven trusted-name definitions exist; all are defineProperty accessor descriptors outside live code. Guard: application methods under a trusted name defined in live code or invoked from live authority. Silent on Gate 2.2; loud on a masquerade."
+    },
+    "lexer": {
+      "defect": "Shared blanker was not regex-literal aware and let strings span lines; a whole-file pass erased 62 of 362 functions by more than half, including route and updateSignalState.",
+      "fix": "Single-pass lexer: comments, line-bounded strings, template literals with ${} kept as code, regex literals.",
+      "atrSweep": "Verified unaffected: all 44 ATR call sites were visible to the old blanker; sweep hash unchanged.",
+      "pinnedAssumption": "Regex directly after ) or ] is read as division; none in the artifact; test fails if introduced; damage line-bounded."
+    },
+    "callGraph": {
+      "defect": "Read raw source (comment/string mentions became edges) and inherited nested functions' calls.",
+      "firstFixFailed": "Built on the broken blanker, it dropped 100 functions to dead including analyze, plan and lifecycle; the scanner sanity check caught it.",
+      "result": "With the lexer, nine functions change status, none carrying reachable authority."
+    },
+    "entryPoints": {
+      "defect": "Root set was seven hand-written engine functions.",
+      "fix": "Engine roots plus page-load calls, HTML/template event attributes (markup set frozen; scanArtifact fails on drift) and listener/timer callbacks. Reachability over-approximates execution.",
+      "liveGapClosed": "chooseTradeProfile (onclick) writes global selectedTradeProfiles read by live authority; global-variable writes are now producers."
+    },
+    "eventBus": {
+      "defect": "emitEngine dispatches dynamically to onEngineEvent listeners; the anonymous broker listener (SIGNAL_FIRED -> route, CLOSED_BAR -> routeConfirmedReversal) had no sinks, and route's item parameter had no traceable caller.",
+      "missesConfirmed": [
+        "listener SIGNAL_FIRED condition",
+        "emitter payload in checkSig",
+        "listener CLOSED_BAR condition",
+        "new broker call in a listener",
+        "named listener registered by reference"
+      ],
+      "fix": "Listeners become named owners with an edge from emitEngine; a listener invoking an authority owner is an authority owner; payload parameter linked to every live emitEngine payload argument."
+    },
+    "gate3BConclusionsReverified": "From every real entry point: updateLegacySignalState, checkLegacySig, assessTrigger, validateFireGeometry, assessDataHealth unreachable; coreStrategyEvaluate live; rgEvaluate becomes live via an anonymous APA block.",
+    "corrections": [
+      "checkSig -> liveRiskMetrics was reported as a comment edge; false — a real call erased by the broken blanker.",
+      "Round 5 described updateGARCH as writing onto its parameter s; s is a local bound to S[k], linked by naming convention."
+    ],
+    "nonVacuity": {
+      "round5Scanner": {
+        "scanner": "round5-scanner.js",
+        "rows": [
+          {
+            "round": "R1",
+            "label": "readyOk initializer",
+            "result": "caught"
+          },
+          {
+            "round": "R1",
+            "label": "p.executionEligible write",
+            "result": "caught"
+          },
+          {
+            "round": "R2",
+            "label": "split declare-then-assign",
+            "result": "caught"
+          },
+          {
+            "round": "R2",
+            "label": "ternary form",
+            "result": "caught"
+          },
+          {
+            "round": "R2",
+            "label": "one-hop laundering",
+            "result": "caught"
+          },
+          {
+            "round": "R2",
+            "label": "feedGate executionOk property",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "feedGate coreOk property",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "new field on feedGate return",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "runwayOk reassignment",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "forceExecute:true on broker intent",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "new field on familyGate",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "lifecycle alias field",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "lifecycle c.stage conjunct",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "field via Object.assign",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "seed record field (spread)",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "analyze base field (spread)",
+            "result": "caught"
+          },
+          {
+            "round": "R4",
+            "label": "lifecycle.rejectionExtreme",
+            "result": "caught"
+          },
+          {
+            "round": "R4",
+            "label": "familyGate.scale -> riskFraction",
+            "result": "caught"
+          },
+          {
+            "round": "R4",
+            "label": "plan.costR",
+            "result": "caught"
+          },
+          {
+            "round": "R4",
+            "label": "analyze.same",
+            "result": "caught"
+          },
+          {
+            "round": "R5",
+            "label": "call site -> familyGate",
+            "result": "caught"
+          },
+          {
+            "round": "R5",
+            "label": "call site -> plan spread",
+            "result": "caught"
+          },
+          {
+            "round": "R5",
+            "label": "shared-state write: s.ewmaVar",
+            "result": "caught"
+          },
+          {
+            "round": "R5",
+            "label": "shared-state write: s.garchVar",
+            "result": "caught"
+          },
+          {
+            "round": "R5",
+            "label": "taint inside helper (1-hop)",
+            "result": "caught"
+          },
+          {
+            "round": "R5",
+            "label": "taint inside helper (2-hop)",
+            "result": "caught"
+          },
+          {
+            "round": "R6",
+            "label": "operator handler writes a global",
+            "result": "MISSED"
+          },
+          {
+            "round": "R6",
+            "label": "renamed shared-state read (A1)",
+            "result": "MISSED"
+          },
+          {
+            "round": "R6",
+            "label": "masquerading .join on capital path (A2)",
+            "result": "MISSED"
+          },
+          {
+            "round": "R6",
+            "label": "bus: SIGNAL_FIRED listener condition",
+            "result": "MISSED"
+          },
+          {
+            "round": "R6",
+            "label": "bus: SIGNAL_FIRED payload at emitter",
+            "result": "MISSED"
+          },
+          {
+            "round": "R6",
+            "label": "bus: CLOSED_BAR reversal condition",
+            "result": "MISSED"
+          },
+          {
+            "round": "R6",
+            "label": "bus: new broker call in a listener",
+            "result": "MISSED"
+          },
+          {
+            "round": "R6",
+            "label": "bus: named listener by reference",
+            "result": "MISSED"
+          }
+        ],
+        "missed": 8,
+        "cleanDefects": 0
+      },
+      "round6Scanner": {
+        "scanner": "gate3-authority-inventory.js",
+        "rows": [
+          {
+            "round": "R1",
+            "label": "readyOk initializer",
+            "result": "caught"
+          },
+          {
+            "round": "R1",
+            "label": "p.executionEligible write",
+            "result": "caught"
+          },
+          {
+            "round": "R2",
+            "label": "split declare-then-assign",
+            "result": "caught"
+          },
+          {
+            "round": "R2",
+            "label": "ternary form",
+            "result": "caught"
+          },
+          {
+            "round": "R2",
+            "label": "one-hop laundering",
+            "result": "caught"
+          },
+          {
+            "round": "R2",
+            "label": "feedGate executionOk property",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "feedGate coreOk property",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "new field on feedGate return",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "runwayOk reassignment",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "forceExecute:true on broker intent",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "new field on familyGate",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "lifecycle alias field",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "lifecycle c.stage conjunct",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "field via Object.assign",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "seed record field (spread)",
+            "result": "caught"
+          },
+          {
+            "round": "R3",
+            "label": "analyze base field (spread)",
+            "result": "caught"
+          },
+          {
+            "round": "R4",
+            "label": "lifecycle.rejectionExtreme",
+            "result": "caught"
+          },
+          {
+            "round": "R4",
+            "label": "familyGate.scale -> riskFraction",
+            "result": "caught"
+          },
+          {
+            "round": "R4",
+            "label": "plan.costR",
+            "result": "caught"
+          },
+          {
+            "round": "R4",
+            "label": "analyze.same",
+            "result": "caught"
+          },
+          {
+            "round": "R5",
+            "label": "call site -> familyGate",
+            "result": "caught"
+          },
+          {
+            "round": "R5",
+            "label": "call site -> plan spread",
+            "result": "caught"
+          },
+          {
+            "round": "R5",
+            "label": "shared-state write: s.ewmaVar",
+            "result": "caught"
+          },
+          {
+            "round": "R5",
+            "label": "shared-state write: s.garchVar",
+            "result": "caught"
+          },
+          {
+            "round": "R5",
+            "label": "taint inside helper (1-hop)",
+            "result": "caught"
+          },
+          {
+            "round": "R5",
+            "label": "taint inside helper (2-hop)",
+            "result": "caught"
+          },
+          {
+            "round": "R6",
+            "label": "operator handler writes a global",
+            "result": "caught"
+          },
+          {
+            "round": "R6",
+            "label": "renamed shared-state read (A1)",
+            "result": "caught"
+          },
+          {
+            "round": "R6",
+            "label": "masquerading .join on capital path (A2)",
+            "result": "caught"
+          },
+          {
+            "round": "R6",
+            "label": "bus: SIGNAL_FIRED listener condition",
+            "result": "caught"
+          },
+          {
+            "round": "R6",
+            "label": "bus: SIGNAL_FIRED payload at emitter",
+            "result": "caught"
+          },
+          {
+            "round": "R6",
+            "label": "bus: CLOSED_BAR reversal condition",
+            "result": "caught"
+          },
+          {
+            "round": "R6",
+            "label": "bus: new broker call in a listener",
+            "result": "caught"
+          },
+          {
+            "round": "R6",
+            "label": "bus: named listener by reference",
+            "result": "caught"
+          }
+        ],
+        "missed": 0,
+        "cleanDefects": 0
+      }
+    },
+    "gate3BEntryDirective": "GATE3B-ENTRY-DIRECTIVE.md, frozen and checked by 3A-51."
+  },
+  "dependencyVocabularySha256": "90499ad2362c1a1e486a9c55736d9ba6c9b4f628f1d3c9076d7c1cf0aa9229cc",
+  "round7Closure": {
+    "reviewer": "Claude Code (independent adversarial review of round-6 package 8be267b3…)",
+    "method": "39 realistic authority-changing mutations of the frozen Gate 2.2 artifact plus a control; detection = a defect naming the injected input",
+    "round6Result": "24 missed (23 with no defect; 1 raised only an unrelated reachability alarm); 15 caught",
+    "round7Result": "39 caught (the callback-registry dispatch at its dispatch site)",
+    "productionArtifactChanged": false,
+    "corrections": [
+      "Frozen dependency vocabulary: every (owner, token) a live sink accepts is stored with its acceptance rule in tools/gate3-dependency-vocabulary.json; novelty or reclassification is a defect (closes substring laundering, UPPER_CASE excuse, NOISE-name dropping, parameter-member termination).",
+      "key:value sink values read depth-aware (riskFraction was truncated at the first comma).",
+      "Every submitted order field is a BROKER_ORDER_FIELD sink (makeIntent return record; exit/close api() payloads, recursively).",
+      "Order record provenance closed field-by-field at the record checkSig emits on SIGNAL_FIRED.",
+      "One assignment-operator pattern for every write matcher: compound and logical assignment are writes.",
+      "Evidence-removing mutation (splice/pop/shift/length=/delete) and guarded Object.assign are sinks.",
+      "Guards that invoke or pass a broker function, or emit an event an authority listener acts on, are sinks in any function.",
+      "Early-return/break guards in authority owners are sinks.",
+      "Functions used as values are entry roots (callback registries, .then(fn)).",
+      "functionIndex: code-only brace matching; round-6 start offsets preserved; expression-bodied arrows own only their expression.",
+      "blankNonCode memoised for large inputs (suite runtime unchanged)."
+    ],
+    "newFieldsAndMappings": [
+      "BROKER_ORDER_PAYLOAD (LEGACY_REMOVE / NOT_APPLICABLE; successor: Gate-4 typed order payload) — reviewer to confirm",
+      "CLOSED_BAR emit guards -> POSITION_MANAGEMENT_GATE — reviewer to confirm",
+      "Early-return guards -> STOP_GEOMETRY / TARGET_GEOMETRY / GEOMETRY_COMPLETE / PRICE_VALID / DATA_HEALTH_OK / PROFILE_SELECTION / LIFECYCLE_RANK / STATE_RANK — reviewer to confirm"
+    ],
+    "behaviourChange": "Round-6 precision controls 3A-44/3A-52 now expect behaviour-preserving NEW authority code to be reported as vocabulary novelty; precision is pinned on non-authority edits (3A-63).",
+    "nonVacuity": "3A-53 … 3A-65"
+  },
+  "authorityBaselineSha256": "e63d298ba380a97e575edae6be75f1253a326e2917bc9827c20ccf02e3d405d8",
+  "round8Closure": {
+    "reviewer": "Independent review of round-7 package 1f62988e… (rejected for freeze: vocabulary detects novelty only)",
+    "reproducedBeforeFixing": "11 accepted-dependency substitution/deletion/threshold mutations, all clean under round 7",
+    "productionArtifactChanged": false,
+    "corrections": [
+      "Frozen authority baseline (tools/gate3-authority-baseline.json): every live authority sink signed over owner, kind, code-only expression, whole consequence and dependency->canonical list; code-only fingerprint of every owning function; drift is a defect, localised to the sink; frozen only from an otherwise clean scan.",
+      "Canonical code form: comments/layout ignored; literal contents, operators and ASI-significant line breaks kept.",
+      "Object.assign leaves and non-literal sources in live authority functions signed (unclassified; Gate 3.1).",
+      "Published sink consequence still truncated at 360 characters; the signature covers the whole consequence.",
+      "Substitution battery (tools/gate3-substitution-battery.js) with per-case class-membership proof and precision controls.",
+      "Order-field successor table (PROPOSED) mapping all 45 broker order fields to the frozen specification, enforced by 3A-72.",
+      "HP-3 threshold worksheet: live authority sinks with non-trivial numeric literals, provenance UNRECORDED."
+    ],
+    "substitutionBattery": {
+      "cases": 46,
+      "round8": {
+        "sinkLocalised": 43,
+        "vocabulary": 3,
+        "missed": 0
+      },
+      "round7Scanner": {
+        "missed": 43,
+        "vocabulary": 3
+      },
+      "controlsClean": 3
+    },
+    "notEstablished": "Semantic correctness of any frozen dependency, predicate or threshold. That is Gate 3.1-3.3 classification against the frozen Signal Authority specification.",
+    "gate4Findings": [
+      "Entry-order eventId includes Math.round(now): non-deterministic, conflicts with §10.3 OA-1 / H-5B.",
+      "riskFraction default .0025 has no recorded provenance."
+    ],
+    "scopeFinding": "§14A requires mapping every consumer (including presentation and research logging); Gate 3A inventories authority sinks only."
+  },
+  "round9Closure": {
+    "reviewer": "Independent review of round-8 package 67fc846f… (accepted-dependency attack: pass; rejected for freeze on R8-01: module-scope producers not baseline-bound)",
+    "reproducedBeforeFixing": "5 edits to module-scope authority tables (ASSET_PROFILES, TTI_GEOMETRY, V5_THRESH, SECONDS, DEFAULT_PROFILE) scanned clean under round 8",
+    "productionArtifactChanged": false,
+    "corrections": [
+      "Module-scope producer closure from live-sink inputs to a fixed point (declarators, module-level writes, value-producing functions, writer functions, alias/argument escapes of object producers), with module scopes and IIFE bodies modelled; each producer fingerprinted; drift is AUTHORITY_PRODUCER_DRIFT naming the producer.",
+      "Discarded-result calls are effects, not producers; producer-closure prose consequences are not read as code; primitive constants are exempt from the escape rule.",
+      "Producer battery (tools/gate3-producer-battery.js): 18 cases over the review’s 10 categories plus write/alias/argument/effect/runtime-writer laundering; consumer-preserving cases must be reported only at the producer boundary."
+    ],
+    "producerBattery": {
+      "cases": 18,
+      "round9": {
+        "producer": 18,
+        "missed": 0
+      },
+      "round8Scanner": {
+        "missed": 17,
+        "caught": 1
+      },
+      "controlsClean": 4
+    },
+    "closure": {
+      "producers": 108,
+      "bindings": 43,
+      "functions": 36,
+      "writers": 29,
+      "excludedExamples": [
+        "SIGNAL_STATES (legacy-only)",
+        "GLOSSARY (renderer-only)",
+        "CONTINUATION_REGIMES (research-only)"
+      ]
+    },
+    "limits": "Name-based: values reaching authority without a module-scope name (runtime-keyed lookup, eval, runtime-loaded data) are outside the closure; shadowing over-includes only.",
+    "notEstablished": "Semantic correctness of any bound producer (Gate 3.1-3.3)."
+  },
+  "round10Closure": {
+    "trigger": "Author pre-review of round 9 against the independent reviewer’s round-9 checklist, before that review ran",
+    "round9Misses": [
+      "alias of a nested producer member",
+      "nested member passed to a writing helper",
+      "Object.defineProperty / Reflect.set on a nested member (module level and in a UI handler)",
+      "computed global lookup",
+      "eval",
+      "prototype pollution",
+      "TTI_RISK_POLICY.perEventRiskPct x10 (risk policies outside the closure)"
+    ],
+    "productionArtifactChanged": false,
+    "corrections": [
+      "Path escapes under producers: alias written-through or handed on, mutation API, module-function argument, module statement.",
+      "Dynamic-access inventory over the whole script (eval, Function, string timers, global computed/member access, prototype, reflective define, with), frozen per (construct, owner, statement); drift is DYNAMIC_ACCESS_DRIFT."
+    ],
+    "producerBattery": {
+      "cases": 28,
+      "round10": {
+        "caught": 28
+      },
+      "round9Scanner": {
+        "missed": 10
+      }
+    },
+    "closure": {
+      "producers": 146,
+      "newlyBound": [
+        "TTI_RISK_POLICY",
+        "TTI_META_RISK",
+        "RG_POLICY",
+        "liveRiskMetrics",
+        "portfolioCorrelation",
+        "currencyExposure"
+      ]
+    },
+    "dynamicAccessSites": 137,
+    "limits": "Runtime-loaded data (storage, network, market feed) is content, not code; the loading code is bound."
+  },
+  "round11Closure": {
+    "reviewer": "Independent review of round-10 package fdae009b… (R10-01 container/closure laundering; R10-02 global-object alias)",
+    "proposedStoppingRule": [
+      "Artifact SHA-256 pinned",
+      "Inventory reproducible",
+      "Unmodelled code shapes fail-closed on the actual artifact: proven absent (any appearance is a defect) or every occurrence listed and dispositioned",
+      "Mutation batteries are regression tests; a new adversarial form blocks only if it shows the actual artifact contains an unmapped authority route"
+    ],
+    "R10-02": {
+      "occurrencesInArtifact": 0,
+      "remedy": "Scanner assumption A3, fail-closed"
+    },
+    "R10-01": {
+      "handOffSitesInArtifact": 241,
+      "bound": 205,
+      "readOnlyAlias": 24,
+      "primitiveMember": 12,
+      "needsReview": 0,
+      "remedy": "Frozen reference-escape register; a new hand-off is REFERENCE_ESCAPE_DRIFT"
+    },
+    "producerBattery": {
+      "cases": 32,
+      "round11": {
+        "caught": 32
+      },
+      "round10Scanner": {
+        "missed": 4
+      }
+    },
+    "productionArtifactChanged": false
+  }
+}
