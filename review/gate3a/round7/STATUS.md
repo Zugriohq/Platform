@@ -1,6 +1,10 @@
-# Round 7 — REVIEW CANDIDATE
+# Round 7 — SUPERSEDED
 
-Status: **REVIEW CANDIDATE / NOT CLEARED / NOT GOVERNED**
+Status: **SUPERSEDED / NOT CLEARED / NOT GOVERNED** — rejected for freeze by independent review
+(`INDEPENDENT-REVIEW.md`); remediated in `../round8`. The package below is unchanged; only
+this status note and the review record were added.
+
+_Original status as committed:_ REVIEW CANDIDATE / NOT CLEARED / NOT GOVERNED
 
 This directory is the round-7 Gate 3A package exactly as produced. It is not
 to be edited in place: if independent review finds misses, round 8 fixes
