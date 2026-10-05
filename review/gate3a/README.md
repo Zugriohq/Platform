@@ -4,17 +4,19 @@
 so independent reviewers can inspect each round of the Gate 3A authority
 inventory work in the repository, with a clean audit trail:
 
-round 6 → discovered misses → round 7 remediation → independent review → …
+round 6 → discovered misses → round 7 remediation → independent review (rejected) → round 8 remediation → independent review → …
 
 | Round | Directory | Status |
 |---|---|---|
 | 6 | `round6/` | SUPERSEDED / NOT CLEARED / NOT GOVERNED |
-| 7 | `round7/` | REVIEW CANDIDATE / NOT CLEARED / NOT GOVERNED |
+| 7 | `round7/` | SUPERSEDED / NOT CLEARED / NOT GOVERNED (rejected for freeze) |
+| 8 | `round8/` | REVIEW CANDIDATE / NOT CLEARED / NOT GOVERNED |
 
 Rules:
 
 - Packages are committed exactly as produced and are never edited in place.
-  A later round fixes an earlier one in a new directory.
+  A later round fixes an earlier one in a new directory. Only a round's
+  `STATUS.md` and its review record change when its status changes.
 - This directory must not be merged into `main`, a release branch or a
   governed branch, and must not be imported into `legacy/gate-baselines/`
   until independent review clears it.

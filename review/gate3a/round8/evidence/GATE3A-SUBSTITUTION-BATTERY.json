@@ -1,0 +1,448 @@
+{
+  "scanner": "tools/gate3-authority-inventory.js",
+  "summary": {
+    "cases": 46,
+    "failed": 0,
+    "sink": 43,
+    "vocab": 3,
+    "ownerOnly": 0,
+    "other": 0,
+    "missed": 0,
+    "errors": 0,
+    "controlsFailed": 0,
+    "cleanArtifactDefects": 0
+  },
+  "rows": [
+    {
+      "category": "predicate-input",
+      "name": "plan STOP_TOO_WIDE uses tick instead of ATR",
+      "owner": "plan",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: plan CONDITIONAL_AUTHORITY frozen sink removed or changed: risk>av*3"
+    },
+    {
+      "category": "predicate-input",
+      "name": "STOP_TOO_TIGHT floor uses risk instead of ATR",
+      "owner": "plan",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: plan CONDITIONAL_AUTHORITY frozen sink removed or changed: risk<Math.max(tick*5,av*0.2)"
+    },
+    {
+      "category": "threshold",
+      "name": "runway threshold -> stop threshold (both accepted)",
+      "owner": "planTradeLevels",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: planTradeLevels VERDICT_WRITE frozen sink removed or changed: rr1>=(TTI_GEOMETRY.readyMinTP1R||1.0)-1e-12"
+    },
+    {
+      "category": "threshold",
+      "name": "tick staleness 15s -> 150s (literal only)",
+      "owner": "feedGate",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: feedGate CONDITIONAL_AUTHORITY frozen sink removed or changed: !Number.isFinite(tickAt)||now-tickAt>15000||tickAt>"
+    },
+    {
+      "category": "threshold",
+      "name": "insufficient-bars 24 -> 2 (literal only)",
+      "owner": "feedGate",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: feedGate CONDITIONAL_AUTHORITY frozen sink removed or changed: a.length<24"
+    },
+    {
+      "category": "profile-field",
+      "name": "execution timeframe from profile.id",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: analyze AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: profile.id==='SCALP'?(m1Fresh?'M1':'M5'):profile."
+    },
+    {
+      "category": "profile-field",
+      "name": "familyGate given the DAY profile",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: analyze AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: candidates.map(candidate=>{const result={...base,"
+    },
+    {
+      "category": "strategy-state",
+      "name": "initial state WATCH -> READY",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: analyze AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: candidates.map(candidate=>{const result={...base,"
+    },
+    {
+      "category": "strategy-state",
+      "name": "state rank READY/WATCH swapped",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: analyze AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: {FIRE:4,READY:3,WATCH:2,NO_TRADE:1}"
+    },
+    {
+      "category": "risk",
+      "name": "BOOM_CRASH tail scales swapped",
+      "owner": "familyGate",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: familyGate AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: tail ? .5 : .35"
+    },
+    {
+      "category": "risk",
+      "name": "JUMP scale .5 -> .95",
+      "owner": "familyGate",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: familyGate AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: .5"
+    },
+    {
+      "category": "risk",
+      "name": "riskScale dropped from riskFraction",
+      "owner": "makeIntent",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: makeIntent BROKER_ORDER_FIELD frozen sink removed or changed: (Number(state.status?.policy?.riskPerTradePct)||.002"
+    },
+    {
+      "category": "risk",
+      "name": "profile riskScale replaced by specialist scale",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: analyze AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: candidates.map(candidate=>{const result={...base,"
+    },
+    {
+      "category": "side",
+      "name": "order side from instrument key",
+      "owner": "makeIntent",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: makeIntent BROKER_ORDER_FIELD frozen sink removed or changed: String(item.sig)"
+    },
+    {
+      "category": "side",
+      "name": "reversal exit side = position side",
+      "owner": "routeConfirmedReversal",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: routeConfirmedReversal BROKER_ORDER_FIELD frozen sink removed or changed: candidate.dir"
+    },
+    {
+      "category": "side",
+      "name": "HTF agreement counts opposing votes",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: analyze AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: candidates.map(candidate=>{const result={...base,"
+    },
+    {
+      "category": "geometry",
+      "name": "order stop and target swapped",
+      "owner": "makeIntent",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: makeIntent BROKER_ORDER_FIELD sink changed: Number(levels.stop) — consequence now \"broker order field takeProfit\""
+    },
+    {
+      "category": "geometry",
+      "name": "order entry = stop",
+      "owner": "makeIntent",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: makeIntent BROKER_ORDER_FIELD frozen sink removed or changed: Number(item.entryPrice)"
+    },
+    {
+      "category": "geometry",
+      "name": "plan stop written from entry ideal (Object.assign)",
+      "owner": "planTradeLevels",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: planTradeLevels OBJECT_ASSIGN_LEAF frozen sink removed or changed: p.stop=stopPrice.toFixed(pr)"
+    },
+    {
+      "category": "geometry",
+      "name": "plan t1 written from another accepted field (Object.assign)",
+      "owner": "planTradeLevels",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: planTradeLevels OBJECT_ASSIGN_LEAF frozen sink removed or changed: p.targets.t1=tg.t1.toFixed(pr)"
+    },
+    {
+      "category": "lifecycle",
+      "name": "candidate sort direction reversed",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: analyze AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: all.filter(c=>rank(c)>0&&!consumed.has(c.id)).sor"
+    },
+    {
+      "category": "lifecycle",
+      "name": "BREAK_CONFIRMED rank 1 -> 3",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: analyze AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: c=>c.stage==='TRIGGERED'&&c.triggerFresh?4:['RETE"
+    },
+    {
+      "category": "order-payload",
+      "name": "exit positionId from candidate id",
+      "owner": "routeConfirmedReversal",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: routeConfirmedReversal BROKER_ORDER_FIELD frozen sink removed or changed: String(position.positionId)"
+    },
+    {
+      "category": "order-payload",
+      "name": "order instrument from event id",
+      "owner": "makeIntent",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: makeIntent BROKER_ORDER_FIELD frozen sink removed or changed: String(item.k)"
+    },
+    {
+      "category": "producer-return",
+      "name": "feedGate executionOk from bar count",
+      "owner": "feedGate",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: feedGate EXECUTION_OK_WRITE frozen sink removed or changed: !unique.length"
+    },
+    {
+      "category": "producer-return",
+      "name": "familyGate ok from bias",
+      "owner": "familyGate",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: familyGate AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: []"
+    },
+    {
+      "category": "object-property",
+      "name": "context opposing count = same",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: analyze AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: candidates.map(candidate=>{const result={...base,"
+    },
+    {
+      "category": "object-property",
+      "name": "context ok threshold opp<2 -> opp<3",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: analyze AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: candidates.map(candidate=>{const result={...base,"
+    },
+    {
+      "category": "array",
+      "name": "health reasons not carried into blockers",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: analyze AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: [...health.reasons]"
+    },
+    {
+      "category": "array",
+      "name": "best = second evaluated, not first",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: analyze AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: evaluated[0]"
+    },
+    {
+      "category": "argument",
+      "name": "planner given the profile bars of another frame",
+      "owner": "checkSig",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: checkSig AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: TTI_PROFILE_ENGINE.plan(c,map[lane.executionTf],"
+    },
+    {
+      "category": "argument",
+      "name": "plan given the zone low for both sides",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: analyze AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: candidate.stage==='TRIGGERED'?price:(candidate.di"
+    },
+    {
+      "category": "alias",
+      "name": "reversal lane chosen from DAY regardless of position",
+      "owner": "routeConfirmedReversal",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: routeConfirmedReversal AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: s.profileStates?.[position.profile"
+    },
+    {
+      "category": "object-assign",
+      "name": "Object.assign writes state READY",
+      "owner": "analyze",
+      "expect": "VOCAB",
+      "outcome": "VOCAB",
+      "pass": true,
+      "detail": "analyze:AUTHORITY_PRODUCER_WRITE:evaluated:350336: dependency 'Object.assign' accepted as TRUSTED_INTRINSIC is not in th"
+    },
+    {
+      "category": "object-assign",
+      "name": "Object.assign with conditional source",
+      "owner": "analyze",
+      "expect": "VOCAB",
+      "outcome": "VOCAB",
+      "pass": true,
+      "detail": "analyze:AUTHORITY_PRODUCER_WRITE:evaluated:350336: dependency 'Object.assign' accepted as TRUSTED_INTRINSIC is not in th"
+    },
+    {
+      "category": "object-assign",
+      "name": "Object.assign from an accepted variable",
+      "owner": "analyze",
+      "expect": "VOCAB",
+      "outcome": "VOCAB",
+      "pass": true,
+      "detail": "analyze:AUTHORITY_PRODUCER_WRITE:evaluated:350336: dependency 'Object.assign' accepted as TRUSTED_INTRINSIC is not in th"
+    },
+    {
+      "category": "object-assign",
+      "name": "computed string key writes state",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: analyze AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: candidates.map(candidate=>{const result={...base,"
+    },
+    {
+      "category": "object-assign",
+      "name": "existing Object.assign leaf: retest level from zone",
+      "owner": "retestView",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: retestView OBJECT_ASSIGN_LEAF frozen sink removed or changed: r.retestLevel=candidate.level"
+    },
+    {
+      "category": "deletion",
+      "name": "executionEligible loses its stop conjunct",
+      "owner": "planTradeLevels",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: planTradeLevels GATE_FIELD_WRITE frozen sink removed or changed: runwayOk&&stopGeometryOk"
+    },
+    {
+      "category": "deletion",
+      "name": "HTF context blocker deleted",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: analyze AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: candidates.map(candidate=>{const result={...base,"
+    },
+    {
+      "category": "deletion",
+      "name": "tick-stale reason deleted",
+      "owner": "feedGate",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: feedGate CONDITIONAL_AUTHORITY frozen sink removed or changed: !Number.isFinite(tickAt)||now-tickAt>15000||tickAt>"
+    },
+    {
+      "category": "deletion",
+      "name": "reversal ignores data health",
+      "owner": "routeConfirmedReversal",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: routeConfirmedReversal CONDITIONAL_AUTHORITY frozen sink removed or changed: !candidate||candidate.dir===position."
+    },
+    {
+      "category": "deletion",
+      "name": "opposing-FIRE conflict ignores side",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: analyze CONDITIONAL_AUTHORITY frozen sink removed or changed: best.state==='FIRE'&&evaluated.some(r=>r!==best&&r.s"
+    },
+    {
+      "category": "deletion",
+      "name": "READY guard removed",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: analyze AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: candidates.map(candidate=>{const result={...base,"
+    },
+    {
+      "category": "reroute",
+      "name": "PRICE_INVALID routed to another blocker code",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: analyze AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: candidates.map(candidate=>{const result={...base,"
+    },
+    {
+      "category": "reroute",
+      "name": "cooldown no longer blocks the lane",
+      "owner": "checkSig",
+      "expect": "SINK",
+      "outcome": "SINK",
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: checkSig AUTHORITY_PRODUCER_WRITE frozen sink removed or changed: profileCooldown.get(k)||0"
+    }
+  ],
+  "controls": [
+    {
+      "name": "block comment added inside an authority function",
+      "defects": 0,
+      "error": ""
+    },
+    {
+      "name": "line comment on its own line inside an authority function",
+      "defects": 0,
+      "error": ""
+    },
+    {
+      "name": "whitespace reflowed inside an authority function",
+      "defects": 0,
+      "error": ""
+    }
+  ]
+}
