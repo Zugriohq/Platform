@@ -4,13 +4,14 @@
 so independent reviewers can inspect each round of the Gate 3A authority
 inventory work in the repository, with a clean audit trail:
 
-round 6 → discovered misses → round 7 remediation → independent review (rejected) → round 8 remediation → independent review → …
+round 6 → discovered misses → round 7 remediation → independent review (rejected) → round 8 remediation → independent review (rejected: R8-01) → round 9 remediation → independent review → …
 
 | Round | Directory | Status |
 |---|---|---|
 | 6 | `round6/` | SUPERSEDED / NOT CLEARED / NOT GOVERNED |
 | 7 | `round7/` | SUPERSEDED / NOT CLEARED / NOT GOVERNED (rejected for freeze) |
-| 8 | `round8/` | REVIEW CANDIDATE / NOT CLEARED / NOT GOVERNED |
+| 8 | `round8/` | SUPERSEDED / NOT CLEARED / NOT GOVERNED (rejected for freeze: R8-01) |
+| 9 | `round9/` | REVIEW CANDIDATE / NOT CLEARED / NOT GOVERNED |
 
 Rules:
 
