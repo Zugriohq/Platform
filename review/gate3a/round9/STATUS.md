@@ -1,6 +1,10 @@
-# Round 9 — REVIEW CANDIDATE
+# Round 9 — SUPERSEDED
 
-Status: **REVIEW CANDIDATE / NOT CLEARED / NOT GOVERNED**
+Status: **SUPERSEDED / NOT CLEARED / NOT GOVERNED**. Superseded before independent review: the author's
+pre-review against the reviewer's round-9 checklist found in-scope gaps (paths under a producer,
+reflective writes, the risk policies outside the closure); remediated in `../round10`. The package is unchanged.
+
+_Original status as committed:_ REVIEW CANDIDATE / NOT CLEARED / NOT GOVERNED
 
 Round 9 answers the independent review of round 8 (`../round8/INDEPENDENT-REVIEW.md`, finding R8-01: module-scope producers of live authority were not bound by the baseline). It is committed exactly as produced and is not to be edited in place.
 
