@@ -1,6 +1,9 @@
-# Round 8 — REVIEW CANDIDATE
+# Round 8 — SUPERSEDED
 
-Status: **REVIEW CANDIDATE / NOT CLEARED / NOT GOVERNED**
+Status: **SUPERSEDED / NOT CLEARED / NOT GOVERNED** — rejected for freeze by independent review
+(finding R8-01, `INDEPENDENT-REVIEW.md`); remediated in `../round9`. The package is unchanged.
+
+_Original status as committed:_ REVIEW CANDIDATE / NOT CLEARED / NOT GOVERNED
 
 Round 8 answers the independent review of round 7 (`../round7/INDEPENDENT-REVIEW.md`), which rejected it for freeze because the frozen vocabulary detects only *new* dependencies. Round 8 is committed exactly as produced and is not to be edited in place: if review finds misses, round 9 fixes it in a new directory.
 
