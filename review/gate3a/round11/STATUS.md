@@ -1,6 +1,6 @@
 # Round 11 — PASSED INDEPENDENT REVIEW (subject to the stopping-rule amendment)
 
-Status: **PASSED independent review (`INDEPENDENT-REVIEW.md`); Gate 3A FREEZE READY via `../freeze/`, which awaits the reviewer's confirmation; NOT GOVERNED until then.** The package is unchanged.
+Status: **PASSED independent review (`INDEPENDENT-REVIEW.md`); Gate 3A FROZEN via `../freeze/`, confirmed by the reviewer at `b940cb1` (`../freeze/REVIEWER-CONFIRMATION.md`).** The package is unchanged.
 
 _Original status as committed:_ REVIEW CANDIDATE / NOT CLEARED / NOT GOVERNED
 

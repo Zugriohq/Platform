@@ -1,6 +1,6 @@
 # Gate 3A — evidence freeze (stopping rule as amended, and disposition audit)
 
-**Status: FREEZE READY — awaiting the independent reviewer's confirmation of this addendum.** Round 11 passed independent review subject to one amendment: dispositions must be independently auditable (`../round11/INDEPENDENT-REVIEW.md`). This addendum supplies that audit. It adds evidence only. It changes neither the round-11 package nor the artifact.
+**Status: FROZEN — confirmed by the independent reviewer at commit `b940cb1` (`REVIEWER-CONFIRMATION.md`).** Round 11 passed independent review subject to one amendment: dispositions must be independently auditable (`../round11/INDEPENDENT-REVIEW.md`). This addendum supplies that audit. It adds evidence only. It changes neither the round-11 package nor the artifact.
 
 ## Accepted stopping rule (as amended by the independent reviewer)
 
@@ -63,7 +63,7 @@ All six reject. Two of them first rejected for the wrong reason, because of fixt
 | Gate | Status |
 |---|---|
 | Gate 2.2 artifact identity | Pinned |
-| Gate 3A | **Freeze ready**: passed independent review (round 11); the amendment is met by this audit; awaiting the reviewer's confirmation |
+| Gate 3A | **Frozen**: passed independent review (round 11); the amendment is met by this audit; confirmed by the reviewer |
 | Gate 3.1 (§14A) | Next. `../../gate3-1/` stays provisional until §14A review begins |
 | Gate 4 | Not authorised |
 
