@@ -4,7 +4,7 @@
 so independent reviewers can inspect each round of the Gate 3A authority
 inventory work in the repository, with a clean audit trail:
 
-round 6 → discovered misses → round 7 remediation → independent review (rejected) → round 8 remediation → independent review (rejected: R8-01) → round 9 remediation → author pre-review (gaps found) → round 10 remediation → independent review (rejected: R10-01/02) → round 11 (final scanner round, proposed stopping rule) → independent review → Gate 3.1
+round 6 → discovered misses → round 7 remediation → independent review (rejected) → round 8 remediation → independent review (rejected: R8-01) → round 9 remediation → author pre-review (gaps found) → round 10 remediation → independent review (rejected: R10-01/02) → round 11 (final scanner round) → independent review (PASS, stopping rule accepted with amendment) → freeze addendum (disposition audit) → reviewer confirmation → Gate 3.1
 
 | Round | Directory | Status |
 |---|---|---|
@@ -13,7 +13,8 @@ round 6 → discovered misses → round 7 remediation → independent review (re
 | 8 | `round8/` | SUPERSEDED / NOT CLEARED / NOT GOVERNED (rejected for freeze: R8-01) |
 | 9 | `round9/` | SUPERSEDED / NOT CLEARED / NOT GOVERNED (gaps found in author pre-review) |
 | 10 | `round10/` | SUPERSEDED / NOT CLEARED / NOT GOVERNED (rejected for freeze: R10-01, R10-02) |
-| 11 | `round11/` | REVIEW CANDIDATE / NOT CLEARED / NOT GOVERNED |
+| 11 | `round11/` | PASSED independent review (subject to amendment) |
+| freeze | `freeze/` | FREEZE READY — disposition audit, awaiting reviewer confirmation |
 
 A provisional, non-governing Gate 3.1 §14A consumer-map draft is in `../gate3-1/`.
 

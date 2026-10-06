@@ -1,6 +1,8 @@
-# Round 11 — REVIEW CANDIDATE (final scanner round, under a proposed stopping rule)
+# Round 11 — PASSED INDEPENDENT REVIEW (subject to the stopping-rule amendment)
 
-Status: **REVIEW CANDIDATE / NOT CLEARED / NOT GOVERNED**
+Status: **PASSED independent review (`INDEPENDENT-REVIEW.md`); Gate 3A FREEZE READY via `../freeze/`, which awaits the reviewer's confirmation; NOT GOVERNED until then.** The package is unchanged.
+
+_Original status as committed:_ REVIEW CANDIDATE / NOT CLEARED / NOT GOVERNED
 
 Round 11 answers the independent review of round 10 (`../round10/INDEPENDENT-REVIEW.md`, R10-01 and R10-02). It proposes a stopping rule that needs the reviewer's agreement; the rule is stated in `CLAUDE-REVIEW-HANDOFF.md` ("Round 11").
 
