@@ -24,3 +24,19 @@ For each field the worksheet gives the evidence:
 Every decision field is blank. The worksheet does not propose a classification and does not assert provenance.
 
 Both generators now read from `legacy/gate-baselines/gate3a/round11/`. Regenerating from there gives output identical to the review-branch draft, apart from the recorded source path.
+
+## Batch 1 first-pass review (2026-10-06)
+
+- `BATCH-1-DECISIONS.json` holds the authored decisions:
+  - per field: §14A classification, candidate status, HP-1 and HP-2 with their basis, and the consequence;
+  - per site: each literal's role, owning field and provenance;
+  - the 17 P/L-flagged entries, each with an explicit disposition;
+  - thresholds outside the worksheet.
+- `tools/build-batch1-review.js` joins the decisions with the worksheet and writes `BATCH-1-REVIEW.{md,json}`. It refuses to write unless the decisions cover all 101 entries / 62 distinct sites exactly. It also refuses any provenance other than UNKNOWN or NOT_A_THRESHOLD that does not cite a repository document by sha256, and any HP-2 PASS for a field owning an UNKNOWN threshold.
+- Outcome:
+  - 8 candidates confirmed, 1 amended (STOP_GEOMETRY narrowed to stop side), 0 rejected.
+  - 0 fields admitted.
+  - 0 thresholds with established provenance; 83 literals UNKNOWN, 28 not thresholds.
+  - DUPLICATE_CONSUMED, PRICE_VALID and STOP_WRONG_SIDE need no threshold provenance for Gate 3.3.
+- Status: **first pass by Claude. Independent review PENDING, owner sign-off PENDING.** Gate 3.2 and Gate 3.3 are not started.
+- `tools/build-batch1.js`: the decision-template line "per HP-6, UNKNOWN moves the field downstream" is corrected. UNKNOWN is HP-2 NOT_ESTABLISHED, which Gate 3.3 resolves. `BATCH-1-WORKSHEET.json` is byte-identical after regeneration; only the `.md` template line changed.

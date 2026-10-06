@@ -175,7 +175,7 @@ for (const f of fields) {
   md.push('', '**Decision (reviewer):**');
   md.push('- Classification: ______');
   if (f.decisions['HP-1'] !== undefined) md.push('- HP-1 (failure means invalidity independent of profitability): yes / no — why: ______', '- HP-2 (threshold not set by outcome optimisation): yes / no / unknown — why: ______');
-  if (f.thresholds.length) md.push('- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)');
+  if (f.thresholds.length) md.push('- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)');
   md.push('');
 }
 fs.writeFileSync(path.join(__dirname, '..', 'BATCH-1-WORKSHEET.md'), md.join('\n') + '\n');

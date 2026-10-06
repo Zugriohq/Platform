@@ -37,7 +37,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 - Classification: ______
 - HP-1 (failure means invalidity independent of profitability): yes / no — why: ______
 - HP-2 (threshold not set by outcome optimisation): yes / no / unknown — why: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `CAUSAL_AGE`
 
@@ -56,7 +56,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 
 **Decision (reviewer):**
 - Classification: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `DATA_HEALTH_OK`
 
@@ -83,7 +83,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 - Classification: ______
 - HP-1 (failure means invalidity independent of profitability): yes / no — why: ______
 - HP-2 (threshold not set by outcome optimisation): yes / no / unknown — why: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `DUPLICATE_CONSUMED`
 
@@ -117,7 +117,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 
 **Decision (reviewer):**
 - Classification: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `GEOMETRY_COMPLETE`
 
@@ -138,7 +138,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 - Classification: ______
 - HP-1 (failure means invalidity independent of profitability): yes / no — why: ______
 - HP-2 (threshold not set by outcome optimisation): yes / no / unknown — why: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `HTF_CONTEXT_QUALITY`
 
@@ -164,7 +164,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 
 **Decision (reviewer):**
 - Classification: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `LIFECYCLE_STAGE`
 
@@ -186,7 +186,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 
 **Decision (reviewer):**
 - Classification: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `MARKET_OPEN`
 
@@ -205,7 +205,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 - Classification: ______
 - HP-1 (failure means invalidity independent of profitability): yes / no — why: ______
 - HP-2 (threshold not set by outcome optimisation): yes / no / unknown — why: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `OPPORTUNITY_SCORE`
 
@@ -232,7 +232,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 
 **Decision (reviewer):**
 - Classification: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `OPPOSING_FIRE_CONFLICT`
 
@@ -250,7 +250,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 
 **Decision (reviewer):**
 - Classification: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `PLAN_BLOCKERS`
 
@@ -267,7 +267,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 
 **Decision (reviewer):**
 - Classification: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `POSITION_MANAGEMENT_GATE`
 
@@ -284,7 +284,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 
 **Decision (reviewer):**
 - Classification: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `PRICE_VALID`
 
@@ -303,7 +303,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 - Classification: ______
 - HP-1 (failure means invalidity independent of profitability): yes / no — why: ______
 - HP-2 (threshold not set by outcome optimisation): yes / no / unknown — why: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `PROFILE_SELECTION`
 
@@ -320,7 +320,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 
 **Decision (reviewer):**
 - Classification: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `REWARD_ECONOMIC_QUALITY`
 
@@ -341,7 +341,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 
 **Decision (reviewer):**
 - Classification: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `RISK_SCALE`
 
@@ -361,7 +361,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 
 **Decision (reviewer):**
 - Classification: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `SPECIALIST_GATE`
 
@@ -388,7 +388,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 
 **Decision (reviewer):**
 - Classification: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `STATE_RANK`
 
@@ -407,7 +407,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 
 **Decision (reviewer):**
 - Classification: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `STOP_GEOMETRY`
 
@@ -435,7 +435,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 - Classification: ______
 - HP-1 (failure means invalidity independent of profitability): yes / no — why: ______
 - HP-2 (threshold not set by outcome optimisation): yes / no / unknown — why: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `TARGET_GEOMETRY`
 
@@ -455,7 +455,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 - Classification: ______
 - HP-1 (failure means invalidity independent of profitability): yes / no — why: ______
 - HP-2 (threshold not set by outcome optimisation): yes / no / unknown — why: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `TICK_FRESHNESS`
 
@@ -477,7 +477,7 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 - Classification: ______
 - HP-1 (failure means invalidity independent of profitability): yes / no — why: ______
 - HP-2 (threshold not set by outcome optimisation): yes / no / unknown — why: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
 ## `TRIGGER_FRESHNESS`
 
@@ -503,5 +503,5 @@ Clauses that apply across the batch: §14C HP-4 "Presumed to pass: DATA_HEALTH_O
 
 **Decision (reviewer):**
 - Classification: ______
-- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN; per HP-6, UNKNOWN moves the field downstream)
+- Threshold provenance: one line per row above (a document or measurement, or UNKNOWN. UNKNOWN is a valid finding, recorded as HP-2 NOT_ESTABLISHED; Gate 3.3 resolves it. HP-6 moves a field downstream only for failing HP-1 or HP-2.)
 
