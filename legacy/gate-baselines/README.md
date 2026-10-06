@@ -10,3 +10,9 @@ Rules:
 - A technology migration may consume baseline fixtures but may not reinterpret them to make a new implementation pass.
 
 Gate 3 artifacts are not to be imported here until independent review confirms the clearance state and identity.
+
+## Imported baselines
+
+| Directory | Gate | Status |
+|---|---|---|
+| `gate3a/` | Gate 3A, authority-inventory evidence freeze | **Cleared**: independently confirmed 2026-10-06, scoped to the Gate 2.2 artifact `52dcdbcd…c178`. This does not mean Gate 3 as a whole is cleared. |

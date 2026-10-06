@@ -1,0 +1,2627 @@
+{
+ "schema": "zugrio.gate3a-reference-escapes/1",
+ "artifactSha256": "52dcdbcdfdddbaabe24e72a722623ebcd8e678fbdff8e6fa134247752783c178",
+ "purpose": "Every site in the cleared artifact where a reference to an authority producer is handed off (stored in an object or array, returned, captured by an arrow, aliased, spread or passed). Any new site is REFERENCE_ESCAPE_DRIFT. A site inside a fingerprinted function or a module-level statement is bound by the baseline. Outside those, a site is PRIMITIVE_MEMBER (the path ends at a primitive literal in the declarator), READ_ONLY_ALIAS (nothing is written through the alias in that function), FROZEN_BINDING_SHALLOW (the binding is Object.freeze-d; nested members may not be), or NEEDS_REVIEW (listed for human disposition). The automatic dispositions are author analysis and also need review.",
+ "total": 241,
+ "needsReview": 0,
+ "rows": [
+  {
+   "producer": "APA_CONFIG",
+   "owner": "<top-level>",
+   "context": "ALIAS",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "96e899d711e4b8dd2c39d5f012b4dbc88e142c52becebecc98bc806d56c886e1"
+  },
+  {
+   "producer": "APA_CONFIG",
+   "owner": "<top-level>",
+   "context": "ARGUMENT",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "e9528a01e22731e5e37b7d767ddb26183b31d0f0c9922e392bc9eb9711c7e76c"
+  },
+  {
+   "producer": "APA_CONFIG",
+   "owner": "<top-level>",
+   "context": "ARGUMENT",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "e9528a01e22731e5e37b7d767ddb26183b31d0f0c9922e392bc9eb9711c7e76c"
+  },
+  {
+   "producer": "APA_CONFIG",
+   "owner": "<top-level>",
+   "context": "ARGUMENT",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "e9528a01e22731e5e37b7d767ddb26183b31d0f0c9922e392bc9eb9711c7e76c"
+  },
+  {
+   "producer": "APA_CONFIG",
+   "owner": "<top-level>",
+   "context": "OBJECT_SHORTHAND",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "4a3ea9ba07867ad07cfe03dfc4f9bc3730df7cf6911976714d22111093ec5cad"
+  },
+  {
+   "producer": "APA_CONFIG",
+   "owner": "<top-level>",
+   "context": "OBJECT_VALUE",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "000f40c4c7b17b51a0432ac3f04f7f59cfa60fc5b18b168c160e7c9cd07edf84"
+  },
+  {
+   "producer": "APA_CONFIG",
+   "owner": "adaptiveRetracementZones",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "424240599f69387a6440277bc1816a421fc18da8e1f6cc6d4e90d2913d84dc24"
+  },
+  {
+   "producer": "APA_CONFIG",
+   "owner": "analyseAPA",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "e43547eed7b709c1b11fa5de9a7035bbddde4a2310b9c30fc3c0148c05f0bc1c"
+  },
+  {
+   "producer": "APA_CONFIG",
+   "owner": "apaMaxAge",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "81529574261a3dbc55f023f4fc59b2ebbdfa09f6b11454ca1f78829e6addbabe"
+  },
+  {
+   "producer": "APA_CONFIG",
+   "owner": "assessRsiSync",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "3d06e2a89e0b12f654bdecfb3169c46449ee0f70b16e42fcdbc9baa75d070f0e"
+  },
+  {
+   "producer": "APA_CONFIG",
+   "owner": "captureAPAResult",
+   "context": "OBJECT_VALUE",
+   "binding": "PRIMITIVE_MEMBER",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "34f8bb0e68e7e296d2dc98e84d4584e9651903824a79ce7bb919c985c4c8570f"
+  },
+  {
+   "producer": "APA_CONFIG",
+   "owner": "classifyRejection",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "3923d5ef25b1b02ccac6d55e118a123896f8fcdea1846a0be79db78f08417d5a"
+  },
+  {
+   "producer": "APA_CONFIG",
+   "owner": "displacement",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "be70e6110c37e4bfed28cd47d1bf09f142d2cf8e2406aedb361fa301052f96c9"
+  },
+  {
+   "producer": "APA_CONFIG",
+   "owner": "findCausalOrderBlock",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "a3453bcd4735afb8de268c35fb1e05fb031903f3510e34ab9a891d2016cb342b"
+  },
+  {
+   "producer": "APA_CONFIG",
+   "owner": "referenceEntryRouteStudy",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "39eb2b747ac9ef6644d428ca600553a6984d6639ac2fbbb2fd4c4353721fb80c"
+  },
+  {
+   "producer": "APA_CONFIG",
+   "owner": "retracementZone",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "afc2ca06fc4731ee28742663bd9e9d9a00f31a93c6172551095a5275221d3d08"
+  },
+  {
+   "producer": "APA_CONFIG",
+   "owner": "trendlineState",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "8177e7a6d1056c3c7028e8b6cbc37c8486660353b17948ef210ba15a37b22557"
+  },
+  {
+   "producer": "APA_CONFIG",
+   "owner": "TTI_FOUNDATION_SELF_TEST",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "299392a505e8c379d1c51acc4b1924e1997d1b3539824c9168503e37a2cceaf0"
+  },
+  {
+   "producer": "ASSET_PROFILES",
+   "owner": "assetProfile",
+   "context": "RETURN",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "ea180baec6f6b09e355c13640d02cde36efe472e62cecf2723230da4e8ebb299"
+  },
+  {
+   "producer": "atr",
+   "owner": "<top-level>",
+   "context": "OBJECT_SHORTHAND",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "cc51f5bb4db036f084107e5a1aa816fc17b2a20b68934af0901dabb54e1ead98"
+  },
+  {
+   "producer": "closed",
+   "owner": "<top-level>",
+   "context": "OBJECT_SHORTHAND",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "cc51f5bb4db036f084107e5a1aa816fc17b2a20b68934af0901dabb54e1ead98"
+  },
+  {
+   "producer": "ENGINE_EVENTS",
+   "owner": "checkLegacySig",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "0351ddbe8b9ab7751860fc2864ed7a2e0b6c76e716c4d5f0dde07659dc8d1d68"
+  },
+  {
+   "producer": "ENGINE_EVENTS",
+   "owner": "checkLegacySig",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "3d71e1fd176f2b203240105dbf2007810646750c2475f4e7ab6e95b937a361eb"
+  },
+  {
+   "producer": "ENGINE_EVENTS",
+   "owner": "checkLegacySig",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "99eb45896fdea5896701e573987d96fb058a6dbb985ed0b328caf88892dbb3e6"
+  },
+  {
+   "producer": "ENGINE_EVENTS",
+   "owner": "checkSig",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "99eb45896fdea5896701e573987d96fb058a6dbb985ed0b328caf88892dbb3e6"
+  },
+  {
+   "producer": "ENGINE_EVENTS",
+   "owner": "dispatch",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "0351ddbe8b9ab7751860fc2864ed7a2e0b6c76e716c4d5f0dde07659dc8d1d68"
+  },
+  {
+   "producer": "ENGINE_EVENTS",
+   "owner": "dispatch",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "0351ddbe8b9ab7751860fc2864ed7a2e0b6c76e716c4d5f0dde07659dc8d1d68"
+  },
+  {
+   "producer": "ENGINE_EVENTS",
+   "owner": "dispatch",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "13d67db8b89b344012a9b5550de28dc89ff963df378792672386d043f0ebb694"
+  },
+  {
+   "producer": "ENGINE_EVENTS",
+   "owner": "dispatch",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "6614848b0709644180d840c790f6d4927304a98c105a452b66da1605f286f2cd"
+  },
+  {
+   "producer": "ENGINE_EVENTS",
+   "owner": "dispatch",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "6614848b0709644180d840c790f6d4927304a98c105a452b66da1605f286f2cd"
+  },
+  {
+   "producer": "ENGINE_EVENTS",
+   "owner": "dispatch",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "6f853f7e102f46e38ec59e5108acfa7949a779eb327b360991f38674149a32c8"
+  },
+  {
+   "producer": "ENGINE_EVENTS",
+   "owner": "dispatch",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "6f853f7e102f46e38ec59e5108acfa7949a779eb327b360991f38674149a32c8"
+  },
+  {
+   "producer": "ENGINE_EVENTS",
+   "owner": "dispatch",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "d60b41b7ef42cc6f6a8af0af18e74bc151798814c5c14ba3c19c1a9d5afe332e"
+  },
+  {
+   "producer": "ENGINE_EVENTS",
+   "owner": "dispatch",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "d60b41b7ef42cc6f6a8af0af18e74bc151798814c5c14ba3c19c1a9d5afe332e"
+  },
+  {
+   "producer": "ENGINE_EVENTS",
+   "owner": "dispatch",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "ea69e144aec7574da944af33cc1bbcc05619af13350d1e03b7da0ca794a24e63"
+  },
+  {
+   "producer": "ENGINE_EVENTS",
+   "owner": "dispatch",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "fce7bb1b4679a5758ffcf80d7b7fa11af64fbf4aec7c26f67d3486aad200c101"
+  },
+  {
+   "producer": "ENGINE_EVENTS",
+   "owner": "finalizeOutcome",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "837f3355fb066308da0d6856b4b16d5d225cdd07b7f3f1fe62ebed914273a227"
+  },
+  {
+   "producer": "ENGINE_EVENTS",
+   "owner": "recomputeFull",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "0351ddbe8b9ab7751860fc2864ed7a2e0b6c76e716c4d5f0dde07659dc8d1d68"
+  },
+  {
+   "producer": "ENGINE_EVENTS",
+   "owner": "recomputeFull",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "65830af3d73733c8b106bbf13227eb58075e99acf7bbfe4ffe7c9354a1027e16"
+  },
+  {
+   "producer": "ENGINE_EVENTS",
+   "owner": "updateSignalState",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "172a404dc465e281605393c411aee4f6ed047f01e6c0af4830dc185c46cc736e"
+  },
+  {
+   "producer": "histLog",
+   "owner": "loadLog",
+   "context": "OBJECT_VALUE",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "0972273bcf9af65205cc9628f5c1b09d76d37beb1716595d480856974d2b577d"
+  },
+  {
+   "producer": "histLog",
+   "owner": "saveLog",
+   "context": "ARGUMENT",
+   "binding": "PRIMITIVE_MEMBER",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "a9d098655a3f14bfa95f30ac4ddd0bd385167d41c76471ec10f0cb7b073df97b"
+  },
+  {
+   "producer": "histLog",
+   "owner": "saveLog",
+   "context": "ARGUMENT",
+   "binding": "PRIMITIVE_MEMBER",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "e40f93a86e1a06dd4da66aeef9dd5a3b1c666beefab921dc9ffc097163ea1673"
+  },
+  {
+   "producer": "histLog",
+   "owner": "saveLog",
+   "context": "OBJECT_VALUE",
+   "binding": "PRIMITIVE_MEMBER",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "a9d098655a3f14bfa95f30ac4ddd0bd385167d41c76471ec10f0cb7b073df97b"
+  },
+  {
+   "producer": "PROFILES",
+   "owner": "<top-level>",
+   "context": "OBJECT_SHORTHAND",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": true
+   },
+   "sha256": "cc51f5bb4db036f084107e5a1aa816fc17b2a20b68934af0901dabb54e1ead98"
+  },
+  {
+   "producer": "PROFILES",
+   "owner": "analyze",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": true
+   },
+   "sha256": "f7624b01e22759673a8012c481cfc3ad5dc0e598795dccf7328d54e979b17727"
+  },
+  {
+   "producer": "REQS",
+   "owner": "dispatch",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "315139ce6c7b78bc17de2263d95bdaa4589d39cd2f36cb0ac846ffdef8dd9dee"
+  },
+  {
+   "producer": "REQS",
+   "owner": "dispatch",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "7e7dda5fd6b483506b7f803a7a6c9aec5fdb0862e57a8c3ccd2bfd2ef587a68b"
+  },
+  {
+   "producer": "REQS",
+   "owner": "dispatch",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "d690d0f728013e90d667cabef803d760aae41cfc96d0592a226e0e4b87a1b0e1"
+  },
+  {
+   "producer": "REQS",
+   "owner": "requestChartHistory",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "eeb61a5b5b454a010a66355772f3cf0c15c7f88c8b80071d96053d00644547ff"
+  },
+  {
+   "producer": "REQS",
+   "owner": "resetSocketSessionState",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "3d97d1128139a15cc0aa888fbd604b213cc2649e223defd410f2e502c5ee0f94"
+  },
+  {
+   "producer": "REQS",
+   "owner": "resetSocketSessionState",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "3d97d1128139a15cc0aa888fbd604b213cc2649e223defd410f2e502c5ee0f94"
+  },
+  {
+   "producer": "RETEST_POLICY",
+   "owner": "evaluateStructureCandidate",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": true
+   },
+   "sha256": "84874bba7f9b266ad6492bf3a811b216e511525fe8e7d18254ff6b585e30fe79"
+  },
+  {
+   "producer": "RG_POLICY",
+   "owner": "<top-level>",
+   "context": "OBJECT_VALUE",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": false
+   },
+   "sha256": "6cddbe216a709843ef02438c2b5105cc90cb70cf8e7e2bc1fe120777311ab973"
+  },
+  {
+   "producer": "S",
+   "owner": "<top-level>",
+   "context": "ALIAS",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "a1b97893fa793278fd9a6439c7f9a4aa857a0319b5a4bedf3014fcd4b5b51702"
+  },
+  {
+   "producer": "S",
+   "owner": "<top-level>",
+   "context": "ALIAS",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "a1b97893fa793278fd9a6439c7f9a4aa857a0319b5a4bedf3014fcd4b5b51702"
+  },
+  {
+   "producer": "S",
+   "owner": "<top-level>",
+   "context": "OBJECT_VALUE",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "f09b228db3870d5f2eb3f978bee9b9fbc7e4ea0431eb284ac5776562493a786a"
+  },
+  {
+   "producer": "S",
+   "owner": "afterRecompute",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "8417bb7b0b766145b6c6f9f4481bf57014bd083c6931eb80e159d070e655bb6c"
+  },
+  {
+   "producer": "S",
+   "owner": "assessDataHealth",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "89b3b81518f38e3196b9ca36cae61eddd7b39fdbf6bc0cedfed63d8b7595f8b1"
+  },
+  {
+   "producer": "S",
+   "owner": "bootstrapGARCH",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "40f40e9118afe5294944a72eacf9b5b38d9d8f69ba7e73dd72922db8015e0264"
+  },
+  {
+   "producer": "S",
+   "owner": "checkLegacySig",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "e7b1d1204d3d8ee1dcba7c34ded0cb56cce44b3424aed0ad6c2afd00c3aa237f"
+  },
+  {
+   "producer": "S",
+   "owner": "checkPendingOutcomesForInst",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "e7b1d1204d3d8ee1dcba7c34ded0cb56cce44b3424aed0ad6c2afd00c3aa237f"
+  },
+  {
+   "producer": "S",
+   "owner": "checkSig",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "e7b1d1204d3d8ee1dcba7c34ded0cb56cce44b3424aed0ad6c2afd00c3aa237f"
+  },
+  {
+   "producer": "S",
+   "owner": "chooseTradeProfile",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "a1d978f27c6708ee21a36d047436475423bb578e3fc828c4ed54435f9bc83652"
+  },
+  {
+   "producer": "S",
+   "owner": "computeMarketBrief",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "54ad04e3a83df6c6ee2f58186c32e11bd8eb80602f0aa706136f89cb9b47a923"
+  },
+  {
+   "producer": "S",
+   "owner": "currencyExposure",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "77c1fdb41843793229be609221fbfddeeb7b5e5f0e087b571b49994137777a12"
+  },
+  {
+   "producer": "S",
+   "owner": "dispatch",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "e7b1d1204d3d8ee1dcba7c34ded0cb56cce44b3424aed0ad6c2afd00c3aa237f"
+  },
+  {
+   "producer": "S",
+   "owner": "dispatch",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "e7b1d1204d3d8ee1dcba7c34ded0cb56cce44b3424aed0ad6c2afd00c3aa237f"
+  },
+  {
+   "producer": "S",
+   "owner": "downloadEngineDiagnostics",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "ce888e5ce4f8991b16462209edbfee371bc62091a00347b3ec2f9aa4ec91ba18"
+  },
+  {
+   "producer": "S",
+   "owner": "drawCoreStructure",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "e7b1d1204d3d8ee1dcba7c34ded0cb56cce44b3424aed0ad6c2afd00c3aa237f"
+  },
+  {
+   "producer": "S",
+   "owner": "drawSignalLevels",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "895bd931fd4f0749e4317476320331e3d02d9c609a60d63c561fa864ae1795c7"
+  },
+  {
+   "producer": "S",
+   "owner": "engineDiagnostics",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "fb67ce79ec4e0b6e8d7bd210e9ee4769983b5f805aa800f619c3ca368eb71894"
+  },
+  {
+   "producer": "S",
+   "owner": "engineDiagnostics",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "8a353d0010c681b9dabd14e36eded2dec6f24ac84345d1469a1c2fafc04a544e"
+  },
+  {
+   "producer": "S",
+   "owner": "engineListener_0",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "651018e0364dab2bcc12b55ba5263f39da67aed28671684ecd8a626f297eb313"
+  },
+  {
+   "producer": "S",
+   "owner": "handleTick",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "a394cd40ce0a3a7205fdcd36b265c81ab8faaf237d17da80b8ac1a9766713866"
+  },
+  {
+   "producer": "S",
+   "owner": "init",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "152b83bff8c3a3fba3a6de2a437081bed54ad6eaca4f4573277e4193f435e641"
+  },
+  {
+   "producer": "S",
+   "owner": "liveChartUpd",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "8417bb7b0b766145b6c6f9f4481bf57014bd083c6931eb80e159d070e655bb6c"
+  },
+  {
+   "producer": "S",
+   "owner": "localChartCandles",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "e7b1d1204d3d8ee1dcba7c34ded0cb56cce44b3424aed0ad6c2afd00c3aa237f"
+  },
+  {
+   "producer": "S",
+   "owner": "paintLiveCandle",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "8417bb7b0b766145b6c6f9f4481bf57014bd083c6931eb80e159d070e655bb6c"
+  },
+  {
+   "producer": "S",
+   "owner": "planTradeLevels",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "e7b1d1204d3d8ee1dcba7c34ded0cb56cce44b3424aed0ad6c2afd00c3aa237f"
+  },
+  {
+   "producer": "S",
+   "owner": "portfolioCorrelation",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "1f5dd47ddfdad022a8a1c105c61d667b71ea0d40868a52d7f1709c410f84fda5"
+  },
+  {
+   "producer": "S",
+   "owner": "portfolioCorrelation",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "4577a540e541b542290d9c23942e2faae4a01896a491cbf811bd4a6bbba7ed07"
+  },
+  {
+   "producer": "S",
+   "owner": "qRetry",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "234edfbf9c54d85c3648167ef7961b203083c575a3a978e9c61cb6328a9772e1"
+  },
+  {
+   "producer": "S",
+   "owner": "recomputeFull",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "e7b1d1204d3d8ee1dcba7c34ded0cb56cce44b3424aed0ad6c2afd00c3aa237f"
+  },
+  {
+   "producer": "S",
+   "owner": "recomputeLight",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "e7b1d1204d3d8ee1dcba7c34ded0cb56cce44b3424aed0ad6c2afd00c3aa237f"
+  },
+  {
+   "producer": "S",
+   "owner": "refreshHTFLoop",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "84ed675c493aa4294783b49eee1958fb6e080335af6ba7f9fdd53ebb10c1b711"
+  },
+  {
+   "producer": "S",
+   "owner": "refreshHTFLoop",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "797e8859db0ee044a7427e8f6ce7a08e4f8dcac3d4b0f50442db9cf84159cab8"
+  },
+  {
+   "producer": "S",
+   "owner": "refreshHTFLoop",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "7e936244a0f466662991e7b8d6101d711448f71f71d9db34f935d9a98a88c431"
+  },
+  {
+   "producer": "S",
+   "owner": "refreshWLItem",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "e7b1d1204d3d8ee1dcba7c34ded0cb56cce44b3424aed0ad6c2afd00c3aa237f"
+  },
+  {
+   "producer": "S",
+   "owner": "renderAnalysis",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "d2e3a523be026233af01122bc5cdc31db2003f202dc1cc292c063cfed5045faa"
+  },
+  {
+   "producer": "S",
+   "owner": "renderBrain",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "12b815ce52d9d460278c35b22931d63d8b0203e677a27ab6d4467de174827480"
+  },
+  {
+   "producer": "S",
+   "owner": "renderFeed",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "62457d89b39f604d28d7e8802dd7b4c3e4e0f40e4d43210e83130cc51f15acac"
+  },
+  {
+   "producer": "S",
+   "owner": "renderFeed",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "ee053a93183bd65a02d1b60f592af55e2710592eeea08d92dce16000fa5f6735"
+  },
+  {
+   "producer": "S",
+   "owner": "renderFeed",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "f67800c2d464d3b8eea02106b29a136d3023b9a53c409febc2d0fae4bc170691"
+  },
+  {
+   "producer": "S",
+   "owner": "renderLegacyFeed",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "91920b43535d6d2c90c56493e5b100858e32c1e460d3e86d1d6e45dc10fc6a3a"
+  },
+  {
+   "producer": "S",
+   "owner": "renderLegacyFeed",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "dd97afbf55e9131ea11c8c5e1c977663f9432d89b897b0c1c3dcfcc965bc2be3"
+  },
+  {
+   "producer": "S",
+   "owner": "renderMarketOverviewInner",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "ec1847d796090053190b9733649ecd02678817206e842cb40ebc992bc010c64e"
+  },
+  {
+   "producer": "S",
+   "owner": "renderProfileContext",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "3164450c7c1e3955c30dada55f511d77c859de5947db82ad1357903d83acf563"
+  },
+  {
+   "producer": "S",
+   "owner": "renderWatchlistInner",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "84ed675c493aa4294783b49eee1958fb6e080335af6ba7f9fdd53ebb10c1b711"
+  },
+  {
+   "producer": "S",
+   "owner": "requestD1",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "69f556152d24aa67a06d2b39436c59c03b5fb5f67b272e04185ca4067710b413"
+  },
+  {
+   "producer": "S",
+   "owner": "requestFreshM1",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "69f556152d24aa67a06d2b39436c59c03b5fb5f67b272e04185ca4067710b413"
+  },
+  {
+   "producer": "S",
+   "owner": "requestHTF",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "69f556152d24aa67a06d2b39436c59c03b5fb5f67b272e04185ca4067710b413"
+  },
+  {
+   "producer": "S",
+   "owner": "routeConfirmedReversal",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "a7ad67ca9d6bafa5ff2d15fc8cb983c313a45d7d1aef020378e94782d9294820"
+  },
+  {
+   "producer": "S",
+   "owner": "scheduleOutcome",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "36b1a1f89058177094ecb5e5cc707fccd4d24c00be07dc51ac27fabfa1d7f0b6"
+  },
+  {
+   "producer": "S",
+   "owner": "selectInst",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "69f556152d24aa67a06d2b39436c59c03b5fb5f67b272e04185ca4067710b413"
+  },
+  {
+   "producer": "S",
+   "owner": "subscribeTicksForInst",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "e7b1d1204d3d8ee1dcba7c34ded0cb56cce44b3424aed0ad6c2afd00c3aa237f"
+  },
+  {
+   "producer": "S",
+   "owner": "symItemInner",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "89f5f8155bee2749ae73d85fe1a22a1f4e74cbadb6b0725a732858f05d642f5d"
+  },
+  {
+   "producer": "S",
+   "owner": "syncChartZones",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "a1b97893fa793278fd9a6439c7f9a4aa857a0319b5a4bedf3014fcd4b5b51702"
+  },
+  {
+   "producer": "S",
+   "owner": "syncZugrioTradeOverlay",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "a1b97893fa793278fd9a6439c7f9a4aa857a0319b5a4bedf3014fcd4b5b51702"
+  },
+  {
+   "producer": "S",
+   "owner": "toggleContinuationReference",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "7901d706c7109f55c5016685d3c843dda105a102657f631c384a8ac7526a8254"
+  },
+  {
+   "producer": "S",
+   "owner": "unsubscribeTicksForInst",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "8b5703fa2b1fa8b6828d6326249b9f5f0fefed89c0eb3a54c308a610f5e776e8"
+  },
+  {
+   "producer": "S",
+   "owner": "unsubscribeTicksForInst",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "ef6de20c4f7b9320848b2a149b1080f0e34c3267625293de2036ced266e7af4f"
+  },
+  {
+   "producer": "S",
+   "owner": "updateGARCH",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "40f40e9118afe5294944a72eacf9b5b38d9d8f69ba7e73dd72922db8015e0264"
+  },
+  {
+   "producer": "S",
+   "owner": "updateLegacySignalState",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "e7b1d1204d3d8ee1dcba7c34ded0cb56cce44b3424aed0ad6c2afd00c3aa237f"
+  },
+  {
+   "producer": "S",
+   "owner": "updateSignalState",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "e7b1d1204d3d8ee1dcba7c34ded0cb56cce44b3424aed0ad6c2afd00c3aa237f"
+  },
+  {
+   "producer": "S",
+   "owner": "updateTopBar",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "ef6de20c4f7b9320848b2a149b1080f0e34c3267625293de2036ced266e7af4f"
+  },
+  {
+   "producer": "S",
+   "owner": "updateTopBarRegime",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "e7b1d1204d3d8ee1dcba7c34ded0cb56cce44b3424aed0ad6c2afd00c3aa237f"
+  },
+  {
+   "producer": "S",
+   "owner": "wlItemCls",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "e7b1d1204d3d8ee1dcba7c34ded0cb56cce44b3424aed0ad6c2afd00c3aa237f"
+  },
+  {
+   "producer": "S",
+   "owner": "wlItemInner",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "69f556152d24aa67a06d2b39436c59c03b5fb5f67b272e04185ca4067710b413"
+  },
+  {
+   "producer": "SECONDS",
+   "owner": "<top-level>",
+   "context": "OBJECT_SHORTHAND",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "cc51f5bb4db036f084107e5a1aa816fc17b2a20b68934af0901dabb54e1ead98"
+  },
+  {
+   "producer": "SECONDS",
+   "owner": "closed",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "5f7015694830565c20feb71e8a8cfcbb550f558d65636ae064bef06251d70768"
+  },
+  {
+   "producer": "SECONDS",
+   "owner": "feedGate",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "460954ac5d6cb7284c2748b1b281d0cbd2803ff3892c6485c7198b36d9686336"
+  },
+  {
+   "producer": "SECONDS",
+   "owner": "mapSummary",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "18acd4386d46c1397449a74c6245b4dffe8aec629ddda24d5616e417219a9938"
+  },
+  {
+   "producer": "SECONDS",
+   "owner": "plan",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "f7501028131a531b5a44dd78359a637c038e6a96c1688ce8762e616b8d028995"
+  },
+  {
+   "producer": "SECONDS",
+   "owner": "seeds",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false
+   },
+   "sha256": "6cd3da9db186e711460765727884af8a7f7ddd354db02a7e47a431d2aaeafc98"
+  },
+  {
+   "producer": "selectedTradeProfiles",
+   "owner": "chooseTradeProfile",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "354ee25025f97b4cde49d97ac35df5827ddfc579140845295299a112241edb50"
+  },
+  {
+   "producer": "selectedTradeProfiles",
+   "owner": "downloadEngineDiagnostics",
+   "context": "OBJECT_VALUE",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "ce888e5ce4f8991b16462209edbfee371bc62091a00347b3ec2f9aa4ec91ba18"
+  },
+  {
+   "producer": "SETUP_TYPES",
+   "owner": "<top-level>",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "3f27027baa4087385f0adc8b8a2950411191c78d6dc22b53321ceb7e99e3f0ab"
+  },
+  {
+   "producer": "SETUP_TYPES",
+   "owner": "<top-level>",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "3f27027baa4087385f0adc8b8a2950411191c78d6dc22b53321ceb7e99e3f0ab"
+  },
+  {
+   "producer": "SETUP_TYPES",
+   "owner": "<top-level>",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "3f27027baa4087385f0adc8b8a2950411191c78d6dc22b53321ceb7e99e3f0ab"
+  },
+  {
+   "producer": "SETUP_TYPES",
+   "owner": "<top-level>",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "3f27027baa4087385f0adc8b8a2950411191c78d6dc22b53321ceb7e99e3f0ab"
+  },
+  {
+   "producer": "SETUP_TYPES",
+   "owner": "<top-level>",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "3f27027baa4087385f0adc8b8a2950411191c78d6dc22b53321ceb7e99e3f0ab"
+  },
+  {
+   "producer": "SETUP_TYPES",
+   "owner": "<top-level>",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "e37cee6837834cc3ccafa2351496aa21927ed6cbc617b13fb03804fc0ea5d397"
+  },
+  {
+   "producer": "SETUP_TYPES",
+   "owner": "<top-level>",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "e37cee6837834cc3ccafa2351496aa21927ed6cbc617b13fb03804fc0ea5d397"
+  },
+  {
+   "producer": "SETUP_TYPES",
+   "owner": "<top-level>",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "e37cee6837834cc3ccafa2351496aa21927ed6cbc617b13fb03804fc0ea5d397"
+  },
+  {
+   "producer": "SETUP_TYPES",
+   "owner": "<top-level>",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "e37cee6837834cc3ccafa2351496aa21927ed6cbc617b13fb03804fc0ea5d397"
+  },
+  {
+   "producer": "SETUP_TYPES",
+   "owner": "<top-level>",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "e37cee6837834cc3ccafa2351496aa21927ed6cbc617b13fb03804fc0ea5d397"
+  },
+  {
+   "producer": "SETUP_TYPES",
+   "owner": "resolveSetupType",
+   "context": "ARRAY_ELEMENT",
+   "binding": "PRIMITIVE_MEMBER",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "ebdb45dda571fbb89b65668770da5af6fcf9a003f6a8cd45ad2ac28778f06616"
+  },
+  {
+   "producer": "SETUP_TYPES",
+   "owner": "resolveSetupType",
+   "context": "ARRAY_ELEMENT",
+   "binding": "PRIMITIVE_MEMBER",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "ebdb45dda571fbb89b65668770da5af6fcf9a003f6a8cd45ad2ac28778f06616"
+  },
+  {
+   "producer": "SETUP_TYPES",
+   "owner": "resolveSetupType",
+   "context": "ARRAY_ELEMENT",
+   "binding": "PRIMITIVE_MEMBER",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "ebdb45dda571fbb89b65668770da5af6fcf9a003f6a8cd45ad2ac28778f06616"
+  },
+  {
+   "producer": "SETUP_TYPES",
+   "owner": "resolveSetupType",
+   "context": "ARRAY_ELEMENT",
+   "binding": "PRIMITIVE_MEMBER",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "ebdb45dda571fbb89b65668770da5af6fcf9a003f6a8cd45ad2ac28778f06616"
+  },
+  {
+   "producer": "SETUP_TYPES",
+   "owner": "resolveSetupType",
+   "context": "ARRAY_ELEMENT",
+   "binding": "PRIMITIVE_MEMBER",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "ebdb45dda571fbb89b65668770da5af6fcf9a003f6a8cd45ad2ac28778f06616"
+  },
+  {
+   "producer": "SETUP_TYPES",
+   "owner": "resolveSetupType",
+   "context": "ARRAY_ELEMENT",
+   "binding": "PRIMITIVE_MEMBER",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "ebdb45dda571fbb89b65668770da5af6fcf9a003f6a8cd45ad2ac28778f06616"
+  },
+  {
+   "producer": "SETUP_TYPES",
+   "owner": "resolveSetupType",
+   "context": "ARRAY_ELEMENT",
+   "binding": "PRIMITIVE_MEMBER",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "ebdb45dda571fbb89b65668770da5af6fcf9a003f6a8cd45ad2ac28778f06616"
+  },
+  {
+   "producer": "SPECS",
+   "owner": "dispatch",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false
+   },
+   "sha256": "3ca786a2324be549d567656b85070f8c58ae3c544b3ce80332478021f1df9457"
+  },
+  {
+   "producer": "SPECS",
+   "owner": "dispatch",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "f1c3607f2ae9a4d84599b6ff0bc8fe8fce94abfbb28a987bab78e7f0226a7a35"
+  },
+  {
+   "producer": "SPECS",
+   "owner": "gS",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "066c523efce19384950c4f73e15717588e2bdd39c78a6dbba86d17c443b307e8"
+  },
+  {
+   "producer": "state",
+   "owner": "<top-level>",
+   "context": "ARROW_RETURN",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "a45c5bbf998510ba90244e77cef323f28f5587304134965f6aa3ba8ff28564a3"
+  },
+  {
+   "producer": "state",
+   "owner": "action",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "32fa6d37257d716e15c5111da7430e475b75b2acdbf6e5771d4a5e4c837a99b9"
+  },
+  {
+   "producer": "state",
+   "owner": "action",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "3b88834841bc28a175a060f352fb57fff8182a62827fd99739296f772ad3e9c1"
+  },
+  {
+   "producer": "state",
+   "owner": "api",
+   "context": "OBJECT_VALUE",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "7c6e1867305d31ebea5caec3d90abd9b1b50e7f2e64ab2840d185b7631079832"
+  },
+  {
+   "producer": "state",
+   "owner": "bootstrap",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "077ca0adc83b5691c6b06fd104320b880baae9a78a4d7e44fca5e4ab9d097992"
+  },
+  {
+   "producer": "state",
+   "owner": "bootstrap",
+   "context": "RETURN",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "54f75d0ad8fdfd162f876783b71dab07df9727580285267892e74c020feb0d41"
+  },
+  {
+   "producer": "state",
+   "owner": "bootstrap",
+   "context": "RETURN",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "e402fde8479a29b7adedf89b59d949be3df5c5857b5f4ede82928baa91691ea9"
+  },
+  {
+   "producer": "state",
+   "owner": "closePosition",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "20400d50759c7300c4a402f65587140fa07f1c790292be89a786c93e4fbbcda4"
+  },
+  {
+   "producer": "state",
+   "owner": "downloadDiagnostics",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "3b88834841bc28a175a060f352fb57fff8182a62827fd99739296f772ad3e9c1"
+  },
+  {
+   "producer": "state",
+   "owner": "downloadDiagnostics",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "4dece77e0f61a909647e51263f9af2ebd2d5c558166eca304984c938529f5e36"
+  },
+  {
+   "producer": "state",
+   "owner": "enqueueBrokerAction",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": false
+   },
+   "sha256": "8797155fa373e4367978c0e28e5038d66752e164012cbf9da2d67078dfc0a55e"
+  },
+  {
+   "producer": "state",
+   "owner": "enqueueBrokerAction",
+   "context": "RETURN",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": false
+   },
+   "sha256": "1e634d5f4f0fef5f85fa0f8af5c6262ab6ea683813da2a7c24c2ae961b3000a2"
+  },
+  {
+   "producer": "state",
+   "owner": "makeIntent",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": false
+   },
+   "sha256": "ff32b4fddaacd7adef2a8df80a3193774bdce067420800e561fefc9464ff956e"
+  },
+  {
+   "producer": "state",
+   "owner": "renderStatus",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "923c341c1fbb438f14bb15d353926a39781b9629a316089a2700e5a16cef12e5"
+  },
+  {
+   "producer": "state",
+   "owner": "routeConfirmedReversal",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "a7ad67ca9d6bafa5ff2d15fc8cb983c313a45d7d1aef020378e94782d9294820"
+  },
+  {
+   "producer": "state",
+   "owner": "routeConfirmedReversal",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "9ae9b9977b9a531bfc1902cce6aa79b117bfd0fc0446bdbe91eecdf7d4150e4a"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "applyFamilySpecialist",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "536044a85e91c0f72b829f250f5b92cb2f80ad10325441b7fc52a00eb989c762"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "applyFamilySpecialist",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "536044a85e91c0f72b829f250f5b92cb2f80ad10325441b7fc52a00eb989c762"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "applyFamilySpecialist",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "536044a85e91c0f72b829f250f5b92cb2f80ad10325441b7fc52a00eb989c762"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "buildStructureCandidates",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "af33e12c338c2f60ff7531bdf5d74af095300676296250986992fb8c24c86114"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "buildStructureCandidates",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "af33e12c338c2f60ff7531bdf5d74af095300676296250986992fb8c24c86114"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "coreStrategyEvaluate",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "270e322467c1ae99556f2630abc26df4a3f66972006d017cb076175f2ac8496c"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "coreStrategyEvaluate",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "270e322467c1ae99556f2630abc26df4a3f66972006d017cb076175f2ac8496c"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "coreStrategyEvaluate",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "c67ed38cafe6d9e356d7052164e2ca9d0a5153229d510d6369fae4145d5cf92e"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "coreStrategyEvaluate",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "c67ed38cafe6d9e356d7052164e2ca9d0a5153229d510d6369fae4145d5cf92e"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "coreStrategyEvaluate",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "c67ed38cafe6d9e356d7052164e2ca9d0a5153229d510d6369fae4145d5cf92e"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "evaluateStructureCandidate",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "071825f816e1fbf1c0b984fa61449031f817d6e6ae237c53286c0af1d2c33995"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "evaluateStructureCandidate",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "484f2b5b298f466ed6d35ed29215f4498e9c25049a255c8f7ad0f5394418e9ef"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "evaluateStructureCandidate",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "bf1c9661f779105b62fc2deb827e739ab3ca2cd8bf223aa12c080fbf8ce2054b"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "evaluateStructureCandidate",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "d4efa6b9e9ead060d040cac9b26896998ac61646e3e78d65e7bdbb95044c1d49"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "evaluateStructureCandidate",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "dda11972849388226d134a1d81bbac08cf8eff5250428516f21960f88177d87c"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "evaluateStructureCandidate",
+   "context": "OBJECT_VALUE",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "eb73699faa6fedfd1f9a3387b88d4a5533f6d27a6d49545b616cf6151bfcaebf"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "retestView",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "afbf18b931b36abdce76611912918b02cdb6b21abed3b99039630ed8e86414b2"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "retestView",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "afbf18b931b36abdce76611912918b02cdb6b21abed3b99039630ed8e86414b2"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "retestView",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "afbf18b931b36abdce76611912918b02cdb6b21abed3b99039630ed8e86414b2"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "updateLegacySignalState",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "88ee16e4537485300001b27ff41a72222c16341b2317ba9fb3840c080ca26084"
+  },
+  {
+   "producer": "STRUCTURE_STAGE",
+   "owner": "updateLegacySignalState",
+   "context": "ARRAY_ELEMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "88ee16e4537485300001b27ff41a72222c16341b2317ba9fb3840c080ca26084"
+  },
+  {
+   "producer": "TTI_EXECUTION",
+   "owner": "<top-level>",
+   "context": "ALIAS",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "8ab6c7b80e25d8601f651a4bd36646ebc06ce5957203762a8d79658276d2768f"
+  },
+  {
+   "producer": "TTI_EXECUTION",
+   "owner": "<top-level>",
+   "context": "OBJECT_VALUE",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "e8fac88410252aa02612ffa2840511b0b18fb3332cec1acbd512514422f95c7c"
+  },
+  {
+   "producer": "TTI_EXECUTION",
+   "owner": "checkLegacySig",
+   "context": "OBJECT_VALUE",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "0c284a072ec9b2ad597e882940f7cb5083e0802b98103f23e77c326ed6b255b4"
+  },
+  {
+   "producer": "TTI_EXECUTION",
+   "owner": "planTradeLevels",
+   "context": "OBJECT_VALUE",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "be52652887099e1f2a391c3e07e37700d7bbf6766c3a00c62a2edce47eb47086"
+  },
+  {
+   "producer": "TTI_FOUNDATION_REFERENCE",
+   "owner": "<top-level>",
+   "context": "ALIAS",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": true
+   },
+   "sha256": "6619bd05e70f3bd5f66b630497a344f8327b774e9e4c69da886b11ff7555edf3"
+  },
+  {
+   "producer": "TTI_FOUNDATION_REFERENCE",
+   "owner": "<top-level>",
+   "context": "ARGUMENT",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "e9528a01e22731e5e37b7d767ddb26183b31d0f0c9922e392bc9eb9711c7e76c"
+  },
+  {
+   "producer": "TTI_FOUNDATION_REFERENCE",
+   "owner": "assessTrigger",
+   "context": "ARGUMENT",
+   "binding": "PRIMITIVE_MEMBER",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "c25d3b2adb85018df72ea5cfddbe90fcc797dd239194d84d7073bace1e585adf"
+  },
+  {
+   "producer": "TTI_FOUNDATION_REFERENCE",
+   "owner": "plan",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "eae5d16c88c5f0d298399b948fee3d1c3263a4923af7802ffd6a86576a69e79d"
+  },
+  {
+   "producer": "TTI_FOUNDATION_REFERENCE",
+   "owner": "referenceContinuationBreak",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": true,
+    "primitiveMember": false
+   },
+   "sha256": "cebe7b9962c5042106531d254ac8fdbabaed203a131c7786d5e3eab714076740"
+  },
+  {
+   "producer": "TTI_FOUNDATION_REFERENCE",
+   "owner": "referenceEntryRouteStudy",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "10eaafb4e6bf80b33faa6a50280f6ed69d09a202fd6b4a57065351f241352866"
+  },
+  {
+   "producer": "TTI_FOUNDATION_REFERENCE",
+   "owner": "seeds",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": true,
+    "primitiveMember": false
+   },
+   "sha256": "054c4075d1e10f9c98d6c58be627be95d178984d1bef4a1b656ebfba31670c54"
+  },
+  {
+   "producer": "TTI_FOUNDATION_REFERENCE",
+   "owner": "validateFireGeometry",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "4cb0a5108f6586cd0acf3e6580c2083fe322b3ceadbd30e97d4681d2443bd542"
+  },
+  {
+   "producer": "TTI_GEOMETRY",
+   "owner": "computeTargets",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "3bd1a676f86854d636d72104865762e35664023e4c69a4d92028d6e089189c35"
+  },
+  {
+   "producer": "TTI_GEOMETRY",
+   "owner": "planTradeLevels",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": false
+   },
+   "sha256": "95728f2f66702b1de0d43905bd58ba2973dab2bb716ddd32cebd4b86f2ec7677"
+  },
+  {
+   "producer": "TTI_GEOMETRY",
+   "owner": "planTradeLevels",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": false
+   },
+   "sha256": "c146fa8be8735ab95fc7a42788ab054f6f3676c0ecc8a3cf950dec9a12cdd0e4"
+  },
+  {
+   "producer": "TTI_GEOMETRY",
+   "owner": "planTradeLevels",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "f1f427015859fa63d1b9442727aff31a6fda6b69fbeea23d188c193aea65c8e4"
+  },
+  {
+   "producer": "TTI_GEOMETRY",
+   "owner": "planTradeLevels",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "fab7571cbf4b5fb8650aee485ea50951af06c86ea6e15ed49b70980b85ca4a1e"
+  },
+  {
+   "producer": "TTI_GEOMETRY",
+   "owner": "validateFireGeometry",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "87a33e45a6a9023369f893db5904df27691d64e3a6b7350e87693d7602b448e5"
+  },
+  {
+   "producer": "TTI_META_RISK",
+   "owner": "<top-level>",
+   "context": "ALIAS",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "e461c4e0163e90137c2022fd58c1d37ba6e916e319fcd174e8beb366df456dd1"
+  },
+  {
+   "producer": "TTI_PROFILE_ENGINE",
+   "owner": "<top-level>",
+   "context": "ALIAS",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "287f776b88bc148ed017b3ea5101d9046186e20baf74f942dc26c85b4285ecf4"
+  },
+  {
+   "producer": "TTI_PROFILE_ENGINE",
+   "owner": "<top-level>",
+   "context": "ARROW_RETURN",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": false
+   },
+   "sha256": "3284fa71470be1208a38da7b3013639b3c630df6801006b2b7340b66910beef3"
+  },
+  {
+   "producer": "TTI_PROFILE_ENGINE",
+   "owner": "<top-level>",
+   "context": "ARROW_RETURN",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": false
+   },
+   "sha256": "3284fa71470be1208a38da7b3013639b3c630df6801006b2b7340b66910beef3"
+  },
+  {
+   "producer": "TTI_PROFILE_ENGINE",
+   "owner": "chooseTradeProfile",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": false
+   },
+   "sha256": "39552e0879a3af06b7094e5cde860cb2d19996f003644c2672c2e04171bd028d"
+  },
+  {
+   "producer": "TTI_PROFILE_ENGINE",
+   "owner": "renderFeed",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": false
+   },
+   "sha256": "62457d89b39f604d28d7e8802dd7b4c3e4e0f40e4d43210e83130cc51f15acac"
+  },
+  {
+   "producer": "TTI_PROFILE_ENGINE",
+   "owner": "sigCardHTML",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false,
+    "primitiveMember": false
+   },
+   "sha256": "dff3f41aaabe8c8b80c47e318e6d8aa4429c12af5b22de6a6a10d69825e25bbe"
+  },
+  {
+   "producer": "TTI_RISK_POLICY",
+   "owner": "<top-level>",
+   "context": "ALIAS",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": true
+   },
+   "sha256": "a63beb0aedbd804f3537df22d525920d70d2aab97f5c467feb509c1ca600bb88"
+  },
+  {
+   "producer": "TTI_RISK_POLICY",
+   "owner": "<top-level>",
+   "context": "OBJECT_VALUE",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "7c536f131d493371aba02fec4eafc3d420fa55221ec6e047443a0d9e0d23a932"
+  },
+  {
+   "producer": "TTI_RISK_POLICY",
+   "owner": "<top-level>",
+   "context": "OBJECT_VALUE",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "7c536f131d493371aba02fec4eafc3d420fa55221ec6e047443a0d9e0d23a932"
+  },
+  {
+   "producer": "TTI_RISK_POLICY",
+   "owner": "currencyExposure",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "77c1fdb41843793229be609221fbfddeeb7b5e5f0e087b571b49994137777a12"
+  },
+  {
+   "producer": "TTI_RISK_POLICY",
+   "owner": "currencyExposure",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "828bb174e71ff6dc1019924e5d57ee6da0570fdf68bb0f409cd1a2d205cd731c"
+  },
+  {
+   "producer": "TTI_RISK_POLICY",
+   "owner": "liveRiskMetrics",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "dc4f1752acb24adf850b5e6090f365ea65db9eadb6143e99a97d2315cb93eeb9"
+  },
+  {
+   "producer": "TTI_RISK_POLICY",
+   "owner": "rgEvaluate",
+   "context": "OBJECT_VALUE",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "021a49f74d438a019635885aaef2f873bb24e8220c1ab57ac59409e7179eb9e4"
+  },
+  {
+   "producer": "TTI_RISK_POLICY",
+   "owner": "rgEvaluate",
+   "context": "OBJECT_VALUE",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "021a49f74d438a019635885aaef2f873bb24e8220c1ab57ac59409e7179eb9e4"
+  },
+  {
+   "producer": "TTI_RNG",
+   "owner": "<top-level>",
+   "context": "ALIAS",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": false
+   },
+   "sha256": "28a19743a8497b867a8af8e09298bebf11cf6043c4b722bfd3a822d41a66f683"
+  },
+  {
+   "producer": "TTI_SPECIALIST_MODELS",
+   "owner": "applyFamilySpecialist",
+   "context": "OBJECT_VALUE",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true
+   },
+   "sha256": "aca875c19c2aec692aa7709ecd592b3877b8eed454588348fa4ac75547427aec"
+  },
+  {
+   "producer": "TTI_SPECIALIST_MODELS",
+   "owner": "applyFamilySpecialist",
+   "context": "OBJECT_VALUE",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": true,
+    "primitiveMember": true
+   },
+   "sha256": "e1e991ab46c0884cc99d2964a3363944e41c429625245ef08e32634f984ee24a"
+  },
+  {
+   "producer": "TTI_SPECIALIST_MODELS",
+   "owner": "getFamilyPolicy",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": true
+   },
+   "sha256": "bcae5e05c078e6445150e327a80fb4c13b728d977535588021b8e034a2e07dc9"
+  },
+  {
+   "producer": "TTI_V5",
+   "owner": "<top-level>",
+   "context": "ARGUMENT",
+   "binding": "BOUND_MODULE_STATEMENT",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": false
+   },
+   "sha256": "56105ac91c1519b715af9f1aa0fde84aaf8faf1961424efb7f3be57fd033f40d"
+  },
+  {
+   "producer": "TTI_V5",
+   "owner": "calibrationAudit",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": true,
+    "frozenBinding": false,
+    "primitiveMember": false
+   },
+   "sha256": "ce8424ef0eef015f3371fbda2f26624eb568908f2c452f57d26b4afb43eef1c4"
+  },
+  {
+   "producer": "TTI_V5",
+   "owner": "recomputeLight",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "5e249f31ecd69dea2fc29146e494843ed40b8e229f34fdc7fecd461704854fa2"
+  },
+  {
+   "producer": "TTI_V5",
+   "owner": "renderModelStatus",
+   "context": "ALIAS",
+   "binding": "READ_ONLY_ALIAS",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false,
+    "primitiveMember": false
+   },
+   "sha256": "3ab49269e2b0e2fa803e0694bd8b3d3aa778061957f51637e38eb3009186cb61"
+  },
+  {
+   "producer": "TTI_V5",
+   "owner": "updateLegacySignalState",
+   "context": "ALIAS",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "writtenThroughAlias": false,
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "5e249f31ecd69dea2fc29146e494843ed40b8e229f34fdc7fecd461704854fa2"
+  },
+  {
+   "producer": "V5_THRESH",
+   "owner": "updateLegacySignalState",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "1ac9338b3380197f5e2da614a8f8f7ee997ed7b8e9cb048b93e111473b93a1d6"
+  },
+  {
+   "producer": "V5_THRESH",
+   "owner": "updateLegacySignalState",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "4379c31098e503621b64faca20e357b64f75f331fd5899840119130bc8869d3e"
+  },
+  {
+   "producer": "V5_THRESH",
+   "owner": "updateLegacySignalState",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "c52e0953ae309d8d2e799abf50e1d95dcba87e6954d9b13b2060915334a6104c"
+  },
+  {
+   "producer": "V5_THRESH",
+   "owner": "updateLegacySignalState",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "ec8141237ffb4198b91c19afebc6745eab12af490bbecdaa9e4528dc81be54c3"
+  },
+  {
+   "producer": "V5_THRESH",
+   "owner": "updateLegacySignalState",
+   "context": "ARGUMENT",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "ed5d21707c4672b2c0b4a6b6ec5882446bd6c34d5817cc1805c3ed8ece7cb905"
+  },
+  {
+   "producer": "V5_THRESH",
+   "owner": "updateLegacySignalState",
+   "context": "OBJECT_VALUE",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "257893118393d01db145ce951b72cff770c10d2c6397e5d40e97a097e1c9d308"
+  },
+  {
+   "producer": "V5_THRESH",
+   "owner": "updateLegacySignalState",
+   "context": "OBJECT_VALUE",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "257893118393d01db145ce951b72cff770c10d2c6397e5d40e97a097e1c9d308"
+  },
+  {
+   "producer": "V5_THRESH",
+   "owner": "updateLegacySignalState",
+   "context": "OBJECT_VALUE",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false,
+    "primitiveMember": true
+   },
+   "sha256": "257893118393d01db145ce951b72cff770c10d2c6397e5d40e97a097e1c9d308"
+  },
+  {
+   "producer": "ZUGRIO_ATR_UNAVAILABLE",
+   "owner": "atrPct",
+   "context": "RETURN",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "b73ed57eb5a94fb9934facbf1c0912d05775314e397915c7e0d387e01eda4dfb"
+  },
+  {
+   "producer": "ZUGRIO_ATR_UNAVAILABLE",
+   "owner": "canonicalATR",
+   "context": "RETURN",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "273a6414a653603ed901b1c85ebead411e1b33f521dbc9f362f4fcfbd708f625"
+  },
+  {
+   "producer": "ZUGRIO_ATR_UNAVAILABLE",
+   "owner": "canonicalATR",
+   "context": "RETURN",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "30b3a336fe8efc0c1bc54db53c0b1f9033dd34d45a6caf970762a071cb056d3e"
+  },
+  {
+   "producer": "ZUGRIO_ATR_UNAVAILABLE",
+   "owner": "canonicalATR",
+   "context": "RETURN",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "6838d548960727efbf9de54e3053f4ac23c6111323e2924aee161d9ab104020c"
+  },
+  {
+   "producer": "ZUGRIO_ATR_UNAVAILABLE",
+   "owner": "canonicalATR",
+   "context": "RETURN",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "6f2865335ceccc841361f150a1f6c71ef846e38a446958612b3f428ebf74634e"
+  },
+  {
+   "producer": "ZUGRIO_ATR_UNAVAILABLE",
+   "owner": "canonicalATR",
+   "context": "RETURN",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "791565cad090051ca755df87d2ca7e19005a4f3c8e92dbf5bf8c1c3eda1b1ddf"
+  },
+  {
+   "producer": "ZUGRIO_ATR_UNAVAILABLE",
+   "owner": "canonicalATR",
+   "context": "RETURN",
+   "binding": "BOUND_FINGERPRINTED_FUNCTION",
+   "facts": {
+    "frozenBinding": false
+   },
+   "sha256": "c0b9e7215600eac91145be7898bd7cd870d8d8d93f5e308011f9f8878f123157"
+  }
+ ]
+}
