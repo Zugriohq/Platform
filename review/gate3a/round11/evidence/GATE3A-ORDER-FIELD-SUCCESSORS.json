@@ -1,0 +1,233 @@
+{
+ "schema": "zugrio.gate3a-order-field-successors/1",
+ "status": "PROPOSED — requires independent review; not frozen",
+ "rule": "Every BROKER_ORDER_FIELD sink of the frozen Gate 2.2 artifact must name its successor in the frozen Signal Authority Architecture v1.0.2. REPLACE: becomes a field of the named Gate-4 object. PROVENANCE: moves to contract/manifest identity and leaves the order. REMOVE: permission or admission data that must not ride in an order; replaced by the named verdict. AUDIT: ledgered, excluded from identity. BROKER_ORDER_PAYLOAD stays LEGACY_REMOVE only while every one of its fields has an entry here.",
+ "specification": "docs/architecture/frozen/Zugrio_Signal_Authority_Architecture_v1.0.2_FROZEN.md (branch release/private-validation-alpha-2026-09-28)",
+ "fields": {
+  "makeIntent.schema": {
+   "disposition": "PROVENANCE",
+   "successor": "EntryIntent schema/version under canonical serialization (§7.2)",
+   "note": "Wire-format label; not an authority input."
+  },
+  "makeIntent.engineVersion": {
+   "disposition": "PROVENANCE",
+   "successor": "decisionCoreHash (§7.4 A-2)",
+   "note": "A version string is not a content hash; Gate 4 binds the running core by hash."
+  },
+  "makeIntent.buildTag": {
+   "disposition": "PROVENANCE",
+   "successor": "fullBuildHash (§7.4; provenance-only)",
+   "note": ""
+  },
+  "makeIntent.eventId": {
+   "disposition": "REPLACE",
+   "successor": "EntryIntent (§10.3 constructEntry).fireEventId / entryIntentId",
+   "note": "CONFLICT WITH OA-1/H-5B: built in checkSig as [k,profileId,triggerAt,Math.round(now)] — the wall-clock term makes it non-deterministic, so it cannot serve as the identity preimage OA-3 relies on."
+  },
+  "makeIntent.createdAt": {
+   "disposition": "AUDIT",
+   "successor": "EntryIntent (§10.3 constructEntry).constructedAt (audit-only, excluded from identity per H-5B)",
+   "note": ""
+  },
+  "makeIntent.signalAt": {
+   "disposition": "REPLACE",
+   "successor": "FIRE event time (§4.4) carried via fireEventId",
+   "note": "Not a field of EntryIntent; the FIRE event owns it."
+  },
+  "makeIntent.profileId": {
+   "disposition": "PROVENANCE",
+   "successor": "candidate/FIRE identity (setup scope, §6.5)",
+   "note": "Profile selection is upstream authority; it must not ride in the order as an input."
+  },
+  "makeIntent.exitPolicy": {
+   "disposition": "REPLACE",
+   "successor": "positionManagementPolicyHash (§7.9, §7.11)",
+   "note": "Literal AUTO stands in for a hash-bound Position Management Policy."
+  },
+  "makeIntent.brokerAdapter": {
+   "disposition": "REPLACE",
+   "successor": "EntryIntent (§10.3 constructEntry).brokerVenueId; brokerAdapterHash (§7.11)",
+   "note": ""
+  },
+  "makeIntent.marketDataProvider": {
+   "disposition": "PROVENANCE",
+   "successor": "ExecutionSnapshot source / costModelHash (§6.8)",
+   "note": "Not an intent field."
+  },
+  "makeIntent.accountProvider": {
+   "disposition": "REPLACE",
+   "successor": "EntryIntent (§10.3 constructEntry).accountId",
+   "note": "A provider label is not an account identity."
+  },
+  "makeIntent.strategyModelId": {
+   "disposition": "PROVENANCE",
+   "successor": "inference contract identity (§7.4)",
+   "note": "Model identity is Layer 2A/3 provenance, not an order field."
+  },
+  "makeIntent.instrumentKey": {
+   "disposition": "REPLACE",
+   "successor": "instrument via EntryIntent (§10.3 constructEntry).geometryId (FrozenTradeGeometry §6.7) and brokerSymbolConstraints (§10.1)",
+   "note": ""
+  },
+  "makeIntent.family": {
+   "disposition": "PROVENANCE",
+   "successor": "market-family specialist identity (ADR-0001)",
+   "note": "Not an order field."
+  },
+  "makeIntent.dataQuality": {
+   "disposition": "REMOVE",
+   "successor": "INFERENCE/EXECUTION_POLICY_ADMITTED verdicts (§7.3) and 4B veto (§10.6)",
+   "note": "Data health decides admission upstream; a status string in the order is not authority."
+  },
+  "makeIntent.dataExecutionOk": {
+   "disposition": "REMOVE",
+   "successor": "INFERENCE/EXECUTION_POLICY_ADMITTED verdicts (§7.3) and 4B veto (§10.6)",
+   "note": ""
+  },
+  "makeIntent.side": {
+   "disposition": "REPLACE",
+   "successor": "EntryIntent (§10.3 constructEntry).side",
+   "note": ""
+  },
+  "makeIntent.entry": {
+   "disposition": "REPLACE",
+   "successor": "EntryIntent (§10.3 constructEntry).entryType + FrozenTradeGeometry.entryReference (§6.7); price guard = SubmissionEnvelope.adverseExecutionPriceLimit (§10.9)",
+   "note": "EntryIntent carries no entry price; pExec is the ExecutionSnapshot basis (X-7)."
+  },
+  "makeIntent.stopLoss": {
+   "disposition": "REPLACE",
+   "successor": "EntryIntent (§10.3 constructEntry).stop (from FrozenTradeGeometry.stop)",
+   "note": ""
+  },
+  "makeIntent.takeProfit": {
+   "disposition": "REPLACE",
+   "successor": "EntryIntent (§10.3 constructEntry).targets (from FrozenTradeGeometry.targets)",
+   "note": "Today a single target (t1 fallback); the successor carries t1..t3."
+  },
+  "makeIntent.riskFraction": {
+   "disposition": "REPLACE",
+   "successor": "EntryIntent (§10.3 constructEntry).size, computed under riskSizingPolicyHash from RiskContextSnapshot (§10.1, §7.8)",
+   "note": "Today a fraction with a hard-coded .0025 default is sent and size is computed server-side, outside this artifact. The default is a capital threshold with no recorded provenance (HP-3 worksheet)."
+  },
+  "makeIntent.riskScale": {
+   "disposition": "REPLACE",
+   "successor": "input to size under Risk/Sizing Policy (§7.8)",
+   "note": "Must not be a separate order field."
+  },
+  "makeIntent.riskState": {
+   "disposition": "REMOVE",
+   "successor": "RiskContextSnapshot.metaRiskState (§10.1) + 4B veto",
+   "note": "Literal SERVER_CHECK_REQUIRED."
+  },
+  "makeIntent.riskCanOpen": {
+   "disposition": "REMOVE",
+   "successor": "4B veto ALLOW (§10.6)",
+   "note": "LEGACY_PERMISSION_ASSERTION: literal true asserts permission."
+  },
+  "makeIntent.executionPermission": {
+   "disposition": "REMOVE",
+   "successor": "EXECUTION_POLICY_ADMITTED (§7.3, §7.11)",
+   "note": "LEGACY_PERMISSION_ASSERTION: literal DEMO_AUTO asserts permission."
+  },
+  "makeIntent.tradePermission": {
+   "disposition": "REMOVE",
+   "successor": "scoped provenance verdicts (§7.3)",
+   "note": "Set to DEMO_ELIGIBLE as a literal in checkSig."
+  },
+  "makeIntent.calibrationOk": {
+   "disposition": "REMOVE",
+   "successor": "INFERENCE_ADMITTED (§7.3, §7.4)",
+   "note": "A live calibrationAudit() call in the order builder."
+  },
+  "routeConfirmedReversal.intent.schema": {
+   "disposition": "PROVENANCE",
+   "successor": "ManagementIntent schema (§7.2)",
+   "note": ""
+  },
+  "routeConfirmedReversal.intent.engineVersion": {
+   "disposition": "PROVENANCE",
+   "successor": "decisionCoreHash (§7.4 A-2)",
+   "note": ""
+  },
+  "routeConfirmedReversal.intent.buildTag": {
+   "disposition": "PROVENANCE",
+   "successor": "fullBuildHash (§7.4; provenance-only)",
+   "note": ""
+  },
+  "routeConfirmedReversal.intent.eventId": {
+   "disposition": "REPLACE",
+   "successor": "ManagementIntent (§10.5 constructManagement).managementActionId (PMA-7, SB-16)",
+   "note": "Built as [EXIT,positionId,candidate.id,triggerAt] — deterministic, consistent with PMA-7."
+  },
+  "routeConfirmedReversal.intent.createdAt": {
+   "disposition": "AUDIT",
+   "successor": "ManagementIntent (§10.5 constructManagement).constructedAt (H-5B)",
+   "note": ""
+  },
+  "routeConfirmedReversal.intent.brokerAdapter": {
+   "disposition": "REPLACE",
+   "successor": "brokerAdapterHash (§7.11)",
+   "note": ""
+  },
+  "routeConfirmedReversal.intent.positionId": {
+   "disposition": "REPLACE",
+   "successor": "ManagementIntent (§10.5 constructManagement).brokerPositionId (ManagedPositionSnapshot §10.4)",
+   "note": ""
+  },
+  "routeConfirmedReversal.intent.instrumentKey": {
+   "disposition": "REPLACE",
+   "successor": "ManagedPositionSnapshot.instrument (§10.4)",
+   "note": ""
+  },
+  "routeConfirmedReversal.intent.family": {
+   "disposition": "PROVENANCE",
+   "successor": "market-family specialist identity (ADR-0001)",
+   "note": ""
+  },
+  "routeConfirmedReversal.intent.strategyModelId": {
+   "disposition": "PROVENANCE",
+   "successor": "inference contract identity (§7.4)",
+   "note": ""
+  },
+  "routeConfirmedReversal.intent.dataExecutionOk": {
+   "disposition": "REMOVE",
+   "successor": "RISK_REDUCING classification by economic effect (§10.11 OC-2/OC-3)",
+   "note": "Literal true spoofs data health (already inventoried as RISK_REDUCING_DATA_BYPASS)."
+  },
+  "routeConfirmedReversal.intent.positionSide": {
+   "disposition": "REPLACE",
+   "successor": "ManagedPositionSnapshot.side (§10.4)",
+   "note": ""
+  },
+  "routeConfirmedReversal.intent.exitSide": {
+   "disposition": "REPLACE",
+   "successor": "ManagementIntent (§10.5 constructManagement).actionType / requestedClose (§10.5); classified RISK_REDUCING by effect (PMA-2)",
+   "note": "PMA-4: a reversal is two acts — this path may only close; an opposite entry needs a new FIRE."
+  },
+  "routeConfirmedReversal.intent.reason": {
+   "disposition": "AUDIT",
+   "successor": "ledger reason only (§10.11 OC-3)",
+   "note": "OC-3: classification is computed from economic effect, never from a label."
+  },
+  "routeConfirmedReversal.intent.candidateId": {
+   "disposition": "PROVENANCE",
+   "successor": "source candidate of the management trigger (Position Management Policy input, §7.9)",
+   "note": ""
+  },
+  "routeConfirmedReversal.intent.triggerAt": {
+   "disposition": "PROVENANCE",
+   "successor": "source-bar time in the trigger observation (H-5A)",
+   "note": ""
+  },
+  "routeConfirmedReversal.intent.sourceTf": {
+   "disposition": "PROVENANCE",
+   "successor": "source-bar identity (H-5A)",
+   "note": ""
+  },
+  "closePosition.positionId": {
+   "disposition": "REPLACE",
+   "successor": "full close by verified position ID (§10.5 PMA-6, SB-17)",
+   "note": "Manual risk reduction."
+  }
+ }
+}

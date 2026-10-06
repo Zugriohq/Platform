@@ -1,0 +1,359 @@
+{
+  "scanner": "tools/gate3-authority-inventory.js",
+  "summary": {
+    "cases": 32,
+    "failed": 0,
+    "producer": 32,
+    "missed": 0,
+    "controlsFailed": 0,
+    "cleanArtifactDefects": 0
+  },
+  "rows": [
+    {
+      "category": "property-value",
+      "name": "ASSET_PROFILES.AUDUSD.dir null -> BUY (consumer ASSET_PROFILES[k] untouched)",
+      "producer": "ASSET_PROFILES",
+      "consumerPreserved": true,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: ASSET_PROFILES TOP_LEVEL_BINDING differs from the frozen baseline"
+    },
+    {
+      "category": "property-removal",
+      "name": "ASSET_PROFILES.AUDUSD.tail removed",
+      "producer": "ASSET_PROFILES",
+      "consumerPreserved": true,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: ASSET_PROFILES TOP_LEVEL_BINDING differs from the frozen baseline"
+    },
+    {
+      "category": "property-removal",
+      "name": "V5_THRESH.minFamilies removed",
+      "producer": "V5_THRESH",
+      "consumerPreserved": true,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: V5_THRESH TOP_LEVEL_BINDING differs from the frozen baseline"
+    },
+    {
+      "category": "numeric-threshold",
+      "name": "TTI_GEOMETRY.readyMinTP1R 1.0 -> 0.3",
+      "producer": "TTI_GEOMETRY",
+      "consumerPreserved": true,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: TTI_GEOMETRY TOP_LEVEL_BINDING differs from the frozen baseline"
+    },
+    {
+      "category": "numeric-threshold",
+      "name": "RETEST_POLICY M5 confirmBars 3 -> 1",
+      "producer": "RETEST_POLICY",
+      "consumerPreserved": true,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: RETEST_POLICY TOP_LEVEL_BINDING differs from the frozen baseline"
+    },
+    {
+      "category": "nested-profile-field",
+      "name": "PROFILES.SCALP execution M1 -> M5",
+      "producer": "TTI_PROFILE_ENGINE",
+      "consumerPreserved": true,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: TTI_PROFILE_ENGINE TOP_LEVEL_BINDING differs from the frozen baseline"
+    },
+    {
+      "category": "array-member",
+      "name": "PROFILES.SCALP setups [M5] -> [M1]",
+      "producer": "TTI_PROFILE_ENGINE",
+      "consumerPreserved": true,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: TTI_PROFILE_ENGINE TOP_LEVEL_BINDING differs from the frozen baseline"
+    },
+    {
+      "category": "constant-value",
+      "name": "ZUGRIO_ATR_PERIOD 14 -> 7",
+      "producer": "ZUGRIO_ATR_PERIOD",
+      "consumerPreserved": true,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: ZUGRIO_ATR_PERIOD TOP_LEVEL_BINDING differs from the frozen baseline"
+    },
+    {
+      "category": "table-entry",
+      "name": "SECONDS.M1 60 -> 6000",
+      "producer": "SECONDS",
+      "consumerPreserved": true,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: SECONDS TOP_LEVEL_BINDING differs from the frozen baseline"
+    },
+    {
+      "category": "table-entry",
+      "name": "TTI_SPECIALIST_MODELS.VOLATILITY model id",
+      "producer": "TTI_SPECIALIST_MODELS",
+      "consumerPreserved": true,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: TTI_SPECIALIST_MODELS TOP_LEVEL_BINDING differs from the frozen baseline"
+    },
+    {
+      "category": "default-fallback",
+      "name": "DEFAULT_PROFILE.stopScale 1.0 -> 3.0",
+      "producer": "DEFAULT_PROFILE",
+      "consumerPreserved": true,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: DEFAULT_PROFILE TOP_LEVEL_BINDING differs from the frozen baseline"
+    },
+    {
+      "category": "enum-mapping",
+      "name": "SETUP_TYPES.SWEEP mapped to the FVG value",
+      "producer": "SETUP_TYPES",
+      "consumerPreserved": true,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: SETUP_TYPES TOP_LEVEL_BINDING differs from the frozen baseline"
+    },
+    {
+      "category": "top-level-function",
+      "name": "pivots() left-side test >= -> >",
+      "producer": "pivots",
+      "consumerPreserved": true,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: pivots TOP_LEVEL_FUNCTION differs from the frozen baseline"
+    },
+    {
+      "category": "writer",
+      "name": "a UI handler writes TTI_GEOMETRY at runtime",
+      "producer": "setMM",
+      "consumerPreserved": false,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": false,
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: setMM AUTHORITY_PRODUCER_WRITE sink not in frozen baseline: 0.2"
+    },
+    {
+      "category": "alias-write",
+      "name": "new function writes ASSET_PROFILES through a local alias",
+      "producer": "zgTune",
+      "consumerPreserved": false,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: zgTune PRODUCER_WRITER is a new producer of live authority"
+    },
+    {
+      "category": "argument-write",
+      "name": "ASSET_PROFILES passed to a helper that writes its parameter",
+      "producer": "zgSet",
+      "consumerPreserved": false,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: zgSet PRODUCER_WRITER is a new producer of live authority"
+    },
+    {
+      "category": "effect-call",
+      "name": "top-level call to a function that writes ASSET_PROFILES",
+      "producer": "zgMut",
+      "consumerPreserved": false,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: zgMut PRODUCER_WRITER is a new producer of live authority"
+    },
+    {
+      "category": "top-level-write",
+      "name": "module-level statement writes V5_THRESH after its declaration",
+      "producer": "V5_THRESH",
+      "consumerPreserved": true,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: V5_THRESH TOP_LEVEL_BINDING differs from the frozen baseline"
+    },
+    {
+      "category": "path-alias",
+      "name": "alias of a nested member written through",
+      "producer": "zgN",
+      "consumerPreserved": false,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: zgN PRODUCER_WRITER is a new producer of live authority"
+    },
+    {
+      "category": "path-argument",
+      "name": "nested member passed to a helper that writes it",
+      "producer": "ASSET_PROFILES",
+      "consumerPreserved": false,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: ASSET_PROFILES TOP_LEVEL_BINDING differs from the frozen baseline"
+    },
+    {
+      "category": "reflective",
+      "name": "Object.defineProperty getter on a nested member (module level)",
+      "producer": "ASSET_PROFILES",
+      "consumerPreserved": false,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: ASSET_PROFILES TOP_LEVEL_BINDING differs from the frozen baseline"
+    },
+    {
+      "category": "reflective",
+      "name": "Reflect.set on a nested member (module level)",
+      "producer": "ASSET_PROFILES",
+      "consumerPreserved": false,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: ASSET_PROFILES TOP_LEVEL_BINDING differs from the frozen baseline"
+    },
+    {
+      "category": "reflective",
+      "name": "Object.defineProperty inside a UI handler",
+      "producer": "setMM",
+      "consumerPreserved": false,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "AUTHORITY_PRODUCER_DRIFT: setMM PRODUCER_WRITER is a new producer of live authority"
+    },
+    {
+      "category": "nameless",
+      "name": "computed global lookup",
+      "producer": "DYNAMIC:GLOBAL_COMPUTED",
+      "consumerPreserved": false,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "DYNAMIC_ACCESS_DRIFT: GLOBAL_COMPUTED in <top-level> is not in the frozen baseline (a nameless route to state or code)"
+    },
+    {
+      "category": "nameless",
+      "name": "eval",
+      "producer": "DYNAMIC:EVAL",
+      "consumerPreserved": false,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "DYNAMIC_ACCESS_DRIFT: EVAL in <top-level> is not in the frozen baseline (a nameless route to state or code)"
+    },
+    {
+      "category": "nameless",
+      "name": "Function constructor",
+      "producer": "DYNAMIC:FUNCTION_CONSTRUCTOR",
+      "consumerPreserved": false,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "DYNAMIC_ACCESS_DRIFT: FUNCTION_CONSTRUCTOR in <top-level> is not in the frozen baseline (a nameless route to state or code)"
+    },
+    {
+      "category": "nameless",
+      "name": "string timer",
+      "producer": "DYNAMIC:STRING_TIMER",
+      "consumerPreserved": false,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "DYNAMIC_ACCESS_DRIFT: STRING_TIMER in <top-level> is not in the frozen baseline (a nameless route to state or code)"
+    },
+    {
+      "category": "nameless",
+      "name": "prototype pollution",
+      "producer": "DYNAMIC:PROTOTYPE",
+      "consumerPreserved": false,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "DYNAMIC_ACCESS_DRIFT: PROTOTYPE in <top-level> is not in the frozen baseline (a nameless route to state or code)"
+    },
+    {
+      "category": "container",
+      "name": "R10-01 producer reference stored in an object, then mutated",
+      "producer": "ESCAPE:ASSET_PROFILES",
+      "consumerPreserved": false,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "REFERENCE_ESCAPE_DRIFT: ASSET_PROFILES handed off (OBJECT_VALUE) in <top-level> — a reference to an authority producer stored, returned, cap"
+    },
+    {
+      "category": "container",
+      "name": "R10-01 producer reference stored in an array, then mutated",
+      "producer": "ESCAPE:ASSET_PROFILES",
+      "consumerPreserved": false,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "REFERENCE_ESCAPE_DRIFT: ASSET_PROFILES handed off (ARRAY_ELEMENT) in <top-level> — a reference to an authority producer stored, returned, ca"
+    },
+    {
+      "category": "container",
+      "name": "R10-01 producer reference retained by a closure, then mutated",
+      "producer": "ESCAPE:ASSET_PROFILES",
+      "consumerPreserved": false,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "REFERENCE_ESCAPE_DRIFT: ASSET_PROFILES handed off (ARROW_RETURN) in get — a reference to an authority producer stored, returned, captured or"
+    },
+    {
+      "category": "global-alias",
+      "name": "R10-02 global object aliased, then window.confirm replaced",
+      "producer": "A3",
+      "consumerPreserved": false,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": true,
+      "pass": true,
+      "detail": "VIOLATED A3: the global object (window) is used as a value in <top-level> — aliasing, destructuring or handing off window/globalThis/self is"
+    }
+  ],
+  "controls": [
+    {
+      "name": "SIGNAL_STATES (read only by unreachable legacy code)",
+      "defects": 0,
+      "error": "",
+      "first": ""
+    },
+    {
+      "name": "GLOSSARY text (renderer only)",
+      "defects": 0,
+      "error": "",
+      "first": ""
+    },
+    {
+      "name": "CONTINUATION_REGIMES (research-only reference study)",
+      "defects": 0,
+      "error": "",
+      "first": ""
+    },
+    {
+      "name": "comment and layout inside ASSET_PROFILES",
+      "defects": 0,
+      "error": "",
+      "first": ""
+    }
+  ]
+}

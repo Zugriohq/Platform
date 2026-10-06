@@ -1,0 +1,135 @@
+{
+  "schema": "zugrio.package-sha256-manifest/6",
+  "files": [
+    {
+      "path": "CLAUDE-REVIEW-HANDOFF.md",
+      "sha256": "6c60650558c2b6c88012d17ce1cf567e5f05b01d412d9f04ec3486f79e2f3032",
+      "bytes": 30380
+    },
+    {
+      "path": "GATE3A-CORRECTION-MANIFEST.json",
+      "sha256": "c4f6e94eba9d44eab1abaf4fd5a04361b3b93fcf88238b9dea6667aa602eca49",
+      "bytes": 47064
+    },
+    {
+      "path": "GATE3A-SELF-REVIEW.md",
+      "sha256": "620a3997a3a814f9aae3dc9b16211bdc41381417b78350986d4b226e27943be8",
+      "bytes": 38266
+    },
+    {
+      "path": "GATE3B-ENTRY-DIRECTIVE.md",
+      "sha256": "6497d2f41434be908e7099079266cb803734eb9f17b2b454a8f9179b873cda54",
+      "bytes": 4151
+    },
+    {
+      "path": "README.md",
+      "sha256": "09cebb5a5209a3e54689ce60f34e7fe8a0c0c023daf6713b2d25f8f500361586",
+      "bytes": 1872
+    },
+    {
+      "path": "artifacts/Zugrio-1.0.0-gate2.1.html",
+      "sha256": "84b367496c5ae3ee974c24e17f7057c92059b8a48c9c5a35f3cb2312b5a29733",
+      "bytes": 771374
+    },
+    {
+      "path": "artifacts/Zugrio-1.0.0-gate2.2.html",
+      "sha256": "52dcdbcdfdddbaabe24e72a722623ebcd8e678fbdff8e6fa134247752783c178",
+      "bytes": 772527
+    },
+    {
+      "path": "evidence/GATE3-ATR-SEMANTIC-SWEEP.json",
+      "sha256": "5efd441af0793e5a34cec6551a46983717fd09af236e577d90f2d2d86b9c7de2",
+      "bytes": 74741
+    },
+    {
+      "path": "evidence/GATE3-AUTHORITY-INVENTORY.json",
+      "sha256": "7eb31c25d06cf112a9ecff96015073bb0d0dddfd2c93ec2d487c11daa2289e89",
+      "bytes": 894728
+    },
+    {
+      "path": "evidence/GATE3A-FROZEN-MAP.md",
+      "sha256": "295e06c7e5c06732f250d351f9b0ad1c860ced1df9351e356c5ec40f7a4c3d13",
+      "bytes": 14652
+    },
+    {
+      "path": "evidence/GATE3A-ORDER-FIELD-SUCCESSORS.json",
+      "sha256": "f067337c0ddb4af20087867e0533ab7e71dce3653d21c6fb651ce58e20d17f9b",
+      "bytes": 9887
+    },
+    {
+      "path": "evidence/GATE3A-PRODUCER-BATTERY.json",
+      "sha256": "924202051e721f0dcf33f589332a4cdad66373bca6b5c3b02ee0ff244b896def",
+      "bytes": 11139
+    },
+    {
+      "path": "evidence/GATE3A-PRODUCER-BATTERY.round9-scanner.json",
+      "sha256": "5c1a89e0497537d0fce62c38d256b9275b0cd7767880c8bb665f2c2832cff11e",
+      "bytes": 10129
+    },
+    {
+      "path": "evidence/GATE3A-SUBSTITUTION-BATTERY.json",
+      "sha256": "a5ceb81af49f394269f4ca5a41c5f668afe043236fb67a7001826b9fb4a7233b",
+      "bytes": 16302
+    },
+    {
+      "path": "evidence/GATE3A-SUBSTITUTION-BATTERY.round7-scanner.json",
+      "sha256": "a8877c514af0c684d848648e66df28aae92a693472514872dcbcce7a033c3bb5",
+      "bytes": 11031
+    },
+    {
+      "path": "evidence/GATE3A-THRESHOLD-WORKSHEET.json",
+      "sha256": "86bb17afa488fc7270e5904811b8da6eb49c866c893cad5da63955e7c960c5e2",
+      "bytes": 75428
+    },
+    {
+      "path": "test/gate3a.test.js",
+      "sha256": "3c2d2384ad6672aa66f72f691f2e0b8df0bc942b47862db0750f3022a006a386",
+      "bytes": 96534
+    },
+    {
+      "path": "tools/gate3-atr-sweep.js",
+      "sha256": "4c30b803e63e1487303785da8abe253fbcf111edfffdc09d3b7f860edb9aff8b",
+      "bytes": 28694
+    },
+    {
+      "path": "tools/gate3-authority-baseline.json",
+      "sha256": "244f42fcac910828c0d0cce717abc5202e822ed17f8bd223a53a418a127ead52",
+      "bytes": 536752
+    },
+    {
+      "path": "tools/gate3-authority-inventory.js",
+      "sha256": "373a463f637b4740b9a4b05a86bcaa65350d4d98692bd9f55faf3bb4136d92b0",
+      "bytes": 190046
+    },
+    {
+      "path": "tools/gate3-dependency-vocabulary.json",
+      "sha256": "90499ad2362c1a1e486a9c55736d9ba6c9b4f628f1d3c9076d7c1cf0aa9229cc",
+      "bytes": 106960
+    },
+    {
+      "path": "tools/gate3-generate-report.js",
+      "sha256": "f9487e6ea8a3398dceacb58066460956ad5f2634d33b74f4c82891eb0837a3c6",
+      "bytes": 26072
+    },
+    {
+      "path": "tools/gate3-mutation-battery.js",
+      "sha256": "25162e483f1c2e4dd4c611630ae4fc43b358a80a9fe97d72c9289039ade31bfc",
+      "bytes": 15006
+    },
+    {
+      "path": "tools/gate3-producer-battery.js",
+      "sha256": "69df333803e2654bb56703322c46c8543d79142ee93c80f775409427c2f9f4da",
+      "bytes": 10995
+    },
+    {
+      "path": "tools/gate3-substitution-battery.js",
+      "sha256": "f3b8607d4348bdbd5163707f384f18e1379f6e76c41b262d5ca61c4613f7f076",
+      "bytes": 13584
+    },
+    {
+      "path": "tools/lib/serialize.js",
+      "sha256": "95d13374e324dac9307071e7d6028b0bb6b56615560619a7c8172e662f3448c2",
+      "bytes": 5785
+    }
+  ]
+}

@@ -1,0 +1,448 @@
+{
+  "scanner": "../round7/tools/gate3-authority-inventory.js",
+  "summary": {
+    "cases": 46,
+    "failed": 43,
+    "sink": 0,
+    "vocab": 3,
+    "ownerOnly": 0,
+    "other": 0,
+    "missed": 43,
+    "errors": 0,
+    "controlsFailed": 0,
+    "cleanArtifactDefects": 0
+  },
+  "rows": [
+    {
+      "category": "predicate-input",
+      "name": "plan STOP_TOO_WIDE uses tick instead of ATR",
+      "owner": "plan",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "predicate-input",
+      "name": "STOP_TOO_TIGHT floor uses risk instead of ATR",
+      "owner": "plan",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "threshold",
+      "name": "runway threshold -> stop threshold (both accepted)",
+      "owner": "planTradeLevels",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "threshold",
+      "name": "tick staleness 15s -> 150s (literal only)",
+      "owner": "feedGate",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "threshold",
+      "name": "insufficient-bars 24 -> 2 (literal only)",
+      "owner": "feedGate",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "profile-field",
+      "name": "execution timeframe from profile.id",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "profile-field",
+      "name": "familyGate given the DAY profile",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "strategy-state",
+      "name": "initial state WATCH -> READY",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "strategy-state",
+      "name": "state rank READY/WATCH swapped",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "risk",
+      "name": "BOOM_CRASH tail scales swapped",
+      "owner": "familyGate",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "risk",
+      "name": "JUMP scale .5 -> .95",
+      "owner": "familyGate",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "risk",
+      "name": "riskScale dropped from riskFraction",
+      "owner": "makeIntent",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "risk",
+      "name": "profile riskScale replaced by specialist scale",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "side",
+      "name": "order side from instrument key",
+      "owner": "makeIntent",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "side",
+      "name": "reversal exit side = position side",
+      "owner": "routeConfirmedReversal",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "side",
+      "name": "HTF agreement counts opposing votes",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "geometry",
+      "name": "order stop and target swapped",
+      "owner": "makeIntent",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "geometry",
+      "name": "order entry = stop",
+      "owner": "makeIntent",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "geometry",
+      "name": "plan stop written from entry ideal (Object.assign)",
+      "owner": "planTradeLevels",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "geometry",
+      "name": "plan t1 written from another accepted field (Object.assign)",
+      "owner": "planTradeLevels",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "lifecycle",
+      "name": "candidate sort direction reversed",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "lifecycle",
+      "name": "BREAK_CONFIRMED rank 1 -> 3",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "order-payload",
+      "name": "exit positionId from candidate id",
+      "owner": "routeConfirmedReversal",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "order-payload",
+      "name": "order instrument from event id",
+      "owner": "makeIntent",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "producer-return",
+      "name": "feedGate executionOk from bar count",
+      "owner": "feedGate",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "producer-return",
+      "name": "familyGate ok from bias",
+      "owner": "familyGate",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "object-property",
+      "name": "context opposing count = same",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "object-property",
+      "name": "context ok threshold opp<2 -> opp<3",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "array",
+      "name": "health reasons not carried into blockers",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "array",
+      "name": "best = second evaluated, not first",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "argument",
+      "name": "planner given the profile bars of another frame",
+      "owner": "checkSig",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "argument",
+      "name": "plan given the zone low for both sides",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "alias",
+      "name": "reversal lane chosen from DAY regardless of position",
+      "owner": "routeConfirmedReversal",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "object-assign",
+      "name": "Object.assign writes state READY",
+      "owner": "analyze",
+      "expect": "VOCAB",
+      "outcome": "VOCAB",
+      "pass": true,
+      "detail": "analyze:AUTHORITY_PRODUCER_WRITE:evaluated:350336: dependency 'Object.assign' accepted as TRUSTED_INTRINSIC is not in th"
+    },
+    {
+      "category": "object-assign",
+      "name": "Object.assign with conditional source",
+      "owner": "analyze",
+      "expect": "VOCAB",
+      "outcome": "VOCAB",
+      "pass": true,
+      "detail": "analyze:AUTHORITY_PRODUCER_WRITE:evaluated:350336: dependency 'Object.assign' accepted as TRUSTED_INTRINSIC is not in th"
+    },
+    {
+      "category": "object-assign",
+      "name": "Object.assign from an accepted variable",
+      "owner": "analyze",
+      "expect": "VOCAB",
+      "outcome": "VOCAB",
+      "pass": true,
+      "detail": "analyze:AUTHORITY_PRODUCER_WRITE:evaluated:350336: dependency 'Object.assign' accepted as TRUSTED_INTRINSIC is not in th"
+    },
+    {
+      "category": "object-assign",
+      "name": "computed string key writes state",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "object-assign",
+      "name": "existing Object.assign leaf: retest level from zone",
+      "owner": "retestView",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "deletion",
+      "name": "executionEligible loses its stop conjunct",
+      "owner": "planTradeLevels",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "deletion",
+      "name": "HTF context blocker deleted",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "deletion",
+      "name": "tick-stale reason deleted",
+      "owner": "feedGate",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "deletion",
+      "name": "reversal ignores data health",
+      "owner": "routeConfirmedReversal",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "deletion",
+      "name": "opposing-FIRE conflict ignores side",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "deletion",
+      "name": "READY guard removed",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "reroute",
+      "name": "PRICE_INVALID routed to another blocker code",
+      "owner": "analyze",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "reroute",
+      "name": "cooldown no longer blocks the lane",
+      "owner": "checkSig",
+      "expect": "SINK",
+      "outcome": "MISSED",
+      "pass": false,
+      "detail": ""
+    }
+  ],
+  "controls": [
+    {
+      "name": "block comment added inside an authority function",
+      "defects": 0,
+      "error": ""
+    },
+    {
+      "name": "line comment on its own line inside an authority function",
+      "defects": 0,
+      "error": ""
+    },
+    {
+      "name": "whitespace reflowed inside an authority function",
+      "defects": 0,
+      "error": ""
+    }
+  ]
+}

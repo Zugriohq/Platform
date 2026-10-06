@@ -1,0 +1,219 @@
+{
+  "scanner": "../round8/tools/gate3-authority-inventory.js",
+  "summary": {
+    "cases": 18,
+    "failed": 17,
+    "producer": 1,
+    "missed": 17,
+    "controlsFailed": 0,
+    "cleanArtifactDefects": 0
+  },
+  "rows": [
+    {
+      "category": "property-value",
+      "name": "ASSET_PROFILES.AUDUSD.dir null -> BUY (consumer ASSET_PROFILES[k] untouched)",
+      "producer": "ASSET_PROFILES",
+      "consumerPreserved": true,
+      "outcome": "MISSED",
+      "onlyAtProducerBoundary": true,
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "property-removal",
+      "name": "ASSET_PROFILES.AUDUSD.tail removed",
+      "producer": "ASSET_PROFILES",
+      "consumerPreserved": true,
+      "outcome": "MISSED",
+      "onlyAtProducerBoundary": true,
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "property-removal",
+      "name": "V5_THRESH.minFamilies removed",
+      "producer": "V5_THRESH",
+      "consumerPreserved": true,
+      "outcome": "MISSED",
+      "onlyAtProducerBoundary": true,
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "numeric-threshold",
+      "name": "TTI_GEOMETRY.readyMinTP1R 1.0 -> 0.3",
+      "producer": "TTI_GEOMETRY",
+      "consumerPreserved": true,
+      "outcome": "MISSED",
+      "onlyAtProducerBoundary": true,
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "numeric-threshold",
+      "name": "RETEST_POLICY M5 confirmBars 3 -> 1",
+      "producer": "RETEST_POLICY",
+      "consumerPreserved": true,
+      "outcome": "MISSED",
+      "onlyAtProducerBoundary": true,
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "nested-profile-field",
+      "name": "PROFILES.SCALP execution M1 -> M5",
+      "producer": "TTI_PROFILE_ENGINE",
+      "consumerPreserved": true,
+      "outcome": "MISSED",
+      "onlyAtProducerBoundary": true,
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "array-member",
+      "name": "PROFILES.SCALP setups [M5] -> [M1]",
+      "producer": "TTI_PROFILE_ENGINE",
+      "consumerPreserved": true,
+      "outcome": "MISSED",
+      "onlyAtProducerBoundary": true,
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "constant-value",
+      "name": "ZUGRIO_ATR_PERIOD 14 -> 7",
+      "producer": "ZUGRIO_ATR_PERIOD",
+      "consumerPreserved": true,
+      "outcome": "MISSED",
+      "onlyAtProducerBoundary": true,
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "table-entry",
+      "name": "SECONDS.M1 60 -> 6000",
+      "producer": "SECONDS",
+      "consumerPreserved": true,
+      "outcome": "MISSED",
+      "onlyAtProducerBoundary": true,
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "table-entry",
+      "name": "TTI_SPECIALIST_MODELS.VOLATILITY model id",
+      "producer": "TTI_SPECIALIST_MODELS",
+      "consumerPreserved": true,
+      "outcome": "MISSED",
+      "onlyAtProducerBoundary": true,
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "default-fallback",
+      "name": "DEFAULT_PROFILE.stopScale 1.0 -> 3.0",
+      "producer": "DEFAULT_PROFILE",
+      "consumerPreserved": true,
+      "outcome": "MISSED",
+      "onlyAtProducerBoundary": true,
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "enum-mapping",
+      "name": "SETUP_TYPES.SWEEP mapped to the FVG value",
+      "producer": "SETUP_TYPES",
+      "consumerPreserved": true,
+      "outcome": "MISSED",
+      "onlyAtProducerBoundary": true,
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "top-level-function",
+      "name": "pivots() left-side test >= -> >",
+      "producer": "pivots",
+      "consumerPreserved": true,
+      "outcome": "MISSED",
+      "onlyAtProducerBoundary": true,
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "writer",
+      "name": "a UI handler writes TTI_GEOMETRY at runtime",
+      "producer": "setMM",
+      "consumerPreserved": false,
+      "outcome": "PRODUCER",
+      "onlyAtProducerBoundary": false,
+      "pass": true,
+      "detail": "AUTHORITY_BASELINE_DRIFT: setMM AUTHORITY_PRODUCER_WRITE sink not in frozen baseline: 0.2"
+    },
+    {
+      "category": "alias-write",
+      "name": "new function writes ASSET_PROFILES through a local alias",
+      "producer": "zgTune",
+      "consumerPreserved": false,
+      "outcome": "MISSED",
+      "onlyAtProducerBoundary": true,
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "argument-write",
+      "name": "ASSET_PROFILES passed to a helper that writes its parameter",
+      "producer": "zgSet",
+      "consumerPreserved": false,
+      "outcome": "MISSED",
+      "onlyAtProducerBoundary": true,
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "effect-call",
+      "name": "top-level call to a function that writes ASSET_PROFILES",
+      "producer": "zgMut",
+      "consumerPreserved": false,
+      "outcome": "MISSED",
+      "onlyAtProducerBoundary": true,
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "category": "top-level-write",
+      "name": "module-level statement writes V5_THRESH after its declaration",
+      "producer": "V5_THRESH",
+      "consumerPreserved": true,
+      "outcome": "MISSED",
+      "onlyAtProducerBoundary": true,
+      "pass": false,
+      "detail": ""
+    }
+  ],
+  "controls": [
+    {
+      "name": "SIGNAL_STATES (read only by unreachable legacy code)",
+      "defects": 0,
+      "error": "",
+      "first": ""
+    },
+    {
+      "name": "GLOSSARY text (renderer only)",
+      "defects": 0,
+      "error": "",
+      "first": ""
+    },
+    {
+      "name": "CONTINUATION_REGIMES (research-only reference study)",
+      "defects": 0,
+      "error": "",
+      "first": ""
+    },
+    {
+      "name": "comment and layout inside ASSET_PROFILES",
+      "defects": 0,
+      "error": "",
+      "first": ""
+    }
+  ]
+}

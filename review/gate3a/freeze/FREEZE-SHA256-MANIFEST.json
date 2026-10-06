@@ -1,0 +1,32 @@
+{
+  "schema": "zugrio.gate3a-freeze-manifest/1",
+  "round11PackageArchiveSha256": "9f98b95ccaf7743292dad248fa0fe8b1fef2b2e25c58fa8b68109ba3130ead69",
+  "artifactSha256": "52dcdbcdfdddbaabe24e72a722623ebcd8e678fbdff8e6fa134247752783c178",
+  "files": [
+    {
+      "path": "GATE3A-DISPOSITION-AUDIT.json",
+      "sha256": "dae2800d1bd325f5f25723f765ad188c772067ed82b47f76ccff61e56ef8c4fe",
+      "bytes": 230149
+    },
+    {
+      "path": "GATE3A-FREEZE.md",
+      "sha256": "ef2dbacc6ccfe012fedca2d71885f4d95d149b41feb45cc778d5f8273e764f9e",
+      "bytes": 6303
+    },
+    {
+      "path": "tools/gate3-authority-inventory.diag.js",
+      "sha256": "c99405551940ba329ea4611792e709517d3515845b07adcacfc295e7019e1764",
+      "bytes": 196326
+    },
+    {
+      "path": "tools/lib/serialize.js",
+      "sha256": "95d13374e324dac9307071e7d6028b0bb6b56615560619a7c8172e662f3448c2",
+      "bytes": 5785
+    },
+    {
+      "path": "tools/verify-dispositions.js",
+      "sha256": "27d2b6b0e1985ded954ffe3f24296a9b83df3d909c6abebbbdb51e85b4aba02e",
+      "bytes": 25187
+    }
+  ]
+}
