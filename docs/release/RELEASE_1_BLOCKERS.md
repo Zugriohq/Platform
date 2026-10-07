@@ -52,7 +52,7 @@ No threshold in R5 may be chosen to hit a date. If a scope does not qualify, it 
 
 | # | Blocker | Needs |
 |---|---|---|
-| P1 | Bring `apps/` and `packages/` to `main` through a reviewed PR with CI. Vehicle: **PR #67** (draft; `main` merged in at d2c07e4; Pages cause fixed, see below) | CI green on the new head; independent review of the code moving to `main`; no semantic change mixed in (CLAUDE.md) |
+| P1 | Bring `apps/` and `packages/` to `main` through a reviewed PR with CI. Vehicle: **PR #67** (draft; `main` merged in at d2c07e4; Pages fix needs an owner dashboard change, see below) | CI green on the new head; independent review of the code moving to `main`; no semantic change mixed in (CLAUDE.md) |
 | P2 | Identity and invite-only access: accounts, invitations, sessions, server-authoritative entitlement, separate from execution authority | Design note → ADR (auth provider choice is an **owner decision**) |
 | P3 | Authenticated desktop: sign-in, token handling, entitlement display, release-status truth labels | P2 |
 | P4 | Deploy the API: OCI VM, Cloudflare Tunnel, `api.zugrio.xyz`, health check, backups | Owner access to OCI and Cloudflare |
@@ -88,15 +88,19 @@ Issue #21 prerequisites, the broker capability matrix, then build-cut Slice 6. T
 | 4 | First invite list (D) | **Owner's email only.** Testers are added one by one later. | Yes |
 | 5 | Exposed Cloudflare token | Revoke now: dash.cloudflare.com → My Profile → API Tokens → the token → **Roll** or **Delete**. | — |
 
-Owner-only actions (need the owner's accounts or money): `docs/runbooks/GATED_DOWNLOAD_SETUP.md` (R2 and Access), revoking the token, and the certificate purchase.
+Owner-only actions (need the owner's accounts or money): `docs/runbooks/GATED_DOWNLOAD_SETUP.md` (R2 and Access), revoking the token, the certificate purchase, `docs/runbooks/PAGES_MONOREPO_BUILD_FIX.md` (needed before #67 merges), and deleting the five `ci/pages-probe-*` branches (this session cannot delete branches).
 
-### P1: Cloudflare Pages failure, cause found and fixed (2026-10-07)
+### P1: Cloudflare Pages failure, cause proven by probe (2026-10-07)
 
-PR #67's failing **Cloudflare Pages** check (the landing site, built from `prototypes/landing-v3-react`) has a cause that was reproduced locally. On the alpha branch that directory had **no `package-lock.json`**: `main` added it in #107 after the branch diverged. Meanwhile the repository root carries a pnpm workspace (`package.json` declaring `packageManager: pnpm`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`).
-- Locally on 52db5b4, `npm ci` in the landing directory fails with `EUSAGE` (no lockfile) and the build fails with `vite: not found`.
-- After merging `main` into the branch (d2c07e4), `npm ci` and `npm run build` both succeed with the root workspace still present.
+PR #67's failing **Cloudflare Pages** check is caused by the alpha's root pnpm workspace. With `pnpm-workspace.yaml` and `pnpm-lock.yaml` both at the repository root, Pages' automatic install skips the landing site's own npm dependencies. Each file alone builds fine; together they fail. The probe evidence is in `docs/runbooks/PAGES_MONOREPO_BUILD_FIX.md`.
 
-The Pages build log (dashboard only) was not read, so the claim that Pages itself failed this way is inferred. The check on the new head will confirm or refute it. Merging #67 is therefore not expected to break zugrio.xyz, provided that check passes. The local-replay Windows artifact now also ships a `.sha256` (cd3f171).
+An earlier note here said merging `main` (which added the landing `package-lock.json`) fixed it. **That was wrong.** The check still failed afterwards.
+
+The fix is an owner dashboard change: set the build command to `npm ci && npm run build`, and set `SKIP_DEPENDENCY_INSTALL=1` (Preview first, then Production). **PR #67 must not merge before it is applied**, or every landing build including production would fail.
+
+Also fixed on #67:
+- `secret-scan` went red after merging `main`. The cause was four gitleaks false positives in the frozen Gate 3A evidence. They are now ignored by exact fingerprint (7b73531), and the check is green.
+- The local-replay Windows artifact now ships a `.sha256` (cd3f171).
 
 ## What cannot be done today
 
