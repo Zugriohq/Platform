@@ -1,0 +1,778 @@
+{
+ "schema": "zugrio.gate3-1-batch2-review/provisional-1",
+ "status": "PROVISIONAL — NOT GOVERNING. First-pass Gate 3.1 batch-2 decisions: the 24 consumer-map fields not in batch 1. Pending independent review and owner sign-off. Admits nothing; Gate 3.2/3.3 not started.",
+ "review": {
+  "preparedBy": "Claude (Claude Code session)",
+  "date": "2026-10-07",
+  "independentReview": "PENDING",
+  "ownerSignOff": "PENDING"
+ },
+ "scope": {
+  "consumerMap": "review/gate3-1/CONSUMER-MAP.provisional.json",
+  "complementOf": "review/gate3-1/BATCH-1-WORKSHEET.json",
+  "artifactSha256": "52dcdbcdfdddbaabe24e72a722623ebcd8e678fbdff8e6fa134247752783c178",
+  "spec": {
+   "path": "docs/architecture/frozen/Zugrio_Signal_Authority_Architecture_v1.0.2_FROZEN.md",
+   "commit": "52db5b4e208d300b0625306b7599dda8fe7c9825",
+   "sha256": "a9ab1732c5da45777853f31721edd2abec713028911a8d96a4956e3b4905b151"
+  }
+ },
+ "rules": [
+  "Batch 1's rules apply unchanged.",
+  "None of these 24 fields has a numeric threshold literal in a live consumer; that is why they were not in batch 1. Thresholds they do depend on are read from tables (PROFILES, V5_THRESH). Those are listed under thresholdsByReference with provenance UNKNOWN. They are not invented.",
+  "§14A's vocabulary has four classes: HARD_STRUCTURAL_PREDICATE, RAW_MODEL_FEATURE, RESEARCH_HEURISTIC and LEGACY_REMOVE. §14B's destinations (named Layer-1 boolean, capital feature, advisory feature, research heuristic, removed) are recorded separately as destination14B, so the two layers are not merged.",
+  "Fields whose destination is Gate 4 are classified here (§14A). Their replacement design is Gate 4 work, and this review does not authorise it."
+ ],
+ "source": {
+  "artifactSha256": "52dcdbcdfdddbaabe24e72a722623ebcd8e678fbdff8e6fa134247752783c178",
+  "inventoryHash": "8f2db15840c2d2d3e5e6d7c1432797af9a49167815e93f5d71d04f5ba6655eae",
+  "round": "legacy/gate-baselines/gate3a/round11"
+ },
+ "totals": {
+  "fields": 24,
+  "coverageWithBatch1": "47 / 47",
+  "classifications": {
+   "LEGACY_REMOVE": 18,
+   "RESEARCH_HEURISTIC": 2,
+   "HARD_STRUCTURAL_PREDICATE": 1,
+   "RAW_MODEL_FEATURE": 3
+  },
+  "amended": 3,
+  "hp1": {
+   "NOT_APPLICABLE": 18,
+   "NOT_ESTABLISHED": 1,
+   "FAIL": 5
+  },
+  "thresholdsByReference": 5
+ },
+ "fields": [
+  {
+   "field": "BROKER_EXECUTION_ADMISSION",
+   "catalogue": {
+    "classification": "LEGACY_REMOVE",
+    "admission": "NOT_APPLICABLE",
+    "semanticMeaning": "Current browser-side cTrader route environment/connection/armed/mode checks.",
+    "destination": "Gate-4 EXECUTION_POLICY_ADMITTED / Broker Execution Policy. Failure locks execution but must not demote a valid conviction state.",
+    "liveConsumers": 14,
+    "consumerCategories": {
+     "BROKER_OR_EXECUTION_GATE": [
+      "route:CONDITIONAL_AUTHORITY",
+      "routeConfirmedReversal:AUTHORITY_PRODUCER_WRITE",
+      "routeConfirmedReversal:CONDITIONAL_AUTHORITY"
+     ],
+     "FIRE_AND_STATE_PROGRESSION": [
+      "engineListener_2:CONDITIONAL_AUTHORITY"
+     ],
+     "PRODUCER_OF_THE_ABOVE": [
+      "api:AUTHORITY_PRODUCER_WRITE",
+      "bootstrap:AUTHORITY_PRODUCER_WRITE"
+     ]
+    }
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "LEGACY_REMOVE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "NOT_APPLICABLE",
+     "basis": "This is execution and configuration admission (route environment, connection, armed state, mode), not a market-validity predicate."
+    },
+    "destination14B": "Removed from state. Successor: Gate-4 EXECUTION_POLICY_ADMITTED and the Broker Execution Policy (§7.10–7.11). Failure locks execution and must not demote a valid conviction state.",
+    "cbot": "ADR-0008: replaced by the signed Execution Authority Manifest that binds brokerAdapterHash, plus the cBot's local account-type allow-list and kill switch."
+   }
+  },
+  {
+   "field": "BROKER_ORDER_PAYLOAD",
+   "catalogue": {
+    "classification": "LEGACY_REMOVE",
+    "admission": "NOT_APPLICABLE",
+    "semanticMeaning": "Identity and direction of the order the browser submits to /api/broker/*: instrument, side, entry price, event/candidate/position identifiers, source timeframe, signal time, model and family labels and the data-quality label. Stop and take-profit values are classified as STOP_GEOMETRY / TARGET_GEOMETRY.",
+    "destination": "Gate-4 broker intent contract / ExecutionSnapshot: replace with a typed, hashed order payload whose every field has declared provenance.",
+    "liveConsumers": 16,
+    "consumerCategories": {
+     "BROKER_OR_EXECUTION_GATE": [
+      "makeIntent:BROKER_ORDER_FIELD",
+      "routeConfirmedReversal:AUTHORITY_PRODUCER_WRITE",
+      "routeConfirmedReversal:BROKER_ORDER_FIELD"
+     ]
+    }
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "LEGACY_REMOVE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "NOT_APPLICABLE",
+     "basis": "This is order payload data, not a predicate."
+    },
+    "destination14B": "Removed. Successor: the typed, hashed Layer-4A entry intent and SubmissionEnvelope (§10.3, §10.9), where every field has declared provenance.",
+    "cbot": "ADR-0008: the cBot accepts only signed SubmissionEnvelopes, never a browser-assembled payload."
+   }
+  },
+  {
+   "field": "BROKER_SUBMISSION",
+   "catalogue": {
+    "classification": "LEGACY_REMOVE",
+    "admission": "NOT_APPLICABLE",
+    "semanticMeaning": "Current browser boundary that submits entry, reversal-exit or manual-close instructions to /api/broker/*.",
+    "destination": "Gate-4 Broker Execution Boundary with deterministic intent identity, idempotency, reconciliation and scoped execution admission.",
+    "liveConsumers": 3,
+    "consumerCategories": {
+     "BROKER_OR_EXECUTION_GATE": [
+      "closePosition:BROKER_CLOSE_SUBMISSION",
+      "route:BROKER_ENTRY_SUBMISSION",
+      "routeConfirmedReversal:BROKER_EXIT_SUBMISSION"
+     ]
+    }
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "LEGACY_REMOVE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "NOT_APPLICABLE",
+     "basis": "This is a transport action."
+    },
+    "destination14B": "Removed. Successor: the Broker Execution Boundary, with deterministic identity, durable reservation and reconciliation (§10.9–10.10, SB-1…SB-18).",
+    "cbot": "ADR-0008: the cBot is the broker-side half of this boundary."
+   }
+  },
+  {
+   "field": "CALIBRATION_PERMISSION",
+   "catalogue": {
+    "classification": "LEGACY_REMOVE",
+    "admission": "NOT_APPLICABLE",
+    "semanticMeaning": "Current calibration/trade-permission fields copied into browser execution intents.",
+    "destination": "Replace with scoped INFERENCE_ADMITTED/STATE_POLICY_ADMITTED/EXECUTION_POLICY_ADMITTED provenance; no status string grants execution.",
+    "liveConsumers": 6,
+    "consumerCategories": {
+     "BROKER_OR_EXECUTION_GATE": [
+      "makeIntent:BROKER_ORDER_FIELD",
+      "makeIntent:BROKER_PERMISSION_INTENT",
+      "makeIntent:GATE_FIELD_WRITE"
+     ]
+    }
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "LEGACY_REMOVE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "NOT_APPLICABLE",
+     "basis": "This is a permission status string copied into intents."
+    },
+    "destination14B": "Removed. Successor: the scoped provenance verdicts INFERENCE_ADMITTED, STATE_POLICY_ADMITTED and EXECUTION_POLICY_ADMITTED (§7.3). No status string grants execution."
+   }
+  },
+  {
+   "field": "DATA_ADVISORY_FEATURES",
+   "catalogue": {
+    "classification": "ADVISORY_FEATURE",
+    "admission": "NOT_APPLICABLE",
+    "semanticMeaning": "Current advisory-only data-health observations/reasons that are intentionally not execution-critical.",
+    "destination": "advisoryFeatureSchema and diagnostics only; structurally unreachable from pWin/EV/state authority.",
+    "liveConsumers": 0,
+    "consumerCategories": {}
+   },
+   "decision": {
+    "classification": {
+     "decision": "AMEND",
+     "value": "RESEARCH_HEURISTIC",
+     "scope": "The catalogue's ADVISORY_FEATURE is a §14B destination, not one of §14A's four classes. Of the four, RESEARCH_HEURISTIC (no capital authority) is closest for advisory data-health observations. The reviewer should confirm or pick another class."
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "NOT_APPLICABLE",
+     "basis": "This is advisory and has no live consumers."
+    },
+    "destination14B": "Advisory feature (advisoryFeatureSchema). Structurally unreachable from capital inference (§7.5; G-7; Gate 3 test 'Advisory features are structurally unreachable from capital inference')."
+   }
+  },
+  {
+   "field": "DATA_HEALTH_REASONS",
+   "catalogue": {
+    "classification": "LEGACY_REMOVE",
+    "admission": "NOT_APPLICABLE",
+    "semanticMeaning": "Composite reason/blocker array from feedGate.",
+    "destination": "Replace with named Layer-1 reason codes emitted by individual admitted predicates.",
+    "liveConsumers": 3,
+    "consumerCategories": {
+     "FIRE_AND_STATE_PROGRESSION": [
+      "feedGate:EXECUTION_OK_WRITE",
+      "feedGate:GATE_FIELD_WRITE"
+     ]
+    }
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "LEGACY_REMOVE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "NOT_APPLICABLE",
+     "basis": "This is a composite reason array, not a predicate. Its thresholds were decided in batch 1 under DATA_HEALTH_OK and TICK_FRESHNESS."
+    },
+    "destination14B": "Removed. Successor: named Layer-1 reason codes emitted by each admitted data-validity predicate."
+   }
+  },
+  {
+   "field": "ENTRY_EVENT_CONFIRMED",
+   "catalogue": {
+    "classification": "LEGACY_REMOVE",
+    "admission": "CANDIDATE_UNADMITTED",
+    "semanticMeaning": "Proposed FIRE-entry-event boolean; it does not yet exist as an admitted predicate.",
+    "destination": "Do not create in production until its closed-bar definition and every threshold provenance are frozen and pass HP-1/HP-2.",
+    "liveConsumers": 0,
+    "consumerCategories": {}
+   },
+   "decision": {
+    "classification": {
+     "decision": "AMEND",
+     "value": "HARD_STRUCTURAL_PREDICATE (spec-named, undefined)",
+     "scope": "The catalogue has LEGACY_REMOVE / CANDIDATE_UNADMITTED. But §6.4 makes it a named Layer-1 predicate ('ENTRY_EVENT_CONFIRMED is a named Layer-1 predicate and must pass §14C'), and §4.4 requires a fresh one for FIRE. So the field is a required hard-predicate candidate. It is not a legacy field to remove. It does not exist yet: no definition, no threshold."
+    },
+    "candidateHardPredicate": "CANDIDATE_REQUIRED_BY_SPEC",
+    "hp1": {
+     "verdict": "NOT_ESTABLISHED",
+     "basis": "It has no definition yet. The catalogue's warning stands: 'the current assessTrigger/lifecycle thresholds cannot be renamed into authority.'"
+    },
+    "hp2": {
+     "verdict": "NOT_ESTABLISHED",
+     "basis": "No threshold exists. Every constituent, when defined, needs HP-3 provenance."
+    },
+    "destination14B": "Named Layer-1 boolean, once defined at Gate 3.2 and 3.5 and tested at 3.3. Its freshness window is separate: FE-1, fireEventFreshnessWindow[profile], [UNSET], State Policy.",
+    "openQuestions": [
+     "Its closed-bar definition is Gate 3.2/3.5 work. Batch 1 left TRIGGER_FRESHNESS, LIFECYCLE_STAGE and ENTRY_EXTENSION at HP-1 NOT_ESTABLISHED for the same reason."
+    ]
+   }
+  },
+  {
+   "field": "EXECUTION_COOLDOWN",
+   "catalogue": {
+    "classification": "LEGACY_REMOVE",
+    "admission": "NOT_APPLICABLE",
+    "semanticMeaning": "Per-profile signal cooldown.",
+    "destination": "Broker/Execution Policy if retained and validated; not candidate/state authority.",
+    "liveConsumers": 2,
+    "consumerCategories": {
+     "FIRE_AND_STATE_PROGRESSION": [
+      "checkSig:CONDITIONAL_AUTHORITY"
+     ],
+     "PRODUCER_OF_THE_ABOVE": [
+      "checkSig:AUTHORITY_PRODUCER_WRITE"
+     ]
+    }
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "LEGACY_REMOVE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "NOT_APPLICABLE",
+     "basis": "This is a policy duration, not market validity."
+    },
+    "destination14B": "Removed from candidate and state. Successor, if kept: a Broker Execution Policy or Risk policy value, validated.",
+    "thresholdsByReference": [
+     {
+      "item": "PROFILES.cooldownMs (SCALP 60 000, DAY 240 000, SWING 3 600 000 ms)",
+      "provenance": "UNKNOWN"
+     }
+    ]
+   }
+  },
+  {
+   "field": "FAMILY_EXECUTION_PERMISSION",
+   "catalogue": {
+    "classification": "LEGACY_REMOVE",
+    "admission": "NOT_APPLICABLE",
+    "semanticMeaning": "family.demoExecutionAllowed / broker-model availability gate.",
+    "destination": "Gate-4 execution/entitlement admission. Must not alter valid conviction state.",
+    "liveConsumers": 3,
+    "consumerCategories": {
+     "FIRE_AND_STATE_PROGRESSION": [
+      "updateSignalState:CONDITIONAL_AUTHORITY",
+      "updateSignalState:VERDICT_WRITE"
+     ],
+     "BROKER_OR_EXECUTION_GATE": [
+      "routeConfirmedReversal:CONDITIONAL_AUTHORITY"
+     ]
+    }
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "LEGACY_REMOVE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "NOT_APPLICABLE",
+     "basis": "This is a product or adapter permission (family.demoExecutionAllowed)."
+    },
+    "destination14B": "Removed. Successor: Gate-4 execution admission. It must not alter a valid conviction state, and it must not be modelled as commercial entitlement (ADR-0007 keeps entitlement free of execution authority)."
+   }
+  },
+  {
+   "field": "LEGACY_EVAL_DIRECTION",
+   "catalogue": {
+    "classification": "RAW_MODEL_FEATURE",
+    "admission": "NOT_APPLICABLE",
+    "semanticMeaning": "evaluateStrategy direction output/strategyPreview.direction.",
+    "destination": "Map to explicit candidate direction/feature semantics; never use as hidden state authority.",
+    "liveConsumers": 1,
+    "consumerCategories": {
+     "PRODUCER_OF_THE_ABOVE": [
+      "recomputeFull:AUTHORITY_PRODUCER_WRITE"
+     ]
+    }
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "RAW_MODEL_FEATURE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "NOT_APPLICABLE",
+     "basis": "This is a legacy evaluation output."
+    },
+    "destination14B": "A capital feature only if a validated model uses it. The candidate's direction comes from the explicit lifecycle candidate, never this hidden output."
+   }
+  },
+  {
+   "field": "LEGACY_EVAL_FAMILY_COUNTS",
+   "catalogue": {
+    "classification": "RAW_MODEL_FEATURE",
+    "admission": "NOT_APPLICABLE",
+    "semanticMeaning": "evaln broad/execution/actionable family counts.",
+    "destination": "Feature vector/diagnostics only unless a later validated model uses them.",
+    "liveConsumers": 0,
+    "consumerCategories": {}
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "RAW_MODEL_FEATURE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "NOT_APPLICABLE",
+     "basis": "These are evidence counts with no live consumers."
+    },
+    "destination14B": "A capital feature or diagnostics, only if a later validated model uses them.",
+    "thresholdsByReference": [
+     {
+      "item": "V5_THRESH.minFamilies = 2",
+      "provenance": "UNKNOWN"
+     }
+    ]
+   }
+  },
+  {
+   "field": "LEGACY_EVAL_PRIMARY_SETUP",
+   "catalogue": {
+    "classification": "LEGACY_REMOVE",
+    "admission": "CANDIDATE_UNADMITTED",
+    "semanticMeaning": "evaln.primarySetupQualified alters legacy READY/FIRE thresholds.",
+    "destination": "Remove threshold-shortcut authority. Candidate lifecycle is handled explicitly in Layer 1.",
+    "liveConsumers": 4,
+    "consumerCategories": {
+     "FIRE_AND_STATE_PROGRESSION": [
+      "coreStrategyEvaluate:GATE_FIELD_WRITE",
+      "coreStrategyEvaluate:VERDICT_WRITE"
+     ]
+    }
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "LEGACY_REMOVE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "FAIL",
+     "basis": "primarySetupQualified (an active candidate in TOUCH/HOLD/TRIGGER stage in the same direction) loosens both legacy gates. READY: score >= (primary ? 0.46 : V5_THRESH.ready 0.50), regimeConf >= (primary ? 0.50 : 0.60), broad families >= (primary ? 2 : 3). FIRE: score >= (primary ? 0.50 : V5_THRESH.fire 0.58), regimeConf >= (primary ? 0.52 : 0.65). That is a threshold shortcut by stage membership with no independent safety meaning."
+    },
+    "destination14B": "Removed. The lifecycle is explicit in Layer 1 (§6.3).",
+    "thresholdsByReference": [
+     {
+      "item": "READY 0.46/0.50 score, 0.50/0.60 regime, 2/3 families; FIRE 0.50/0.58 score, 0.52/0.65 regime (primary/non-primary)",
+      "provenance": "UNKNOWN"
+     }
+    ]
+   }
+  },
+  {
+   "field": "LEGACY_EVAL_RISK_SCALE",
+   "catalogue": {
+    "classification": "LEGACY_REMOVE",
+    "admission": "NOT_APPLICABLE",
+    "semanticMeaning": "evaln.riskScale.",
+    "destination": "Gate-4 Risk/Sizing Policy.",
+    "liveConsumers": 1,
+    "consumerCategories": {
+     "BROKER_OR_EXECUTION_GATE": [
+      "makeIntent:MEMBER"
+     ]
+    }
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "LEGACY_REMOVE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "NOT_APPLICABLE",
+     "basis": "This is a sizing value."
+    },
+    "destination14B": "Removed. Successor: Gate-4 Risk/Sizing Policy (§7.8). Batch 1 RISK_SCALE recorded the truthiness fallback in makeIntent (Number(evaln.riskScale) || 1)."
+   }
+  },
+  {
+   "field": "LEGACY_EVAL_SCORE",
+   "catalogue": {
+    "classification": "RAW_MODEL_FEATURE",
+    "admission": "NOT_APPLICABLE",
+    "semanticMeaning": "evaluateStrategy/evaln score.",
+    "destination": "capitalFeatureSchema only if retained; all direct state/data-request thresholds removed.",
+    "liveConsumers": 6,
+    "consumerCategories": {
+     "FIRE_AND_STATE_PROGRESSION": [
+      "coreStrategyEvaluate:GATE_FIELD_WRITE",
+      "recomputeFull:CONDITIONAL_AUTHORITY",
+      "recomputeFull:MEMBER"
+     ],
+     "PRODUCER_OF_THE_ABOVE": [
+      "coreStrategyEvaluate:AUTHORITY_PRODUCER_WRITE"
+     ]
+    }
+   },
+   "decision": {
+    "classification": {
+     "decision": "AMEND",
+     "value": "LEGACY_REMOVE",
+     "scope": "The catalogue has RAW_MODEL_FEATURE. The live use is a weighted, uncalibrated score that gates FIRE (score < V5_THRESH.fire). §14B: 'pWin and EV are the only continuous quantities permitted to gate state'. §14A: 'No unnamed weighted scalar survives because a consumer depends on it.' So the current use is removed. Its components may come back only as named capital features inside a validated model. This matches batch 1's OPPORTUNITY_SCORE decision."
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "NOT_APPLICABLE",
+     "basis": "This is a continuous score."
+    },
+    "destination14B": "Removed as state authority. Its components may become capital features.",
+    "thresholdsByReference": [
+     {
+      "item": "V5_THRESH {watch 0.42, ready 0.50, fire 0.58}; primary-setup READY 0.46 / FIRE 0.50",
+      "provenance": "UNKNOWN"
+     }
+    ]
+   }
+  },
+  {
+   "field": "LEGACY_EVAL_SPECIALIST",
+   "catalogue": {
+    "classification": "LEGACY_REMOVE",
+    "admission": "CANDIDATE_UNADMITTED",
+    "semanticMeaning": "evaln.specialistQualified/specialistGate composite.",
+    "destination": "Decompose into named safety predicates and features; no composite state authority.",
+    "liveConsumers": 0,
+    "consumerCategories": {}
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "LEGACY_REMOVE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "FAIL",
+     "basis": "This is a composite (HP-6). Its constituents were decided in batch 1 under SPECIALIST_GATE."
+    },
+    "destination14B": "Decomposed: named safety predicates where they pass §14C; features otherwise."
+   }
+  },
+  {
+   "field": "LEGACY_EVAL_THESIS",
+   "catalogue": {
+    "classification": "LEGACY_REMOVE",
+    "admission": "NOT_APPLICABLE",
+    "semanticMeaning": "evaln.thesisId consistency checks.",
+    "destination": "Replace with deterministic candidate/setup identity in FrozenTradeGeometry.",
+    "liveConsumers": 0,
+    "consumerCategories": {}
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "LEGACY_REMOVE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "NOT_APPLICABLE",
+     "basis": "This is an identity consistency check bound to the legacy evaluation object. Identity is preserved by its successor, not by this field."
+    },
+    "destination14B": "Removed. Successor: deterministic setupIdentity and sourceStructureId in FrozenTradeGeometry (§6.7)."
+   }
+  },
+  {
+   "field": "LEGACY_EXECUTION_PERMISSION_ASSERTION",
+   "catalogue": {
+    "classification": "LEGACY_REMOVE",
+    "admission": "NOT_APPLICABLE",
+    "semanticMeaning": "Legacy execution intent fields such as riskCanOpen:true / executionPermission:DEMO_AUTO that assert permission inside the payload.",
+    "destination": "Remove. Execution permission comes only from scoped provenance plus Gate-4 veto/broker policy; payload strings/booleans never grant capital authority.",
+    "liveConsumers": 2,
+    "consumerCategories": {
+     "BROKER_OR_EXECUTION_GATE": [
+      "makeIntent:LEGACY_PERMISSION_ASSERTION"
+     ]
+    }
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "LEGACY_REMOVE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "NOT_APPLICABLE",
+     "basis": "makeIntent hard-codes riskCanOpen:true and executionPermission:'DEMO_AUTO' in every intent. This is permission asserted by the payload itself, with no scoped proof behind it."
+    },
+    "destination14B": "Removed. Execution permission comes only from scoped provenance plus the Gate-4 veto and Broker Execution Policy.",
+    "cbot": "ADR-0008 must treat any permission field inside a payload as data, never as authority. The cBot verifies the signed manifest and envelope instead."
+   }
+  },
+  {
+   "field": "LIFECYCLE_RANK",
+   "catalogue": {
+    "classification": "LEGACY_REMOVE",
+    "admission": "NOT_APPLICABLE",
+    "semanticMeaning": "Current rank(c) of TRIGGERED/RETEST/BREAK states.",
+    "destination": "Candidate Selection Policy; no current lifecycle rank may suppress a distinct candidate before inference.",
+    "liveConsumers": 3,
+    "consumerCategories": {
+     "FIRE_AND_STATE_PROGRESSION": [
+      "analyze:CONDITIONAL_AUTHORITY"
+     ],
+     "SELECTION_AND_WATCHLIST_ORDERING": [
+      "analyze:SELECTION"
+     ]
+    }
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "LEGACY_REMOVE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "NOT_APPLICABLE",
+     "basis": "This is a ranking. Batch 1 found it is an ordinal code."
+    },
+    "destination14B": "Removed. Successor: Candidate Selection Policy SEL-3/SEL-4. Per §6.5, priority never suppresses a genuinely distinct candidate before inference."
+   }
+  },
+  {
+   "field": "MANUAL_RISK_REDUCTION",
+   "catalogue": {
+    "classification": "LEGACY_REMOVE",
+    "admission": "NOT_APPLICABLE",
+    "semanticMeaning": "Current user-confirmed direct close-position path exposed by the browser broker integration.",
+    "destination": "Gate-4/Position Management reduced safety path: verified POSITION_IDENTITY + REDUCTION_PROOF + BROKER_REACHABILITY, without risk-increasing side effects.",
+    "liveConsumers": 3,
+    "consumerCategories": {
+     "BROKER_OR_EXECUTION_GATE": [
+      "closePosition:BROKER_ORDER_FIELD",
+      "closePosition:CONDITIONAL_AUTHORITY"
+     ]
+    }
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "LEGACY_REMOVE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "NOT_APPLICABLE",
+     "basis": "This is a user-confirmed close path, not entry eligibility."
+    },
+    "destination14B": "Removed. Successor: the Gate-4 Position Management reduced-safety path (RISK_REDUCING invariant set §10.7; OC-2).",
+    "cbot": "ADR-0008 §7: the cBot's local risk-reducing kernel closes by verified position ID only."
+   }
+  },
+  {
+   "field": "PLAN_STATUS",
+   "catalogue": {
+    "classification": "LEGACY_REMOVE",
+    "admission": "CANDIDATE_UNADMITTED",
+    "semanticMeaning": "plannerStatus/executionEligible composite mixes structural geometry and economics.",
+    "destination": "Split structural geometry completeness from dynamic execution economics. No composite plan verdict survives.",
+    "liveConsumers": 2,
+    "consumerCategories": {
+     "FIRE_AND_STATE_PROGRESSION": [
+      "checkSig:CONDITIONAL_AUTHORITY",
+      "updateSignalState:CONDITIONAL_AUTHORITY"
+     ]
+    }
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "LEGACY_REMOVE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "FAIL",
+     "basis": "plannerStatus/executionEligible mixes structural geometry with economics (HP-6, no partial credit). Batch 1 decided its constituents under STOP_GEOMETRY, TARGET_GEOMETRY and REWARD_ECONOMIC_QUALITY."
+    },
+    "destination14B": "Split. Structural completeness goes to a Layer-1 predicate. Execution economics go to the ExecutionSnapshot and Layer 4B."
+   }
+  },
+  {
+   "field": "REGIME_QUALITY",
+   "catalogue": {
+    "classification": "RAW_MODEL_FEATURE",
+    "admission": "CANDIDATE_UNADMITTED",
+    "semanticMeaning": "Canonical regime confidence/quality quantities used by legacy gates.",
+    "destination": "capitalFeatureSchema/diagnostics only; no raw regime-confidence state gate.",
+    "liveConsumers": 4,
+    "consumerCategories": {
+     "FIRE_AND_STATE_PROGRESSION": [
+      "coreStrategyEvaluate:VERDICT_WRITE"
+     ],
+     "PRODUCER_OF_THE_ABOVE": [
+      "recomputeFull:AUTHORITY_PRODUCER_WRITE"
+     ]
+    }
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "RAW_MODEL_FEATURE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "FAIL",
+     "basis": "HP-5 presumes REGIME_QUALITY_OK is a model feature 'until proven otherwise', and nothing in the artifact proves otherwise. §4.3: 'Raw regimeConfidence is never read by 2B.' Gate 3.8: 'Reclassify REGIME_QUALITY_OK or remove it from direct state authority.'"
+    },
+    "destination14B": "A capital feature or diagnostics. No raw regime-confidence state gate.",
+    "thresholdsByReference": [
+     {
+      "item": "V5_THRESH.minRegime 0.55; READY regimeConf >= (primary ? 0.50 : 0.60); FIRE regimeConf >= (primary ? 0.52 : 0.65)",
+      "provenance": "UNKNOWN"
+     }
+    ]
+   }
+  },
+  {
+   "field": "RESEARCH_CONTINUATION",
+   "catalogue": {
+    "classification": "RESEARCH_HEURISTIC",
+    "admission": "NOT_APPLICABLE",
+    "semanticMeaning": "Continuation OBSERVE route / researchSeeds.",
+    "destination": "Research ledger only; unreachable from production candidate/state authority.",
+    "liveConsumers": 1,
+    "consumerCategories": {
+     "PRODUCER_OF_THE_ABOVE": [
+      "updateSignalState:AUTHORITY_PRODUCER_WRITE"
+     ]
+    }
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "RESEARCH_HEURISTIC"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "NOT_APPLICABLE",
+     "basis": "This is research only."
+    },
+    "destination14B": "Research ledger only. §12: authority is OBSERVE, and promotion needs PROPOSE authority after Gate 6 (CR-1, CR-2)."
+   }
+  },
+  {
+   "field": "RISK_REDUCING_DATA_BYPASS",
+   "catalogue": {
+    "classification": "LEGACY_REMOVE",
+    "admission": "NOT_APPLICABLE",
+    "semanticMeaning": "Current reversal-exit intent hardcodes dataExecutionOk:true instead of expressing risk-reducing classification directly.",
+    "destination": "Replace with explicit RISK_REDUCING order classification and reduced safety invariant set; do not spoof data health to obtain permission.",
+    "liveConsumers": 1,
+    "consumerCategories": {
+     "BROKER_OR_EXECUTION_GATE": [
+      "routeConfirmedReversal:BROKER_DATA_INTENT"
+     ]
+    }
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "LEGACY_REMOVE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "NOT_APPLICABLE",
+     "basis": "The reversal-exit intent hard-codes dataExecutionOk:true. That spoofs data health to get permission; it is not a data-health proof."
+    },
+    "destination14B": "Removed. Successor: an explicit RISK_REDUCING classification computed from economic effect (OC-2, OC-3) and the reduced invariant set (§10.7). Data health is never spoofed.",
+    "cbot": "ADR-0008 §7: risk-reducing actions get their own path. They never borrow risk-increasing admission."
+   }
+  },
+  {
+   "field": "TRIGGER_QUALITY",
+   "catalogue": {
+    "classification": "LEGACY_REMOVE",
+    "admission": "CANDIDATE_UNADMITTED",
+    "semanticMeaning": "Legacy weighted/fresh trigger semantics and confirmation components.",
+    "destination": "Decompose. Continuous pieces become capital features; a future ENTRY_EVENT_CONFIRMED is created only after every constituent passes §14C.",
+    "liveConsumers": 0,
+    "consumerCategories": {}
+   },
+   "decision": {
+    "classification": {
+     "decision": "CONFIRM",
+     "value": "LEGACY_REMOVE"
+    },
+    "candidateHardPredicate": "NOT_A_CANDIDATE",
+    "hp1": {
+     "verdict": "FAIL",
+     "basis": "This is a composite of weights and freshness. HP-5 presumes TRIGGER_GRADE_NOT_C is a model feature."
+    },
+    "destination14B": "Decomposed. Continuous pieces become capital features. A future ENTRY_EVENT_CONFIRMED is defined only after every constituent passes §14C (see ENTRY_EVENT_CONFIRMED)."
+   }
+  }
+ ],
+ "summary": {
+  "fields": 24,
+  "amended": [
+   "DATA_ADVISORY_FEATURES (ADVISORY_FEATURE is §14B vocabulary; §14A RESEARCH_HEURISTIC proposed)",
+   "ENTRY_EVENT_CONFIRMED (spec-required hard-predicate candidate, undefined; not LEGACY_REMOVE)",
+   "LEGACY_EVAL_SCORE (state-gating use is LEGACY_REMOVE, consistent with OPPORTUNITY_SCORE)"
+  ],
+  "gate4Fields": [
+   "BROKER_EXECUTION_ADMISSION",
+   "BROKER_ORDER_PAYLOAD",
+   "BROKER_SUBMISSION",
+   "CALIBRATION_PERMISSION",
+   "FAMILY_EXECUTION_PERMISSION",
+   "LEGACY_EXECUTION_PERMISSION_ASSERTION",
+   "LEGACY_EVAL_RISK_SCALE",
+   "MANUAL_RISK_REDUCTION",
+   "RISK_REDUCING_DATA_BYPASS"
+  ],
+  "admittedByThisReview": [],
+  "note": "With batch 1, all 47 consumer-map fields now have a first-pass §14A classification. The §14A known gap remains: presentation and research-logging consumers are not mapped (Gate 3A inventoried authority sinks only)."
+ }
+}
