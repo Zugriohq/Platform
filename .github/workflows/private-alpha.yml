@@ -272,7 +272,26 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build:packages
       - run: pnpm --filter @zugrio/desktop dist:win
+      - name: SHA-256 of the local-replay executable
+        shell: bash
+        working-directory: apps/desktop/release
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          exes=(*.exe)
+          if [ "${#exes[@]}" -ne 1 ]; then echo "expected exactly one executable, found ${#exes[@]}"; exit 1; fi
+          sha256sum "${exes[0]}" > "${exes[0]}.sha256"
+          {
+            echo '### Local-replay artifact'
+            echo '```'
+            cat "${exes[0]}.sha256"
+            echo '```'
+            echo 'Signing: **UNSIGNED**'
+          } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with:
           name: zugrio-private-alpha-windows
-          path: apps/desktop/release/*.exe
+          if-no-files-found: error
+          path: |
+            apps/desktop/release/*.exe
+            apps/desktop/release/*.exe.sha256
