@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import {
   ArrowRight, ChevronRight, LockKeyhole, Menu, X
 } from "lucide-react";
@@ -10,7 +10,6 @@ import BrandWordmark from "./BrandWordmark.jsx";
 import BrandIntro from "./BrandIntro.jsx";
 import MarketTopography from "./MarketTopography.jsx";
 import {
-  StoryCapabilityStatus,
   ReadinessCapability,
   ReadinessMeta,
   ReadinessLegend,
@@ -58,7 +57,7 @@ const CASES = {
     currentNorm: 84,
     rr: "0.67R",
     copy: "The signal stays on record. The current entry no longer qualifies.",
-    action: "Pass · Reassess",
+    action: "Stand aside · Reassess",
   },
 };
 
@@ -69,7 +68,6 @@ const STORY = [
     title: "Same pattern. Different market. Different answer.",
     body: "Zugrio does not treat FX, Gold and Synthetic Indices as interchangeable price charts. It evaluates the opportunity inside the market and instrument that produced it — including the behaviour, costs and context that actually apply there.",
     proof: "Similar candles do not automatically deserve the same conclusion.",
-    capabilities: ["intelligence.instrument_behaviour", "intelligence.market_drivers", "market.fx", "market.gold", "market.synthetic_indices"],
   },
   {
     key: "strategy",
@@ -77,7 +75,6 @@ const STORY = [
     title: "Your strategy decides what counts.",
     body: "The same market can produce different answers under different strategies. Zugrio uses your strategy to decide what qualifies as a setup, which price areas matter, what must confirm the entry and what invalidates the trade.",
     proof: "No setup is a valid answer too.",
-    capabilities: ["intelligence.background_scanning", "chart.annotations", "strategy.zugrio_core"],
   },
   {
     key: "current",
@@ -85,7 +82,6 @@ const STORY = [
     title: "A valid signal can become a poor entry.",
     body: "The original signal stays on record. Zugrio separately rechecks the trade available now as price, costs, freshness, entry geometry and relevant context change.",
     proof: "What qualified then is not automatically what qualifies now.",
-    capabilities: ["intelligence.current_entry_recheck"],
   },
   {
     key: "control",
@@ -93,7 +89,6 @@ const STORY = [
     title: "A signal is not permission.",
     body: "Finding an opportunity, approving a trade and allowing software to act are different decisions. You choose how much execution authority to delegate.",
     proof: "More automation should never mean less clarity about who is allowed to act.",
-    capabilities: ["mode.signal", "mode.semi_auto_ctrader", "mode.auto", "mode.full_auto"],
   },
   {
     key: "history",
@@ -101,7 +96,6 @@ const STORY = [
     title: "Hindsight doesn’t get to rewrite the trade.",
     body: "Zugrio keeps the original trade available for review: the strategy state, relevant evidence, what changed, the intended action, what you or the system did, what the broker actually did and what happened afterward.",
     proof: "Replay shows what was knowable at the time.",
-    capabilities: ["decision.replay"],
   },
 ];
 
@@ -111,92 +105,79 @@ const HERO_HEADLINES = [
 ];
 
 const PROBLEM_CHAIN = [
-  ["01", "MISSED OPPORTUNITY", "You can miss the opportunity."],
-  ["02", "STALE ENTRY", "You can find the right setup after the best entry has gone."],
-  ["03", "CHANGING CONTEXT", "The market can change between the signal and the trade."],
-  ["04", "PROCESS DEVIATION", "A good plan can break down in execution."],
-  ["05", "EXECUTION MISMATCH", "Execution can differ from the plan."],
-  ["06", "MISLEADING CONCLUSION", "After the position closes, P&L alone cannot tell you which part actually failed."],
+  ["01", "MISSED OPPORTUNITY", "A valid setup forms while your attention is elsewhere, so the trade is never considered."],
+  ["02", "STALE ENTRY", "The setup was valid, but price has moved far enough that the original entry geometry no longer holds."],
+  ["03", "CHANGING CONTEXT", "Session, spread, volatility or market structure changes after the signal and changes the decision."],
+  ["04", "PROCESS DEVIATION", "The idea survives, but size, timing, confirmation or risk is changed outside the plan."],
+  ["05", "EXECUTION MISMATCH", "The fill, stop, protection or submitted order differs from what was actually approved."],
+  ["06", "MISLEADING CONCLUSION", "A win can hide a broken process; a loss can still come from a sound, compliant decision."],
 ];
 
 const FAQ_ITEMS = [
   {
     code: "ACCESS",
     question: "What can I use today?",
-    answer: "Zugrio is in private validation. The first release starts invite-only on Windows desktop, with Zugrio Core, Signal and Semi-Auto on cTrader. Public trading access is not open yet.",
-    capabilities: ["client.windows_desktop", "strategy.zugrio_core", "mode.signal", "mode.semi_auto_ctrader", "broker.ctrader"],
+    answer: "Nothing is open for public use yet. Zugrio is in private validation, and the current alpha is limited to structural replay on test data for Zugrio Core, with no broker connection. The planned first release is invite-only on Windows desktop with Signal and Semi-Auto on cTrader, followed by Auto. Each capability's current status is shown above.",
   },
   {
     code: "MARKETS",
     question: "Which markets is Zugrio built around first?",
     answer: "FX, Gold and Synthetic Indices. Each market and instrument scope is evaluated separately rather than inheriting assumptions from another market.",
-    capabilities: ["market.fx", "market.gold", "market.synthetic_indices"],
   },
   {
     code: "STRATEGY",
     question: "Which strategies will Zugrio support?",
     answer: "Zugrio supports a wider strategy direction that includes Zugrio Core, Smart Money Concepts, Trend Following, Range / Mean Reversion and Custom Strategy.",
-    capabilities: ["strategy.zugrio_core", "strategy.smc", "strategy.trend_following", "strategy.range_mean_reversion", "strategy.custom_builder"],
   },
   {
     code: "AI",
     question: "Does AI decide the trade?",
     answer: "AI may help explain structured product state. Authoritative strategy state, chart annotations, risk rules and trading permissions come from defined, versioned system logic and evidence.",
-    capabilities: [],
   },
   {
     code: "CONTROL",
     question: "How does automation work?",
     answer: "Zugrio separates analysis from permission. Signal keeps execution with you. Semi-Auto acts only after you approve. Auto and Full Auto add deeper delegation within limits you set, with their current availability shown here.",
-    capabilities: ["mode.signal", "mode.semi_auto_ctrader", "mode.auto", "mode.full_auto"],
   },
   {
     code: "BROKER",
     question: "Which broker comes first for Semi-Auto?",
     answer: "cTrader is the first Semi-Auto broker path planned for the first release. Its current availability is shown here.",
-    capabilities: ["broker.ctrader"],
   },
   {
     code: "CLIENTS",
     question: "Where will I use Zugrio?",
     answer: "The first release is Windows-desktop first, with web for account and access workflows. Mobile follows later.",
-    capabilities: ["client.windows_desktop", "client.web", "client.mobile"],
   },
   {
     code: "CUSTOM",
     question: "Can I use my own strategy?",
     answer: "Custom Strategy is part of the broader Zugrio direction, but it is not part of the first release.",
-    capabilities: ["strategy.custom_builder"],
   },
   {
-    code: "PASS",
+    code: "NO TRADE",
     question: "What happens when nothing qualifies?",
-    answer: "Zugrio can return PASS. No trade is a valid decision.",
-    capabilities: [],
+    answer: "Zugrio can return No trade. Standing aside is a valid decision.",
   },
   {
     code: "REPLAY",
     question: "Can I review a trade afterward?",
     answer: "Decision history and replay preserve what was known at the time and what happened afterward. Current availability is shown here.",
-    capabilities: ["decision.replay"],
   },
   {
     code: "CUSTODY",
     question: "Does Zugrio hold my money?",
     answer: "No. Capital remains with the broker. Custody, product access and permission to submit a trade are separate.",
-    capabilities: [],
   },
   {
     code: "RISK",
     question: "Does Zugrio guarantee profitable trades?",
     answer: "No. Markets are uncertain. Zugrio does not guarantee returns, win rates or profitable outcomes.",
-    capabilities: [],
   },
   {
     code: "EARLY ACCESS",
     question: "What happens after I join early access?",
     answer: "You will receive meaningful build updates and invitations as eligible capabilities and scopes open. Joining does not connect a broker or authorise trading.",
-    capabilities: [],
   },
 ];
 
@@ -253,11 +234,7 @@ function Shell({ activeStep, marketKey, setMarketKey, caseKey, setCaseKey }) {
             </div>
           </div>
 
-          <CandlestickChart
-            marketKey={marketKey}
-            caseKey={caseKey}
-            priceSpec={market.priceSpec}
-          />
+          <CandlestickChart marketKey={marketKey} caseKey={caseKey} priceSpec={market.priceSpec} />
 
           <div className="chart-foot">
             <span>{market.note}</span>
@@ -276,83 +253,34 @@ function Shell({ activeStep, marketKey, setMarketKey, caseKey, setCaseKey }) {
             <div><span>MARKET</span><b>{market.family}</b></div>
           </div>
 
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.section
-              key={activeStep}
-              className="decision-focus"
-              data-focus={activeStep}
-              initial={{ opacity: 0, y: 9, filter: "blur(5px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: -7, filter: "blur(4px)" }}
-              transition={{ duration: .36, ease: [0.16,1,0.3,1] }}
-            >
-              <header className="decision-focus-head">
-                <span>0{stepIndex + 1} / 05</span>
-                <b>{step.overline}</b>
-              </header>
+          <motion.div
+            key={caseKey + marketKey}
+            className={"decision-summary " + (entryStillHolds ? "holding" : "caution")}
+            initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: .34, ease: [0.16,1,0.3,1] }}
+          >
+            <span>CURRENT DECISION</span>
+            <strong>{entryStillHolds ? "Entry still qualifies" : "Stand aside — entry degraded"}</strong>
+            <p>{item.copy}</p>
+          </motion.div>
 
-              {activeStep === "market" && (
-                <div className="market-lens">
-                  <div><span>INSTRUMENT</span><b>{market.label}</b></div>
-                  <div><span>SESSION / CONTEXT</span><b>{market.note}</b></div>
-                  <div><span>COST MODEL</span><b>Spread · execution costs</b></div>
-                  <div><span>DRIVERS</span><b>{market.driver}</b></div>
-                </div>
-              )}
+          <div className="decision-metrics" aria-label="Illustrative decision evidence">
+            <div><span>STRUCTURE</span><b>Holds</b></div>
+            <div><span>ENTRY</span><b>{entryStillHolds ? "Current" : "Degraded"}</b></div>
+            <div><span>R:R NOW</span><b>{item.rr}</b></div>
+          </div>
 
-              {activeStep === "strategy" && (
-                <>
-                  <div className="state-sequence" aria-label="Opportunity progression">
-                    <span className="complete">FORMING</span>
-                    <span className="complete">READY</span>
-                    <span className="current">TRIGGERED</span>
-                  </div>
-                  <div className="strategy-evidence">
-                    <div><span>STRUCTURE</span><b>Confirmed</b></div>
-                    <div><span>LOCATION</span><b>Valid</b></div>
-                    <div><span>TRIGGER</span><b>Recorded</b></div>
-                  </div>
-                  <div className="pass-outcome"><b>PASS</b><span>No permitted trade qualifies.</span></div>
-                </>
-              )}
+          <div className="decision-delta">
+            <div><span>SIGNAL ENTRY</span><b>{frozenEntry}</b></div>
+            <i aria-hidden="true">→</i>
+            <div><span>CURRENT</span><b>{current}</b></div>
+          </div>
 
-              {activeStep === "current" && (
-                <div className="current-recheck">
-                  <div><span>SIGNAL</span><b className="state-holding">Still valid</b></div>
-                  <div><span>CURRENT ENTRY</span><b className={entryStillHolds ? "state-holding" : "state-caution"}>{entryStillHolds ? "Still qualifies" : "No longer qualifies"}</b></div>
-                  <div><span>REWARD-TO-RISK</span><b><i>2.00R</i><strong>→</strong>{item.rr}</b></div>
-                  <div><span>PRICE</span><b>{frozenEntry}<strong>→</strong>{current}</b></div>
-                </div>
-              )}
-
-              {activeStep === "control" && (
-                <>
-                  <div className="control-ladder" aria-label="Control modes">
-                    {["Signal", "Semi-Auto", "Auto", "Full Auto"].map((mode) => (
-                      <span className={mode === "Semi-Auto" ? "selected" : ""} key={mode}>{mode}</span>
-                    ))}
-                  </div>
-                  <div className="authority-band">
-                    <div><span>CURRENT DEMO MODE</span><b>Semi-Auto · approval required</b></div>
-                    <LockKeyhole size={16} />
-                  </div>
-                  <p className="authority-note">Prepared ≠ submitted. Broker permission and Zugrio authority stay separate.</p>
-                </>
-              )}
-
-              {activeStep === "history" && (
-                <>
-                  <div className="decision-ledger" aria-label="Illustrative decision history">
-                    <div><time>09:18</time><span>SYSTEM</span><b>Setup qualified</b></div>
-                    <div><time>09:24</time><span>SYSTEM</span><b>Signal recorded</b></div>
-                    <div><time>09:31</time><span>SYSTEM</span><b>{entryStillHolds ? "Current entry still qualifies" : "Current entry no longer qualifies"}</b></div>
-                    <div><time>09:31</time><span>BROKER</span><b>{entryStillHolds ? "No order yet" : "No order submitted"}</b></div>
-                  </div>
-                  <div className="ledger-rule">POINT-IN-TIME RECORD · NO HINDSIGHT REWRITE</div>
-                </>
-              )}
-            </motion.section>
-          </AnimatePresence>
+          <div className="decision-next">
+            <div><span>NEXT ACTION</span><b>{entryStillHolds ? "Prepared · Semi-Auto" : "Stand aside · Reassess"}</b></div>
+            <LockKeyhole size={16} aria-hidden="true" />
+          </div>
 
           <div className="story-state">
             <span>0{stepIndex + 1} / 05</span>
@@ -411,11 +339,6 @@ function Story({ activeStep, setActiveStep, marketKey, setMarketKey, caseKey, se
 
               <div className="story-proof"><span>{s.proof}</span></div>
 
-              <div className="story-capabilities" aria-label={s.overline + " readiness"}>
-                {s.capabilities.map((capabilityId) => (
-                  <StoryCapabilityStatus key={capabilityId} capabilityId={capabilityId} />
-                ))}
-              </div>
             </motion.article>
           ))}
         </div>
@@ -553,30 +476,32 @@ export default function App() {
             <div className="kicker">THE SIGNAL ISN’T THE WHOLE TRADE</div>
             <h2>Trading breaks in more than one place.</h2>
             <p>
-              The signal alone is not enough to tell you whether the trade still makes sense, whether the plan was followed, or what actually failed.
+              A setup can be valid and the final decision can still degrade later. Zugrio follows the whole chain so you can see where the decision actually changed.
             </p>
           </div>
 
-          <div className="problem-chain" role="list" aria-label="Where trading decisions can break down">
+          <div className="problem-rail" role="list" aria-label="Six places a trading decision can break">
             {PROBLEM_CHAIN.map(([index, label, copy], itemIndex) => (
-              <motion.div
-                className="problem-chain-row"
+              <motion.article
+                className="problem-node"
                 role="listitem"
                 key={label}
                 initial={prefersReduced ? false : { opacity: 0, y: 18 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: .72 }}
-                transition={{ duration: .52, delay: prefersReduced ? 0 : itemIndex * .045, ease: [0.16,1,0.3,1] }}
+                viewport={{ once: true, amount: .65 }}
+                transition={{ duration: .5, delay: prefersReduced ? 0 : itemIndex * .055, ease: [0.16,1,0.3,1] }}
               >
-                <span className="problem-index">{index}</span>
+                <div className="problem-node-marker">
+                  <span>{index}</span><i aria-hidden="true" />
+                </div>
                 <strong>{label}</strong>
                 <p>{copy}</p>
-              </motion.div>
+              </motion.article>
             ))}
           </div>
 
           <p className="problem-close">
-            Zugrio is built around the whole decision — before the signal, after it, and through review.
+            One signal. Six failure points. The outcome alone cannot tell you which one mattered.
           </p>
         </motion.section>
 
@@ -585,8 +510,8 @@ export default function App() {
         <motion.section className="decision-quality" id="decision-quality" {...sectionReveal}>
           <div className="dq-intro">
             <div className="kicker">NOT ONE SCORE</div>
-            <h2>Your P&amp;L tells you the outcome. It doesn’t tell you what needs fixing.</h2>
-            <p>Zugrio separates the trade into four questions rather than collapsing everything into win or loss.</p>
+            <h2>P&amp;L is the result. Not the diagnosis.</h2>
+            <p>Zugrio separates strategy quality, process, execution and outcome so you can see what actually needs fixing.</p>
           </div>
 
           <div className="dq-audit" aria-label="Illustrative four-part decision audit">
@@ -602,7 +527,7 @@ export default function App() {
                   <strong>STRATEGY HEALTH</strong>
                   <p>Is there real evidence behind this strategy in this market?</p>
                 </div>
-                <StoryCapabilityStatus capabilityId="intelligence.strategy_health" className="dq-readiness" hideName />
+                <b className="dq-verdict neutral">EVIDENCE · MODERATE</b>
               </div>
 
               <div className="dq-axis">
@@ -634,7 +559,7 @@ export default function App() {
             </div>
 
             <div className="dq-case-ledger">
-              <div><span>SYSTEM DECISION</span><b>PASS</b></div>
+              <div><span>SYSTEM DECISION</span><b>NO TRADE</b></div>
               <i aria-hidden="true" />
               <div><span>YOUR ACTION</span><b>OVERRIDE</b></div>
               <i aria-hidden="true" />
@@ -654,10 +579,6 @@ export default function App() {
               <div className="kicker">BEHAVIOUR HEALTH</div>
               <h3>Observe the action. Don’t invent the emotion.</h3>
               <p>Where supported by broker data, Zugrio can surface observable deviations such as entering early, chasing price, changing risk, exiting early or overriding the system state.</p>
-              <div className="dq-layer-status">
-                <StoryCapabilityStatus capabilityId="behaviour.health" className="dq-readiness" />
-                <StoryCapabilityStatus capabilityId="behaviour.observations" className="dq-readiness" />
-              </div>
             </div>
 
             <div className="dq-observation-ledger" aria-label="Examples of factual behaviour observations">
@@ -668,7 +589,7 @@ export default function App() {
                 ["04","EARLY EXIT"],
                 ["05","OVERRIDE"],
               ].map(([index,label]) => (
-                <div key={label}><span>{index}</span><b>{label}</b><em>OBSERVABLE</em></div>
+                <div key={label}><span>{index}</span><b>{label}</b></div>
               ))}
               <small>Evidence-backed observations only · no emotion inference</small>
             </div>
@@ -681,12 +602,12 @@ export default function App() {
               <p>Set your own guardrails. Zugrio can flag a broken rule, ask you to confirm, or enforce it — while safe risk reduction always remains available.</p>
             </div>
 
-            <div className="dq-guardrail-rail" aria-label="Guardrail readiness">
-              <StoryCapabilityStatus capabilityId="guardrail.advisory" className="dq-guardrail-status" />
+            <div className="dq-guardrail-rail" aria-label="How guardrails can progress">
+              <div className="dq-guardrail-step"><span>01</span><b>Flag the broken rule</b></div>
               <span className="dq-guardrail-line" aria-hidden="true" />
-              <StoryCapabilityStatus capabilityId="guardrail.confirmation" className="dq-guardrail-status" />
+              <div className="dq-guardrail-step"><span>02</span><b>Ask for confirmation</b></div>
               <span className="dq-guardrail-line" aria-hidden="true" />
-              <StoryCapabilityStatus capabilityId="guardrail.enforcing" className="dq-guardrail-status" />
+              <div className="dq-guardrail-step"><span>03</span><b>Enforce the chosen limit</b></div>
             </div>
           </div>
 
@@ -703,7 +624,7 @@ export default function App() {
               <h2>Know what’s live. And what isn’t.</h2>
             </div>
             <div>
-              <p>The Zugrio proposition is larger than the first capabilities that become available. That does not make every capability usable today.</p>
+              <p>Some of this is coming soon. Most isn’t available yet. Here’s exactly what is in validation, planned, or deliberately locked.</p>
               <ReadinessMeta />
             </div>
           </div>
@@ -711,7 +632,7 @@ export default function App() {
           <div className="readiness-console" aria-label="Zugrio capability readiness">
             <div className="readiness-console-head">
               <span>CAPABILITY READINESS</span>
-              <b>ONE PUBLISHED SOURCE</b>
+              <b>CURRENT BUILD STATUS</b>
             </div>
 
             <div className="readiness-group">
@@ -763,9 +684,30 @@ export default function App() {
             <div>
               <div className="kicker">STATUS LANGUAGE</div>
               <h3>One label should answer one question: can I use this now?</h3>
-              <p>Every status on this page comes from one published readiness list, with the date it was last checked.</p>
+              <p>These labels describe availability only. They are not claims about performance, profitability or product quality.</p>
             </div>
             <ReadinessLegend />
+          </div>
+        </motion.section>
+
+        <motion.section className="operator" id="who" {...sectionReveal}>
+          <div className="operator-grid">
+            <div className="operator-copy">
+              <div className="kicker">WHO IS BUILDING THIS</div>
+              <h2>Built by traders who know what a drawdown costs.</h2>
+            </div>
+
+            <div className="operator-profile">
+              <p>
+                We have traded real capital through real drawdowns. We know what it’s like to take a good setup late, watch a plan slip under pressure, and close a loss that taught nothing because nothing was recorded.
+              </p>
+              <p>
+                Zugrio is built so discipline doesn’t have to be learned the expensive way. It puts structure around the whole decision: the market the setup comes from, the strategy’s rules, whether the entry still holds, who is allowed to act, and a record you can review without hindsight. Mistakes show up in the process, not only in the account balance.
+              </p>
+              <p>
+                No performance claims. Trading involves risk of loss.
+              </p>
+            </div>
           </div>
         </motion.section>
 
@@ -781,6 +723,7 @@ export default function App() {
                 <button
                   type="button"
                   aria-pressed={faqIndex === index}
+                  aria-controls={"faq-answer-" + index}
                   className={faqIndex === index ? "active" : ""}
                   onClick={() => setFaqIndex(index)}
                   key={item.question}
@@ -793,33 +736,24 @@ export default function App() {
             </div>
 
             <div className="trust-answer-wrap">
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.article
-                  className="trust-answer"
-                  key={faqIndex}
-                  aria-live="polite"
-                  initial={{ opacity: 0, y: 12, filter: "blur(5px)" }}
-                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, y: -8, filter: "blur(4px)" }}
-                  transition={{ duration: .34, ease: [0.16,1,0.3,1] }}
-                >
-                  <div className="trust-answer-meta">
-                    <span>{String(faqIndex + 1).padStart(2, "0")} / {String(FAQ_ITEMS.length).padStart(2, "0")}</span>
-                    <b>{FAQ_ITEMS[faqIndex].code}</b>
-                  </div>
-
-                  <h3>{FAQ_ITEMS[faqIndex].question}</h3>
-                  <p>{FAQ_ITEMS[faqIndex].answer}</p>
-
-                  {FAQ_ITEMS[faqIndex].capabilities.length > 0 && (
-                    <div className="trust-answer-readiness">
-                      {FAQ_ITEMS[faqIndex].capabilities.map((capabilityId) => (
-                        <ReadinessCapability key={capabilityId} capabilityId={capabilityId} />
-                      ))}
+              <div aria-live="polite">
+                {FAQ_ITEMS.map((item, index) => (
+                  <article
+                    className="trust-answer"
+                    id={"faq-answer-" + index}
+                    hidden={faqIndex !== index}
+                    key={item.question}
+                  >
+                    <div className="trust-answer-meta">
+                      <span>{String(index + 1).padStart(2, "0")} / {String(FAQ_ITEMS.length).padStart(2, "0")}</span>
+                      <b>{item.code}</b>
                     </div>
-                  )}
-                </motion.article>
-              </AnimatePresence>
+
+                    <h3>{item.question}</h3>
+                    <p>{item.answer}</p>
+                  </article>
+                ))}
+              </div>
 
               <div className="trust-principle">
                 <span>TRUST PRINCIPLE</span>

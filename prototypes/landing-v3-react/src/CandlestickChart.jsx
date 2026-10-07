@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
 
 const BASE_CLOSES = [
@@ -35,14 +35,58 @@ function buildBars(marketKey, caseKey) {
   });
 }
 
+// The chart draws in real CSS pixels: the viewBox always equals the rendered box, so
+// text keeps its true size on phones instead of being scaled down with an 820px canvas.
+function useRenderedSize(ref, fallback) {
+  const [size, setSize] = useState(fallback);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const read = () => {
+      const rect = el.getBoundingClientRect();
+      const next = { w: Math.round(rect.width), h: Math.round(rect.height) };
+      if (!next.w || !next.h) return;
+      setSize(prev => (prev.w === next.w && prev.h === next.h ? prev : next));
+    };
+    read();
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", read);
+      return () => window.removeEventListener("resize", read);
+    }
+    const observer = new ResizeObserver(read);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [ref]);
+  return size;
+}
+
+// Places right-hand axis tags so they never overlap: sorted by price position, pushed apart to a
+// minimum gap, then pulled back inside the plot if the stack ran past the bottom edge.
+function spreadTags(items, gap, lo, hi) {
+  const tags = items.map((item) => ({ ...item, y: item.at })).sort((a, b) => a.y - b.y);
+  const settle = () => {
+    for (let i = 1; i < tags.length; i++) if (tags[i].y - tags[i - 1].y < gap) tags[i].y = tags[i - 1].y + gap;
+  };
+  settle();
+  if (tags.length && tags[tags.length - 1].y > hi) {
+    tags[tags.length - 1].y = hi;
+    for (let i = tags.length - 2; i >= 0; i--) if (tags[i + 1].y - tags[i].y < gap) tags[i].y = tags[i + 1].y - gap;
+  }
+  if (tags.length && tags[0].y < lo) { tags[0].y = lo; settle(); }
+  return tags;
+}
+
 export default function CandlestickChart({ marketKey, caseKey, priceSpec }) {
   const [hovered, setHovered] = useState(null);
-  const bars = useMemo(() => buildBars(marketKey, caseKey), [marketKey, caseKey]);
+  const svgRef = useRef(null);
+  const { w: W, h: H } = useRenderedSize(svgRef, { w: 820, h: 340 });
+  const compact = W < 520;
+  const allBars = useMemo(() => buildBars(marketKey, caseKey), [marketKey, caseKey]);
+  // Narrow screens show the most recent candles only, so each candle stays legible.
+  const bars = compact ? allBars.slice(-(W < 380 ? 22 : 26)) : allBars;
 
-  const W = 820;
-  const H = 340;
-  const left = 16;
-  const right = 70;
+  const left = compact ? 10 : 16;
+  const right = compact ? 50 : 66;
   const top = 18;
   const bottom = 28;
   const plotW = W - left - right;
@@ -67,9 +111,20 @@ export default function CandlestickChart({ marketKey, caseKey, priceSpec }) {
     return raw.toFixed(priceSpec.digits);
   };
 
+  const tags = spreadTags([
+    { key: "tp", at: y(target), text: "TP", cls: "target-label" },
+    { key: "now", at: y(current), text: "NOW", cls: "current-label" },
+    { key: "sl", at: y(stop), text: "SL", cls: "stop-label" },
+  ], 18, top + 6, H - bottom - 4);
+
   return (
     <div className="candlestick-wrap">
-      <svg className="chart" viewBox={"0 0 " + W + " " + H} role="img" aria-label="Illustrative candlestick chart with decision geometry">
+      <ul className="chart-legend" aria-label="Chart key">
+        <li><i className="lg lg-entry" aria-hidden="true" />signal entry · <b>{fmt(entry)}</b></li>
+        <li><i className="lg lg-zone" aria-hidden="true" />entry zone</li>
+        <li><i className="lg lg-bos" aria-hidden="true" />BOS</li>
+      </ul>
+      <svg ref={svgRef} className="chart" viewBox={"0 0 " + W + " " + H} role="img" aria-label="Illustrative candlestick chart with decision geometry">
         <defs>
           <linearGradient id={"zone-" + marketKey} x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="var(--accent)" stopOpacity=".025"/>
@@ -83,19 +138,14 @@ export default function CandlestickChart({ marketKey, caseKey, priceSpec }) {
         ))}
 
         <rect x={left} y={y(64)} width={plotW} height={Math.max(4, y(57)-y(64))} fill={"url(#zone-" + marketKey + ")"} />
-        <text x={left + 8} y={y(64) - 6} className="chart-tag">entry zone</text>
 
         <line x1={left} x2={W-right} y1={y(bos)} y2={y(bos)} className="structure-line" />
-        <text x={W-right-42} y={y(bos)-6} className="chart-tag">BOS</text>
 
         <line x1={left} x2={W-right} y1={y(entry)} y2={y(entry)} className="frozen-line" />
-        <text x={left+8} y={y(entry)-6} className="svg-label">signal entry · {fmt(entry)}</text>
 
         <line x1={left} x2={W-right} y1={y(stop)} y2={y(stop)} className="stop-line" />
-        <text x={W-right+7} y={y(stop)+4} className="axis-label stop-label">SL</text>
 
         <line x1={left} x2={W-right} y1={y(target)} y2={y(target)} className="target-line" />
-        <text x={W-right+7} y={y(target)+4} className="axis-label target-label">TP</text>
 
         {bars.map((bar, i) => {
           const up = bar.close >= bar.open;
@@ -138,7 +188,15 @@ export default function CandlestickChart({ marketKey, caseKey, priceSpec }) {
           y1={y(current)} y2={y(current)}
           className="current-line"
         />
-        <text x={W-right+7} y={y(current)+4} className="axis-label current-label">NOW</text>
+
+        {tags.map((t) => (
+          <g key={t.key}>
+            {Math.abs(t.y - t.at) > 1.5 && (
+              <polyline className="tag-leader" points={(W - right + 1) + "," + t.at + " " + (W - right + 6) + "," + t.y + " " + (W - right + 8) + "," + t.y} />
+            )}
+            <text x={W - right + 10} y={t.y + 4} className={"axis-label " + t.cls}>{t.text}</text>
+          </g>
+        ))}
 
         {hovered && (
           <g className="crosshair">
@@ -157,7 +215,7 @@ export default function CandlestickChart({ marketKey, caseKey, priceSpec }) {
             <span>C <b>{fmt(hovered.close)}</b></span>
           </>
         ) : (
-          <span>Hover candles to inspect OHLC</span>
+          <span>Tap or hover a candle to inspect OHLC</span>
         )}
       </div>
     </div>

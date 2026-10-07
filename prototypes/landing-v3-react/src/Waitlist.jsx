@@ -147,7 +147,8 @@ export default function Waitlist() {
           sitekey: body.siteKey,
           action: "waitlist",
           theme: "dark",
-          size: "flexible",
+          // Cloudflare's flexible widget needs >=300px; use the compact one on very narrow phones.
+          size: window.matchMedia("(max-width:359px)").matches ? "compact" : "flexible",
           callback: value => {
             setToken(value);
             setStatus("ready");

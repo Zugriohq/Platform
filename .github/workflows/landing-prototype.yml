@@ -27,6 +27,6 @@ jobs:
         with:
           node-version: "22"
       - name: Install prototype dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Build React prototype
         run: npm run build
