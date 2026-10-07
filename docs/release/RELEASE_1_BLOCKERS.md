@@ -52,7 +52,7 @@ No threshold in R5 may be chosen to hit a date. If a scope does not qualify, it 
 
 | # | Blocker | Needs |
 |---|---|---|
-| P1 | Bring `apps/` and `packages/` to `main` through a reviewed PR with CI | Review of 162 commits; no semantic change mixed in (CLAUDE.md) |
+| P1 | Bring `apps/` and `packages/` to `main` through a reviewed PR with CI. Vehicle: **PR #67** (draft, head 52db5b4, 9 commits behind `main`, test merge clean) | Merge `main` in; diagnose its failing `Cloudflare Pages` check (all other checks green); review of 162 commits; no semantic change mixed in (CLAUDE.md) |
 | P2 | Identity and invite-only access: accounts, invitations, sessions, server-authoritative entitlement, separate from execution authority | Design note → ADR (auth provider choice is an **owner decision**) |
 | P3 | Authenticated desktop: sign-in, token handling, entitlement display, release-status truth labels | P2 |
 | P4 | Deploy the API: OCI VM, Cloudflare Tunnel, `api.zugrio.xyz`, health check, backups | Owner access to OCI and Cloudflare |
