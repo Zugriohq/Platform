@@ -1,0 +1,6 @@
+# Gitleaks false positives in the frozen Gate 3A evidence (byte-exact baseline; must not be edited).
+# Each is a JSON field named "token" whose value is a source-code identifier (V5_THRESH.fire, RETEST_POLICY.M5), not a credential.
+legacy/gate-baselines/gate3a/round11/evidence/GATE3-AUTHORITY-INVENTORY.json:generic-api-key:4812
+legacy/gate-baselines/gate3a/round11/evidence/GATE3-AUTHORITY-INVENTORY.json:generic-api-key:13656
+legacy/gate-baselines/gate3a/round11/evidence/GATE3-AUTHORITY-INVENTORY.json:generic-api-key:17492
+legacy/gate-baselines/gate3a/round11/evidence/GATE3-AUTHORITY-INVENTORY.json:generic-api-key:18373
