@@ -78,13 +78,21 @@ What is downloadable through D is the **Private Validation Alpha** (local replay
 
 Issue #21 prerequisites, the broker capability matrix, then build-cut Slice 6. This needs Gate 4, which is not authorised. Semi-Auto ships as validation-pending until a scope clears.
 
-## Owner decisions needed
+## Decisions (owner delegated them to Claude on 2026-10-07; recorded for review)
 
-1. Historical data source(s) for FX, XAUUSD and the chosen synthetic family (R3, P5).
-2. Auth/identity provider for accounts and invitations (P2).
-3. Code-signing route (certificate vendor or a managed signing service) (P6).
-4. Who is on the first invite list for the gated download (D4).
-5. Revoke the Cloudflare API token that was pasted in chat on 2026-10-06.
+| # | Decision | Choice and reason | Reversible? |
+|---|---|---|---|
+| 1 | Historical data (R3, P5) | **FX and XAUUSD: Dukascopy historical bid/ask ticks** (free, tick-level bid and ask, so it meets Gate 5A.2's granularity need). **Synthetic indices: the Deriv API tick history** (the only source for Deriv synthetics; the artifact already reads `DERIV_WEBSOCKET`). The cost model is reconciled later against cTrader demo quotes (5A.3). Gate 5A review must still accept representativeness. This choice does not pre-empt it. | Yes, before 5A partitions freeze |
+| 2 | Accounts and invitations (P2) | **Auth0** (OIDC). Native-app login via system browser + PKCE (RFC 8252) for the Electron desktop; public sign-up disabled, users created by invitation; free tier. Entitlement stays in Zugrio's own PostgreSQL (server-authoritative) and never in the identity provider, so commercial entitlement stays separate from execution authority (build cut §9.3). To be recorded as an ADR with P2. | Yes: the API only verifies OIDC tokens |
+| 3 | Code signing (P6) | **An OV code-signing certificate with cloud signing**, so CI can sign without a USB token. Buy it in the legal entity's name (company if Zugrio is registered, otherwise the individual). Start the vendor's identity validation early, because it typically takes days. Not needed for the gated alpha. | Yes |
+| 4 | First invite list (D) | **Owner's email only.** Testers are added one by one later. | Yes |
+| 5 | Exposed Cloudflare token | Revoke now: dash.cloudflare.com → My Profile → API Tokens → the token → **Roll** or **Delete**. | — |
+
+Owner-only actions (need the owner's accounts or money): `docs/runbooks/GATED_DOWNLOAD_SETUP.md` (R2 and Access), revoking the token, the certificate purchase, and reading PR #67's Cloudflare Pages build log.
+
+### P1 risk found 2026-10-07
+
+PR #67 adds a root pnpm workspace (`package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`). The landing site's Cloudflare Pages build fails on every branch carrying it (diagnosis: `docs/runbooks/CLOUDFLARE_PAGES_PREVIEW_CHECKS.md` on `release/private-alpha-rc-hardening`, unverified without the dashboard build log). If #67 merges and `main` is then promoted to the landing production branch, **zugrio.xyz could stop deploying**. #67 must not merge until the Pages build log is read and the landing build is made independent of the root workspace.
 
 ## What cannot be done today
 
