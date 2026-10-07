@@ -1,0 +1,44 @@
+name: cTrader cBot (Zugrio)
+
+on:
+  pull_request:
+    paths:
+      - "apps/ctrader-cbot/**"
+      - ".github/workflows/ctrader-cbot.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/ctrader-cbot/**"
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/ctrader-cbot
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      # Boundary core tests, including NoOrderApiBeforeGate4 (no order/position API calls until Gate 4).
+      - name: Test boundary core
+        run: dotnet test tests/Zugrio.CBot.Core.Tests -c Release
+      - name: Build display indicator (.algo)
+        run: dotnet build src/ZugrioSetups/ZugrioSetups -c Release
+      - name: SHA-256 of the indicator
+        run: |
+          set -euo pipefail
+          cd src/ZugrioSetups/ZugrioSetups/bin/Release/net6.0
+          sha256sum ZugrioSetups.algo | tee ZugrioSetups.algo.sha256
+          { echo '### ZugrioSetups.algo (display only, no orders)'; echo '```'; cat ZugrioSetups.algo.sha256; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zugrio-ctrader-display-indicator
+          if-no-files-found: error
+          path: |
+            apps/ctrader-cbot/src/ZugrioSetups/ZugrioSetups/bin/Release/net6.0/ZugrioSetups.algo
+            apps/ctrader-cbot/src/ZugrioSetups/ZugrioSetups/bin/Release/net6.0/ZugrioSetups.algo.sha256
