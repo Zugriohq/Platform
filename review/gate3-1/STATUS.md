@@ -40,3 +40,20 @@ Both generators now read from `legacy/gate-baselines/gate3a/round11/`. Regenerat
   - DUPLICATE_CONSUMED, PRICE_VALID and STOP_WRONG_SIDE need no threshold provenance for Gate 3.3.
 - Status: **first pass by Claude. Independent review PENDING, owner sign-off PENDING.** Gate 3.2 and Gate 3.3 are not started.
 - `tools/build-batch1.js`: the decision-template line "per HP-6, UNKNOWN moves the field downstream" is corrected. UNKNOWN is HP-2 NOT_ESTABLISHED, which Gate 3.3 resolves. `BATCH-1-WORKSHEET.json` is byte-identical after regeneration; only the `.md` template line changed.
+
+## Batch 2 first-pass review (2026-10-07)
+
+- Covers the 24 consumer-map fields batch 1 did not include. With batch 1, all **47 / 47** fields now have a first-pass §14A classification.
+- Files: `BATCH-2-DECISIONS.json` (authored), `tools/build-batch2-review.js` (the builder), and the generated `BATCH-2-REVIEW.{md,json}`.
+- The builder fails unless:
+  - batches 1 and 2 together cover the map exactly;
+  - no batch-2 field has threshold literals;
+  - every classification is a §14A class;
+  - every AMEND explains itself;
+  - every by-reference threshold is UNKNOWN unless it cites a document.
+- Outcome: 18 LEGACY_REMOVE, 3 RAW_MODEL_FEATURE, 2 RESEARCH_HEURISTIC, 1 HARD_STRUCTURAL_PREDICATE. Three amendments:
+  - **ENTRY_EVENT_CONFIRMED** is a spec-required hard-predicate candidate (§6.4), not LEGACY_REMOVE. It is still undefined.
+  - **LEGACY_EVAL_SCORE**: its state-gating use is LEGACY_REMOVE (§14B), consistent with batch 1's OPPORTUNITY_SCORE.
+  - **DATA_ADVISORY_FEATURES**: ADVISORY_FEATURE is §14B vocabulary, so §14A RESEARCH_HEURISTIC is proposed for the reviewer.
+- 9 fields are Gate-4 execution surfaces, cross-referenced to ADR-0008 (the cBot) on PR #115.
+- Status: **first pass by Claude; independent review PENDING; owner sign-off PENDING.**
