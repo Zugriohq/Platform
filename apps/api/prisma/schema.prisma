@@ -1,0 +1,94 @@
+// Zugrio private-validation-alpha persistence.
+//
+// ADR-0002: decision events are append-only; the case projection may update; outcome
+// must not rewrite original reasoning. Append-only and identity immutability are
+// enforced in PostgreSQL itself (see prisma/migrations/*_decision_case_ledger), not
+// only in application code.
+//
+// Deliberately absent: accounts, orders, positions, balances, sizing or any other
+// capital semantics. Gate 4 capital authority is not authorized.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// The only capital authority the alpha schema can store.
+enum CapitalAuthority {
+  NO_LIVE_CAPITAL
+}
+
+/// The only authority class the alpha schema can store (structural, not model-scored).
+enum AuthorityClass {
+  STRUCTURAL_ONLY
+}
+
+enum DecisionEventType {
+  REPLAY_STATE_CLASSIFIED
+}
+
+// Decision semantics (structural states, outcomes, reasons, evidence, annotations) are
+// owned by @zugrio/decision-core and stored verbatim as JSON, with state/outcome copied
+// into plain text columns for querying. The database never re-encodes the decision
+// vocabulary; it only enforces the authority limits and ledger immutability.
+
+model DecisionCase {
+  id                 String           @id @default(uuid()) @db.Uuid
+  /// decision-core evaluationId (case, scenario version, bundle identity, evaluation time).
+  evaluationId       String           @unique(map: "decision_case_evaluation_id_key") @map("evaluation_id")
+  /// decision-core caseId (stable across frames of one scenario).
+  decisionCoreCaseId String           @map("decision_core_case_id")
+  scenarioId         String           @map("scenario_id")
+  scenarioVersion    String           @map("scenario_version")
+  frameIndex         Int              @map("frame_index")
+  evaluatedAt        DateTime         @map("evaluated_at") @db.Timestamptz(3)
+  /// @zugrio/domain bundleIdentityKey(bundle.identity).
+  bundleKey          String           @map("bundle_key")
+  /// Immutable copy of the versioned trade bundle the case was evaluated against.
+  bundle             Json
+  authority          CapitalAuthority @default(NO_LIVE_CAPITAL)
+  authorityClass     AuthorityClass   @default(STRUCTURAL_ONLY) @map("authority_class")
+  /// Always false in the alpha (CHECK constraint): no validated model score exists.
+  modelScored        Boolean          @default(false) @map("model_scored")
+  releaseChannel     String           @map("release_channel")
+
+  // Read-optimized projection (may be updated; the ledger may not).
+  projectionStructuralState String? @map("projection_structural_state")
+  projectionOutcome         String  @map("projection_outcome")
+  /// decision-core DecisionCase for this frame, without history.
+  projection                Json
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  events DecisionEvent[]
+
+  @@index([decisionCoreCaseId], map: "decision_case_decision_core_case_id_idx")
+  @@map("decision_case")
+}
+
+model DecisionEvent {
+  id              BigInt            @id @default(autoincrement())
+  caseId          String            @map("case_id") @db.Uuid
+  sequence        Int
+  eventType       DecisionEventType @map("event_type")
+  evaluationId    String            @map("evaluation_id")
+  /// Replay evaluation time the event applies to.
+  occurredAt      DateTime          @map("occurred_at") @db.Timestamptz(3)
+  recordedAt      DateTime          @default(now()) @map("recorded_at") @db.Timestamptz(3)
+  structuralState String?           @map("structural_state")
+  outcome         String
+  /// Verbatim decision-core DecisionEvent.
+  payload         Json
+
+  decisionCase DecisionCase @relation(fields: [caseId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([caseId, sequence], map: "decision_event_case_sequence_key")
+  @@map("decision_event")
+}

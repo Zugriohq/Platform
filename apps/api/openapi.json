@@ -1,0 +1,2731 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "HealthController_health",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "status",
+                        "service",
+                        "version",
+                        "persistence",
+                        "database"
+                      ],
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded"
+                          ]
+                        },
+                        "service": {
+                          "type": "string",
+                          "enum": [
+                            "zugrio-api"
+                          ]
+                        },
+                        "version": {
+                          "type": "string"
+                        },
+                        "persistence": {
+                          "type": "string",
+                          "enum": [
+                            "postgres",
+                            "memory"
+                          ]
+                        },
+                        "database": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "unavailable"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database unreachable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "status",
+                        "service",
+                        "version",
+                        "persistence",
+                        "database"
+                      ],
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded"
+                          ]
+                        },
+                        "service": {
+                          "type": "string",
+                          "enum": [
+                            "zugrio-api"
+                          ]
+                        },
+                        "version": {
+                          "type": "string"
+                        },
+                        "persistence": {
+                          "type": "string",
+                          "enum": [
+                            "postgres",
+                            "memory"
+                          ]
+                        },
+                        "database": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "unavailable"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Liveness plus database reachability (used by Docker and through the tunnel)",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/v1/alpha/scenarios": {
+      "get": {
+        "operationId": "AlphaController_listScenarios",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "version",
+                          "caseId",
+                          "title",
+                          "description",
+                          "bundle",
+                          "bundleKey",
+                          "frameCount"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "version": {
+                            "type": "string"
+                          },
+                          "caseId": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "bundle": {
+                            "type": "object",
+                            "description": "`AlphaTradeBundle` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                            "required": [
+                              "identity",
+                              "strategy",
+                              "evidenceStatus",
+                              "authoritySpecVersion"
+                            ],
+                            "properties": {
+                              "identity": {
+                                "type": "object",
+                                "description": "`BundleIdentity` from @zugrio/domain: versioned MethodProfile / TradeBundle / RegimeModel / TimeframeMap and fixture scope.",
+                                "required": [
+                                  "methodProfile",
+                                  "tradeBundle",
+                                  "regimeModel",
+                                  "timeframeMap",
+                                  "scope"
+                                ],
+                                "additionalProperties": true
+                              },
+                              "evidenceStatus": {
+                                "type": "string",
+                                "enum": [
+                                  "VALIDATION_ONLY"
+                                ]
+                              }
+                            },
+                            "additionalProperties": true
+                          },
+                          "bundleKey": {
+                            "type": "string",
+                            "description": "@zugrio/domain bundleIdentityKey(bundle.identity)"
+                          },
+                          "frameCount": {
+                            "type": "integer",
+                            "minimum": 1
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "List validation replay scenarios",
+        "tags": [
+          "private-validation-alpha"
+        ]
+      }
+    },
+    "/v1/alpha/scenarios/{scenarioId}": {
+      "get": {
+        "operationId": "AlphaController_getScenario",
+        "parameters": [
+          {
+            "name": "scenarioId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "version",
+                        "caseId",
+                        "title",
+                        "description",
+                        "bundle",
+                        "bundleKey",
+                        "frameCount",
+                        "evidence",
+                        "frames"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "string"
+                        },
+                        "caseId": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "bundle": {
+                          "type": "object",
+                          "description": "`AlphaTradeBundle` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                          "required": [
+                            "identity",
+                            "strategy",
+                            "evidenceStatus",
+                            "authoritySpecVersion"
+                          ],
+                          "properties": {
+                            "identity": {
+                              "type": "object",
+                              "description": "`BundleIdentity` from @zugrio/domain: versioned MethodProfile / TradeBundle / RegimeModel / TimeframeMap and fixture scope.",
+                              "required": [
+                                "methodProfile",
+                                "tradeBundle",
+                                "regimeModel",
+                                "timeframeMap",
+                                "scope"
+                              ],
+                              "additionalProperties": true
+                            },
+                            "evidenceStatus": {
+                              "type": "string",
+                              "enum": [
+                                "VALIDATION_ONLY"
+                              ]
+                            }
+                          },
+                          "additionalProperties": true
+                        },
+                        "bundleKey": {
+                          "type": "string",
+                          "description": "@zugrio/domain bundleIdentityKey(bundle.identity)"
+                        },
+                        "frameCount": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "evidence": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "description": "`EvidenceEvent` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                            "required": [
+                              "id",
+                              "kind",
+                              "knownAt",
+                              "value",
+                              "source"
+                            ],
+                            "properties": {
+                              "knownAt": {
+                                "type": "string",
+                                "format": "date-time"
+                              }
+                            },
+                            "additionalProperties": true
+                          }
+                        },
+                        "frames": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "description": "`ReplayFrame` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                            "required": [
+                              "evaluatedAt"
+                            ],
+                            "properties": {},
+                            "additionalProperties": true
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get a validation replay scenario with all frames",
+        "tags": [
+          "private-validation-alpha"
+        ]
+      }
+    },
+    "/v1/alpha/scenarios/{scenarioId}/frames/{frameIndex}": {
+      "get": {
+        "operationId": "AlphaController_getFrameDecisionCase",
+        "parameters": [
+          {
+            "name": "scenarioId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "frameIndex",
+            "required": true,
+            "in": "path",
+            "description": "Zero-based replay frame index",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "`DecisionCase` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                      "required": [
+                        "caseId",
+                        "scenarioId",
+                        "scenarioVersion",
+                        "evaluationId",
+                        "bundle",
+                        "current",
+                        "structuralState",
+                        "outcome",
+                        "stateReason",
+                        "outcomeReason",
+                        "annotations",
+                        "authority",
+                        "authorityClass",
+                        "modelScored",
+                        "history"
+                      ],
+                      "properties": {
+                        "caseId": {
+                          "type": "string"
+                        },
+                        "scenarioId": {
+                          "type": "string"
+                        },
+                        "scenarioVersion": {
+                          "type": "string"
+                        },
+                        "evaluationId": {
+                          "type": "string"
+                        },
+                        "bundle": {
+                          "type": "object",
+                          "description": "`AlphaTradeBundle` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                          "required": [
+                            "identity",
+                            "strategy",
+                            "evidenceStatus",
+                            "authoritySpecVersion"
+                          ],
+                          "properties": {
+                            "identity": {
+                              "type": "object",
+                              "description": "`BundleIdentity` from @zugrio/domain: versioned MethodProfile / TradeBundle / RegimeModel / TimeframeMap and fixture scope.",
+                              "required": [
+                                "methodProfile",
+                                "tradeBundle",
+                                "regimeModel",
+                                "timeframeMap",
+                                "scope"
+                              ],
+                              "additionalProperties": true
+                            },
+                            "evidenceStatus": {
+                              "type": "string",
+                              "enum": [
+                                "VALIDATION_ONLY"
+                              ]
+                            }
+                          },
+                          "additionalProperties": true
+                        },
+                        "current": {
+                          "type": "object",
+                          "description": "`EvidenceSnapshot` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                          "required": [
+                            "evaluatedAt",
+                            "evidenceIds",
+                            "evidenceRefs"
+                          ],
+                          "properties": {},
+                          "additionalProperties": true
+                        },
+                        "structuralState": {
+                          "type": "string",
+                          "nullable": true,
+                          "description": "decision-core StructuralState, or null"
+                        },
+                        "outcome": {
+                          "type": "string",
+                          "description": "decision-core DecisionOutcome"
+                        },
+                        "annotations": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "description": "`ChartAnnotation` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                            "required": [
+                              "id",
+                              "kind",
+                              "knownAt",
+                              "evidenceId"
+                            ],
+                            "properties": {},
+                            "additionalProperties": true
+                          }
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        },
+                        "authorityClass": {
+                          "type": "string",
+                          "enum": [
+                            "STRUCTURAL_ONLY"
+                          ]
+                        },
+                        "modelScored": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "history": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "description": "`DecisionEvent` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                            "required": [
+                              "evaluationId",
+                              "evaluatedAt",
+                              "structuralState",
+                              "outcome",
+                              "stateReason",
+                              "outcomeReason",
+                              "changes",
+                              "annotationIds"
+                            ],
+                            "properties": {
+                              "evaluationId": {
+                                "type": "string"
+                              },
+                              "evaluatedAt": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "structuralState": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "outcome": {
+                                "type": "string"
+                              }
+                            },
+                            "additionalProperties": true
+                          }
+                        }
+                      },
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Deterministic decision-core DecisionCase for one replay frame (not persisted)",
+        "tags": [
+          "private-validation-alpha"
+        ]
+      }
+    },
+    "/v1/alpha/scenarios/{scenarioId}/frames/{frameIndex}/chart-scene": {
+      "get": {
+        "operationId": "AlphaController_getFrameChartScene",
+        "parameters": [
+          {
+            "name": "scenarioId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "frameIndex",
+            "required": true,
+            "in": "path",
+            "description": "Zero-based replay frame index",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "`EngineChartScene` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                      "required": [
+                        "sceneId",
+                        "instrument",
+                        "timeframe",
+                        "evaluatedAt",
+                        "strategyId",
+                        "strategyVersion",
+                        "regimeLabel",
+                        "regimeEvidenceId",
+                        "regimeDefinitionId",
+                        "regimeKnownAt",
+                        "regimeContext",
+                        "routeContext",
+                        "primitives",
+                        "authority",
+                        "liveCapitalAuthority"
+                      ],
+                      "properties": {
+                        "strategyVersion": {
+                          "type": "string"
+                        },
+                        "regimeLabel": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "regimeEvidenceId": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "regimeDefinitionId": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "regimeKnownAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        },
+                        "regimeContext": {
+                          "type": "object",
+                          "required": [
+                            "status",
+                            "measurementId",
+                            "profileId",
+                            "profileVersion",
+                            "matchingRuleIds",
+                            "reasons"
+                          ],
+                          "properties": {
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "CLASSIFIED",
+                                "UNCERTAIN",
+                                "UNAVAILABLE"
+                              ]
+                            },
+                            "measurementId": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "profileId": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "profileVersion": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "matchingRuleIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "reasons": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "routeContext": {
+                          "type": "object",
+                          "required": [
+                            "status",
+                            "families",
+                            "calibrationStatus"
+                          ],
+                          "properties": {
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "UNAVAILABLE",
+                                "ROUTES_AVAILABLE",
+                                "NO_DECLARED_ROUTE"
+                              ]
+                            },
+                            "families": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "enum": [
+                                  "BREAKOUT_CONTINUATION",
+                                  "BREAKOUT_RETEST",
+                                  "BOS_RETEST",
+                                  "CHOCH_RETEST",
+                                  "MSS_RETEST",
+                                  "LIQUIDITY_SWEEP_REVERSAL",
+                                  "FAKEOUT_REVERSAL",
+                                  "FVG_MITIGATION",
+                                  "TREND_CONTINUATION",
+                                  "RANGE_MEAN_REVERSION",
+                                  "COMPRESSION_BREAKOUT_WATCH"
+                                ]
+                              }
+                            },
+                            "calibrationStatus": {
+                              "type": "string",
+                              "enum": [
+                                "UNVALIDATED_CANDIDATE_SET"
+                              ],
+                              "nullable": true
+                            }
+                          }
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "RESEARCH_ONLY"
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "primitives": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "description": "`EngineChartPrimitive` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                            "required": [
+                              "primitiveId",
+                              "layer",
+                              "concept",
+                              "maturity",
+                              "label",
+                              "knownAt",
+                              "geometry",
+                              "sourceFactIds",
+                              "sourceEvidenceIds",
+                              "visibility",
+                              "styleToken",
+                              "authorityEffect"
+                            ],
+                            "properties": {},
+                            "additionalProperties": true
+                          }
+                        }
+                      },
+                      "additionalProperties": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Engine-owned semantic chart scene for one replay frame",
+        "tags": [
+          "private-validation-alpha"
+        ]
+      }
+    },
+    "/v1/alpha/decision-cases": {
+      "post": {
+        "description": "Idempotent per scenario/frame/bundle version: repeating the request returns the original case with 200. Only NO_LIVE_CAPITAL validation cases can be created.",
+        "operationId": "AlphaController_materialize",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "scenarioId",
+                  "frameIndex"
+                ],
+                "properties": {
+                  "scenarioId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "frameIndex": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Case already existed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "created",
+                        "decisionCase"
+                      ],
+                      "properties": {
+                        "created": {
+                          "type": "boolean",
+                          "description": "false when the same decision-core evaluation was already persisted."
+                        },
+                        "decisionCase": {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "evaluationId",
+                            "decisionCoreCaseId",
+                            "scenarioId",
+                            "scenarioVersion",
+                            "frameIndex",
+                            "evaluatedAt",
+                            "bundle",
+                            "bundleKey",
+                            "authority",
+                            "authorityClass",
+                            "modelScored",
+                            "projection",
+                            "events",
+                            "createdAt",
+                            "updatedAt",
+                            "consistentWithDecisionCore"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "evaluationId": {
+                              "type": "string",
+                              "description": "decision-core evaluationId; idempotency key"
+                            },
+                            "decisionCoreCaseId": {
+                              "type": "string"
+                            },
+                            "scenarioId": {
+                              "type": "string"
+                            },
+                            "scenarioVersion": {
+                              "type": "string"
+                            },
+                            "frameIndex": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "evaluatedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "bundle": {
+                              "type": "object",
+                              "description": "`AlphaTradeBundle` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                              "required": [
+                                "identity",
+                                "strategy",
+                                "evidenceStatus",
+                                "authoritySpecVersion"
+                              ],
+                              "properties": {
+                                "identity": {
+                                  "type": "object",
+                                  "description": "`BundleIdentity` from @zugrio/domain: versioned MethodProfile / TradeBundle / RegimeModel / TimeframeMap and fixture scope.",
+                                  "required": [
+                                    "methodProfile",
+                                    "tradeBundle",
+                                    "regimeModel",
+                                    "timeframeMap",
+                                    "scope"
+                                  ],
+                                  "additionalProperties": true
+                                },
+                                "evidenceStatus": {
+                                  "type": "string",
+                                  "enum": [
+                                    "VALIDATION_ONLY"
+                                  ]
+                                }
+                              },
+                              "additionalProperties": true
+                            },
+                            "bundleKey": {
+                              "type": "string"
+                            },
+                            "authority": {
+                              "type": "string",
+                              "enum": [
+                                "NO_LIVE_CAPITAL"
+                              ]
+                            },
+                            "authorityClass": {
+                              "type": "string",
+                              "enum": [
+                                "STRUCTURAL_ONLY"
+                              ]
+                            },
+                            "modelScored": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "projection": {
+                              "type": "object",
+                              "description": "decision-core DecisionCase for the persisted frame, without history (mutable read model).",
+                              "required": [
+                                "caseId",
+                                "scenarioId",
+                                "scenarioVersion",
+                                "evaluationId",
+                                "bundle",
+                                "current",
+                                "structuralState",
+                                "outcome",
+                                "stateReason",
+                                "outcomeReason",
+                                "annotations",
+                                "authority",
+                                "authorityClass",
+                                "modelScored"
+                              ],
+                              "properties": {
+                                "caseId": {
+                                  "type": "string"
+                                },
+                                "scenarioId": {
+                                  "type": "string"
+                                },
+                                "scenarioVersion": {
+                                  "type": "string"
+                                },
+                                "evaluationId": {
+                                  "type": "string"
+                                },
+                                "bundle": {
+                                  "type": "object",
+                                  "description": "`AlphaTradeBundle` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                                  "required": [
+                                    "identity",
+                                    "strategy",
+                                    "evidenceStatus",
+                                    "authoritySpecVersion"
+                                  ],
+                                  "properties": {
+                                    "identity": {
+                                      "type": "object",
+                                      "description": "`BundleIdentity` from @zugrio/domain: versioned MethodProfile / TradeBundle / RegimeModel / TimeframeMap and fixture scope.",
+                                      "required": [
+                                        "methodProfile",
+                                        "tradeBundle",
+                                        "regimeModel",
+                                        "timeframeMap",
+                                        "scope"
+                                      ],
+                                      "additionalProperties": true
+                                    },
+                                    "evidenceStatus": {
+                                      "type": "string",
+                                      "enum": [
+                                        "VALIDATION_ONLY"
+                                      ]
+                                    }
+                                  },
+                                  "additionalProperties": true
+                                },
+                                "current": {
+                                  "type": "object",
+                                  "description": "`EvidenceSnapshot` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                                  "required": [
+                                    "evaluatedAt",
+                                    "evidenceIds",
+                                    "evidenceRefs"
+                                  ],
+                                  "properties": {},
+                                  "additionalProperties": true
+                                },
+                                "structuralState": {
+                                  "type": "string",
+                                  "nullable": true,
+                                  "description": "decision-core StructuralState, or null"
+                                },
+                                "outcome": {
+                                  "type": "string",
+                                  "description": "decision-core DecisionOutcome"
+                                },
+                                "annotations": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "description": "`ChartAnnotation` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                                    "required": [
+                                      "id",
+                                      "kind",
+                                      "knownAt",
+                                      "evidenceId"
+                                    ],
+                                    "properties": {},
+                                    "additionalProperties": true
+                                  }
+                                },
+                                "authority": {
+                                  "type": "string",
+                                  "enum": [
+                                    "NO_LIVE_CAPITAL"
+                                  ]
+                                },
+                                "authorityClass": {
+                                  "type": "string",
+                                  "enum": [
+                                    "STRUCTURAL_ONLY"
+                                  ]
+                                },
+                                "modelScored": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    false
+                                  ]
+                                }
+                              },
+                              "additionalProperties": true
+                            },
+                            "events": {
+                              "type": "array",
+                              "description": "Append-only ledger ordered by sequence (ADR-0002).",
+                              "items": {
+                                "type": "object",
+                                "required": [
+                                  "sequence",
+                                  "eventType",
+                                  "occurredAt",
+                                  "recordedAt",
+                                  "event"
+                                ],
+                                "properties": {
+                                  "sequence": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "eventType": {
+                                    "type": "string",
+                                    "enum": [
+                                      "REPLAY_STATE_CLASSIFIED"
+                                    ]
+                                  },
+                                  "occurredAt": {
+                                    "type": "string",
+                                    "format": "date-time"
+                                  },
+                                  "recordedAt": {
+                                    "type": "string",
+                                    "format": "date-time"
+                                  },
+                                  "event": {
+                                    "type": "object",
+                                    "description": "`DecisionEvent` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                                    "required": [
+                                      "evaluationId",
+                                      "evaluatedAt",
+                                      "structuralState",
+                                      "outcome",
+                                      "stateReason",
+                                      "outcomeReason",
+                                      "changes",
+                                      "annotationIds"
+                                    ],
+                                    "properties": {
+                                      "evaluationId": {
+                                        "type": "string"
+                                      },
+                                      "evaluatedAt": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                      },
+                                      "structuralState": {
+                                        "type": "string",
+                                        "nullable": true
+                                      },
+                                      "outcome": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "additionalProperties": true
+                                  }
+                                }
+                              }
+                            },
+                            "createdAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "updatedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "consistentWithDecisionCore": {
+                              "type": "boolean",
+                              "description": "Whether re-running decision-core reproduces the stored projection and ledger."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Case created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "created",
+                        "decisionCase"
+                      ],
+                      "properties": {
+                        "created": {
+                          "type": "boolean",
+                          "description": "false when the same decision-core evaluation was already persisted."
+                        },
+                        "decisionCase": {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "evaluationId",
+                            "decisionCoreCaseId",
+                            "scenarioId",
+                            "scenarioVersion",
+                            "frameIndex",
+                            "evaluatedAt",
+                            "bundle",
+                            "bundleKey",
+                            "authority",
+                            "authorityClass",
+                            "modelScored",
+                            "projection",
+                            "events",
+                            "createdAt",
+                            "updatedAt",
+                            "consistentWithDecisionCore"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "evaluationId": {
+                              "type": "string",
+                              "description": "decision-core evaluationId; idempotency key"
+                            },
+                            "decisionCoreCaseId": {
+                              "type": "string"
+                            },
+                            "scenarioId": {
+                              "type": "string"
+                            },
+                            "scenarioVersion": {
+                              "type": "string"
+                            },
+                            "frameIndex": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "evaluatedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "bundle": {
+                              "type": "object",
+                              "description": "`AlphaTradeBundle` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                              "required": [
+                                "identity",
+                                "strategy",
+                                "evidenceStatus",
+                                "authoritySpecVersion"
+                              ],
+                              "properties": {
+                                "identity": {
+                                  "type": "object",
+                                  "description": "`BundleIdentity` from @zugrio/domain: versioned MethodProfile / TradeBundle / RegimeModel / TimeframeMap and fixture scope.",
+                                  "required": [
+                                    "methodProfile",
+                                    "tradeBundle",
+                                    "regimeModel",
+                                    "timeframeMap",
+                                    "scope"
+                                  ],
+                                  "additionalProperties": true
+                                },
+                                "evidenceStatus": {
+                                  "type": "string",
+                                  "enum": [
+                                    "VALIDATION_ONLY"
+                                  ]
+                                }
+                              },
+                              "additionalProperties": true
+                            },
+                            "bundleKey": {
+                              "type": "string"
+                            },
+                            "authority": {
+                              "type": "string",
+                              "enum": [
+                                "NO_LIVE_CAPITAL"
+                              ]
+                            },
+                            "authorityClass": {
+                              "type": "string",
+                              "enum": [
+                                "STRUCTURAL_ONLY"
+                              ]
+                            },
+                            "modelScored": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "projection": {
+                              "type": "object",
+                              "description": "decision-core DecisionCase for the persisted frame, without history (mutable read model).",
+                              "required": [
+                                "caseId",
+                                "scenarioId",
+                                "scenarioVersion",
+                                "evaluationId",
+                                "bundle",
+                                "current",
+                                "structuralState",
+                                "outcome",
+                                "stateReason",
+                                "outcomeReason",
+                                "annotations",
+                                "authority",
+                                "authorityClass",
+                                "modelScored"
+                              ],
+                              "properties": {
+                                "caseId": {
+                                  "type": "string"
+                                },
+                                "scenarioId": {
+                                  "type": "string"
+                                },
+                                "scenarioVersion": {
+                                  "type": "string"
+                                },
+                                "evaluationId": {
+                                  "type": "string"
+                                },
+                                "bundle": {
+                                  "type": "object",
+                                  "description": "`AlphaTradeBundle` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                                  "required": [
+                                    "identity",
+                                    "strategy",
+                                    "evidenceStatus",
+                                    "authoritySpecVersion"
+                                  ],
+                                  "properties": {
+                                    "identity": {
+                                      "type": "object",
+                                      "description": "`BundleIdentity` from @zugrio/domain: versioned MethodProfile / TradeBundle / RegimeModel / TimeframeMap and fixture scope.",
+                                      "required": [
+                                        "methodProfile",
+                                        "tradeBundle",
+                                        "regimeModel",
+                                        "timeframeMap",
+                                        "scope"
+                                      ],
+                                      "additionalProperties": true
+                                    },
+                                    "evidenceStatus": {
+                                      "type": "string",
+                                      "enum": [
+                                        "VALIDATION_ONLY"
+                                      ]
+                                    }
+                                  },
+                                  "additionalProperties": true
+                                },
+                                "current": {
+                                  "type": "object",
+                                  "description": "`EvidenceSnapshot` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                                  "required": [
+                                    "evaluatedAt",
+                                    "evidenceIds",
+                                    "evidenceRefs"
+                                  ],
+                                  "properties": {},
+                                  "additionalProperties": true
+                                },
+                                "structuralState": {
+                                  "type": "string",
+                                  "nullable": true,
+                                  "description": "decision-core StructuralState, or null"
+                                },
+                                "outcome": {
+                                  "type": "string",
+                                  "description": "decision-core DecisionOutcome"
+                                },
+                                "annotations": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "description": "`ChartAnnotation` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                                    "required": [
+                                      "id",
+                                      "kind",
+                                      "knownAt",
+                                      "evidenceId"
+                                    ],
+                                    "properties": {},
+                                    "additionalProperties": true
+                                  }
+                                },
+                                "authority": {
+                                  "type": "string",
+                                  "enum": [
+                                    "NO_LIVE_CAPITAL"
+                                  ]
+                                },
+                                "authorityClass": {
+                                  "type": "string",
+                                  "enum": [
+                                    "STRUCTURAL_ONLY"
+                                  ]
+                                },
+                                "modelScored": {
+                                  "type": "boolean",
+                                  "enum": [
+                                    false
+                                  ]
+                                }
+                              },
+                              "additionalProperties": true
+                            },
+                            "events": {
+                              "type": "array",
+                              "description": "Append-only ledger ordered by sequence (ADR-0002).",
+                              "items": {
+                                "type": "object",
+                                "required": [
+                                  "sequence",
+                                  "eventType",
+                                  "occurredAt",
+                                  "recordedAt",
+                                  "event"
+                                ],
+                                "properties": {
+                                  "sequence": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "eventType": {
+                                    "type": "string",
+                                    "enum": [
+                                      "REPLAY_STATE_CLASSIFIED"
+                                    ]
+                                  },
+                                  "occurredAt": {
+                                    "type": "string",
+                                    "format": "date-time"
+                                  },
+                                  "recordedAt": {
+                                    "type": "string",
+                                    "format": "date-time"
+                                  },
+                                  "event": {
+                                    "type": "object",
+                                    "description": "`DecisionEvent` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                                    "required": [
+                                      "evaluationId",
+                                      "evaluatedAt",
+                                      "structuralState",
+                                      "outcome",
+                                      "stateReason",
+                                      "outcomeReason",
+                                      "changes",
+                                      "annotationIds"
+                                    ],
+                                    "properties": {
+                                      "evaluationId": {
+                                        "type": "string"
+                                      },
+                                      "evaluatedAt": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                      },
+                                      "structuralState": {
+                                        "type": "string",
+                                        "nullable": true
+                                      },
+                                      "outcome": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "additionalProperties": true
+                                  }
+                                }
+                              }
+                            },
+                            "createdAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "updatedAt": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "consistentWithDecisionCore": {
+                              "type": "boolean",
+                              "description": "Whether re-running decision-core reproduces the stored projection and ledger."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Persist a validation Decision Case for a known scenario frame",
+        "tags": [
+          "private-validation-alpha"
+        ]
+      }
+    },
+    "/v1/alpha/decision-cases/{caseId}": {
+      "get": {
+        "operationId": "AlphaController_getDecisionCase",
+        "parameters": [
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "evaluationId",
+                        "decisionCoreCaseId",
+                        "scenarioId",
+                        "scenarioVersion",
+                        "frameIndex",
+                        "evaluatedAt",
+                        "bundle",
+                        "bundleKey",
+                        "authority",
+                        "authorityClass",
+                        "modelScored",
+                        "projection",
+                        "events",
+                        "createdAt",
+                        "updatedAt",
+                        "consistentWithDecisionCore"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "evaluationId": {
+                          "type": "string",
+                          "description": "decision-core evaluationId; idempotency key"
+                        },
+                        "decisionCoreCaseId": {
+                          "type": "string"
+                        },
+                        "scenarioId": {
+                          "type": "string"
+                        },
+                        "scenarioVersion": {
+                          "type": "string"
+                        },
+                        "frameIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "evaluatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "bundle": {
+                          "type": "object",
+                          "description": "`AlphaTradeBundle` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                          "required": [
+                            "identity",
+                            "strategy",
+                            "evidenceStatus",
+                            "authoritySpecVersion"
+                          ],
+                          "properties": {
+                            "identity": {
+                              "type": "object",
+                              "description": "`BundleIdentity` from @zugrio/domain: versioned MethodProfile / TradeBundle / RegimeModel / TimeframeMap and fixture scope.",
+                              "required": [
+                                "methodProfile",
+                                "tradeBundle",
+                                "regimeModel",
+                                "timeframeMap",
+                                "scope"
+                              ],
+                              "additionalProperties": true
+                            },
+                            "evidenceStatus": {
+                              "type": "string",
+                              "enum": [
+                                "VALIDATION_ONLY"
+                              ]
+                            }
+                          },
+                          "additionalProperties": true
+                        },
+                        "bundleKey": {
+                          "type": "string"
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        },
+                        "authorityClass": {
+                          "type": "string",
+                          "enum": [
+                            "STRUCTURAL_ONLY"
+                          ]
+                        },
+                        "modelScored": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "projection": {
+                          "type": "object",
+                          "description": "decision-core DecisionCase for the persisted frame, without history (mutable read model).",
+                          "required": [
+                            "caseId",
+                            "scenarioId",
+                            "scenarioVersion",
+                            "evaluationId",
+                            "bundle",
+                            "current",
+                            "structuralState",
+                            "outcome",
+                            "stateReason",
+                            "outcomeReason",
+                            "annotations",
+                            "authority",
+                            "authorityClass",
+                            "modelScored"
+                          ],
+                          "properties": {
+                            "caseId": {
+                              "type": "string"
+                            },
+                            "scenarioId": {
+                              "type": "string"
+                            },
+                            "scenarioVersion": {
+                              "type": "string"
+                            },
+                            "evaluationId": {
+                              "type": "string"
+                            },
+                            "bundle": {
+                              "type": "object",
+                              "description": "`AlphaTradeBundle` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                              "required": [
+                                "identity",
+                                "strategy",
+                                "evidenceStatus",
+                                "authoritySpecVersion"
+                              ],
+                              "properties": {
+                                "identity": {
+                                  "type": "object",
+                                  "description": "`BundleIdentity` from @zugrio/domain: versioned MethodProfile / TradeBundle / RegimeModel / TimeframeMap and fixture scope.",
+                                  "required": [
+                                    "methodProfile",
+                                    "tradeBundle",
+                                    "regimeModel",
+                                    "timeframeMap",
+                                    "scope"
+                                  ],
+                                  "additionalProperties": true
+                                },
+                                "evidenceStatus": {
+                                  "type": "string",
+                                  "enum": [
+                                    "VALIDATION_ONLY"
+                                  ]
+                                }
+                              },
+                              "additionalProperties": true
+                            },
+                            "current": {
+                              "type": "object",
+                              "description": "`EvidenceSnapshot` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                              "required": [
+                                "evaluatedAt",
+                                "evidenceIds",
+                                "evidenceRefs"
+                              ],
+                              "properties": {},
+                              "additionalProperties": true
+                            },
+                            "structuralState": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "decision-core StructuralState, or null"
+                            },
+                            "outcome": {
+                              "type": "string",
+                              "description": "decision-core DecisionOutcome"
+                            },
+                            "annotations": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "description": "`ChartAnnotation` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                                "required": [
+                                  "id",
+                                  "kind",
+                                  "knownAt",
+                                  "evidenceId"
+                                ],
+                                "properties": {},
+                                "additionalProperties": true
+                              }
+                            },
+                            "authority": {
+                              "type": "string",
+                              "enum": [
+                                "NO_LIVE_CAPITAL"
+                              ]
+                            },
+                            "authorityClass": {
+                              "type": "string",
+                              "enum": [
+                                "STRUCTURAL_ONLY"
+                              ]
+                            },
+                            "modelScored": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            }
+                          },
+                          "additionalProperties": true
+                        },
+                        "events": {
+                          "type": "array",
+                          "description": "Append-only ledger ordered by sequence (ADR-0002).",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "sequence",
+                              "eventType",
+                              "occurredAt",
+                              "recordedAt",
+                              "event"
+                            ],
+                            "properties": {
+                              "sequence": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "eventType": {
+                                "type": "string",
+                                "enum": [
+                                  "REPLAY_STATE_CLASSIFIED"
+                                ]
+                              },
+                              "occurredAt": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "recordedAt": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "event": {
+                                "type": "object",
+                                "description": "`DecisionEvent` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                                "required": [
+                                  "evaluationId",
+                                  "evaluatedAt",
+                                  "structuralState",
+                                  "outcome",
+                                  "stateReason",
+                                  "outcomeReason",
+                                  "changes",
+                                  "annotationIds"
+                                ],
+                                "properties": {
+                                  "evaluationId": {
+                                    "type": "string"
+                                  },
+                                  "evaluatedAt": {
+                                    "type": "string",
+                                    "format": "date-time"
+                                  },
+                                  "structuralState": {
+                                    "type": "string",
+                                    "nullable": true
+                                  },
+                                  "outcome": {
+                                    "type": "string"
+                                  }
+                                },
+                                "additionalProperties": true
+                              }
+                            }
+                          }
+                        },
+                        "createdAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "consistentWithDecisionCore": {
+                          "type": "boolean",
+                          "description": "Whether re-running decision-core reproduces the stored projection and ledger."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Reconstruct a persisted Decision Case with its append-only event history",
+        "tags": [
+          "private-validation-alpha"
+        ]
+      }
+    },
+    "/v1/alpha/engine-validation/scenarios": {
+      "get": {
+        "operationId": "LaneBController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "route",
+                          "family",
+                          "horizon",
+                          "frameCount"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "route": {
+                            "type": "string",
+                            "enum": [
+                              "CONTINUATION_RETEST",
+                              "REVERSAL_RECLAIM"
+                            ]
+                          },
+                          "family": {
+                            "type": "string"
+                          },
+                          "horizon": {
+                            "type": "string"
+                          },
+                          "frameCount": {
+                            "type": "integer",
+                            "minimum": 1
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "List fabricated shared-entry/account-risk validation replays",
+        "tags": [
+          "private-validation-alpha"
+        ]
+      }
+    },
+    "/v1/alpha/engine-validation/scenarios/{scenarioId}/frames/{frameIndex}": {
+      "get": {
+        "description": "Fabricated mechanical validation only. Does not size, reserve, persist an order or execute. Repeated reads reuse canonical engine state.",
+        "operationId": "LaneBController_frame",
+        "parameters": [
+          {
+            "name": "scenarioId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "frameIndex",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "meta",
+                    "data"
+                  ],
+                  "properties": {
+                    "meta": {
+                      "type": "object",
+                      "description": "Present on every alpha response. Values are fixed; clients must reject anything else.",
+                      "required": [
+                        "releaseChannel",
+                        "liveData",
+                        "liveCapitalAuthority",
+                        "evidenceStatus",
+                        "authority"
+                      ],
+                      "properties": {
+                        "releaseChannel": {
+                          "type": "string",
+                          "enum": [
+                            "private-validation-alpha"
+                          ]
+                        },
+                        "liveData": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "VALIDATION_ONLY"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "scenarioId",
+                        "frameIndex",
+                        "evidenceStatus",
+                        "entry",
+                        "accountRisk",
+                        "authority",
+                        "liveCapitalAuthority"
+                      ],
+                      "properties": {
+                        "scenarioId": {
+                          "type": "string"
+                        },
+                        "frameIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "evidenceStatus": {
+                          "type": "string",
+                          "enum": [
+                            "FABRICATED_MECHANICAL_VALIDATION"
+                          ]
+                        },
+                        "authority": {
+                          "type": "string",
+                          "enum": [
+                            "NO_LIVE_CAPITAL"
+                          ]
+                        },
+                        "liveCapitalAuthority": {
+                          "type": "boolean",
+                          "enum": [
+                            false
+                          ]
+                        },
+                        "entry": {
+                          "type": "object",
+                          "description": "`EntryCandidate (validation/entryGrammar.ts)` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                          "required": [
+                            "key",
+                            "opportunityId",
+                            "state",
+                            "stages",
+                            "evaluatedAt",
+                            "knownAt",
+                            "authority",
+                            "liveCapitalAuthority",
+                            "modelScored"
+                          ],
+                          "properties": {
+                            "authority": {
+                              "type": "string",
+                              "enum": [
+                                "RESEARCH_ONLY"
+                              ]
+                            },
+                            "liveCapitalAuthority": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "modelScored": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "state": {
+                              "type": "string",
+                              "enum": [
+                                "STRUCTURAL_CANDIDATE",
+                                "STRUCTURAL_WATCH",
+                                "STRUCTURAL_READY"
+                              ]
+                            }
+                          },
+                          "additionalProperties": true
+                        },
+                        "accountRisk": {
+                          "type": "object",
+                          "description": "`AccountRiskAssessment (validation/accountRisk.ts)` from @zugrio/decision-core (packages/decision-core/src/types.ts).",
+                          "required": [
+                            "accountId",
+                            "snapshotId",
+                            "researchAdmission",
+                            "reasons",
+                            "brokerReported",
+                            "normalized",
+                            "exposure",
+                            "authority",
+                            "liveCapitalAuthority"
+                          ],
+                          "properties": {
+                            "authority": {
+                              "type": "string",
+                              "enum": [
+                                "RESEARCH_ONLY"
+                              ]
+                            },
+                            "liveCapitalAuthority": {
+                              "type": "boolean",
+                              "enum": [
+                                false
+                              ]
+                            },
+                            "researchAdmission": {
+                              "type": "string",
+                              "enum": [
+                                "PASS",
+                                "BLOCK"
+                              ]
+                            }
+                          },
+                          "additionalProperties": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer"
+                    },
+                    "message": {},
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Evaluate a research-only shared entry and downstream account-risk frame",
+        "tags": [
+          "private-validation-alpha"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Zugrio API — private validation alpha",
+    "description": "Validation-only control plane. Every response carries NO_LIVE_CAPITAL / VALIDATION_ONLY metadata. No live market data, broker connection or trade execution exists behind this API.",
+    "version": "0.1.0-alpha.1",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [
+    {
+      "url": "https://api.zugrio.xyz"
+    }
+  ],
+  "components": {
+    "schemas": {}
+  }
+}

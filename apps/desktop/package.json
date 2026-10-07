@@ -1,0 +1,51 @@
+{
+  "name": "@zugrio/desktop",
+  "version": "0.1.0-alpha.2",
+  "private": true,
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "build": "pnpm build:renderer && pnpm build:electron",
+    "build:renderer": "vite build",
+    "build:electron": "tsc -p tsconfig.electron.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.electron.json --noEmit",
+    "dist:win": "pnpm build && electron-builder --win portable",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@zugrio/alpha-api-contract": "workspace:*",
+    "@zugrio/decision-core": "workspace:*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^21",
+    "@types/node": "^22.10.7",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react": "^4.3.4",
+    "electron": "^34.0.2",
+    "electron-builder": "^25.1.8",
+    "jsdom": "^26",
+    "vite": "^6.1.0"
+  },
+  "build": {
+    "appId": "xyz.zugrio.alpha",
+    "productName": "Zugrio",
+    "artifactName": "Zugrio-Private-Alpha-${version}.${ext}",
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": [
+        "portable"
+      ]
+    }
+  },
+  "description": "Zugrio private-validation desktop client",
+  "author": "Zugrio"
+}
