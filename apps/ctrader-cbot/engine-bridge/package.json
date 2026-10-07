@@ -1,0 +1,19 @@
+{
+  "name": "@zugrio/ctrader-engine-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Bundles Zugrio decision-core plus the EA scan bridge into one script that the cTrader EA runs under Jint (ADR-0009).",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "node build.mjs --check",
+    "test": "node --test test/*.test.mjs",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@zugrio/decision-core": "workspace:*"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.12"
+  }
+}

@@ -4,11 +4,17 @@ on:
   pull_request:
     paths:
       - "apps/ctrader-cbot/**"
+      - "packages/decision-core/**"
+      - "packages/domain/**"
+      - "pnpm-workspace.yaml"
+      - "pnpm-lock.yaml"
       - ".github/workflows/ctrader-cbot.yml"
   push:
     branches: [main]
     paths:
       - "apps/ctrader-cbot/**"
+      - "packages/decision-core/**"
+      - "packages/domain/**"
 
 permissions:
   contents: read
@@ -16,29 +22,55 @@ permissions:
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/ctrader-cbot
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9.15.4 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:packages
+      # The EA embeds decision-core as one JS bundle. It must match a fresh build of the current decision-core.
+      - name: Engine bundle is current
+        run: pnpm --filter @zugrio/ctrader-engine-bridge check
+      - name: Engine bridge tests
+        run: pnpm --filter @zugrio/ctrader-engine-bridge test
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
-      # Boundary core tests, including NoOrderApiBeforeGate4 (no order/position API calls until Gate 4).
-      - name: Test boundary core
+      # Core, engine (Jint runs the bundle byte-identically to Node) and sizing tests, plus
+      # NoOrderApiOutsideDemoExecution: order calls only in DemoExecution.cs, each directly after RequireDemo().
+      - name: Test boundary core, engine and demo lock
+        working-directory: apps/ctrader-cbot
         run: dotnet test tests/Zugrio.CBot.Core.Tests -c Release
-      - name: Build display indicator (.algo)
-        run: dotnet build src/ZugrioSetups/ZugrioSetups -c Release
-      - name: SHA-256 of the indicator
+      - name: Build indicator and demo EA (.algo)
+        working-directory: apps/ctrader-cbot
+        run: |
+          dotnet build src/ZugrioSetups/ZugrioSetups -c Release
+          dotnet build src/ZugrioDemoEA/ZugrioDemoEA -c Release
+      - name: SHA-256 of the .algo files
+        working-directory: apps/ctrader-cbot
         run: |
           set -euo pipefail
-          cd src/ZugrioSetups/ZugrioSetups/bin/Release/net6.0
-          sha256sum ZugrioSetups.algo | tee ZugrioSetups.algo.sha256
-          { echo '### ZugrioSetups.algo (display only, no orders)'; echo '```'; cat ZugrioSetups.algo.sha256; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          for p in ZugrioSetups ZugrioDemoEA; do
+            ( cd "src/$p/$p/bin/Release/net6.0" && sha256sum "$p.algo" | tee "$p.algo.sha256" )
+          done
+          {
+            echo '### cTrader .algo files'
+            echo '- ZugrioSetups.algo: display only, no orders.'
+            echo '- ZugrioDemoEA.algo: full-auto, **demo accounts only** (ADR-0009). It stops on a live account.'
+            echo '```'
+            cat src/ZugrioSetups/ZugrioSetups/bin/Release/net6.0/ZugrioSetups.algo.sha256
+            cat src/ZugrioDemoEA/ZugrioDemoEA/bin/Release/net6.0/ZugrioDemoEA.algo.sha256
+            echo "engine bundle: $(cut -d' ' -f1 engine-bridge/dist/zugrio-engine.js.sha256)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with:
-          name: zugrio-ctrader-display-indicator
+          name: zugrio-ctrader-algo
           if-no-files-found: error
           path: |
             apps/ctrader-cbot/src/ZugrioSetups/ZugrioSetups/bin/Release/net6.0/ZugrioSetups.algo
             apps/ctrader-cbot/src/ZugrioSetups/ZugrioSetups/bin/Release/net6.0/ZugrioSetups.algo.sha256
+            apps/ctrader-cbot/src/ZugrioDemoEA/ZugrioDemoEA/bin/Release/net6.0/ZugrioDemoEA.algo
+            apps/ctrader-cbot/src/ZugrioDemoEA/ZugrioDemoEA/bin/Release/net6.0/ZugrioDemoEA.algo.sha256

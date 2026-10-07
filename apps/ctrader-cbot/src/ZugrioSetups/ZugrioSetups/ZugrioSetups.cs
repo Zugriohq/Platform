@@ -12,7 +12,7 @@ namespace Zugrio.CBot.Display
     /// Fetches Zugrio EntryCandidate records (decision-core `EntryCandidate`, research
     /// authority) over HTTPS and draws each candidate's frozen geometry for this symbol:
     /// entry reference, invalidation, objective and the parent-context invalidation.
-    /// It has no order or position calls. The repository test NoOrderApiBeforeGate4
+    /// It has no order or position calls. The repository test NoOrderApiOutsideDemoExecution
     /// enforces that until Gate 4 is authorised.
     ///
     /// It runs with AccessRights.FullAccess, as the owner decided on 2026-10-07, so it

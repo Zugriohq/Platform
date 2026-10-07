@@ -386,21 +386,88 @@ namespace Zugrio.CBot.Core.Tests
     /// (AccessRights.FullAccess is allowed by owner decision 2026-10-07. Access rights
     /// do not gate order calls; this scan does.)
     /// </summary>
-    public class NoOrderApiBeforeGate4
+    /// <summary>
+    /// ADR-0009 demo lock. Order and position APIs may appear only in DemoExecution.cs,
+    /// and every one of them must be the statement directly after <c>RequireDemo();</c>.
+    /// RequireDemo itself must check Account.IsLive, stop the robot and throw.
+    /// </summary>
+    public class NoOrderApiOutsideDemoExecution
     {
-        private static readonly Regex Forbidden = new(@"\b(ExecuteMarketOrder(Async)?|PlaceLimitOrder(Async)?|PlaceStopOrder(Async)?|PlaceStopLimitOrder(Async)?|ClosePositionAsync|ModifyPosition(Async)?|ReversePosition(Async)?|CancelPendingOrder(Async)?|ModifyPendingOrder(Async)?)\s*\(|\.Close\s*\(\s*\)", RegexOptions.Compiled);
+        internal static readonly Regex OrderApi = new(@"(?<!\bnew\s+)(?<!\brecord\s+)\b(ExecuteMarketOrder(Async)?|PlaceLimitOrder(Async)?|PlaceStopOrder(Async)?|PlaceStopLimitOrder(Async)?|ClosePosition(Async)?|ModifyPosition(Async)?|ReversePosition(Async)?|CancelPendingOrder(Async)?|ModifyPendingOrder(Async)?)\s*\(|\.Close\s*\(\s*\)", RegexOptions.Compiled);
+        internal const string DemoExecutionFile = "src/ZugrioDemoEA/ZugrioDemoEA/DemoExecution.cs";
+
+        internal static List<string> Violations(string root, IEnumerable<string> files) =>
+            files.SelectMany(f => Violations(Path.GetRelativePath(root, f).Replace(Path.DirectorySeparatorChar, '/'), File.ReadAllLines(f))).ToList();
+
+        internal static List<string> Violations(string rel, IReadOnlyList<string> lines)
+        {
+            var bad = new List<string>();
+            for (var n = 0; n < lines.Count; n++)
+            {
+                if (!OrderApi.IsMatch(lines[n])) continue;
+                if (rel != DemoExecutionFile) { bad.Add(rel + ":" + (n + 1) + ": order API outside DemoExecution: " + lines[n].Trim()); continue; }
+                var prev = n - 1;
+                while (prev >= 0 && lines[prev].Trim().Length == 0) prev--;
+                if (prev < 0 || lines[prev].Trim() != "RequireDemo();") bad.Add(rel + ":" + (n + 1) + ": order API not directly after RequireDemo(): " + lines[n].Trim());
+            }
+            return bad;
+        }
+
+        internal static IEnumerable<string> Sources(string root) =>
+            Directory.GetFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories)
+                .Where(f => !f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar) && !f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar));
 
         [Fact]
-        public void No_order_or_position_calls_in_production_source()
+        public void Order_calls_only_in_DemoExecution_each_directly_after_RequireDemo()
         {
             var root = FindRoot();
-            var hits = Directory.GetFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories)
-                .Where(f => !f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar))
-                .SelectMany(f => File.ReadAllLines(f).Select((l, n) => (f, n, l)))
-                .Where(x => Forbidden.IsMatch(x.l))
-                .Select(x => Path.GetRelativePath(root, x.f) + ":" + (x.n + 1) + ": " + x.l.Trim())
-                .ToList();
-            Assert.True(hits.Count == 0, "Order/position API before Gate 4:\n" + string.Join("\n", hits));
+            var bad = Violations(root, Sources(root));
+            Assert.True(bad.Count == 0, string.Join("\n", bad));
+        }
+
+        [Fact]
+        public void DemoExecution_contains_order_calls_so_the_scan_is_live()
+        {
+            var root = FindRoot();
+            var text = File.ReadAllText(Path.Combine(root, DemoExecutionFile));
+            Assert.True(OrderApi.Matches(text).Count >= 3);
+        }
+
+        [Fact]
+        public void RequireDemo_checks_IsLive_stops_and_throws()
+        {
+            var text = File.ReadAllText(Path.Combine(FindRoot(), DemoExecutionFile));
+            var m = Regex.Match(text, @"public void RequireDemo\(\)\s*\{(?<body>.*?)\n        \}", RegexOptions.Singleline);
+            Assert.True(m.Success, "RequireDemo not found");
+            var body = m.Groups["body"].Value;
+            Assert.Contains("_robot.Account.IsLive", body);
+            Assert.Contains("_robot.Stop();", body);
+            Assert.Contains("throw new InvalidOperationException", body);
+        }
+
+        [Fact]
+        public void EA_refuses_live_account_first_thing_in_OnStart_and_on_every_tick_and_bar()
+        {
+            var text = File.ReadAllText(Path.Combine(FindRoot(), "src/ZugrioDemoEA/ZugrioDemoEA/ZugrioDemoEA.cs"));
+            var start = Regex.Match(text, @"protected override void OnStart\(\)\s*\{\s*if \(Account\.IsLive\)");
+            Assert.True(start.Success, "OnStart must begin with the Account.IsLive check");
+            Assert.True(Regex.Matches(text, @"if \(Account\.IsLive\) \{ Stop\(\); return; \}").Count >= 2, "OnTick and the bar handler must re-check Account.IsLive");
+        }
+
+        [Fact]
+        public void Planted_violations_are_caught()
+        {
+            Assert.Single(Violations("src/Zugrio.CBot.Core/Planted.cs", new[] { "ExecuteMarketOrder(TradeType.Buy, \"X\", 1);" }));
+            Assert.Single(Violations("src/ZugrioSetups/ZugrioSetups/ZugrioSetups.cs", new[] { "pos.Close();" }));
+            Assert.Single(Violations("src/Zugrio.CBot.Core/Planted.cs", new[] { "ClosePosition(pos);" }));
+            Assert.Empty(Violations("src/Zugrio.CBot.Core/Guards.cs", new[] { "var a = new ClosePosition(id);", "public sealed record ClosePosition(string PositionId);" }));
+
+            var lines = File.ReadAllLines(Path.Combine(FindRoot(), DemoExecutionFile)).ToList();
+            Assert.Empty(Violations(DemoExecutionFile, lines));
+            lines.Insert(lines.FindIndex(l => l.Contains("_robot.ExecuteMarketOrder(")), "            var unguarded = 1;");
+            var bad = Violations(DemoExecutionFile, lines);
+            Assert.Single(bad);
+            Assert.Contains("not directly after RequireDemo()", bad[0]);
         }
 
         private static string FindRoot()

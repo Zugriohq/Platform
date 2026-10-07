@@ -13,5 +13,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Zugrio.CBot.Core/Zugrio.CBot.Core.csproj" />
+    <ProjectReference Include="../../src/Zugrio.CBot.Engine/Zugrio.CBot.Engine.csproj" />
+    <None Include="../../engine-bridge/test/fixtures/*.json" CopyToOutputDirectory="PreserveNewest" LinkBase="fixtures" />
   </ItemGroup>
 </Project>

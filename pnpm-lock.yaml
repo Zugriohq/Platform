@@ -64,6 +64,16 @@ importers:
         specifier: ^8
         version: 8.23.0
 
+  apps/ctrader-cbot/engine-bridge:
+    dependencies:
+      '@zugrio/decision-core':
+        specifier: workspace:*
+        version: link:../../../packages/decision-core
+    devDependencies:
+      esbuild:
+        specifier: 0.25.12
+        version: 0.25.12
+
   apps/desktop:
     dependencies:
       '@zugrio/alpha-api-contract':
