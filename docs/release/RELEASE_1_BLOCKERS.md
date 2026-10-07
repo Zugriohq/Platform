@@ -52,7 +52,7 @@ No threshold in R5 may be chosen to hit a date. If a scope does not qualify, it 
 
 | # | Blocker | Needs |
 |---|---|---|
-| P1 | Bring `apps/` and `packages/` to `main` through a reviewed PR with CI. Vehicle: **PR #67** (draft, head 52db5b4, 9 commits behind `main`, test merge clean) | Merge `main` in; diagnose its failing `Cloudflare Pages` check (all other checks green); review of 162 commits; no semantic change mixed in (CLAUDE.md) |
+| P1 | Bring `apps/` and `packages/` to `main` through a reviewed PR with CI. Vehicle: **PR #67** (draft; `main` merged in at d2c07e4; Pages cause fixed, see below) | CI green on the new head; independent review of the code moving to `main`; no semantic change mixed in (CLAUDE.md) |
 | P2 | Identity and invite-only access: accounts, invitations, sessions, server-authoritative entitlement, separate from execution authority | Design note → ADR (auth provider choice is an **owner decision**) |
 | P3 | Authenticated desktop: sign-in, token handling, entitlement display, release-status truth labels | P2 |
 | P4 | Deploy the API: OCI VM, Cloudflare Tunnel, `api.zugrio.xyz`, health check, backups | Owner access to OCI and Cloudflare |
@@ -88,11 +88,15 @@ Issue #21 prerequisites, the broker capability matrix, then build-cut Slice 6. T
 | 4 | First invite list (D) | **Owner's email only.** Testers are added one by one later. | Yes |
 | 5 | Exposed Cloudflare token | Revoke now: dash.cloudflare.com → My Profile → API Tokens → the token → **Roll** or **Delete**. | — |
 
-Owner-only actions (need the owner's accounts or money): `docs/runbooks/GATED_DOWNLOAD_SETUP.md` (R2 and Access), revoking the token, the certificate purchase, and reading PR #67's Cloudflare Pages build log.
+Owner-only actions (need the owner's accounts or money): `docs/runbooks/GATED_DOWNLOAD_SETUP.md` (R2 and Access), revoking the token, and the certificate purchase.
 
-### P1 risk found 2026-10-07
+### P1: Cloudflare Pages failure, cause found and fixed (2026-10-07)
 
-PR #67 adds a root pnpm workspace (`package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`). The landing site's Cloudflare Pages build fails on every branch carrying it (diagnosis: `docs/runbooks/CLOUDFLARE_PAGES_PREVIEW_CHECKS.md` on `release/private-alpha-rc-hardening`, unverified without the dashboard build log). If #67 merges and `main` is then promoted to the landing production branch, **zugrio.xyz could stop deploying**. #67 must not merge until the Pages build log is read and the landing build is made independent of the root workspace.
+PR #67's failing **Cloudflare Pages** check (the landing site, built from `prototypes/landing-v3-react`) has a cause that was reproduced locally. On the alpha branch that directory had **no `package-lock.json`**: `main` added it in #107 after the branch diverged. Meanwhile the repository root carries a pnpm workspace (`package.json` declaring `packageManager: pnpm`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`).
+- Locally on 52db5b4, `npm ci` in the landing directory fails with `EUSAGE` (no lockfile) and the build fails with `vite: not found`.
+- After merging `main` into the branch (d2c07e4), `npm ci` and `npm run build` both succeed with the root workspace still present.
+
+The Pages build log (dashboard only) was not read, so the claim that Pages itself failed this way is inferred. The check on the new head will confirm or refute it. Merging #67 is therefore not expected to break zugrio.xyz, provided that check passes. The local-replay Windows artifact now also ships a `.sha256` (cd3f171).
 
 ## What cannot be done today
 

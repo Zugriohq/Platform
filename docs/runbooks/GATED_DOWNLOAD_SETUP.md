@@ -6,18 +6,17 @@ Everything below is in the Cloudflare dashboard (dash.cloudflare.com), signed in
 
 ## 1. Get the alpha file from GitHub
 
-1. Open https://github.com/Zugriohq/Platform/actions/runs/36634859158 (the "Private alpha build" of commit 52db5b4; all checks passed).
-2. Under **Artifacts**, download `zugrio-private-alpha-windows` and unzip it. You get `Zugrio-Private-Alpha-0.1.0-alpha.2.exe` (about 75 MB).
-3. On Windows, record its fingerprint: open PowerShell in that folder and run
-   `certutil -hashfile Zugrio-Private-Alpha-0.1.0-alpha.2.exe SHA256`.
-   Copy the long hex line into the chat so it can be published next to the download.
+1. Open https://github.com/Zugriohq/Platform/actions/workflows/private-alpha.yml?query=branch%3Arelease%2Fprivate-validation-alpha-2026-09-28 and click the newest run with a green tick.
+2. Under **Artifacts**, download `zugrio-private-alpha-windows` and unzip it. Inside are `Zugrio-Private-Alpha-0.1.0-alpha.2.exe` (about 75 MB) and `Zugrio-Private-Alpha-0.1.0-alpha.2.exe.sha256`. Builds from commit cd3f171 onward include the `.sha256`; the run's summary page shows the same value.
+3. Optional check on Windows: open PowerShell in that folder and run
+   `certutil -hashfile Zugrio-Private-Alpha-0.1.0-alpha.2.exe SHA256`. The hex value must match the one in the `.sha256` file.
 
 ## 2. Storage (R2)
 
 1. Left menu → **R2 Object Storage** → enable R2 (accept the plan).
 2. **Create bucket** → name `zugrio-downloads` → location Automatic → Create.
    (Once R2 is on, Claude can do this step instead.)
-3. Open the bucket → **Upload** → drag in the `.exe`.
+3. Open the bucket → **Upload** → drag in the `.exe` and the `.sha256`.
 4. Bucket **Settings** → **Custom Domains** → **Connect Domain** → `download.zugrio.xyz` → confirm the DNS record it proposes.
    Leave **Public Development URL (r2.dev)** **disabled**. It would bypass the gate.
 
