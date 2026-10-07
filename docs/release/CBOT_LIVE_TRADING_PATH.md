@@ -12,6 +12,7 @@ The frozen spec says: "Promotion beyond OBSERVE requires Gate 6. **Executable ca
 |---|---|---|
 | 0. Display | Draws Zugrio setups, levels and invalidation on cTrader charts. **No orders.** | **Now** |
 | 1. Boundary core | Envelope signature verification, the SB-1…SB-18 state machines, reconciliation and the risk-reducing kernel, all tested against fakes. **No order API calls.** | **Now** (ADR-0008, capital/safety impact) |
+| EA. Demo validation instrument | **Built (PR #116).** Full auto on **demo accounts only**, `FullAccess`, running Zugrio's own decision-core under Jint. Collects decision and execution data. Carries no capital authority | **Now** (ADR-0009, owner decision 2026-10-07). It is not phase 2: it runs research parameters, not admitted policy, and its data is Gate-6 development material |
 | 2. Demo execution | Places and manages orders on a cTrader **demo** account under signed manifests | **After Gate 4 is authorised** and the §17 Gate 4 tests pass |
 | 3. Forward shadow/demo certification | Runs the frozen system unchanged on demo | Gate 8 ("then forward shadow/demo") |
 | 4. Live | Real-money orders, admitted scopes only | **After Gate 8**, plus the owner's live-activation decision |
@@ -37,17 +38,18 @@ The frozen spec says: "Promotion beyond OBSERVE requires Gate 6. **Executable ca
 ## What runs in parallel now
 
 - **Claude, now:**
-  - cBot phase 0 (display) and phase 1 (boundary core, no order calls);
+  - cBot phase 0 (display), phase 1 (boundary core) and the demo EA (ADR-0009): built on PR #116;
+  - analysing the EA's demo logs as they arrive (development data only);
   - the Gate 4 entry case document;
   - ADR-0007 P2a (identity);
   - Gate 3.1 batch 2 once GPT returns batch 1.
 - **Owner, now:**
   - the Pages setting (unblocks #67);
   - revoke the exposed Cloudflare token;
-  - open a cTrader **demo** account;
+  - open a cTrader **demo** account (a cent account if you want to test a $20-sized balance), install `ZugrioDemoEA.algo` from the PR #116 CI artefact and send back the `Documents/Zugrio/ea-demo` logs;
   - decide on legal advice for item 13.
 - **The other chat** ("Accessing other code chats"): #89 then #91 (scanner), stacked on #67's branch. The scanner feeds the cBot's candidates.
 
 ## What does not move faster by building
 
-Items 9–11 are evidence, not code. Shortening them would mean inventing thresholds or peeking at the holdout, which the frozen spec forbids. Engineering speed brings forward the date the evidence work can *start*, not the date it ends.
+Items 9–11 are evidence, not code. The demo EA's logs help design that evidence work, but they are not it: demo fills differ from live, and the parameters are research values. Shortening them would mean inventing thresholds or peeking at the holdout, which the frozen spec forbids. Engineering speed brings forward the date the evidence work can *start*, not the date it ends.

@@ -4,7 +4,7 @@
 - **Date:** 2026-10-07
 - **Decision owners:** Founder / Product Lead; Engineering; independent reviewer
 - **Supersedes:** none. It extends ADR-0006.
-- **Related:** `docs/release/CBOT_LIVE_TRADING_PATH.md`, ADR-0006, ADR-0007, frozen Signal Authority Architecture v1.0.2 §7.10–7.11 and §10.6–10.11, issue #21
+- **Related:** `docs/release/CBOT_LIVE_TRADING_PATH.md`, ADR-0006, ADR-0007, ADR-0009 (demo-only EA), frozen Signal Authority Architecture v1.0.2 §7.10–7.11 and §10.6–10.11, issue #21
 
 ## Context
 
@@ -85,6 +85,8 @@ This ADR places the cBot inside that structure so it adds no new authority.
 - design;
 - signature-verification and state-machine code with no order API calls;
 - a chart-display cBot that places no orders.
+
+**Exception, ADR-0009 (owner decision, 2026-10-07):** a separate demo-only EA may place, manage and close orders on cTrader **demo** accounts as a validation instrument with no capital authority. Its order calls are confined to one file, each behind a live-account check, and a repository test enforces this. It does not authorise order code in this adapter's product path, which still needs Gate 4.
 
 The tests required later are the spec's §17 Gate 4 tests, plus boundary tests SB-1…SB-18 and ID-1…ID-6 against a cTrader demo account.
 
