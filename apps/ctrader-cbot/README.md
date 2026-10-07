@@ -8,9 +8,9 @@ The cBot is the cTrader **broker adapter**: the broker-side half of the frozen B
 
 | Part | Phase | What it does |
 |---|---|---|
-| `src/ZugrioSetups/ZugrioSetups` | 0 | A cTrader **indicator** that draws Zugrio setups (entry reference, invalidation, objective, context invalidation) for the chart's symbol. It fetches research-authority `EntryCandidate` JSON over HTTPS. **No orders.** `AccessRights.None`. |
+| `src/ZugrioSetups/ZugrioSetups` | 0 | A cTrader **indicator** that draws Zugrio setups (entry reference, invalidation, objective, context invalidation) for the chart's symbol. It fetches research-authority `EntryCandidate` JSON over HTTPS. **No orders.** Runs with `AccessRights.FullAccess` (owner decision, 2026-10-07), so it can also read a local candidates file. Install only builds whose SHA-256 matches CI. |
 | `src/Zugrio.CBot.Core` | 1 | The pure boundary core, with no cTrader dependency. Listed below. |
-| `tests/Zugrio.CBot.Core.Tests` | 0–1 | Unit tests, plus `NoOrderApiBeforeGate4`, which fails the build if any source calls a cTrader order or position API or asks for `FullAccess`. |
+| `tests/Zugrio.CBot.Core.Tests` | 0–1 | Unit tests, plus `NoOrderApiBeforeGate4`, which fails the build if any source calls a cTrader order or position API. |
 
 `Zugrio.CBot.Core` contains:
 - canonical JSON (§7.2 H-1);
@@ -50,4 +50,5 @@ dotnet build src/ZugrioSetups/ZugrioSetups -c Release   # produces ZugrioSetups.
 
 1. Build it, or download `zugrio-ctrader-display-indicator` from the "cTrader cBot (Zugrio)" workflow run, and check the `.sha256`.
 2. Double-click `ZugrioSetups.algo` (cTrader installs it). Or, in cTrader Algo, use **Indicators → Add → from file**.
-3. Add it to a chart and set **Candidates URL** to an HTTPS URL that serves Zugrio `EntryCandidate` JSON. Until the Zugrio API is deployed, that can be a static export.
+3. cTrader will ask you to approve **Full Access**. Approve it only for a build whose SHA-256 matches CI.
+4. Add it to a chart. Set **Candidates URL** to an HTTPS URL serving Zugrio `EntryCandidate` JSON, or **candidates file** to a local JSON export.

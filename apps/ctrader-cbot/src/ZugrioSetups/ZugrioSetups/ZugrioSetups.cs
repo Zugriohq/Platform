@@ -15,13 +15,18 @@ namespace Zugrio.CBot.Display
     /// It has no order or position calls. The repository test NoOrderApiBeforeGate4
     /// enforces that until Gate 4 is authorised.
     ///
-    /// It runs with AccessRights.None and uses cTrader's sandboxed Http API.
+    /// It runs with AccessRights.FullAccess, as the owner decided on 2026-10-07, so it
+    /// can read a local candidates file as well as an HTTPS URL. FullAccess does not
+    /// grant order authority: order and position calls stay banned until Gate 4.
     /// </summary>
-    [Indicator(IsOverlay = true, AccessRights = AccessRights.None, TimeZone = TimeZones.UTC)]
+    [Indicator(IsOverlay = true, AccessRights = AccessRights.FullAccess, TimeZone = TimeZones.UTC)]
     public class ZugrioSetups : Indicator
     {
         [Parameter("Candidates URL (HTTPS, JSON)", DefaultValue = "")]
         public string CandidatesUrl { get; set; } = "";
+
+        [Parameter("Or candidates file (local JSON)", DefaultValue = "")]
+        public string CandidatesFile { get; set; } = "";
 
         [Parameter("Reload every (seconds)", DefaultValue = 30, MinValue = 5)]
         public int ReloadSeconds { get; set; }
@@ -39,9 +44,17 @@ namespace Zugrio.CBot.Display
 
         private void Fetch()
         {
+            if (!string.IsNullOrWhiteSpace(CandidatesFile))
+            {
+                string? body = null, error = null;
+                try { body = System.IO.File.ReadAllText(CandidatesFile); }
+                catch (Exception e) { error = "cannot read file: " + e.Message; }
+                Draw(body, error);
+                return;
+            }
             if (!Uri.TryCreate(CandidatesUrl, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
             {
-                Draw(null, "set an HTTPS candidates URL");
+                Draw(null, "set an HTTPS candidates URL or a local candidates file");
                 return;
             }
             Http.GetAsync(uri, r => BeginInvokeOnMainThread(() =>

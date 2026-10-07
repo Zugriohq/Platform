@@ -383,10 +383,12 @@ namespace Zugrio.CBot.Core.Tests
     /// <summary>
     /// Gate 4 is not authorised (CURRENT-GATE.md). Until it is, no source file under
     /// src/ may call a cTrader order or position API. This test is the enforcement.
+    /// (AccessRights.FullAccess is allowed by owner decision 2026-10-07. Access rights
+    /// do not gate order calls; this scan does.)
     /// </summary>
     public class NoOrderApiBeforeGate4
     {
-        private static readonly Regex Forbidden = new(@"\b(ExecuteMarketOrder(Async)?|PlaceLimitOrder(Async)?|PlaceStopOrder(Async)?|PlaceStopLimitOrder(Async)?|ClosePositionAsync|ModifyPosition(Async)?|ReversePosition(Async)?|CancelPendingOrder(Async)?|ModifyPendingOrder(Async)?)\s*\(|\.Close\s*\(\s*\)|AccessRights\s*=\s*AccessRights\.FullAccess", RegexOptions.Compiled);
+        private static readonly Regex Forbidden = new(@"\b(ExecuteMarketOrder(Async)?|PlaceLimitOrder(Async)?|PlaceStopOrder(Async)?|PlaceStopLimitOrder(Async)?|ClosePositionAsync|ModifyPosition(Async)?|ReversePosition(Async)?|CancelPendingOrder(Async)?|ModifyPendingOrder(Async)?)\s*\(|\.Close\s*\(\s*\)", RegexOptions.Compiled);
 
         [Fact]
         public void No_order_or_position_calls_in_production_source()
