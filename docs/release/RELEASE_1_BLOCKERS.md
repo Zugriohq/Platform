@@ -53,7 +53,7 @@ No threshold in R5 may be chosen to hit a date. If a scope does not qualify, it 
 | # | Blocker | Needs |
 |---|---|---|
 | P1 | Bring `apps/` and `packages/` to `main` through a reviewed PR with CI. Vehicle: **PR #67** (draft; `main` merged in at d2c07e4; Pages fix needs an owner dashboard change, see below) | CI green on the new head; independent review of the code moving to `main`; no semantic change mixed in (CLAUDE.md) |
-| P2 | Identity and invite-only access: accounts, invitations, sessions, server-authoritative entitlement, separate from execution authority | Design note → ADR (auth provider choice is an **owner decision**) |
+| P2 | Identity and invite-only access: accounts, invitations, sessions, server-authoritative entitlement, separate from execution authority | Design: **ADR-0007** (Proposed). Build order P2a API, P2b desktop, P2c web. Owner creates the Auth0 tenant |
 | P3 | Authenticated desktop: sign-in, token handling, entitlement display, release-status truth labels | P2 |
 | P4 | Deploy the API: OCI VM, Cloudflare Tunnel, `api.zugrio.xyz`, health check, backups | Owner access to OCI and Cloudflare |
 | P5 | Live market-data adapter, separate from execution adapters (CLAUDE.md) | Data-provider decision (shared with R3) |
