@@ -10,12 +10,23 @@ namespace Zugrio.CBot.Core
     /// <param name="TrailAtr">Trailing distance behind the best price (x ATR).</param>
     /// <param name="MinStepAtr">Smallest stop improvement worth sending (x ATR), so the broker is not spammed.</param>
     /// <param name="MinGapAtr">Closest the stop may sit to the current exit price (x ATR).</param>
-    public sealed record TrailSettings(double BreakEvenAtR, double BreakEvenLockAtr, double TrailStartR, double TrailAtr, double MinStepAtr, double MinGapAtr);
+    /// <param name="KeepProfitFraction">From break-even on, the stop keeps at least this share of the best open profit
+    /// seen, so a trail measured in ATR can never give back more than (1 − share) of it. 0 turns it off.</param>
+    public sealed record TrailSettings(double BreakEvenAtR, double BreakEvenLockAtr, double TrailStartR, double TrailAtr, double MinStepAtr, double MinGapAtr, double KeepProfitFraction = 0)
+    {
+        private readonly double _keep = ValidKeep(KeepProfitFraction);
+        public double KeepProfitFraction { get => _keep; init => _keep = ValidKeep(value); }
+
+        private static double ValidKeep(double f) =>
+            f is >= 0 and < 1 ? f : throw new ArgumentOutOfRangeException(nameof(KeepProfitFraction), "must be in [0, 1)");
+    }
 
     /// <summary>
     /// Anti-round-trip stop management. Once a trade has moved <c>BreakEvenAtR</c> × R in its
     /// favour, the stop goes to entry (plus a small lock); from <c>TrailStartR</c> × R it trails
-    /// the best price by <c>TrailAtr</c> × ATR. A proposal is returned only if it strictly tightens
+    /// the best price by <c>TrailAtr</c> × ATR. From break-even on it also keeps at least
+    /// <c>KeepProfitFraction</c> of the best open profit: when the stop is smaller than an ATR,
+    /// an ATR trail alone would sit at or near entry and hand the move back. A proposal is returned only if it strictly tightens
     /// the current stop by at least <c>MinStepAtr</c> × ATR, so the result is always RISK_REDUCING
     /// under OrderClassifier (§10.11) and never widens risk.
     /// </summary>
@@ -28,7 +39,7 @@ namespace Zugrio.CBot.Core
             if (!(r > 0) || !(atr > 0)) return null;
             var favour = sign * (bestPrice - entry);
             double? candidate = null;
-            if (favour >= s.BreakEvenAtR * r) candidate = entry + sign * s.BreakEvenLockAtr * atr;
+            if (favour >= s.BreakEvenAtR * r) candidate = entry + sign * Math.Max(s.BreakEvenLockAtr * atr, s.KeepProfitFraction * favour);
             if (favour >= s.TrailStartR * r)
             {
                 var trail = bestPrice - sign * s.TrailAtr * atr;

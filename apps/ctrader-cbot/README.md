@@ -43,6 +43,7 @@ One instance scans a **watchlist** of synthetics, forex and gold. The chart it i
 - **No round-tripping: open trades.** R is a trade's initial risk (entry to stop). The EA checks every 10 s:
   - At +1R profit, the stop moves to break-even plus 0.05 ATR.
   - From +1.5R, the stop trails 1 ATR behind the best price since entry.
+  - From +1R on, the stop also keeps at least 50% of the best open profit seen (*Keep at least this share of the best open profit*). Whichever of the three is tightest is used. Without this, a stop smaller than one ATR (common on synthetics) lets the 1-ATR trail sit near entry: on 2026-10-08 a Step Index sell ran to about +1.7R and closed at +0.23R. With half kept, the same trade's stop would have been at about +0.84R.
   - Stops only tighten. Each change is checked RISK_REDUCING and goes through the risk-reducing gate, so the kill switch never blocks it.
   - The initial stop is written into the trade's broker comment (`sl=`), so this keeps working after a cloud restart.
   - The original target stays in place. Partial closes are not used, because small accounts trade minimum volume.

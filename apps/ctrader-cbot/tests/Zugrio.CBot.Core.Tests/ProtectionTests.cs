@@ -54,6 +54,49 @@ namespace Zugrio.CBot.Core.Tests
             Assert.Equal(RiskEffect.RiskReducing, classified);
         }
 
+        // The Step Index sell of 2026-10-08: R ~ 3.45 points, M15 ATR ~ 5. Sell 7330.9, stop 7334.35.
+        private static readonly TrailSettings Keep = S with { KeepProfitFraction = 0.5 };
+
+        [Fact]
+        public void An_ATR_trail_wider_than_R_gives_most_of_the_move_back()
+        {
+            // Best 7325.1 (+5.8 = 1.68R): the 1-ATR trail alone sits at 7330.1, only +0.8 in profit.
+            var stop = ProtectionManager.Propose(false, 7330.9, 7334.35, 7330.65, bestPrice: 7325.1, exitPrice: 7325.3, atr: 5, S);
+            Assert.Equal(7330.1, stop!.Value, 9);
+        }
+
+        [Fact]
+        public void Keeps_at_least_the_set_share_of_the_best_open_profit()
+        {
+            // Same trade with half kept: stop at 7330.9 - 2.9 = 7328.0 (+2.9), instead of +0.8.
+            var stop = ProtectionManager.Propose(false, 7330.9, 7334.35, 7330.65, bestPrice: 7325.1, exitPrice: 7325.3, atr: 5, Keep);
+            Assert.Equal(7328.0, stop!.Value, 9);
+        }
+
+        [Fact]
+        public void Keep_starts_at_break_even_and_a_wide_ATR_trail_still_wins_when_tighter()
+        {
+            // Buy at 100, R = 2, ATR 2. At +2.4 (1.2R): keep half = 101.2, above the 100.1 break-even lock.
+            Assert.Equal(101.2, ProtectionManager.Propose(true, 100, 98, 98, bestPrice: 102.4, exitPrice: 102.4, atr: 2, Keep)!.Value, 9);
+            // Below 1R nothing moves, however much is kept.
+            Assert.Null(ProtectionManager.Propose(true, 100, 98, 98, bestPrice: 101.9, exitPrice: 101.9, atr: 2, Keep));
+            // At +10 the 1-ATR trail (108) is tighter than half (105): the trail is used.
+            Assert.Equal(108, ProtectionManager.Propose(true, 100, 98, 101.2, bestPrice: 110, exitPrice: 110, atr: 2, Keep)!.Value, 9);
+        }
+
+        [Fact]
+        public void Keep_still_respects_the_gap_to_the_market()
+        {
+            // Best 106, keep half = 103, but price is back at 103.2: the stop is capped 0.2 ATR below, at 102.8.
+            Assert.Equal(102.8, ProtectionManager.Propose(true, 100, 98, 100.1, bestPrice: 106, exitPrice: 103.2, atr: 2, Keep with { TrailStartR = 10 })!.Value, 9);
+        }
+
+        [Theory]
+        [InlineData(-0.1)]
+        [InlineData(1.0)]
+        public void Rejects_a_keep_share_outside_0_to_1(double f) =>
+            Assert.Throws<ArgumentOutOfRangeException>(() => S with { KeepProfitFraction = f });
+
         [Fact]
         public void Initial_stop_round_trips_through_the_broker_comment()
         {

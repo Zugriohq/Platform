@@ -82,6 +82,7 @@ namespace Zugrio.CBot.EA
         [Parameter("Break-even lock past entry (x ATR)", DefaultValue = 0.05, MinValue = 0, Group = "Protect open profit (research)")] public double BreakEvenLockAtr { get; set; }
         [Parameter("Start trailing at (x R profit)", DefaultValue = 1.5, MinValue = 0.1, Group = "Protect open profit (research)")] public double TrailStartR { get; set; }
         [Parameter("Trail distance behind best price (x ATR)", DefaultValue = 1.0, MinValue = 0.05, Group = "Protect open profit (research)")] public double TrailAtr { get; set; }
+        [Parameter("Keep at least this share of the best open profit", DefaultValue = 0.5, MinValue = 0, MaxValue = 0.95, Group = "Protect open profit (research)")] public double KeepProfitFraction { get; set; }
 
         [Parameter("Max quote age (seconds)", DefaultValue = 10, MinValue = 1, Group = "Execution safety (research)")] public int MaxQuoteAgeSeconds { get; set; }
         [Parameter("Max clock skew (seconds)", DefaultValue = 30, MinValue = 1, Group = "Execution safety (research)")] public int MaxClockSkewSeconds { get; set; }
@@ -149,7 +150,7 @@ namespace Zugrio.CBot.EA
                 foreach (var tf in _fallbackContexts) Timeframes.Length(tf);   // throws on an unsupported code
             }
             catch (FormatException e) { Print("Zugrio EA: invalid watchlist, tiers or routes: " + e.Message + ". Not trading."); Stop(); return; }
-            _trail = new TrailSettings(BreakEvenAtR, BreakEvenLockAtr, TrailStartR, TrailAtr, MinStepAtr: 0.1, MinGapAtr: 0.2);
+            _trail = new TrailSettings(BreakEvenAtR, BreakEvenLockAtr, TrailStartR, TrailAtr, MinStepAtr: 0.1, MinGapAtr: 0.2, KeepProfitFraction);
 
             var config = Config();
             _configVersion = CanonicalJson.Sha256Hex("zugrio:ea-config:v1", config);
@@ -487,8 +488,8 @@ namespace Zugrio.CBot.EA
         }
 
         /// <summary>
-        /// Anti round-trip: moves each open Zugrio stop to break-even at +1R and trails it from +1.5R
-        /// (ProtectionManager). Only ever tightens: every change is checked RISK_REDUCING first.
+        /// Anti round-trip: moves each open Zugrio stop to break-even at +1R, keeps at least half of the
+        /// best open profit from there, and trails it from +1.5R (ProtectionManager). Only ever tightens: every change is checked RISK_REDUCING first.
         /// The initial stop comes from the broker comment, so this works after a cloud restart.
         /// </summary>
         private void ManageOpenProfit(DateTime now)
@@ -601,7 +602,7 @@ namespace Zugrio.CBot.EA
 
         private JsonObject Config() => new()
         {
-            ["schema"] = "zugrio.ea-config/v2", ["calibrationStatus"] = "UNVALIDATED_RESEARCH",
+            ["schema"] = "zugrio.ea-config/v3", ["calibrationStatus"] = "UNVALIDATED_RESEARCH",
             ["markets"] = new JsonObject { ["watchlist"] = WatchlistText, ["tiers"] = TiersText, ["maxSpreadShareOfStop"] = (decimal)MaxSpreadShareOfStop,
                 ["trendFilter"] = TrendFilterOn, ["trendFilterOnReclaims"] = TrendFilterOnReclaims },
             ["timeframes"] = new JsonObject { ["context"] = ContextTf, ["location"] = LocationTf, ["entry"] = EntryTf, ["fallbackContexts"] = string.Join(",", _fallbackContexts), ["contextBars"] = ContextBars, ["locationBars"] = LocationBars, ["entryBars"] = EntryBars },
@@ -615,7 +616,7 @@ namespace Zugrio.CBot.EA
             {
                 ["riskPct"] = (decimal)RiskPct, ["maxRiskPctAtMinVolume"] = (decimal)MaxRiskPctAtMinVolume, ["maxUnits"] = (decimal)MaxUnits, ["maxDailyLossPct"] = (decimal)MaxDailyLossPct, ["protectPreviousDayProfit"] = ProtectPreviousDayProfit,
                 ["profitLockFraction"] = (decimal)ProfitLockFraction, ["breakEvenAtR"] = (decimal)BreakEvenAtR, ["breakEvenLockAtr"] = (decimal)BreakEvenLockAtr,
-                ["trailStartR"] = (decimal)TrailStartR, ["trailAtr"] = (decimal)TrailAtr,
+                ["trailStartR"] = (decimal)TrailStartR, ["trailAtr"] = (decimal)TrailAtr, ["keepProfitFraction"] = (decimal)KeepProfitFraction,
             },
             ["execution"] = new JsonObject { ["maxQuoteAgeSeconds"] = MaxQuoteAgeSeconds, ["maxClockSkewSeconds"] = MaxClockSkewSeconds, ["protectionDeadlineSeconds"] = ProtectionDeadlineSeconds },
         };
