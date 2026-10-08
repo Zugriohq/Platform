@@ -33,7 +33,13 @@ export interface ScanRequest {
   readonly timeframes: { readonly context: string; readonly location: string; readonly entry: string; readonly management: string; readonly maxAgeMs: Readonly<Record<Role, number>> };
   readonly model: { readonly route: Route; readonly breakTicks: number; readonly touchTicks: number; readonly stopTicks: number; readonly maxChaseTicks: number; readonly minimumRunwayTicks: number };
   readonly pivots: readonly { readonly definitionId: string; readonly scale: "INTERNAL" | "INTERMEDIATE" | "EXTERNAL"; readonly leftBars: number; readonly rightBars: number }[];
-  readonly enumeration: { readonly recentFactsPerRole: number };
+  /**
+   * readyOnly: skip bindings that cannot be STRUCTURAL_READY at the latest entry close,
+   * using decision-core's own READY predicates (geometryCurrent and targetRunwayAvailable
+   * in interpret()) with identical arithmetic. READY results are unchanged; only
+   * CANDIDATE/WATCH bindings far from price are not judged. The EA sets it for speed.
+   */
+  readonly enumeration: { readonly recentFactsPerRole: number; readonly readyOnly?: boolean };
   readonly markets: readonly { readonly timeframe: string; readonly bars: readonly { readonly closedAt: string; readonly o: number; readonly h: number; readonly l: number; readonly c: number }[] }[];
 }
 
@@ -55,6 +61,8 @@ export interface ScanResult {
   readonly ranking: string;
   readonly candidates: readonly ScanCandidate[];
   readonly best: ScanCandidate | null;
+  /** Bindings not judged because they cannot be READY at the latest close (readyOnly). */
+  readonly skippedNotReadyable: number;
   readonly errors: readonly string[];
 }
 
@@ -104,9 +112,14 @@ export function scan(r: ScanRequest): ScanResult {
   const errors: string[] = [];
   const p = profiles(r);
   const markets = marketInputs(r);
-  const store = new SharedMarketStore();
-  const facts = new Map(markets.map((m) => [m.timeframe, store.materialize(m).facts]));
   const engine = new SharedEntryEngine();
+  // The engine's own store, so its later materialisations share the pivot computation.
+  const store: SharedMarketStore = engine.markets;
+  const facts = new Map(markets.map((m) => [m.timeframe, store.materialize(m).facts]));
+  const entryBars = [...markets.find((m) => m.timeframe === r.timeframes.entry)!.bars].sort((a, b) => Date.parse(a.sourceClosedAt) - Date.parse(b.sourceClosedAt));
+  const lastClose = entryBars.at(-1)!.close;
+  const tickSize = r.instrument.tickSize;
+  let skipped = 0;
   const k = Math.max(1, Math.floor(r.enumeration.recentFactsPerRole));
   const out: ScanCandidate[] = [];
 
@@ -125,6 +138,14 @@ export function scan(r: ScanRequest): ScanResult {
         const objective = ctxFacts.filter((f) => f.concept === resistance && point(f) !== null && sign * (point(f)! - level) > 0)
           .sort((a, b) => sign * (point(a)! - point(b)!))[0];
         if (!objective) continue;
+        if (r.enumeration.readyOnly) {
+          // Same expressions as decision-core's interpret(): stop, geometryCurrent, targetRunwayAvailable.
+          const stop = level - sign * r.model.stopTicks * tickSize;
+          const objectivePrice = point(objective)!;
+          const readyable = sign * (lastClose - stop) > 0 && Math.abs(lastClose - level) <= r.model.maxChaseTicks * tickSize
+            && sign * (objectivePrice - lastClose) >= r.model.minimumRunwayTicks * tickSize;
+          if (!readyable) { skipped++; continue; }
+        }
         const input: EntryEvaluationInput = { markets, ...p, binding: { side, contextFactId: c.factId, locationFactId: l.factId, objectiveFactId: objective.factId } } as unknown as EntryEvaluationInput;
         try {
           const e = engine.evaluate(input);
@@ -141,7 +162,7 @@ export function scan(r: ScanRequest): ScanResult {
     || Date.parse(b.geometry?.frozenAt ?? b.knownAt) - Date.parse(a.geometry?.frozenAt ?? a.knownAt)
     || (a.opportunityId < b.opportunityId ? -1 : a.opportunityId > b.opportunityId ? 1 : 0));
   const best = ranked.find((x) => x.state === "STRUCTURAL_READY") ?? null;
-  return { schema: "zugrio.ea-scan-result/v1", configVersion: r.configVersion, evaluatedAt: r.evaluatedAt, ranking: RANKING, candidates: ranked, best, errors };
+  return { schema: "zugrio.ea-scan-result/v1", configVersion: r.configVersion, evaluatedAt: r.evaluatedAt, ranking: RANKING, candidates: ranked, best, skippedNotReadyable: skipped, errors };
 }
 
 /** Engine integrity check the EA runs before trading: decision-core's own fixture must give its known answer. */

@@ -3681,9 +3681,13 @@
     const errors = [];
     const p = profiles(r);
     const markets = marketInputs(r);
-    const store = new SharedMarketStore();
-    const facts = new Map(markets.map((m) => [m.timeframe, store.materialize(m).facts]));
     const engine = new SharedEntryEngine();
+    const store = engine.markets;
+    const facts = new Map(markets.map((m) => [m.timeframe, store.materialize(m).facts]));
+    const entryBars = [...markets.find((m) => m.timeframe === r.timeframes.entry).bars].sort((a, b) => Date.parse(a.sourceClosedAt) - Date.parse(b.sourceClosedAt));
+    const lastClose = entryBars.at(-1).close;
+    const tickSize = r.instrument.tickSize;
+    let skipped = 0;
     const k = Math.max(1, Math.floor(r.enumeration.recentFactsPerRole));
     const out = [];
     for (const side of ["BUY", "SELL"]) {
@@ -3699,6 +3703,15 @@
           const level = point2(l);
           const objective = ctxFacts.filter((f) => f.concept === resistance && point2(f) !== null && sign * (point2(f) - level) > 0).sort((a, b) => sign * (point2(a) - point2(b)))[0];
           if (!objective) continue;
+          if (r.enumeration.readyOnly) {
+            const stop = level - sign * r.model.stopTicks * tickSize;
+            const objectivePrice = point2(objective);
+            const readyable = sign * (lastClose - stop) > 0 && Math.abs(lastClose - level) <= r.model.maxChaseTicks * tickSize && sign * (objectivePrice - lastClose) >= r.model.minimumRunwayTicks * tickSize;
+            if (!readyable) {
+              skipped++;
+              continue;
+            }
+          }
           const input = { markets, ...p, binding: { side, contextFactId: c.factId, locationFactId: l.factId, objectiveFactId: objective.factId } };
           try {
             const e = engine.evaluate(input);
@@ -3720,7 +3733,7 @@
     }
     const ranked = [...out].sort((a, b) => (STATE_RANK[b.state] ?? 0) - (STATE_RANK[a.state] ?? 0) || Date.parse(b.geometry?.frozenAt ?? b.knownAt) - Date.parse(a.geometry?.frozenAt ?? a.knownAt) || (a.opportunityId < b.opportunityId ? -1 : a.opportunityId > b.opportunityId ? 1 : 0));
     const best = ranked.find((x) => x.state === "STRUCTURAL_READY") ?? null;
-    return { schema: "zugrio.ea-scan-result/v1", configVersion: r.configVersion, evaluatedAt: r.evaluatedAt, ranking: RANKING, candidates: ranked, best, errors };
+    return { schema: "zugrio.ea-scan-result/v1", configVersion: r.configVersion, evaluatedAt: r.evaluatedAt, ranking: RANKING, candidates: ranked, best, skippedNotReadyable: skipped, errors };
   }
   function selfTest() {
     const e = new SharedEntryEngine().evaluate(createEntryValidationInput("CONTINUATION_RETEST", "GOLD", "INTRADAY", 7));

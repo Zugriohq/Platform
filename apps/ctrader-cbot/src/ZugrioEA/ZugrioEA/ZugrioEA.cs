@@ -36,10 +36,13 @@ namespace Zugrio.CBot.EA
     [Robot(AccessRights = AccessRights.None, AddIndicators = false, TimeZone = TimeZones.UTC)]
     public class ZugrioEA : Robot
     {
+        // Unlock balances: about 1.5x the smallest balance each market needed under the 5% small-account
+        // cap in the first Deriv cTrader affordability report (2026-10-08, demo). Research values;
+        // sizing still checks every trade against the live contract data.
         public const string DefaultWatchlist =
-            "Step Index|SYN|0; Volatility 10 Index|SYN|0; Volatility 10 (1s) Index|SYN|0; Volatility 25 Index|SYN|0; EURUSD|FX|0; " +
-            "GBPUSD|FX|100; USDJPY|FX|100; AUDUSD|FX|100; Volatility 50 Index|SYN|100; " +
-            "XAUUSD|METAL|250; Volatility 75 Index|SYN|250; Volatility 100 Index|SYN|250";
+            "USDJPY|FX|0; AUDUSD|FX|0; EURUSD|FX|0; GBPUSD|FX|0; Volatility 50 Index|SYN|20; " +
+            "Volatility 10 Index|SYN|35; Volatility 25 Index|SYN|35; Volatility 75 Index|SYN|50; " +
+            "Volatility 10 (1s) Index|SYN|80; Step Index|SYN|80; Volatility 100 Index|SYN|80; XAUUSD|METAL|120";
         public const string DefaultTiers = "0:1:5; 100:2:6; 250:3:8; 1000:4:8";
 
         [Parameter("Watchlist (Name|SYN/FX/METAL|unlock balance; ...)", DefaultValue = DefaultWatchlist, Group = "Markets and capital tiers (research)")] public string WatchlistText { get; set; } = DefaultWatchlist;
@@ -255,7 +258,7 @@ namespace Zugrio.CBot.EA
             _log.Write(now, "scan", new Dictionary<string, object?>
             {
                 ["symbol"] = m.Name, ["evaluatedAt"] = request["evaluatedAt"]!.GetValue<string>(), ["atr"] = atr, ["candidates"] = candidates.GetArrayLength(),
-                ["ready"] = candidates.EnumerateArray().Count(c => c.GetProperty("state").GetString() == "STRUCTURAL_READY"),
+                ["notReadyable"] = result.TryGetProperty("skippedNotReadyable", out var sk) ? sk.GetInt32() : 0, ["ready"] = candidates.EnumerateArray().Count(c => c.GetProperty("state").GetString() == "STRUCTURAL_READY"),
                 ["best"] = best.ValueKind == JsonValueKind.Null ? null : best.GetRawText(), ["engineErrors"] = result.GetProperty("errors").GetArrayLength(),
             });
             if (best.ValueKind == JsonValueKind.Null) return;
@@ -538,7 +541,9 @@ namespace Zugrio.CBot.EA
                     ["maxChaseTicks"] = MaxChaseAtr * ticks, ["minimumRunwayTicks"] = MinRunwayAtr * ticks,
                 },
                 ["pivots"] = new JsonArray(new JsonObject { ["definitionId"] = "p1", ["scale"] = "INTERMEDIATE", ["leftBars"] = PivotBars, ["rightBars"] = PivotBars }),
-                ["enumeration"] = new JsonObject { ["recentFactsPerRole"] = RecentFacts },
+                // readyOnly: the bridge skips bindings that cannot be READY at the latest close (same
+                // predicates as decision-core), which makes a scan about 7x faster. READY results are identical.
+                ["enumeration"] = new JsonObject { ["recentFactsPerRole"] = RecentFacts, ["readyOnly"] = true },
                 ["markets"] = markets,
             };
         }

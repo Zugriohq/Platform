@@ -32,21 +32,45 @@ The EA trades fully automatically on the **demo or live** account it is started 
 One instance scans a **watchlist** of synthetics, forex and gold. The chart it is attached to does not matter.
 
 - **Zugrio's decisions, not a copy.** On each closed M5 bar of every watchlist symbol it sends closed H1/M15/M5 bars to decision-core, which looks for continuation-retest setups. Entry, stop and target are the engine's frozen geometry. Model distances (break, retest tolerance, stop, chase, runway) are multiples of each symbol's M15 ATR, so one setting fits a synthetic index, EURUSD and gold.
+- **Speed.** Before asking decision-core to judge a candidate, the bridge drops those that cannot be READY at the latest close, using decision-core's own READY conditions with identical arithmetic. Tests show the READY results are unchanged. A scan is about 7x faster (in cTrader's cloud, roughly 3 s instead of 22 s per market).
 - **Choosing between markets.** READY setups from all markets are gathered for 3 seconds, then ranked: most recent confirmation first (the frozen spec's SEL-4 order), then lower risk %, then name. They are admitted in that order while the current tier allows it.
 - **Capital tiers: small accounts keep trading, more unlocks as the balance grows.** Each watchlist symbol has an unlock balance, and each tier caps open positions and total open risk. Tiers follow the current balance, so they lock again if it falls (open trades are not touched). Defaults:
 
-  | Balance | Markets added | Max open trades | Max total open risk |
-  |---|---|---|---|
-  | from $0 | Step Index, Volatility 10, Volatility 10 (1s), Volatility 25, EURUSD | 1 | 5% |
-  | from $100 | GBPUSD, USDJPY, AUDUSD, Volatility 50 | 2 | 6% |
-  | from $250 | XAUUSD, Volatility 75, Volatility 100 | 3 | 8% |
-  | from $1,000 | (none) | 4 | 8% |
+  | Balance | Markets added |
+  |---|---|
+  | from $0 | USDJPY, AUDUSD, EURUSD, GBPUSD |
+  | from $20 | Volatility 50 |
+  | from $35 | Volatility 10, Volatility 25 |
+  | from $50 | Volatility 75 |
+  | from $80 | Volatility 10 (1s), Step Index, Volatility 100 |
+  | from $120 | XAUUSD |
+
+  | Balance | Max open trades | Max total open risk |
+  |---|---|---|
+  | from $0 | 1 | 5% |
+  | from $100 | 2 | 6% |
+  | from $250 | 3 | 8% |
+  | from $1,000 | 4 | 8% |
 
   Unlocking is necessary, not sufficient: every trade must also pass sizing. If the broker's minimum volume would risk more than *Max risk at broker minimum volume* (5%) at the engine's stop, the trade is skipped, whatever the tier.
-- **Why these markets.** The ordering is my research judgement, not validated:
-  - Calmer synthetics (Step, Volatility 10/25) and EURUSD come first: small moves per tick, so a structural stop costs little at minimum volume.
-  - Gold and the faster volatility indices come later: each point costs more, so a stop costs more.
-  - Boom/Crash, Jump and Range Break are left out: they spike or gap, so prices can jump past a stop and lose more than planned.
+- **Why these markets.** The unlock balances come from the EA's first affordability report on a Deriv cTrader demo account (2026-10-08). For each market, the report gives the smallest balance whose 5% cap covers a typical stop at the broker's minimum volume:
+
+  | Market | Smallest balance |
+  |---|---|
+  | USDJPY | $4 |
+  | AUDUSD | $5 |
+  | EURUSD | $9 |
+  | GBPUSD | $11 |
+  | Volatility 50 | $13 |
+  | Volatility 10 | $21 |
+  | Volatility 25 | $24 |
+  | Volatility 75 | $31 |
+  | Volatility 10 (1s) | $43 |
+  | Step Index | $52 |
+  | Volatility 100 | $54 |
+  | Gold | $76 |
+
+  Each unlock is about 1.5x that figure, because volatility moves. All four forex pairs carry USD, so only one is open at a time. Boom/Crash, Jump and Range Break are left out: they spike or gap, so prices can jump past a stop and lose more than planned.
 
   Deriv does not publish cTrader contract sizes in a form I could read, so the EA measures them itself. At start and once a day it logs, for every market, what a typical stop costs at minimum volume and the smallest balance that can trade it (`affordability` records, plus one printed summary line). That table, from your broker's live data, is the real answer to "which markets suit this account".
 - **Portfolio limits.**

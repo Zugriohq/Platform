@@ -81,7 +81,8 @@ namespace Zugrio.CBot.Core.Tests
         {
             var w = Watchlist.Parse(Constant("DefaultWatchlist"));
             var t = Watchlist.ParseTiers(Constant("DefaultTiers"));
-            Assert.Contains(w, x => x.UnlockBalance == 0 && x.Class == AssetClass.Synthetic);
+            Assert.Contains(w, x => x.UnlockBalance == 0);                                     // something trades from $0
+            Assert.True(w.Count(x => x.UnlockBalance <= 20) >= 2);                             // a $20 account has a choice
             Assert.Contains(w, x => x.Symbol == "XAUUSD" && x.UnlockBalance > 0);           // gold unlocks later
             Assert.DoesNotContain(w, x => x.Symbol.Contains("Boom") || x.Symbol.Contains("Crash") || x.Symbol.Contains("Jump")); // spike indices gap through stops
             Assert.Equal(1, Watchlist.TierFor(t, 20).MaxPositions);                           // a $20 account: one trade at a time
