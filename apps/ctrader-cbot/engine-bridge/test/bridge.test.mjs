@@ -168,3 +168,20 @@ test("a rally into old highs: open sky on H1, targets from an H4 rescan", () => 
   console.log(`rally into old highs: open sky on H1 in ${openSky}/12; H4 rescan had targets in ${h4WithTargets}`);
   assert.ok(openSky > 0 && h4WithTargets > 0);
 });
+
+test("scalping is a horizon profile, not new logic: an M15/M5/M1 SCALP map finds the same setup under its own ids", () => {
+  const day = requestFromFixture("CONTINUATION_RETEST", "GOLD", "INTRADAY", 7);
+  const rename = { H1: "M15", M5: "M5", M1: "M1" };
+  const scalp = {
+    ...day,
+    horizon: { ...day.horizon, horizon: "SCALP" },
+    timeframes: { ...day.timeframes, context: "M15", management: "M15" },
+    markets: day.markets.map((m) => ({ ...m, timeframe: rename[m.timeframe] })),
+  };
+  const e = load();
+  const d = JSON.parse(e.scan(JSON.stringify(day))), s = JSON.parse(e.scan(JSON.stringify(scalp)));
+  assert.ok(s.best, "SCALP: no READY candidate; errors " + s.errors.join("; "));
+  assert.deepEqual([s.best.side, s.best.geometry.entryReference, s.best.geometry.childInvalidation, s.best.geometry.objective],
+    [d.best.side, d.best.geometry.entryReference, d.best.geometry.childInvalidation, d.best.geometry.objective]);
+  assert.notEqual(s.best.opportunityId, d.best.opportunityId);   // distinct profile => distinct setup ids, so DAY and SCALP never dedupe each other
+});

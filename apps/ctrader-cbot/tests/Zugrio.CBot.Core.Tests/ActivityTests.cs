@@ -15,15 +15,17 @@ namespace Zugrio.CBot.Core.Tests
             Assert.True(a.Skipped("f1", "SPREAD_TOO_WIDE_FOR_STOP"));
             Assert.False(a.Skipped("f1", "SPREAD_TOO_WIDE_FOR_STOP"));
             Assert.True(a.Skipped("f2", "SPREAD_TOO_WIDE_FOR_STOP"));
-            a.Scanned("EURUSD", 2.4); a.Scanned("EURUSD", 1.1); a.Scanned("Step Index", 0.3);
+            a.Scanned("EURUSD", 2.4, 0.5); a.Scanned("EURUSD", 1.1, 0.6); a.Scanned("Step Index (scalp)", 0.3, 0.4);
             a.Entered(); a.Closed(1.25);
             var s = a.Summary(new DateTime(2026, 10, 8, 16, 0, 0, DateTimeKind.Utc), 20.5, 20.7, 0, new Tier(0, 1, 5), 0.8, 19.7);
             Assert.Contains("hour to 16:00 UTC: 3 scans, 1 setups found, 1 trades opened, 1 closed (P/L +1.25)", s);
             Assert.Contains("Skipped: 2 spread too wide for the stop", s);
-            Assert.Contains("Closest to a setup: Step Index 0.3 ATR, EURUSD 1.1 ATR", s);
+            Assert.Contains("Closest to a setup: Step Index (scalp) 0.3 ATR, EURUSD 1.1 ATR", s);
+            Assert.Contains("Scanning took 2 s", s);
             Assert.Contains("Balance 20.50, equity 20.70, 0 open (max 1)", s);
             a.NextHour();
             Assert.Equal(0, a.Scans);
+            Assert.Equal(0, a.ScanSeconds);
             Assert.False(a.SetupFound("f1"));               // a setup spanning the hour is not re-announced
         }
 

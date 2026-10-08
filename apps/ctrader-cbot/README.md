@@ -31,13 +31,26 @@ The EA trades fully automatically on the **demo or live** account it is started 
 
 One instance scans a **watchlist** of synthetics, forex and gold. The chart it is attached to does not matter.
 
-- **Zugrio's decisions, not a copy.** On each closed M5 bar of every watchlist symbol it sends closed H1/M15/M5 bars to decision-core, which looks for continuation-retest setups. Entry, stop and target are the engine's frozen geometry. Model distances (break, retest tolerance, stop, chase, runway) are multiples of each symbol's M15 ATR, so one setting fits a synthetic index, EURUSD and gold.
+- **Zugrio's decisions, not a copy.** On each closed M5 bar of every watchlist symbol it sends closed H1/M15/M5 bars to decision-core (the DAY style; SCALP is below), which looks for continuation-retest setups. Entry, stop and target are the engine's frozen geometry. Model distances (break, retest tolerance, stop, chase, runway) are multiples of each symbol's M15 ATR, so one setting fits a synthetic index, EURUSD and gold.
 - **Reading the Journal.**
   - Plain-English lines start `Zugrio EA:`. One is printed the first time a setup is found (`SETUP …`), skipped (`skipped a … setup: <reason>`), traded (`TRADE OPENED …`), protected (`stop on … moved …`) and closed (`TRADE CLOSED … P/L …`).
   - Every hour a summary shows: scans, setups, trades, skip reasons, the three markets closest to a setup (distance from price to the nearest level, in ATR), balance, open trades, and today's floor.
   - The `ZUGRIO {…}` JSON lines are the data record. They carry 12-character config and engine hash prefixes; the start record holds the full hashes.
   - Each scan line's `nearestLevelAtr` shows how far price is from the closest level. When it falls to 0.5 or below, a setup is possible.
   - The 18 = `candidates` + `notReadyable` is fixed by design: 2 sides × 3 H1 swings × 3 M15 levels. It is the number of combinations checked, not a market reading.
+- **Two trading styles: day trading and scalping.** Zugrio's frozen spec defines SCALP, DAY and SWING as horizon profiles (F-1), and the strategy portfolio calls them "horizons/trading styles, not strategy logic". So a scalp is the same decision-core routes and model on faster timeframes; decision-core is unchanged.
+
+  | Style | Context / location / entry | Scans on | Target fallback | Setup / entry expiry | Markets (default) |
+  |---|---|---|---|---|---|
+  | DAY | H1 / M15 / M5 | every closed M5 bar | H4, then D1 | 24 h / 15 min | all |
+  | SCALP | M15 / M5 / M1 | every closed M1 bar | H1 | 6 h / 3 min | synthetics only |
+
+  - Distances are ATR multiples on the style's own location timeframe (M15 for DAY, M5 for SCALP), so scalp stops and targets are roughly half a day trade's (on a random walk an M5 ATR is about 1/√3 of an M15 ATR). Expiries keep the same number of bars: 24 context bars and 3 entry bars.
+  - Scalping defaults to synthetics because forex and gold spreads are already 36–43% of a typical *day* stop in the evening (affordability report, 2026-10-08). On scalp-sized stops they would almost always fail the 25% spread filter. Turn them on with *Scalp: markets*.
+  - Each style is its own decision-core profile (`INTRADAY`, `INTRADAY_H4`, `SCALP`, `SCALP_H1`), so DAY and SCALP setups have different ids. They share everything else: one position per symbol across both styles, the tier limits, the daily loss limit and the profit lock.
+  - Each trade carries its style in the broker comment (`st=SCALP`). Break-even, keep-half and trailing use that style's ATR and bars, also after a cloud restart. Trades without the tag (older ones) are DAY.
+  - Cost: scalping adds up to 8 scans a minute. A scan costs about 0.55 s on a laptop and more in the cloud. The hourly summary shows *Scanning took N s* and each scan record has `ms`, so the load is visible. If it approaches the hour, reduce *Scalp: markets* or the watchlist.
+  - Set *Trading styles* to `DAY`, `SCALP` or `DAY,SCALP` (default).
 - **Speed.** Both routes are judged in one engine call per market (bars validated and pivots computed once), and history is 120 H1 / 200 M15 / 300 M5 bars. A scan is about 2x faster than two separate calls. Before asking decision-core to judge a candidate, the bridge drops those that cannot be READY at the latest close, using decision-core's own READY conditions with identical arithmetic. Tests show the READY results are unchanged. A scan is about 7x faster (in cTrader's cloud, roughly 3 s instead of 22 s per market).
 - **Both Zugrio setup types.** Every market is scanned for continuation-retest (break, retest, continue) and reversal-reclaim (dip through a level, reclaim it). Both are decision-core routes. Only one position per symbol is open at a time.
 - **No round-tripping: open trades.** R is a trade's initial risk (entry to stop). The EA checks every 10 s:

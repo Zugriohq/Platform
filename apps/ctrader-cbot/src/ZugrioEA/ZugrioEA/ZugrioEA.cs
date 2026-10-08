@@ -27,8 +27,11 @@ namespace Zugrio.CBot.EA
     /// signed in-process instruction, abort-only guards, journalled state machine, protection
     /// deadline and risk-reducing gate. Everything is logged for analysis.
     ///
-    /// Model distances are multiples of each symbol's ATR, so one setting works across
-    /// synthetics, forex and gold. All parameters are research values (UNVALIDATED_RESEARCH);
+    /// Two trading styles (horizon profiles of the same engine): DAY scans H1/M15/M5 on every
+    /// closed M5 bar; SCALP scans M15/M5/M1 on every closed M1 bar, synthetics only by default.
+    ///
+    /// Model distances are multiples of each symbol's ATR on the style's location timeframe,
+    /// so one setting works across synthetics, forex and gold, and across styles. All parameters are research values (UNVALIDATED_RESEARCH);
     /// changing any of them changes the config version recorded with every decision.
     /// </summary>
     // AccessRights.None so it can run as a cTrader cloud instance, which is how it runs from
@@ -51,24 +54,34 @@ namespace Zugrio.CBot.EA
         [Parameter("Trend filter also on reclaim setups", DefaultValue = false, Group = "Markets and capital tiers (research)")] public bool TrendFilterOnReclaims { get; set; }
         [Parameter("Max spread as share of stop distance", DefaultValue = 0.25, MinValue = 0.01, MaxValue = 1, Group = "Markets and capital tiers (research)")] public double MaxSpreadShareOfStop { get; set; }
 
-        [Parameter("Context timeframe", DefaultValue = "H1", Group = "Engine timeframes")] public string ContextTf { get; set; } = "H1";
-        [Parameter("Location timeframe", DefaultValue = "M15", Group = "Engine timeframes")] public string LocationTf { get; set; } = "M15";
-        [Parameter("Entry timeframe", DefaultValue = "M5", Group = "Engine timeframes")] public string EntryTf { get; set; } = "M5";
-        [Parameter("Target fallback timeframes (when no H1 swing to target)", DefaultValue = "H4,D1", Group = "Engine timeframes")] public string FallbackContextText { get; set; } = "H4,D1";
-        [Parameter("Context bars (H1)", DefaultValue = 120, MinValue = 50, MaxValue = 2000, Group = "Engine timeframes")] public int ContextBars { get; set; }
-        [Parameter("Location bars (M15)", DefaultValue = 200, MinValue = 50, MaxValue = 2000, Group = "Engine timeframes")] public int LocationBars { get; set; }
-        [Parameter("Entry bars (M5)", DefaultValue = 300, MinValue = 50, MaxValue = 2000, Group = "Engine timeframes")] public int EntryBars { get; set; }
+        [Parameter("Trading styles (DAY, SCALP)", DefaultValue = "DAY,SCALP", Group = "Trading styles")] public string StylesText { get; set; } = "DAY,SCALP";
+        [Parameter("Context bars", DefaultValue = 120, MinValue = 50, MaxValue = 2000, Group = "Trading styles")] public int ContextBars { get; set; }
+        [Parameter("Location bars", DefaultValue = 200, MinValue = 50, MaxValue = 2000, Group = "Trading styles")] public int LocationBars { get; set; }
+        [Parameter("Entry bars", DefaultValue = 300, MinValue = 50, MaxValue = 2000, Group = "Trading styles")] public int EntryBars { get; set; }
+
+        [Parameter("Day: context timeframe", DefaultValue = "H1", Group = "Day trading (research)")] public string ContextTf { get; set; } = "H1";
+        [Parameter("Day: location timeframe", DefaultValue = "M15", Group = "Day trading (research)")] public string LocationTf { get; set; } = "M15";
+        [Parameter("Day: entry timeframe", DefaultValue = "M5", Group = "Day trading (research)")] public string EntryTf { get; set; } = "M5";
+        [Parameter("Day: target fallback timeframes", DefaultValue = "H4,D1", Group = "Day trading (research)")] public string FallbackContextText { get; set; } = "H4,D1";
+        [Parameter("Day: setup expiry (hours)", DefaultValue = 24.0, MinValue = 0.5, Group = "Day trading (research)")] public double SetupExpiryHours { get; set; }
+        [Parameter("Day: entry expiry (minutes)", DefaultValue = 15.0, MinValue = 1, Group = "Day trading (research)")] public double EntryExpiryMinutes { get; set; }
+
+        [Parameter("Scalp: markets (SYN, FX, METAL)", DefaultValue = "SYN", Group = "Scalping (research)")] public string ScalpClassesText { get; set; } = "SYN";
+        [Parameter("Scalp: context timeframe", DefaultValue = "M15", Group = "Scalping (research)")] public string ScalpContextTf { get; set; } = "M15";
+        [Parameter("Scalp: location timeframe", DefaultValue = "M5", Group = "Scalping (research)")] public string ScalpLocationTf { get; set; } = "M5";
+        [Parameter("Scalp: entry timeframe", DefaultValue = "M1", Group = "Scalping (research)")] public string ScalpEntryTf { get; set; } = "M1";
+        [Parameter("Scalp: target fallback timeframes", DefaultValue = "H1", Group = "Scalping (research)")] public string ScalpFallbackText { get; set; } = "H1";
+        [Parameter("Scalp: setup expiry (hours)", DefaultValue = 6.0, MinValue = 0.1, Group = "Scalping (research)")] public double ScalpSetupExpiryHours { get; set; }
+        [Parameter("Scalp: entry expiry (minutes)", DefaultValue = 3.0, MinValue = 1, Group = "Scalping (research)")] public double ScalpEntryExpiryMinutes { get; set; }
 
         [Parameter("Routes (comma list: CONTINUATION_RETEST, REVERSAL_RECLAIM)", DefaultValue = "CONTINUATION_RETEST,REVERSAL_RECLAIM", Group = "Entry model (research, ATR multiples)")] public string RoutesText { get; set; } = "CONTINUATION_RETEST,REVERSAL_RECLAIM";
         [Parameter("Pivot bars left/right", DefaultValue = 2, MinValue = 1, MaxValue = 10, Group = "Entry model (research, ATR multiples)")] public int PivotBars { get; set; }
-        [Parameter("ATR period (location timeframe)", DefaultValue = 14, MinValue = 2, MaxValue = 200, Group = "Entry model (research, ATR multiples)")] public int AtrPeriod { get; set; }
+        [Parameter("ATR period (style's location timeframe)", DefaultValue = 14, MinValue = 2, MaxValue = 200, Group = "Entry model (research, ATR multiples)")] public int AtrPeriod { get; set; }
         [Parameter("Break threshold (x ATR)", DefaultValue = 0.10, MinValue = 0.001, Group = "Entry model (research, ATR multiples)")] public double BreakAtr { get; set; }
         [Parameter("Retest touch tolerance (x ATR)", DefaultValue = 0.25, MinValue = 0.001, Group = "Entry model (research, ATR multiples)")] public double TouchAtr { get; set; }
         [Parameter("Stop beyond level (x ATR)", DefaultValue = 0.30, MinValue = 0.001, Group = "Entry model (research, ATR multiples)")] public double StopAtr { get; set; }
         [Parameter("Max chase from level (x ATR)", DefaultValue = 0.50, MinValue = 0.001, Group = "Entry model (research, ATR multiples)")] public double MaxChaseAtr { get; set; }
         [Parameter("Minimum runway to objective (x ATR)", DefaultValue = 1.0, MinValue = 0.001, Group = "Entry model (research, ATR multiples)")] public double MinRunwayAtr { get; set; }
-        [Parameter("Setup expiry (hours)", DefaultValue = 24.0, MinValue = 0.5, Group = "Entry model (research, ATR multiples)")] public double SetupExpiryHours { get; set; }
-        [Parameter("Entry expiry (minutes)", DefaultValue = 15.0, MinValue = 1, Group = "Entry model (research, ATR multiples)")] public double EntryExpiryMinutes { get; set; }
         [Parameter("Recent facts per role", DefaultValue = 3, MinValue = 1, MaxValue = 10, Group = "Entry model (research, ATR multiples)")] public int RecentFacts { get; set; }
 
         [Parameter("Risk per trade (% of balance)", DefaultValue = 1.0, MinValue = 0.05, MaxValue = 5, Group = "Risk (research)")] public double RiskPct { get; set; }
@@ -94,20 +107,21 @@ namespace Zugrio.CBot.EA
         /// <summary>One watchlist symbol resolved at the broker, with its bars and last quote time.</summary>
         private sealed class Market
         {
-            public Market(WatchItem item, Symbol symbol, IReadOnlyDictionary<string, Bars> contexts, Bars location, Bars entry)
-            { Item = item; Sym = symbol; Contexts = contexts; Location = location; Entry = entry; }
+            public Market(WatchItem item, Symbol symbol, IReadOnlyDictionary<string, Bars> bars, IReadOnlyList<TradingStyle> styles)
+            { Item = item; Sym = symbol; Bars = bars; Styles = styles; }
             public WatchItem Item { get; }
             public Symbol Sym { get; }
             public string Name => Sym.Name;
-            /// <summary>Context bars by timeframe: the primary context plus the target fallbacks (H4, D1).</summary>
-            public IReadOnlyDictionary<string, Bars> Contexts { get; }
-            public Bars Location { get; }
-            public Bars Entry { get; }
+            /// <summary>Bars by timeframe code: every timeframe of every style this market is scanned in.</summary>
+            public IReadOnlyDictionary<string, Bars> Bars { get; }
+            /// <summary>The enabled styles that scan this market.</summary>
+            public IReadOnlyList<TradingStyle> Styles { get; }
             public DateTime LastTickUtc { get; set; } = DateTime.MinValue;
+            public bool Has(TradingStyle s) => Bars.ContainsKey(s.LocationTf) && Bars.ContainsKey(s.EntryTf);
         }
 
         /// <summary>A READY setup waiting for the gather window to close.</summary>
-        private sealed record Pending(Market M, string OpportunityId, string FireEventId, Side Side, double EntryRef, double Stop, double Target, ReadyCandidate Candidate);
+        private sealed record Pending(Market M, TradingStyle Style, string OpportunityId, string FireEventId, Side Side, double EntryRef, double Stop, double Target, ReadyCandidate Candidate);
 
         private EaExecution _exec = null!;
         private ZugrioEngine _engine = null!;
@@ -124,7 +138,9 @@ namespace Zugrio.CBot.EA
         private readonly EaActivity _activity = new();
         private DateTime _activityHour = DateTime.MinValue;
         private IReadOnlyList<string> _routes = Array.Empty<string>();
-        private IReadOnlyList<string> _fallbackContexts = Array.Empty<string>();
+        private IReadOnlyList<TradingStyle> _styles = Array.Empty<TradingStyle>();
+        /// <summary>Both style definitions, enabled or not, so trades of a style switched off are still managed.</summary>
+        private IReadOnlyDictionary<string, TradingStyle> _styleDefs = new Dictionary<string, TradingStyle>();
         private TrailSettings _trail = null!;
         private readonly Dictionary<long, DateTime> _lastTrail = new();
         private static readonly TimeSpan TrailInterval = TimeSpan.FromSeconds(10);
@@ -146,10 +162,16 @@ namespace Zugrio.CBot.EA
                 _routes = RoutesText.Split(',').Select(r => r.Trim().ToUpperInvariant()).Where(r => r.Length > 0).Distinct().ToList();
                 if (_routes.Count == 0 || _routes.Any(r => r != "CONTINUATION_RETEST" && r != "REVERSAL_RECLAIM"))
                     throw new FormatException("routes must be CONTINUATION_RETEST and/or REVERSAL_RECLAIM");
-                _fallbackContexts = (FallbackContextText ?? "").Split(',').Select(t => t.Trim().ToUpperInvariant()).Where(t => t.Length > 0 && t != ContextTf).Distinct().ToList();
-                foreach (var tf in _fallbackContexts) Timeframes.Length(tf);   // throws on an unsupported code
+                var day = new TradingStyle(TradingStyles.Day, "INTRADAY", ContextTf.Trim().ToUpperInvariant(), LocationTf.Trim().ToUpperInvariant(), EntryTf.Trim().ToUpperInvariant(),
+                    TradingStyles.ParseFallbacks(FallbackContextText, ContextTf.Trim().ToUpperInvariant()), SetupExpiryHours, EntryExpiryMinutes,
+                    new[] { AssetClass.Synthetic, AssetClass.Fx, AssetClass.Metal }).Validated();
+                var scalp = new TradingStyle(TradingStyles.Scalp, "SCALP", ScalpContextTf.Trim().ToUpperInvariant(), ScalpLocationTf.Trim().ToUpperInvariant(), ScalpEntryTf.Trim().ToUpperInvariant(),
+                    TradingStyles.ParseFallbacks(ScalpFallbackText, ScalpContextTf.Trim().ToUpperInvariant()), ScalpSetupExpiryHours, ScalpEntryExpiryMinutes,
+                    TradingStyles.ParseClasses(ScalpClassesText)).Validated();
+                _styleDefs = new Dictionary<string, TradingStyle> { [day.Name] = day, [scalp.Name] = scalp };
+                _styles = TradingStyles.ParseNames(StylesText).Select(n => _styleDefs[n]).ToList();
             }
-            catch (FormatException e) { Print("Zugrio EA: invalid watchlist, tiers or routes: " + e.Message + ". Not trading."); Stop(); return; }
+            catch (FormatException e) { Print("Zugrio EA: invalid watchlist, tiers, routes or styles: " + e.Message + ". Not trading."); Stop(); return; }
             _trail = new TrailSettings(BreakEvenAtR, BreakEvenLockAtr, TrailStartR, TrailAtr, MinStepAtr: 0.1, MinGapAtr: 0.2, KeepProfitFraction);
 
             var config = Config();
@@ -212,7 +234,8 @@ namespace Zugrio.CBot.EA
                 ["balance"] = Account.Balance, ["markets"] = _markets.Select(m => m.Name).ToArray(), ["configVersion"] = _configVersion, ["engineSha256"] = _engine.BundleSha256,
                 ["config"] = JsonDocument.Parse(config.ToJsonString()).RootElement.Clone(),
             });
-            Print($"Zugrio EA started: {(_exec.IsLive ? "LIVE" : "demo")} account {_accountId}, {_markets.Count} markets. Config {_configVersion[..12]}, engine {_engine.BundleSha256[..12]}.");
+            Print($"Zugrio EA started: {(_exec.IsLive ? "LIVE" : "demo")} account {_accountId}, {_markets.Count} markets, " +
+                  string.Join(", ", _styles.Select(st => $"{st.Name} {st.ContextTf}/{st.LocationTf}/{st.EntryTf} on {_markets.Count(x => x.Styles.Contains(st))}")) + $". Config {_configVersion[..12]}, engine {_engine.BundleSha256[..12]}.");
             ProtectUnprotectedOnStart();
             ReportAffordability(Server.TimeInUtc);
         }
@@ -225,12 +248,12 @@ namespace Zugrio.CBot.EA
                 var name = Watchlist.Resolve(item.Symbol, brokerNames);
                 Symbol? sym = name == null ? null : Symbols.GetSymbol(name);
                 if (sym == null) { Print($"Zugrio EA: '{item.Symbol}' is not offered by this broker; skipped."); continue; }
+                var styles = _styles.Where(st => st.Trades(item.Class)).ToList();
+                if (styles.Count == 0) { Print($"Zugrio EA: '{item.Symbol}' is in no enabled trading style; skipped."); continue; }
                 var m = new Market(item, sym,
-                    new[] { ContextTf }.Concat(_fallbackContexts).Distinct().ToDictionary(tf => tf, tf => MarketData.GetBars(ToTimeFrame(tf), sym.Name)),
-                    MarketData.GetBars(ToTimeFrame(LocationTf), sym.Name),
-                    MarketData.GetBars(ToTimeFrame(EntryTf), sym.Name));
+                    styles.SelectMany(st => st.AllTimeframes).Distinct().ToDictionary(tf => tf, tf => MarketData.GetBars(ToTimeFrame(tf), sym.Name)), styles);
                 sym.Tick += _ => m.LastTickUtc = Server.TimeInUtc;
-                m.Entry.BarOpened += _ => OnEntryBarClosed(m);
+                foreach (var st in styles) m.Bars[st.EntryTf].BarOpened += _ => OnEntryBarClosed(m, st);
                 _markets.Add(m);
             }
         }
@@ -278,34 +301,37 @@ namespace Zugrio.CBot.EA
             if (_pending.Count > 0 && now - _pendingSince >= GatherWindow) ProcessPending(now);
         }
 
-        private void OnEntryBarClosed(Market m)
+        private void OnEntryBarClosed(Market m, TradingStyle style)
         {
             var now = Server.TimeInUtc;
             if (!m.Sym.IsTradingEnabled || !m.Sym.MarketHours.IsOpened(now)) return;
-            var atr = LocationAtr(m);
-            if (!(atr > 0)) { _log.Write(now, "scan_skipped", new Dictionary<string, object?> { ["symbol"] = m.Name, ["reason"] = "ATR_UNAVAILABLE" }); return; }
+            var atr = StyleAtr(m, style);
+            if (!(atr > 0)) { _log.Write(now, "scan_skipped", new Dictionary<string, object?> { ["symbol"] = m.Name, ["style"] = style.Name, ["reason"] = "ATR_UNAVAILABLE" }); return; }
             // Primary context first; routes left with "open sky" (a near-price level but no swing to
             // target) are rescanned with each fallback context, whose older swings can supply a target.
             var pending = _routes.ToList();
-            foreach (var contextTf in new[] { ContextTf }.Concat(_fallbackContexts))
+            foreach (var contextTf in style.ContextTimeframes)
             {
                 if (pending.Count == 0) break;
-                pending = ScanContext(m, contextTf, pending, atr, now);
+                pending = ScanContext(m, style, contextTf, pending, atr, now);
             }
         }
 
         /// <summary>One engine call for the given routes and context timeframe. Returns the routes still in open sky.</summary>
-        private List<string> ScanContext(Market m, string contextTf, IReadOnlyList<string> routes, double atr, DateTime now)
+        private List<string> ScanContext(Market m, TradingStyle style, string contextTf, IReadOnlyList<string> routes, double atr, DateTime now)
         {
             var openSky = new List<string>();
             JsonObject request;
-            try { request = BuildRequest(m, atr, routes[0], contextTf); request["routes"] = new JsonArray(routes.Select(r => (JsonNode)JsonValue.Create(r)!).ToArray()); }
-            catch (Exception e) { _log.Write(now, "scan_skipped", new Dictionary<string, object?> { ["symbol"] = m.Name, ["context"] = contextTf, ["reason"] = e.Message }); return openSky; }
+            try { request = BuildRequest(m, style, atr, routes[0], contextTf); request["routes"] = new JsonArray(routes.Select(r => (JsonNode)JsonValue.Create(r)!).ToArray()); }
+            catch (Exception e) { _log.Write(now, "scan_skipped", new Dictionary<string, object?> { ["symbol"] = m.Name, ["style"] = style.Name, ["context"] = contextTf, ["reason"] = e.Message }); return openSky; }
 
             JsonElement multi;
+            var watch = System.Diagnostics.Stopwatch.StartNew();
             // One engine call for every route: the bars are validated and their pivots computed once.
             try { multi = JsonDocument.Parse(_engine.ScanRoutesJson(request.ToJsonString())).RootElement.Clone(); }
-            catch (Exception e) { _log.Write(now, "engine_error", new Dictionary<string, object?> { ["symbol"] = m.Name, ["context"] = contextTf, ["error"] = e.Message }); return openSky; }
+            catch (Exception e) { _log.Write(now, "engine_error", new Dictionary<string, object?> { ["symbol"] = m.Name, ["style"] = style.Name, ["context"] = contextTf, ["error"] = e.Message }); return openSky; }
+            var seconds = watch.Elapsed.TotalSeconds / Math.Max(1, routes.Count);
+            var where = style.Name == TradingStyles.Day ? m.Name : $"{m.Name} ({style.Name.ToLowerInvariant()})";
 
             foreach (var result in multi.GetProperty("results").EnumerateArray())
             {
@@ -317,22 +343,22 @@ namespace Zugrio.CBot.EA
                 var sky = result.GetProperty("openSky").GetBoolean();
                 if (sky) openSky.Add(route);
                 double? nearestAtr = nearest.ValueKind == JsonValueKind.Object ? nearest.GetProperty("distance").GetDouble() / atr : null;
-                _activity.Scanned(m.Name, nearestAtr);
+                _activity.Scanned(where, nearestAtr, seconds);
                 _log.Write(now, "scan", new Dictionary<string, object?>
                 {
-                    ["symbol"] = m.Name, ["route"] = route, ["context"] = contextTf, ["trend"] = trend, ["openSky"] = sky,
+                    ["symbol"] = m.Name, ["style"] = style.Name, ["route"] = route, ["context"] = contextTf, ["ms"] = (int)(seconds * 1000), ["trend"] = trend, ["openSky"] = sky,
                     ["evaluatedAt"] = request["evaluatedAt"]!.GetValue<string>(), ["atr"] = atr,
                     ["nearestLevelAtr"] = nearestAtr is double d ? Math.Round(d, 2) : null, ["candidates"] = candidates.GetArrayLength(),
                     ["notReadyable"] = result.GetProperty("skippedNotReadyable").GetInt32(), ["ready"] = candidates.EnumerateArray().Count(c => c.GetProperty("state").GetString() == "STRUCTURAL_READY"),
                     ["best"] = best.ValueKind == JsonValueKind.Null ? null : best.GetRawText(), ["engineErrors"] = result.GetProperty("errors").GetArrayLength(),
                 });
-                if (best.ValueKind != JsonValueKind.Null) Evaluate(m, best, atr, now, route, contextTf, trend);
+                if (best.ValueKind != JsonValueKind.Null) Evaluate(m, style, best, atr, now, route, contextTf, trend);
             }
             return openSky;
         }
 
         /// <summary>Per-market checks and sizing. A setup that passes waits for the gather window, then competes with other markets.</summary>
-        private void Evaluate(Market m, JsonElement best, double atr, DateTime now, string route, string contextTf, string? trend)
+        private void Evaluate(Market m, TradingStyle style, JsonElement best, double atr, DateTime now, string route, string contextTf, string? trend)
         {
             var opportunityId = best.GetProperty("opportunityId").GetString()!;
             var g = best.GetProperty("geometry");
@@ -346,13 +372,13 @@ namespace Zugrio.CBot.EA
             if (_activity.SetupFound(fireEventId))
             {
                 var gg = best.GetProperty("geometry");
-                Print($"Zugrio EA: SETUP {best.GetProperty("side").GetString()} {m.Name} ({(route == "CONTINUATION_RETEST" ? "break and retest" : "reclaim")}, {contextTf} trend {trend}): " +
+                Print($"Zugrio EA: SETUP {best.GetProperty("side").GetString()} {m.Name} ({(style.Name == TradingStyles.Scalp ? "scalp, " : "")}{(route == "CONTINUATION_RETEST" ? "break and retest" : "reclaim")}, {contextTf} trend {trend}): " +
                       $"entry ~{gg.GetProperty("entryReference").GetDouble().ToString(System.Globalization.CultureInfo.InvariantCulture)}, stop {Math.Round(gg.GetProperty("childInvalidation").GetDouble(), m.Sym.Digits).ToString(System.Globalization.CultureInfo.InvariantCulture)}, target {gg.GetProperty("objective").GetDouble().ToString(System.Globalization.CultureInfo.InvariantCulture)}.");
             }
 
             var setupSide = best.GetProperty("side").GetString() == "BUY" ? Side.Buy : Side.Sell;
             if (TrendFilterOn && !TrendFilter.Allows(setupSide, trend, route, TrendFilterOnReclaims))
-            { Skip(now, m, fireEventId, "TREND_NOT_ALIGNED", new() { ["context"] = contextTf, ["trend"] = trend, ["route"] = route }); return; }
+            { Skip(now, m, fireEventId, "TREND_NOT_ALIGNED", new() { ["style"] = style.Name, ["context"] = contextTf, ["trend"] = trend, ["route"] = route }); return; }
 
             if (Account.Balance < m.Item.UnlockBalance)
             { Skip(now, m, fireEventId, "LOCKED_UNTIL_BALANCE", new() { ["unlockBalance"] = m.Item.UnlockBalance, ["balance"] = Account.Balance }); return; }
@@ -373,7 +399,7 @@ namespace Zugrio.CBot.EA
             if (!size.Trade) { Skip(now, m, fireEventId, size.Reason, new() { ["riskPctAtMinimum"] = size.RiskPctActual }); return; }
 
             if (_pending.Count == 0) _pendingSince = now;
-            _pending.Add(new Pending(m, opportunityId, fireEventId, side, entryRef, stop, target,
+            _pending.Add(new Pending(m, style, opportunityId, fireEventId, side, entryRef, stop, target,
                 new ReadyCandidate(m.Name, m.Item.Class, DateTimeOffset.Parse(frozenAt, System.Globalization.CultureInfo.InvariantCulture), opportunityId, size.RiskMoney, size.RiskPctActual)));
         }
 
@@ -400,7 +426,7 @@ namespace Zugrio.CBot.EA
             var size = SizeFor(m, price, p.Stop);   // re-size at the current price
             if (!size.Trade) { Skip(now, m, p.FireEventId, size.Reason, new() { ["riskPctAtMinimum"] = size.RiskPctActual }); return; }
 
-            var atr = LocationAtr(m);
+            var atr = StyleAtr(m, p.Style);
             if (!(atr > 0)) { Skip(now, m, p.FireEventId, "ATR_UNAVAILABLE"); return; }
             var chase = MaxChaseAtr * atr;
             var limit = Math.Round(p.Side == Side.Buy ? p.EntryRef + chase : p.EntryRef - chase, m.Sym.Digits);
@@ -438,7 +464,8 @@ namespace Zugrio.CBot.EA
             var slPips = Math.Abs(price - p.Stop) / m.Sym.PipSize;
             var tpPips = Math.Abs(p.Target - price) / m.Sym.PipSize;
             TradeResult r;
-            try { r = _exec.MarketOrder(p.Side == Side.Buy ? TradeType.Buy : TradeType.Sell, m.Name, size.Units, label, slPips, tpPips, ProtectionManager.WithInitialStop(Comment(p.OpportunityId), Math.Round(p.Stop, m.Sym.Digits))); }
+            try { r = _exec.MarketOrder(p.Side == Side.Buy ? TradeType.Buy : TradeType.Sell, m.Name, size.Units, label, slPips, tpPips,
+                    ProtectionManager.WithInitialStop(TradingStyles.WithStyle(Comment(p.OpportunityId), p.Style.Name), Math.Round(p.Stop, m.Sym.Digits))); }
             catch (Exception e)
             {
                 _boundary.OnSubmissionUnknown(_accountId, p.FireEventId, now);
@@ -458,13 +485,13 @@ namespace Zugrio.CBot.EA
             _boundary.OnFilled(_accountId, p.FireEventId, (long)r.Position.VolumeInUnits, now);
             _log.Write(now, "entry", new Dictionary<string, object?>
             {
-                ["symbol"] = m.Name, ["class"] = m.Item.Class.ToString(), ["fireEventId"] = p.FireEventId, ["opportunityId"] = p.OpportunityId,
+                ["symbol"] = m.Name, ["class"] = m.Item.Class.ToString(), ["style"] = p.Style.Name, ["fireEventId"] = p.FireEventId, ["opportunityId"] = p.OpportunityId,
                 ["side"] = p.Side.ToString(), ["units"] = size.Units, ["riskMoney"] = size.RiskMoney, ["riskPct"] = size.RiskPctActual, ["sizingReason"] = size.Reason,
                 ["price"] = price, ["fill"] = r.Position.EntryPrice, ["engineStop"] = p.Stop, ["engineTarget"] = p.Target, ["entryReference"] = p.EntryRef,
                 ["brokerStop"] = r.Position.StopLoss, ["brokerTarget"] = r.Position.TakeProfit, ["label"] = label, ["atr"] = atr,
             });
             _activity.Entered();
-            Print($"Zugrio EA: TRADE OPENED {p.Side.ToString().ToUpperInvariant()} {m.Name} {r.Position.Quantity.ToString(System.Globalization.CultureInfo.InvariantCulture)} lots at {r.Position.EntryPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)}, " +
+            Print($"Zugrio EA: TRADE OPENED {p.Side.ToString().ToUpperInvariant()} {m.Name}{(p.Style.Name == TradingStyles.Scalp ? " (scalp)" : "")} {r.Position.Quantity.ToString(System.Globalization.CultureInfo.InvariantCulture)} lots at {r.Position.EntryPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)}, " +
                   $"stop {r.Position.StopLoss?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "none"}, target {r.Position.TakeProfit?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "none"}, risk {size.RiskMoney:F2} ({size.RiskPctActual:F1}%).");
             ConfirmProtection(m, r.Position, p.FireEventId, p.Stop, p.Target);
         }
@@ -488,7 +515,7 @@ namespace Zugrio.CBot.EA
         }
 
         /// <summary>
-        /// Anti round-trip: moves each open Zugrio stop to break-even at +1R, keeps at least half of the
+        /// Anti round-trip, in the ATR and bars of the trade's own style: moves each open Zugrio stop to break-even at +1R, keeps at least half of the
         /// best open profit from there, and trails it from +1.5R (ProtectionManager). Only ever tightens: every change is checked RISK_REDUCING first.
         /// The initial stop comes from the broker comment, so this works after a cloud restart.
         /// </summary>
@@ -501,13 +528,15 @@ namespace Zugrio.CBot.EA
                 var m = _markets.FirstOrDefault(x => x.Name == pos.SymbolName);
                 var initialStop = ProtectionManager.InitialStopFrom(pos.Comment);
                 if (m == null || initialStop == null) continue;
-                var atr = LocationAtr(m);
+                var style = ManagingStyle(m, pos);
+                var atr = StyleAtr(m, style);
                 if (!(atr > 0)) continue;
                 var buy = pos.TradeType == TradeType.Buy;
                 var best = buy ? m.Sym.Bid : m.Sym.Ask;
+                var entryBars = m.Bars[style.EntryTf];
                 // Only bars that opened after the fill: the fill bar's earlier range is not this trade's profit.
-                for (var i = m.Entry.Count - 1; i >= 0 && m.Entry[i].OpenTime >= pos.EntryTime; i--)
-                    best = buy ? Math.Max(best, m.Entry[i].High) : Math.Min(best, m.Entry[i].Low);
+                for (var i = entryBars.Count - 1; i >= 0 && entryBars[i].OpenTime >= pos.EntryTime; i--)
+                    best = buy ? Math.Max(best, entryBars[i].High) : Math.Min(best, entryBars[i].Low);
                 var exit = buy ? m.Sym.Bid : m.Sym.Ask;
                 var proposal = ProtectionManager.Propose(buy, pos.EntryPrice, initialStop.Value, pos.StopLoss!.Value, best, exit, atr, _trail);
                 if (proposal == null) continue;
@@ -519,7 +548,7 @@ namespace Zugrio.CBot.EA
                 var r = _exec.SetProtection(pos, newStop, pos.TakeProfit);
                 _log.Write(now, "protect_profit", new Dictionary<string, object?>
                 {
-                    ["symbol"] = pos.SymbolName, ["label"] = pos.Label, ["from"] = view.StopLoss, ["to"] = newStop, ["best"] = best, ["entry"] = pos.EntryPrice,
+                    ["symbol"] = pos.SymbolName, ["style"] = style.Name, ["label"] = pos.Label, ["from"] = view.StopLoss, ["to"] = newStop, ["best"] = best, ["entry"] = pos.EntryPrice,
                     ["initialStop"] = initialStop, ["atr"] = atr, ["ok"] = r.IsSuccessful, ["error"] = r.Error?.ToString(),
                 });
                 if (r.IsSuccessful)
@@ -555,7 +584,7 @@ namespace Zugrio.CBot.EA
             _reportDay = now.Date;
             var rows = _markets.Select(m =>
             {
-                var atr = LocationAtr(m);
+                var atr = StyleAtr(m, m.Styles[0]);
                 var typicalStop = (StopAtr + 0.5 * MaxChaseAtr) * atr;
                 return (m, a: AffordabilityCalc.Compute(m.Name, m.Sym.VolumeInUnitsMin, m.Sym.TickSize, m.Sym.TickValue, typicalStop, m.Sym.Ask - m.Sym.Bid, MaxRiskPctAtMinVolume));
             }).OrderBy(x => double.IsNaN(x.a.MinBalanceForCap) ? double.MaxValue : x.a.MinBalanceForCap).ToList();
@@ -573,13 +602,22 @@ namespace Zugrio.CBot.EA
                 (Account.Balance < x.m.Item.UnlockBalance ? $" (unlocks at {x.m.Item.UnlockBalance})" : ""))));
         }
 
-        private double LocationAtr(Market m)
+        /// <summary>ATR on the style's location timeframe, from closed bars.</summary>
+        private double StyleAtr(Market m, TradingStyle style)
         {
-            var closed = m.Location.Count - 1;   // the last bar is still forming
+            var loc = m.Bars[style.LocationTf];
+            var closed = loc.Count - 1;   // the last bar is still forming
             var bars = new List<(double, double, double)>();
-            for (var i = Math.Max(0, closed - AtrPeriod - 1); i < closed; i++) bars.Add((m.Location[i].High, m.Location[i].Low, m.Location[i].Close));
+            for (var i = Math.Max(0, closed - AtrPeriod - 1); i < closed; i++) bars.Add((loc[i].High, loc[i].Low, loc[i].Close));
             return Atr.Compute(bars, AtrPeriod);
         }
+
+        /// <summary>
+        /// The style a trade was opened under (from its broker comment; older trades are DAY).
+        /// If this market no longer loads that style's bars (style switched off), the market's first style manages it.
+        /// </summary>
+        private TradingStyle ManagingStyle(Market m, Position pos) =>
+            _styleDefs.TryGetValue(TradingStyles.FromComment(pos.Comment), out var st) && m.Has(st) ? st : m.Styles[0];
 
         private void OnPositionClosed(PositionClosedEventArgs args)
         {
@@ -602,15 +640,20 @@ namespace Zugrio.CBot.EA
 
         private JsonObject Config() => new()
         {
-            ["schema"] = "zugrio.ea-config/v3", ["calibrationStatus"] = "UNVALIDATED_RESEARCH",
+            ["schema"] = "zugrio.ea-config/v4", ["calibrationStatus"] = "UNVALIDATED_RESEARCH",
             ["markets"] = new JsonObject { ["watchlist"] = WatchlistText, ["tiers"] = TiersText, ["maxSpreadShareOfStop"] = (decimal)MaxSpreadShareOfStop,
                 ["trendFilter"] = TrendFilterOn, ["trendFilterOnReclaims"] = TrendFilterOnReclaims },
-            ["timeframes"] = new JsonObject { ["context"] = ContextTf, ["location"] = LocationTf, ["entry"] = EntryTf, ["fallbackContexts"] = string.Join(",", _fallbackContexts), ["contextBars"] = ContextBars, ["locationBars"] = LocationBars, ["entryBars"] = EntryBars },
+            ["styles"] = new JsonArray(_styles.Select(st => (JsonNode)new JsonObject
+            {
+                ["name"] = st.Name, ["horizon"] = st.Horizon, ["context"] = st.ContextTf, ["location"] = st.LocationTf, ["entry"] = st.EntryTf,
+                ["fallbackContexts"] = string.Join(",", st.FallbackContexts), ["setupExpiryHours"] = (decimal)st.SetupExpiryHours, ["entryExpiryMinutes"] = (decimal)st.EntryExpiryMinutes,
+                ["classes"] = string.Join(",", st.Classes),
+            }).ToArray()),
+            ["bars"] = new JsonObject { ["context"] = ContextBars, ["location"] = LocationBars, ["entry"] = EntryBars },
             ["model"] = new JsonObject
             {
                 ["routes"] = string.Join(",", _routes), ["pivotBars"] = PivotBars, ["atrPeriod"] = AtrPeriod, ["breakAtr"] = (decimal)BreakAtr, ["touchAtr"] = (decimal)TouchAtr,
-                ["stopAtr"] = (decimal)StopAtr, ["maxChaseAtr"] = (decimal)MaxChaseAtr, ["minRunwayAtr"] = (decimal)MinRunwayAtr,
-                ["setupExpiryHours"] = (decimal)SetupExpiryHours, ["entryExpiryMinutes"] = (decimal)EntryExpiryMinutes, ["recentFacts"] = RecentFacts,
+                ["stopAtr"] = (decimal)StopAtr, ["maxChaseAtr"] = (decimal)MaxChaseAtr, ["minRunwayAtr"] = (decimal)MinRunwayAtr, ["recentFacts"] = RecentFacts,
             },
             ["risk"] = new JsonObject
             {
@@ -621,11 +664,11 @@ namespace Zugrio.CBot.EA
             ["execution"] = new JsonObject { ["maxQuoteAgeSeconds"] = MaxQuoteAgeSeconds, ["maxClockSkewSeconds"] = MaxClockSkewSeconds, ["protectionDeadlineSeconds"] = ProtectionDeadlineSeconds },
         };
 
-        private JsonObject BuildRequest(Market m, double atr, string route, string contextTf)
+        private JsonObject BuildRequest(Market m, TradingStyle style, double atr, string route, string contextTf)
         {
             var markets = new JsonArray();
             var latest = DateTime.MinValue;
-            foreach (var (code, bars, history) in new[] { (contextTf, m.Contexts[contextTf], ContextBars), (LocationTf, m.Location, LocationBars), (EntryTf, m.Entry, EntryBars) }.GroupBy(x => x.Item1).Select(g => g.OrderByDescending(x => x.Item3).First()))
+            foreach (var (code, bars, history) in new[] { (contextTf, m.Bars[contextTf], ContextBars), (style.LocationTf, m.Bars[style.LocationTf], LocationBars), (style.EntryTf, m.Bars[style.EntryTf], EntryBars) }.GroupBy(x => x.Item1).Select(g => g.OrderByDescending(x => x.Item3).First()))
             {
                 var len = Timeframes.Length(code);
                 var closedCount = bars.Count - 1;   // the last bar is still forming
@@ -641,10 +684,10 @@ namespace Zugrio.CBot.EA
                 markets.Add(new JsonObject { ["timeframe"] = code, ["bars"] = arr });
             }
             var ticks = atr / m.Sym.TickSize;
-            var entryAge = (long)Timeframes.Length(EntryTf).TotalMilliseconds * 2;
+            var entryAge = (long)Timeframes.Length(style.EntryTf).TotalMilliseconds * 2;
             // A daily context bar is up to ~3 days old after a weekend, so D1 allows 4 days.
             var ctxAge = contextTf == "D1" ? (long)TimeSpan.FromDays(4).TotalMilliseconds : (long)Timeframes.Length(contextTf).TotalMilliseconds * 2;
-            var locAge = (long)Timeframes.Length(LocationTf).TotalMilliseconds * 2;
+            var locAge = (long)Timeframes.Length(style.LocationTf).TotalMilliseconds * 2;
             var (family, origin) = m.Item.Class switch
             {
                 AssetClass.Synthetic => ("SYNTHETIC", "SYNTHETIC_GENERATOR"),
@@ -656,11 +699,11 @@ namespace Zugrio.CBot.EA
                 ["schema"] = "zugrio.ea-scan-request/v1", ["configVersion"] = _configVersion, ["evaluatedAt"] = Timeframes.Iso(latest),
                 ["instrument"] = new JsonObject { ["symbol"] = m.Name, ["source"] = "ctrader:" + Account.BrokerName, ["tickSize"] = m.Sym.TickSize },
                 ["family"] = new JsonObject { ["family"] = family, ["priceOrigin"] = origin },
-                // A distinct horizon per context timeframe: each is its own profile in decision-core.
-                ["horizon"] = new JsonObject { ["horizon"] = contextTf == ContextTf ? "INTRADAY" : "INTRADAY_" + contextTf, ["setupExpiryMs"] = (long)(SetupExpiryHours * 3_600_000), ["entryExpiryMs"] = (long)(EntryExpiryMinutes * 60_000) },
+                // A distinct horizon per style and context timeframe: each is its own profile in decision-core.
+                ["horizon"] = new JsonObject { ["horizon"] = style.HorizonFor(contextTf), ["setupExpiryMs"] = (long)(style.SetupExpiryHours * 3_600_000), ["entryExpiryMs"] = (long)(style.EntryExpiryMinutes * 60_000) },
                 ["timeframes"] = new JsonObject
                 {
-                    ["context"] = contextTf, ["location"] = LocationTf, ["entry"] = EntryTf, ["management"] = contextTf,
+                    ["context"] = contextTf, ["location"] = style.LocationTf, ["entry"] = style.EntryTf, ["management"] = contextTf,
                     ["maxAgeMs"] = new JsonObject { ["context"] = ctxAge, ["location"] = locAge, ["entry"] = entryAge, ["management"] = ctxAge },
                 },
                 ["model"] = new JsonObject

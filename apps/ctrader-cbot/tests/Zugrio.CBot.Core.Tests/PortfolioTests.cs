@@ -136,6 +136,16 @@ namespace Zugrio.CBot.Core.Tests
         }
 
         [Fact]
+        public void A_day_and_a_scalp_setup_on_one_symbol_in_one_batch_open_one_trade()
+        {
+            var day = C("Step Index", AssetClass.Synthetic, 1, 2);
+            var scalp = new ReadyCandidate("Step Index", AssetClass.Synthetic, T, "opp:Step Index:scalp", 1, 1);
+            var s = PortfolioSelector.Select(new[] { day, scalp }, Array.Empty<OpenExposure>(), Mid, 1000);
+            Assert.Same(scalp, Assert.Single(s.Take));                   // the more recent confirmation wins
+            Assert.Equal("SYMBOL_ALREADY_OPEN", Assert.Single(s.Skipped).Reason);
+        }
+
+        [Fact]
         public void Total_open_risk_stays_within_the_tier_budget()
         {
             // Balance 200, Mid tier 6% => 12 of risk. 5 open + 4 fits (9); another 4 would be 13.

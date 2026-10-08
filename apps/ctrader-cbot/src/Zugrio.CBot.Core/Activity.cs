@@ -21,10 +21,13 @@ namespace Zugrio.CBot.Core
         public int Entries { get; private set; }
         public int Closes { get; private set; }
         public double ClosedProfit { get; private set; }
+        /// <summary>Seconds spent in engine scans this hour: how much of the cloud instance's time scanning takes.</summary>
+        public double ScanSeconds { get; private set; }
 
-        public void Scanned(string symbol, double? nearestLevelAtr)
+        public void Scanned(string symbol, double? nearestLevelAtr, double seconds = 0)
         {
             Scans++;
+            if (seconds > 0 && double.IsFinite(seconds)) ScanSeconds += seconds;
             if (nearestLevelAtr is double d && double.IsFinite(d) && (!_nearestAtr.TryGetValue(symbol, out var cur) || d < cur)) _nearestAtr[symbol] = d;
         }
 
@@ -56,6 +59,7 @@ namespace Zugrio.CBot.Core
             return $"Zugrio EA, hour to {hourEndUtc.ToString("HH:mm", ci)} UTC: {Scans} scans, {Setups} setups found, {Entries} trades opened, {Closes} closed " +
                    $"(P/L {ClosedProfit.ToString("+0.00;-0.00;0.00", ci)}). Skipped: {skips}. " +
                    $"Closest to a setup: {(closest.Count == 0 ? "n/a" : string.Join(", ", closest))}. " +
+                   $"Scanning took {ScanSeconds.ToString("0", ci)} s. " +
                    $"Balance {balance.ToString("0.00", ci)}, equity {equity.ToString("0.00", ci)}, {openTrades} open (max {tier.MaxPositions}). " +
                    $"Today's floor {dailyFloor.ToString("0.00", ci)}, loss still allowed {lossStillAllowed.ToString("0.00", ci)}.";
         }
@@ -63,7 +67,7 @@ namespace Zugrio.CBot.Core
         /// <summary>Starts the next hour. Setups already announced stay announced, so a setup spanning the hour is not repeated.</summary>
         public void NextHour()
         {
-            Scans = Setups = Entries = Closes = 0; ClosedProfit = 0;
+            Scans = Setups = Entries = Closes = 0; ClosedProfit = 0; ScanSeconds = 0;
             _skips.Clear(); _nearestAtr.Clear();
             if (_announced.Count > 20_000) _announced.Clear();
         }
