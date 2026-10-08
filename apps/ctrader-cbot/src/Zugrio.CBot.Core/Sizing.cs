@@ -63,7 +63,7 @@ namespace Zugrio.CBot.Core
 namespace Zugrio.CBot.Core
 {
     /// <summary>
-    /// Daily loss kill switch for the demo EA. Once equity has fallen <c>maxDailyLossPct</c>
+    /// Daily loss kill switch for the EA. Once equity has fallen <c>maxDailyLossPct</c>
     /// from the UTC day's starting equity, new entries stop until the next UTC day. It only
     /// feeds <see cref="EntryGuard.KillSwitch"/>, so it never blocks a risk reduction (RR-3).
     /// The percentage is a research parameter (ADR-0009 §4).
@@ -82,6 +82,16 @@ namespace Zugrio.CBot.Core
 
         public bool Tripped { get; private set; }
         public double DayStartEquity => _dayStartEquity;
+
+        /// <summary>
+        /// Sets today's baseline after a restart (e.g. balance minus profit of trades closed
+        /// today), so restarting never resets the day's loss limit. Only the first call per day counts.
+        /// </summary>
+        public void Seed(DateTime utcNow, double dayStartEquity)
+        {
+            if (utcNow.Date == _day) return;
+            _day = utcNow.Date; _dayStartEquity = dayStartEquity; Tripped = false;
+        }
 
         /// <summary>Returns true only on the update that trips the switch.</summary>
         public bool Update(DateTime utcNow, double equity)

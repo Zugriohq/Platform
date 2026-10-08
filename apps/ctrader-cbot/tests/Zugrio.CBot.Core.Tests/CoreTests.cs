@@ -381,20 +381,16 @@ namespace Zugrio.CBot.Core.Tests
     }
 
     /// <summary>
-    /// Gate 4 is not authorised (CURRENT-GATE.md). Until it is, no source file under
-    /// src/ may call a cTrader order or position API. This test is the enforcement.
-    /// (AccessRights.FullAccess is allowed by owner decision 2026-10-07. Access rights
-    /// do not gate order calls; this scan does.)
+    /// ADR-0010 execution confinement. Order and position APIs may appear only in
+    /// EaExecution.cs, and every one of them must be the statement directly after
+    /// <c>RequireBoundAccount();</c>, which stops the robot if the account is no longer
+    /// the one the EA started on. The EA must stay cloud-compatible (AccessRights.None).
     /// </summary>
-    /// <summary>
-    /// ADR-0009 demo lock. Order and position APIs may appear only in DemoExecution.cs,
-    /// and every one of them must be the statement directly after <c>RequireDemo();</c>.
-    /// RequireDemo itself must check Account.IsLive, stop the robot and throw.
-    /// </summary>
-    public class NoOrderApiOutsideDemoExecution
+    public class NoOrderApiOutsideEaExecution
     {
         internal static readonly Regex OrderApi = new(@"(?<!\bnew\s+)(?<!\brecord\s+)\b(ExecuteMarketOrder(Async)?|PlaceLimitOrder(Async)?|PlaceStopOrder(Async)?|PlaceStopLimitOrder(Async)?|ClosePosition(Async)?|ModifyPosition(Async)?|ReversePosition(Async)?|CancelPendingOrder(Async)?|ModifyPendingOrder(Async)?)\s*\(|\.Close\s*\(\s*\)", RegexOptions.Compiled);
-        internal const string DemoExecutionFile = "src/ZugrioDemoEA/ZugrioDemoEA/DemoExecution.cs";
+        internal const string ExecutionFile = "src/ZugrioEA/ZugrioEA/EaExecution.cs";
+        internal const string EaFile = "src/ZugrioEA/ZugrioEA/ZugrioEA.cs";
 
         internal static List<string> Violations(string root, IEnumerable<string> files) =>
             files.SelectMany(f => Violations(Path.GetRelativePath(root, f).Replace(Path.DirectorySeparatorChar, '/'), File.ReadAllLines(f))).ToList();
@@ -405,10 +401,10 @@ namespace Zugrio.CBot.Core.Tests
             for (var n = 0; n < lines.Count; n++)
             {
                 if (!OrderApi.IsMatch(lines[n])) continue;
-                if (rel != DemoExecutionFile) { bad.Add(rel + ":" + (n + 1) + ": order API outside DemoExecution: " + lines[n].Trim()); continue; }
+                if (rel != ExecutionFile) { bad.Add(rel + ":" + (n + 1) + ": order API outside EaExecution: " + lines[n].Trim()); continue; }
                 var prev = n - 1;
                 while (prev >= 0 && lines[prev].Trim().Length == 0) prev--;
-                if (prev < 0 || lines[prev].Trim() != "RequireDemo();") bad.Add(rel + ":" + (n + 1) + ": order API not directly after RequireDemo(): " + lines[n].Trim());
+                if (prev < 0 || lines[prev].Trim() != "RequireBoundAccount();") bad.Add(rel + ":" + (n + 1) + ": order API not directly after RequireBoundAccount(): " + lines[n].Trim());
             }
             return bad;
         }
@@ -418,7 +414,7 @@ namespace Zugrio.CBot.Core.Tests
                 .Where(f => !f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar) && !f.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar));
 
         [Fact]
-        public void Order_calls_only_in_DemoExecution_each_directly_after_RequireDemo()
+        public void Order_calls_only_in_EaExecution_each_directly_after_RequireBoundAccount()
         {
             var root = FindRoot();
             var bad = Violations(root, Sources(root));
@@ -426,32 +422,46 @@ namespace Zugrio.CBot.Core.Tests
         }
 
         [Fact]
-        public void DemoExecution_contains_order_calls_so_the_scan_is_live()
+        public void EaExecution_contains_order_calls_so_the_scan_is_live()
         {
-            var root = FindRoot();
-            var text = File.ReadAllText(Path.Combine(root, DemoExecutionFile));
+            var text = File.ReadAllText(Path.Combine(FindRoot(), ExecutionFile));
             Assert.True(OrderApi.Matches(text).Count >= 3);
         }
 
         [Fact]
-        public void RequireDemo_checks_IsLive_stops_and_throws()
+        public void RequireBoundAccount_checks_number_and_type_stops_and_throws()
         {
-            var text = File.ReadAllText(Path.Combine(FindRoot(), DemoExecutionFile));
-            var m = Regex.Match(text, @"public void RequireDemo\(\)\s*\{(?<body>.*?)\n        \}", RegexOptions.Singleline);
-            Assert.True(m.Success, "RequireDemo not found");
+            var text = File.ReadAllText(Path.Combine(FindRoot(), ExecutionFile));
+            var m = Regex.Match(text, @"public void RequireBoundAccount\(\)\s*\{(?<body>.*?)\n        \}", RegexOptions.Singleline);
+            Assert.True(m.Success, "RequireBoundAccount not found");
             var body = m.Groups["body"].Value;
-            Assert.Contains("_robot.Account.IsLive", body);
+            Assert.Contains("_robot.Account.Number != _accountNumber", body);
+            Assert.Contains("_robot.Account.IsLive != _isLive", body);
             Assert.Contains("_robot.Stop();", body);
             Assert.Contains("throw new InvalidOperationException", body);
         }
 
         [Fact]
-        public void EA_refuses_live_account_first_thing_in_OnStart_and_on_every_tick_and_bar()
+        public void EA_is_cloud_compatible_and_never_uses_absolute_paths_or_http()
         {
-            var text = File.ReadAllText(Path.Combine(FindRoot(), "src/ZugrioDemoEA/ZugrioDemoEA/ZugrioDemoEA.cs"));
-            var start = Regex.Match(text, @"protected override void OnStart\(\)\s*\{\s*if \(Account\.IsLive\)");
-            Assert.True(start.Success, "OnStart must begin with the Account.IsLive check");
-            Assert.True(Regex.Matches(text, @"if \(Account\.IsLive\) \{ Stop\(\); return; \}").Count >= 2, "OnTick and the bar handler must re-check Account.IsLive");
+            var text = File.ReadAllText(Path.Combine(FindRoot(), EaFile));
+            Assert.Contains("AccessRights = AccessRights.None", text);
+            foreach (var f in new[] { EaFile, "src/ZugrioEA/ZugrioEA/EaLog.cs", ExecutionFile })
+            {
+                var src = File.ReadAllText(Path.Combine(FindRoot(), f));
+                Assert.DoesNotContain("Environment.GetFolderPath", src);
+                Assert.DoesNotContain("Http.", src);
+                Assert.DoesNotContain("AccessRights.FullAccess", src);
+            }
+        }
+
+        [Fact]
+        public void Entries_check_broker_records_before_trading_so_restarts_cannot_duplicate()
+        {
+            var text = File.ReadAllText(Path.Combine(FindRoot(), EaFile));
+            var guard = text.IndexOf("if (Positions.Find(label) != null || History.FindLast(label) != null) return;", StringComparison.Ordinal);
+            var order = text.IndexOf("_exec.MarketOrder(", StringComparison.Ordinal);
+            Assert.True(guard > 0 && order > guard, "broker-side duplicate check must precede the order");
         }
 
         [Fact]
@@ -462,12 +472,12 @@ namespace Zugrio.CBot.Core.Tests
             Assert.Single(Violations("src/Zugrio.CBot.Core/Planted.cs", new[] { "ClosePosition(pos);" }));
             Assert.Empty(Violations("src/Zugrio.CBot.Core/Guards.cs", new[] { "var a = new ClosePosition(id);", "public sealed record ClosePosition(string PositionId);" }));
 
-            var lines = File.ReadAllLines(Path.Combine(FindRoot(), DemoExecutionFile)).ToList();
-            Assert.Empty(Violations(DemoExecutionFile, lines));
+            var lines = File.ReadAllLines(Path.Combine(FindRoot(), ExecutionFile)).ToList();
+            Assert.Empty(Violations(ExecutionFile, lines));
             lines.Insert(lines.FindIndex(l => l.Contains("_robot.ExecuteMarketOrder(")), "            var unguarded = 1;");
-            var bad = Violations(DemoExecutionFile, lines);
+            var bad = Violations(ExecutionFile, lines);
             Assert.Single(bad);
-            Assert.Contains("not directly after RequireDemo()", bad[0]);
+            Assert.Contains("not directly after RequireBoundAccount()", bad[0]);
         }
 
         private static string FindRoot()

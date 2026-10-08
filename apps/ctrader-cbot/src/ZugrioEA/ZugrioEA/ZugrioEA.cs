@@ -10,10 +10,11 @@ using cAlgo.API;
 using Zugrio.CBot.Core;
 using Zugrio.CBot.Engine;
 
-namespace Zugrio.CBot.DemoEA
+namespace Zugrio.CBot.EA
 {
     /// <summary>
-    /// Zugrio demo EA (ADR-0009): fully automatic, DEMO ACCOUNTS ONLY, a validation instrument.
+    /// Zugrio EA (ADR-0010): fully automatic on the demo or live account it is started on.
+    /// Runs as a cTrader cloud instance (started from cTrader Mobile, Web or desktop) or locally.
     ///
     /// On every closed entry-timeframe bar it hands closed bars to Zugrio's own
     /// decision-core (running under Jint) and acts only on a STRUCTURAL_READY candidate.
@@ -25,8 +26,10 @@ namespace Zugrio.CBot.DemoEA
     /// All parameters below are research values (UNVALIDATED_RESEARCH). Changing any
     /// of them changes the config version recorded with every decision.
     /// </summary>
-    [Robot(AccessRights = AccessRights.FullAccess, AddIndicators = false, TimeZone = TimeZones.UTC)]
-    public class ZugrioDemoEA : Robot
+    // AccessRights.None so it can run as a cTrader cloud instance, which is how it runs from
+    // cTrader Mobile. It needs no more: relative-path files, no HTTP, no Windows APIs.
+    [Robot(AccessRights = AccessRights.None, AddIndicators = false, TimeZone = TimeZones.UTC)]
+    public class ZugrioEA : Robot
     {
         [Parameter("Context timeframe", DefaultValue = "H1", Group = "Engine timeframes")] public string ContextTf { get; set; } = "H1";
         [Parameter("Location timeframe", DefaultValue = "M15", Group = "Engine timeframes")] public string LocationTf { get; set; } = "M15";
@@ -55,7 +58,7 @@ namespace Zugrio.CBot.DemoEA
         [Parameter("Protection deadline (seconds)", DefaultValue = 10, MinValue = 1, Group = "Execution safety (research)")] public int ProtectionDeadlineSeconds { get; set; }
 
         private const int CoidLength = 26;
-        private DemoExecution _exec = null!;
+        private EaExecution _exec = null!;
         private ZugrioEngine _engine = null!;
         private EntryBoundary _boundary = null!;
         private EntryGuard _guard = null!;
@@ -70,45 +73,57 @@ namespace Zugrio.CBot.DemoEA
 
         protected override void OnStart()
         {
-            if (Account.IsLive)
-            {
-                Print("Zugrio demo EA: LIVE ACCOUNT DETECTED. Stopping. This EA trades demo accounts only (ADR-0009).");
-                Stop();
-                return;
-            }
-            _exec = new DemoExecution(this);
+            _exec = new EaExecution(this);
             _accountId = Account.Number.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            _venue = "ctrader-demo:" + Account.BrokerName;
+            _venue = (_exec.IsLive ? "ctrader-live:" : "ctrader-demo:") + Account.BrokerName;
 
             var config = Config();
             _configVersion = CanonicalJson.Sha256Hex("zugrio:ea-config:v1", config);
             try { _engine = ZugrioEngine.Load(); }
             catch (Exception e) { Print("Zugrio engine failed to load or self-test: " + e.Message + ". Not trading."); Stop(); return; }
 
-            var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Zugrio", "ea-demo");
-            Directory.CreateDirectory(dir);
-            _log = new EaLog(dir, _configVersion, _engine.BundleSha256);
-            _boundary = new EntryBoundary(new FileJournal(Path.Combine(dir, $"journal-{_accountId}-{SymbolName}.jsonl")), TimeSpan.FromSeconds(ProtectionDeadlineSeconds));
+            _log = new EaLog(_configVersion, _engine.BundleSha256, Print);
+            IBoundaryJournal journal;
+            try
+            {
+                Directory.CreateDirectory(EaLog.Folder);
+                var fileJournal = new FileJournal(Path.Combine(EaLog.Folder, $"journal-{_accountId}-{SymbolName}.jsonl"));
+                fileJournal.ReadAll();
+                journal = fileJournal;
+            }
+            catch (Exception e)
+            {
+                // Cloud restarts wipe files anyway. Duplicate-entry protection does not rely on the
+                // journal alone: TryEnter also checks the broker's own positions and history.
+                Print("Zugrio EA: journal file unavailable (" + e.Message + "); using an in-memory journal.");
+                journal = new InMemoryJournal();
+            }
+            _boundary = new EntryBoundary(journal, TimeSpan.FromSeconds(ProtectionDeadlineSeconds));
 
             // In-process signing key: the EA's decision and execution run in one process, so this key
             // only exercises the same verification path the product will use (TRT rules, H-3).
             _key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
             var trust = TrustRoot.Load(new JsonObject
             {
-                ["trustRootVersion"] = "ea-demo-ephemeral",
+                ["trustRootVersion"] = "ea-ephemeral",
                 ["allowedSignatureAlgorithms"] = new JsonArray("ES256"),
                 ["trustedSigningKeys"] = new JsonArray(new JsonObject
                 {
-                    ["keyId"] = "ea-demo", ["publicKey"] = Convert.ToBase64String(_key.ExportSubjectPublicKeyInfo()),
+                    ["keyId"] = "ea", ["publicKey"] = Convert.ToBase64String(_key.ExportSubjectPublicKeyInfo()),
                     ["validFrom"] = "2000-01-01T00:00:00Z", ["validUntil"] = "2100-01-01T00:00:00Z", ["status"] = "ACTIVE",
                 }),
             }.ToJsonString());
             _guard = new EntryGuard(trust, new LocalLimits(
-                AllowLiveAccounts: false, MaxVolumeUnits: (long)MaxUnits, MaxQuoteAge: TimeSpan.FromSeconds(MaxQuoteAgeSeconds),
+                AllowLiveAccounts: true, MaxVolumeUnits: (long)MaxUnits, MaxQuoteAge: TimeSpan.FromSeconds(MaxQuoteAgeSeconds),
                 MaxClockSkew: TimeSpan.FromSeconds(MaxClockSkewSeconds), PinnedBrokerExecutionPolicyHash: _configVersion,
                 PinnedExecutionAuthorityManifestHash: _engine.BundleSha256, ClientOrderIdLength: CoidLength));
 
             _killSwitch = new DailyLossKillSwitch(MaxDailyLossPct);
+            // Restarts (every cloud restart) must not reset today's loss baseline: rebuild it from
+            // the broker's record of trades closed today.
+            var today = Server.TimeInUtc.Date;
+            var closedToday = History.Where(t => t.ClosingTime >= today).Sum(t => t.NetProfit);
+            _killSwitch.Seed(Server.TimeInUtc, Account.Balance - closedToday);
             _context = MarketData.GetBars(ToTimeFrame(ContextTf));
             _location = MarketData.GetBars(ToTimeFrame(LocationTf));
             _entry = MarketData.GetBars(ToTimeFrame(EntryTf));
@@ -122,12 +137,12 @@ namespace Zugrio.CBot.DemoEA
                 ["symbol"] = SymbolName, ["account"] = _accountId, ["broker"] = Account.BrokerName, ["currency"] = Account.Asset.Name,
                 ["balance"] = Account.Balance, ["isLive"] = Account.IsLive, ["config"] = config.ToJsonString(),
             });
-            Print($"Zugrio demo EA started on {SymbolName}. Config {_configVersion[..12]}, engine {_engine.BundleSha256[..12]}. Log: {dir}");
+            Print($"Zugrio EA started on {SymbolName}, {(_exec.IsLive ? "LIVE" : "demo")} account {_accountId}. Config {_configVersion[..12]}, engine {_engine.BundleSha256[..12]}.");
+            ProtectUnprotectedOnStart();
         }
 
         protected override void OnTick()
         {
-            if (Account.IsLive) { Stop(); return; }
             _lastTickUtc = Server.TimeInUtc;
         }
 
@@ -149,13 +164,12 @@ namespace Zugrio.CBot.DemoEA
             if (_guard.KillSwitch != _killSwitch.Tripped)
             {
                 _guard.KillSwitch = _killSwitch.Tripped;   // blocks new entries only; never blocks risk reduction (RR-3)
-                Print(_killSwitch.Tripped ? "Zugrio demo EA: daily loss limit reached. New entries stopped until the next UTC day." : "Zugrio demo EA: new UTC day. Entries resumed.");
+                Print(_killSwitch.Tripped ? "Zugrio EA: daily loss limit reached. New entries stopped until the next UTC day." : "Zugrio EA: new UTC day. Entries resumed.");
             }
         }
 
         private void OnEntryBarClosed()
         {
-            if (Account.IsLive) { Stop(); return; }
             var now = Server.TimeInUtc;
             JsonObject request;
             try { request = BuildRequest(); }
@@ -184,6 +198,12 @@ namespace Zugrio.CBot.DemoEA
             var frozenAt = g.GetProperty("frozenAt").GetString()!;
             var fireEventId = "fire:" + Sha(opportunityId + "|" + frozenAt)[..32];
             if (_boundary.Get(_accountId, fireEventId) != null) return;   // this setup was already acted on
+            var entryIntentId = "intent:" + fireEventId;
+            var coid = ClientOrderId.Derive(_accountId, _venue, fireEventId, entryIntentId, CoidLength);
+            var label = RiskReducingGate.OwnershipTagPrefix + coid;
+            // The label is derived from the setup, so the broker's own records show whether this
+            // setup was already traded, even after a cloud restart wiped the journal.
+            if (Positions.Find(label) != null || History.FindLast(label) != null) return;
             var open = Positions.Count(p => p.SymbolName == SymbolName && (p.Label ?? "").StartsWith(RiskReducingGate.OwnershipTagPrefix, StringComparison.Ordinal));
             if (open >= MaxOpenPositions) { Skip(now, fireEventId, "MAX_OPEN_POSITIONS"); return; }
 
@@ -201,8 +221,6 @@ namespace Zugrio.CBot.DemoEA
                 Symbol.VolumeInUnitsMin, Symbol.VolumeInUnitsStep, Symbol.VolumeInUnitsMax, MaxUnits));
             if (!size.Trade) { Skip(now, fireEventId, size.Reason, new() { ["riskPctAtMinimum"] = size.RiskPctActual }); return; }
 
-            var entryIntentId = "intent:" + fireEventId;
-            var coid = ClientOrderId.Derive(_accountId, _venue, fireEventId, entryIntentId, CoidLength);
             var unsigned = new JsonObject
             {
                 ["schema"] = ExecutionInstruction.Schema,
@@ -229,13 +247,12 @@ namespace Zugrio.CBot.DemoEA
             var check = _guard.Check(instruction, snapshot, _boundary);
             if (!check.Allowed) { Skip(now, fireEventId, "GUARD", new() { ["reasons"] = check.AbortReasons }); return; }
 
-            var label = RiskReducingGate.OwnershipTagPrefix + coid;
             _boundary.Reserve(_accountId, fireEventId, coid, SymbolName, now);
             _boundary.MarkSubmitted(_accountId, fireEventId, now);
             var slPips = Math.Abs(price - stop) / Symbol.PipSize;
             var tpPips = Math.Abs(target - price) / Symbol.PipSize;
             TradeResult r;
-            try { r = _exec.MarketOrder(side == Side.Buy ? TradeType.Buy : TradeType.Sell, size.Units, label, slPips, tpPips); }
+            try { r = _exec.MarketOrder(side == Side.Buy ? TradeType.Buy : TradeType.Sell, size.Units, label, slPips, tpPips, Comment(opportunityId)); }
             catch (Exception e)
             {
                 _boundary.OnSubmissionUnknown(_accountId, fireEventId, now);
@@ -360,10 +377,29 @@ namespace Zugrio.CBot.DemoEA
             };
         }
 
+        /// <summary>Broker-side record of which config and engine produced a trade (survives cloud restarts).</summary>
+        private string Comment(string opportunityId) => $"zugrio cfg={_configVersion[..12]} eng={_engine.BundleSha256[..12]} opp={Sha(opportunityId)[..12]}";
+
+        /// <summary>
+        /// After a restart (in the cloud the journal is gone), any Zugrio position on this symbol
+        /// without a stop is closed through the risk-reducing gate. It never opens anything.
+        /// </summary>
+        private void ProtectUnprotectedOnStart()
+        {
+            var now = Server.TimeInUtc;
+            foreach (var pos in Positions.Where(p => p.SymbolName == SymbolName && (p.Label ?? "").StartsWith(RiskReducingGate.OwnershipTagPrefix, StringComparison.Ordinal) && p.StopLoss == null).ToList())
+            {
+                var view = View(pos);
+                var gate = RiskReducingGate.Check(view, new ClosePosition(view.PositionId), _accountId, _accountId, adapterIntegrityOk: true, brokerReachable: Server.IsConnected);
+                if (gate.Allowed) Log(now, "restart_close_unprotected", _exec.Close(pos), pos.Label ?? "");
+                else _log.Write(now, "manual_exit_required", new Dictionary<string, object?> { ["label"] = pos.Label, ["reasons"] = gate.AbortReasons });
+            }
+        }
+
         private JsonObject Sign(JsonObject o)
         {
             o["signatureAlgorithm"] = TrustRoot.Es256;
-            o["signingKeyId"] = "ea-demo";
+            o["signingKeyId"] = "ea";
             o.Remove("signature");
             o["signature"] = Convert.ToBase64String(_key.SignData(CanonicalJson.Utf8(o), HashAlgorithmName.SHA256, DSASignatureFormat.IeeeP1363FixedFieldConcatenation));
             return o;

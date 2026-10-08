@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- ADR-0009: demo-only, full-auto validation EA. Runs Zugrio decision-core via Zugrio.CBot.Engine. -->
+  <!-- ADR-0010: full-auto EA on the demo or live account it starts on; cloud-compatible (AccessRights.None). Runs Zugrio decision-core via Zugrio.CBot.Engine. -->
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>

@@ -81,6 +81,18 @@ namespace Zugrio.CBot.Core.Tests
         }
 
         [Fact]
+        public void A_restart_seeded_from_broker_history_keeps_the_days_loss_limit()
+        {
+            var k = new DailyLossKillSwitch(5);
+            k.Seed(D1.AddHours(3), 100);                       // balance 94 + 6 lost in trades closed today
+            Assert.True(k.Update(D1.AddHours(3), 94));         // already past 5%: trips at once
+            var fresh = new DailyLossKillSwitch(5);
+            fresh.Seed(D1, 100);
+            fresh.Seed(D1.AddHours(1), 50);                    // a second seed the same day is ignored
+            Assert.Equal(100, fresh.DayStartEquity);
+        }
+
+        [Fact]
         public void Rejects_a_non_positive_limit() => Assert.Throws<ArgumentOutOfRangeException>(() => new DailyLossKillSwitch(0));
     }
 
