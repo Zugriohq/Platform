@@ -128,3 +128,43 @@ test("nearestLevel reports the closest binding level to the latest close", () =>
   assert.ok(r.nearestLevel && r.nearestLevel.distance >= 0);
   assert.equal(r.nearestLevel.distance, Math.abs(r.lastClose - r.nearestLevel.level));
 });
+
+// --- trend and open-sky signals -------------------------------------------------------------
+
+function driftRequest(seed, drift, route = "CONTINUATION_RETEST", context = "H1", earlierDrift = drift) {
+  const req = walkRequest(seed, route, {});
+  // Re-generate with a steady drift so price keeps making new highs (or lows).
+  let s = seed; const rnd = () => ((s = (s * 1103515245 + 12345) % 2147483648) / 2147483648);
+  const end = Date.parse("2026-10-08T12:50:00.000Z"), bars = 160, m5 = []; let p = 100;
+  for (let i = bars * 48 - 1; i >= 0; i--) { const d = i < 1900 ? drift : earlierDrift; const o = p, c = +(o + (rnd() - 0.5) * 0.4 + d).toFixed(2); m5.push({ t: end - i * 300000, o, h: +(Math.max(o, c) + rnd() * 0.15).toFixed(2), l: +(Math.min(o, c) - rnd() * 0.15).toFixed(2), c }); p = c; }
+  const agg = (n) => { const out = []; for (let i = m5.length % n; i + n <= m5.length; i += n) { const g = m5.slice(i, i + n); out.push({ closedAt: new Date(g.at(-1).t).toISOString(), o: g[0].o, h: Math.max(...g.map((x) => x.h)), l: Math.min(...g.map((x) => x.l)), c: g.at(-1).c }); } return out.slice(-bars); };
+  const ctxN = context === "H4" ? 48 : 12;
+  return { ...req, timeframes: { ...req.timeframes, context, management: context, maxAgeMs: { ...req.timeframes.maxAgeMs, context: ctxN * 600000, management: ctxN * 600000 } },
+    markets: [{ timeframe: context, bars: agg(ctxN) }, { timeframe: "M15", bars: agg(3) }, { timeframe: "M5", bars: agg(1) }] };
+}
+
+test("trendOf reads higher highs and higher lows from confirmed pivots", () => {
+  const f = (concept, price, time) => ({ concept, geometry: { type: "POINT", price, time } });
+  const bridge = load();
+  // exercised through the bundle: an UP-drifting market should read UP, a DOWN-drifting one DOWN
+  const up = JSON.parse(bridge.scan(JSON.stringify(driftRequest(5, 0.03))));
+  const down = JSON.parse(bridge.scan(JSON.stringify(driftRequest(5, -0.03))));
+  assert.equal(up.trend, "UP");
+  assert.equal(down.trend, "DOWN");
+  assert.ok(f); // helper kept for readability
+});
+
+test("a rally into old highs: open sky on H1, targets from an H4 rescan", () => {
+  // ~20 days falling, then ~6.6 days rising: the H1 window sees only new highs, H4 still sees the old ones above.
+  const bridge = load();
+  let openSky = 0, h4WithTargets = 0;
+  for (let seed = 1; seed <= 12; seed++) {
+    const h1 = JSON.parse(bridge.scan(JSON.stringify(driftRequest(seed, 0.012, "CONTINUATION_RETEST", "H1", -0.004))));
+    if (!h1.openSky) continue;
+    openSky++;
+    const h4 = JSON.parse(bridge.scan(JSON.stringify(driftRequest(seed, 0.012, "CONTINUATION_RETEST", "H4", -0.004))));
+    if (h4.candidates.length + h4.skippedNotReadyable > 0) h4WithTargets++;
+  }
+  console.log(`rally into old highs: open sky on H1 in ${openSky}/12; H4 rescan had targets in ${h4WithTargets}`);
+  assert.ok(openSky > 0 && h4WithTargets > 0);
+});

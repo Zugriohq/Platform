@@ -83,6 +83,7 @@ namespace Zugrio.CBot.Core
             "SIZING_INPUT_INVALID" => "broker contract data unavailable",
             "ATR_UNAVAILABLE" => "not enough price history",
             "GUARD" => "safety check failed",
+            "TREND_NOT_ALIGNED" => "against the higher-timeframe trend",
             _ => code.StartsWith("CONTRACT", StringComparison.Ordinal) ? "instruction check failed" : code.ToLowerInvariant().Replace('_', ' '),
         };
     }

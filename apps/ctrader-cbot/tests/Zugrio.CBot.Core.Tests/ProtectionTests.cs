@@ -95,4 +95,18 @@ namespace Zugrio.CBot.Core.Tests
         public void Rejects_a_lock_fraction_outside_0_to_1() =>
             Assert.Throws<ArgumentOutOfRangeException>(() => new DailyLossKillSwitch(5, false, 1.0));
     }
+
+    public class TrendFilterTests
+    {
+        [Theory]
+        [InlineData(Side.Buy, "UP", "CONTINUATION_RETEST", false, true)]
+        [InlineData(Side.Buy, "DOWN", "CONTINUATION_RETEST", false, false)]
+        [InlineData(Side.Buy, "MIXED", "CONTINUATION_RETEST", false, false)]
+        [InlineData(Side.Sell, "DOWN", "CONTINUATION_RETEST", false, true)]
+        [InlineData(Side.Sell, "UNKNOWN", "CONTINUATION_RETEST", false, false)]
+        [InlineData(Side.Buy, "DOWN", "REVERSAL_RECLAIM", false, true)]     // reclaims exempt by default
+        [InlineData(Side.Buy, "DOWN", "REVERSAL_RECLAIM", true, false)]
+        public void Trades_only_with_the_structure(Side side, string trend, string route, bool includeReversal, bool allowed) =>
+            Assert.Equal(allowed, TrendFilter.Allows(side, trend, route, includeReversal));
+    }
 }

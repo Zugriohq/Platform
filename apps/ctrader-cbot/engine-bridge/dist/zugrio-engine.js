@@ -3623,6 +3623,14 @@
   function point2(f) {
     return f.geometry.type === "POINT" && typeof f.geometry.price === "number" ? f.geometry.price : null;
   }
+  function trendOf(facts) {
+    const lastTwo = (concept) => facts.filter((f) => f.concept === concept && point2(f) !== null && typeof f.geometry.time === "string").sort((a, b) => Date.parse(a.geometry.time) - Date.parse(b.geometry.time)).slice(-2).map((f) => point2(f));
+    const highs = lastTwo("SWING_HIGH"), lows = lastTwo("SWING_LOW");
+    if (highs.length < 2 || lows.length < 2) return "UNKNOWN";
+    if (highs[1] > highs[0] && lows[1] > lows[0]) return "UP";
+    if (highs[1] < highs[0] && lows[1] < lows[0]) return "DOWN";
+    return "MIXED";
+  }
   function profiles(r) {
     const v = r.configVersion;
     const family = { ...ref2(`family:${r.family.family}`, v), family: r.family.family, priceOrigin: r.family.priceOrigin };
@@ -3705,6 +3713,7 @@
     const tickSize = r.instrument.tickSize;
     let skipped = 0;
     let nearest = null;
+    let openSky = false;
     const k = Math.max(1, Math.floor(r.enumeration.recentFactsPerRole));
     const out = [];
     for (const side of ["BUY", "SELL"]) {
@@ -3719,7 +3728,10 @@
         for (const l of recent(locFacts.filter((f) => f.concept === locationConcept && point2(f) !== null))) {
           const level = point2(l);
           const objective = ctxFacts.filter((f) => f.concept === resistance && point2(f) !== null && sign * (point2(f) - level) > 0).sort((a, b) => sign * (point2(a) - point2(b)))[0];
-          if (!objective) continue;
+          if (!objective) {
+            if (Math.abs(lastClose - level) <= r.model.maxChaseTicks * tickSize) openSky = true;
+            continue;
+          }
           const distance = Math.abs(lastClose - level);
           if (!nearest || distance < nearest.distance) nearest = { distance, level, side };
           if (r.enumeration.readyOnly) {
@@ -3763,6 +3775,8 @@
       skippedNotReadyable: skipped,
       nearestLevel: nearest,
       lastClose,
+      trend: trendOf(facts.get(r.timeframes.context) ?? []),
+      openSky,
       errors
     };
   }

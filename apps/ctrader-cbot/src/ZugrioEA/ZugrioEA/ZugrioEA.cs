@@ -47,11 +47,14 @@ namespace Zugrio.CBot.EA
 
         [Parameter("Watchlist (Name|SYN/FX/METAL|unlock balance; ...)", DefaultValue = DefaultWatchlist, Group = "Markets and capital tiers (research)")] public string WatchlistText { get; set; } = DefaultWatchlist;
         [Parameter("Tiers (min balance:max positions:max total risk %; ...)", DefaultValue = DefaultTiers, Group = "Markets and capital tiers (research)")] public string TiersText { get; set; } = DefaultTiers;
+        [Parameter("Trend filter: trade only with the context structure", DefaultValue = true, Group = "Markets and capital tiers (research)")] public bool TrendFilterOn { get; set; } = true;
+        [Parameter("Trend filter also on reclaim setups", DefaultValue = false, Group = "Markets and capital tiers (research)")] public bool TrendFilterOnReclaims { get; set; }
         [Parameter("Max spread as share of stop distance", DefaultValue = 0.25, MinValue = 0.01, MaxValue = 1, Group = "Markets and capital tiers (research)")] public double MaxSpreadShareOfStop { get; set; }
 
         [Parameter("Context timeframe", DefaultValue = "H1", Group = "Engine timeframes")] public string ContextTf { get; set; } = "H1";
         [Parameter("Location timeframe", DefaultValue = "M15", Group = "Engine timeframes")] public string LocationTf { get; set; } = "M15";
         [Parameter("Entry timeframe", DefaultValue = "M5", Group = "Engine timeframes")] public string EntryTf { get; set; } = "M5";
+        [Parameter("Target fallback timeframes (when no H1 swing to target)", DefaultValue = "H4,D1", Group = "Engine timeframes")] public string FallbackContextText { get; set; } = "H4,D1";
         [Parameter("Context bars (H1)", DefaultValue = 120, MinValue = 50, MaxValue = 2000, Group = "Engine timeframes")] public int ContextBars { get; set; }
         [Parameter("Location bars (M15)", DefaultValue = 200, MinValue = 50, MaxValue = 2000, Group = "Engine timeframes")] public int LocationBars { get; set; }
         [Parameter("Entry bars (M5)", DefaultValue = 300, MinValue = 50, MaxValue = 2000, Group = "Engine timeframes")] public int EntryBars { get; set; }
@@ -90,12 +93,13 @@ namespace Zugrio.CBot.EA
         /// <summary>One watchlist symbol resolved at the broker, with its bars and last quote time.</summary>
         private sealed class Market
         {
-            public Market(WatchItem item, Symbol symbol, Bars context, Bars location, Bars entry)
-            { Item = item; Sym = symbol; Context = context; Location = location; Entry = entry; }
+            public Market(WatchItem item, Symbol symbol, IReadOnlyDictionary<string, Bars> contexts, Bars location, Bars entry)
+            { Item = item; Sym = symbol; Contexts = contexts; Location = location; Entry = entry; }
             public WatchItem Item { get; }
             public Symbol Sym { get; }
             public string Name => Sym.Name;
-            public Bars Context { get; }
+            /// <summary>Context bars by timeframe: the primary context plus the target fallbacks (H4, D1).</summary>
+            public IReadOnlyDictionary<string, Bars> Contexts { get; }
             public Bars Location { get; }
             public Bars Entry { get; }
             public DateTime LastTickUtc { get; set; } = DateTime.MinValue;
@@ -119,6 +123,7 @@ namespace Zugrio.CBot.EA
         private readonly EaActivity _activity = new();
         private DateTime _activityHour = DateTime.MinValue;
         private IReadOnlyList<string> _routes = Array.Empty<string>();
+        private IReadOnlyList<string> _fallbackContexts = Array.Empty<string>();
         private TrailSettings _trail = null!;
         private readonly Dictionary<long, DateTime> _lastTrail = new();
         private static readonly TimeSpan TrailInterval = TimeSpan.FromSeconds(10);
@@ -140,6 +145,8 @@ namespace Zugrio.CBot.EA
                 _routes = RoutesText.Split(',').Select(r => r.Trim().ToUpperInvariant()).Where(r => r.Length > 0).Distinct().ToList();
                 if (_routes.Count == 0 || _routes.Any(r => r != "CONTINUATION_RETEST" && r != "REVERSAL_RECLAIM"))
                     throw new FormatException("routes must be CONTINUATION_RETEST and/or REVERSAL_RECLAIM");
+                _fallbackContexts = (FallbackContextText ?? "").Split(',').Select(t => t.Trim().ToUpperInvariant()).Where(t => t.Length > 0 && t != ContextTf).Distinct().ToList();
+                foreach (var tf in _fallbackContexts) Timeframes.Length(tf);   // throws on an unsupported code
             }
             catch (FormatException e) { Print("Zugrio EA: invalid watchlist, tiers or routes: " + e.Message + ". Not trading."); Stop(); return; }
             _trail = new TrailSettings(BreakEvenAtR, BreakEvenLockAtr, TrailStartR, TrailAtr, MinStepAtr: 0.1, MinGapAtr: 0.2);
@@ -218,7 +225,7 @@ namespace Zugrio.CBot.EA
                 Symbol? sym = name == null ? null : Symbols.GetSymbol(name);
                 if (sym == null) { Print($"Zugrio EA: '{item.Symbol}' is not offered by this broker; skipped."); continue; }
                 var m = new Market(item, sym,
-                    MarketData.GetBars(ToTimeFrame(ContextTf), sym.Name),
+                    new[] { ContextTf }.Concat(_fallbackContexts).Distinct().ToDictionary(tf => tf, tf => MarketData.GetBars(ToTimeFrame(tf), sym.Name)),
                     MarketData.GetBars(ToTimeFrame(LocationTf), sym.Name),
                     MarketData.GetBars(ToTimeFrame(EntryTf), sym.Name));
                 sym.Tick += _ => m.LastTickUtc = Server.TimeInUtc;
@@ -276,14 +283,28 @@ namespace Zugrio.CBot.EA
             if (!m.Sym.IsTradingEnabled || !m.Sym.MarketHours.IsOpened(now)) return;
             var atr = LocationAtr(m);
             if (!(atr > 0)) { _log.Write(now, "scan_skipped", new Dictionary<string, object?> { ["symbol"] = m.Name, ["reason"] = "ATR_UNAVAILABLE" }); return; }
+            // Primary context first; routes left with "open sky" (a near-price level but no swing to
+            // target) are rescanned with each fallback context, whose older swings can supply a target.
+            var pending = _routes.ToList();
+            foreach (var contextTf in new[] { ContextTf }.Concat(_fallbackContexts))
+            {
+                if (pending.Count == 0) break;
+                pending = ScanContext(m, contextTf, pending, atr, now);
+            }
+        }
+
+        /// <summary>One engine call for the given routes and context timeframe. Returns the routes still in open sky.</summary>
+        private List<string> ScanContext(Market m, string contextTf, IReadOnlyList<string> routes, double atr, DateTime now)
+        {
+            var openSky = new List<string>();
             JsonObject request;
-            try { request = BuildRequest(m, atr, _routes[0]); request["routes"] = new JsonArray(_routes.Select(r => (JsonNode)JsonValue.Create(r)!).ToArray()); }
-            catch (Exception e) { _log.Write(now, "scan_skipped", new Dictionary<string, object?> { ["symbol"] = m.Name, ["reason"] = e.Message }); return; }
+            try { request = BuildRequest(m, atr, routes[0], contextTf); request["routes"] = new JsonArray(routes.Select(r => (JsonNode)JsonValue.Create(r)!).ToArray()); }
+            catch (Exception e) { _log.Write(now, "scan_skipped", new Dictionary<string, object?> { ["symbol"] = m.Name, ["context"] = contextTf, ["reason"] = e.Message }); return openSky; }
 
             JsonElement multi;
             // One engine call for every route: the bars are validated and their pivots computed once.
             try { multi = JsonDocument.Parse(_engine.ScanRoutesJson(request.ToJsonString())).RootElement.Clone(); }
-            catch (Exception e) { _log.Write(now, "engine_error", new Dictionary<string, object?> { ["symbol"] = m.Name, ["error"] = e.Message }); return; }
+            catch (Exception e) { _log.Write(now, "engine_error", new Dictionary<string, object?> { ["symbol"] = m.Name, ["context"] = contextTf, ["error"] = e.Message }); return openSky; }
 
             foreach (var result in multi.GetProperty("results").EnumerateArray())
             {
@@ -291,21 +312,26 @@ namespace Zugrio.CBot.EA
                 var candidates = result.GetProperty("candidates");
                 var best = result.GetProperty("best");
                 var nearest = result.GetProperty("nearestLevel");
+                var trend = result.GetProperty("trend").GetString();
+                var sky = result.GetProperty("openSky").GetBoolean();
+                if (sky) openSky.Add(route);
                 double? nearestAtr = nearest.ValueKind == JsonValueKind.Object ? nearest.GetProperty("distance").GetDouble() / atr : null;
                 _activity.Scanned(m.Name, nearestAtr);
                 _log.Write(now, "scan", new Dictionary<string, object?>
                 {
-                    ["symbol"] = m.Name, ["route"] = route, ["evaluatedAt"] = request["evaluatedAt"]!.GetValue<string>(), ["atr"] = atr,
+                    ["symbol"] = m.Name, ["route"] = route, ["context"] = contextTf, ["trend"] = trend, ["openSky"] = sky,
+                    ["evaluatedAt"] = request["evaluatedAt"]!.GetValue<string>(), ["atr"] = atr,
                     ["nearestLevelAtr"] = nearestAtr is double d ? Math.Round(d, 2) : null, ["candidates"] = candidates.GetArrayLength(),
                     ["notReadyable"] = result.GetProperty("skippedNotReadyable").GetInt32(), ["ready"] = candidates.EnumerateArray().Count(c => c.GetProperty("state").GetString() == "STRUCTURAL_READY"),
                     ["best"] = best.ValueKind == JsonValueKind.Null ? null : best.GetRawText(), ["engineErrors"] = result.GetProperty("errors").GetArrayLength(),
                 });
-                if (best.ValueKind != JsonValueKind.Null) Evaluate(m, best, atr, now, route);
+                if (best.ValueKind != JsonValueKind.Null) Evaluate(m, best, atr, now, route, contextTf, trend);
             }
+            return openSky;
         }
 
         /// <summary>Per-market checks and sizing. A setup that passes waits for the gather window, then competes with other markets.</summary>
-        private void Evaluate(Market m, JsonElement best, double atr, DateTime now, string route)
+        private void Evaluate(Market m, JsonElement best, double atr, DateTime now, string route, string contextTf, string? trend)
         {
             var opportunityId = best.GetProperty("opportunityId").GetString()!;
             var g = best.GetProperty("geometry");
@@ -319,9 +345,13 @@ namespace Zugrio.CBot.EA
             if (_activity.SetupFound(fireEventId))
             {
                 var gg = best.GetProperty("geometry");
-                Print($"Zugrio EA: SETUP {best.GetProperty("side").GetString()} {m.Name} ({(route == "CONTINUATION_RETEST" ? "break and retest" : "reclaim")}): " +
+                Print($"Zugrio EA: SETUP {best.GetProperty("side").GetString()} {m.Name} ({(route == "CONTINUATION_RETEST" ? "break and retest" : "reclaim")}, {contextTf} trend {trend}): " +
                       $"entry ~{gg.GetProperty("entryReference").GetDouble().ToString(System.Globalization.CultureInfo.InvariantCulture)}, stop {Math.Round(gg.GetProperty("childInvalidation").GetDouble(), m.Sym.Digits).ToString(System.Globalization.CultureInfo.InvariantCulture)}, target {gg.GetProperty("objective").GetDouble().ToString(System.Globalization.CultureInfo.InvariantCulture)}.");
             }
+
+            var setupSide = best.GetProperty("side").GetString() == "BUY" ? Side.Buy : Side.Sell;
+            if (TrendFilterOn && !TrendFilter.Allows(setupSide, trend, route, TrendFilterOnReclaims))
+            { Skip(now, m, fireEventId, "TREND_NOT_ALIGNED", new() { ["context"] = contextTf, ["trend"] = trend, ["route"] = route }); return; }
 
             if (Account.Balance < m.Item.UnlockBalance)
             { Skip(now, m, fireEventId, "LOCKED_UNTIL_BALANCE", new() { ["unlockBalance"] = m.Item.UnlockBalance, ["balance"] = Account.Balance }); return; }
@@ -572,8 +602,9 @@ namespace Zugrio.CBot.EA
         private JsonObject Config() => new()
         {
             ["schema"] = "zugrio.ea-config/v2", ["calibrationStatus"] = "UNVALIDATED_RESEARCH",
-            ["markets"] = new JsonObject { ["watchlist"] = WatchlistText, ["tiers"] = TiersText, ["maxSpreadShareOfStop"] = (decimal)MaxSpreadShareOfStop },
-            ["timeframes"] = new JsonObject { ["context"] = ContextTf, ["location"] = LocationTf, ["entry"] = EntryTf, ["contextBars"] = ContextBars, ["locationBars"] = LocationBars, ["entryBars"] = EntryBars },
+            ["markets"] = new JsonObject { ["watchlist"] = WatchlistText, ["tiers"] = TiersText, ["maxSpreadShareOfStop"] = (decimal)MaxSpreadShareOfStop,
+                ["trendFilter"] = TrendFilterOn, ["trendFilterOnReclaims"] = TrendFilterOnReclaims },
+            ["timeframes"] = new JsonObject { ["context"] = ContextTf, ["location"] = LocationTf, ["entry"] = EntryTf, ["fallbackContexts"] = string.Join(",", _fallbackContexts), ["contextBars"] = ContextBars, ["locationBars"] = LocationBars, ["entryBars"] = EntryBars },
             ["model"] = new JsonObject
             {
                 ["routes"] = string.Join(",", _routes), ["pivotBars"] = PivotBars, ["atrPeriod"] = AtrPeriod, ["breakAtr"] = (decimal)BreakAtr, ["touchAtr"] = (decimal)TouchAtr,
@@ -589,11 +620,11 @@ namespace Zugrio.CBot.EA
             ["execution"] = new JsonObject { ["maxQuoteAgeSeconds"] = MaxQuoteAgeSeconds, ["maxClockSkewSeconds"] = MaxClockSkewSeconds, ["protectionDeadlineSeconds"] = ProtectionDeadlineSeconds },
         };
 
-        private JsonObject BuildRequest(Market m, double atr, string route)
+        private JsonObject BuildRequest(Market m, double atr, string route, string contextTf)
         {
             var markets = new JsonArray();
             var latest = DateTime.MinValue;
-            foreach (var (code, bars, history) in new[] { (ContextTf, m.Context, ContextBars), (LocationTf, m.Location, LocationBars), (EntryTf, m.Entry, EntryBars) }.GroupBy(x => x.Item1).Select(g => g.OrderByDescending(x => x.Item3).First()))
+            foreach (var (code, bars, history) in new[] { (contextTf, m.Contexts[contextTf], ContextBars), (LocationTf, m.Location, LocationBars), (EntryTf, m.Entry, EntryBars) }.GroupBy(x => x.Item1).Select(g => g.OrderByDescending(x => x.Item3).First()))
             {
                 var len = Timeframes.Length(code);
                 var closedCount = bars.Count - 1;   // the last bar is still forming
@@ -610,7 +641,8 @@ namespace Zugrio.CBot.EA
             }
             var ticks = atr / m.Sym.TickSize;
             var entryAge = (long)Timeframes.Length(EntryTf).TotalMilliseconds * 2;
-            var ctxAge = (long)Timeframes.Length(ContextTf).TotalMilliseconds * 2;
+            // A daily context bar is up to ~3 days old after a weekend, so D1 allows 4 days.
+            var ctxAge = contextTf == "D1" ? (long)TimeSpan.FromDays(4).TotalMilliseconds : (long)Timeframes.Length(contextTf).TotalMilliseconds * 2;
             var locAge = (long)Timeframes.Length(LocationTf).TotalMilliseconds * 2;
             var (family, origin) = m.Item.Class switch
             {
@@ -623,10 +655,11 @@ namespace Zugrio.CBot.EA
                 ["schema"] = "zugrio.ea-scan-request/v1", ["configVersion"] = _configVersion, ["evaluatedAt"] = Timeframes.Iso(latest),
                 ["instrument"] = new JsonObject { ["symbol"] = m.Name, ["source"] = "ctrader:" + Account.BrokerName, ["tickSize"] = m.Sym.TickSize },
                 ["family"] = new JsonObject { ["family"] = family, ["priceOrigin"] = origin },
-                ["horizon"] = new JsonObject { ["horizon"] = "INTRADAY", ["setupExpiryMs"] = (long)(SetupExpiryHours * 3_600_000), ["entryExpiryMs"] = (long)(EntryExpiryMinutes * 60_000) },
+                // A distinct horizon per context timeframe: each is its own profile in decision-core.
+                ["horizon"] = new JsonObject { ["horizon"] = contextTf == ContextTf ? "INTRADAY" : "INTRADAY_" + contextTf, ["setupExpiryMs"] = (long)(SetupExpiryHours * 3_600_000), ["entryExpiryMs"] = (long)(EntryExpiryMinutes * 60_000) },
                 ["timeframes"] = new JsonObject
                 {
-                    ["context"] = ContextTf, ["location"] = LocationTf, ["entry"] = EntryTf, ["management"] = ContextTf,
+                    ["context"] = contextTf, ["location"] = LocationTf, ["entry"] = EntryTf, ["management"] = contextTf,
                     ["maxAgeMs"] = new JsonObject { ["context"] = ctxAge, ["location"] = locAge, ["entry"] = entryAge, ["management"] = ctxAge },
                 },
                 ["model"] = new JsonObject

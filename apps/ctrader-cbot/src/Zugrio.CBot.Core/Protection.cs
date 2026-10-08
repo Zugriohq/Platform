@@ -53,4 +53,20 @@ namespace Zugrio.CBot.Core
             return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var v) && double.IsFinite(v) ? v : null;
         }
     }
+
+    /// <summary>
+    /// Trend filter (abort-only): a setup is taken only in the direction of the context
+    /// timeframe's structure. UP (higher highs and lows) allows buys, DOWN allows sells;
+    /// MIXED or UNKNOWN allows neither. Applies to continuation-retest, and to
+    /// reversal-reclaim only when <c>includeReversal</c> is set (a reclaim at a turn is
+    /// often against the old structure).
+    /// </summary>
+    public static class TrendFilter
+    {
+        public static bool Allows(Side side, string? trend, string route, bool includeReversal)
+        {
+            if (route == "REVERSAL_RECLAIM" && !includeReversal) return true;
+            return side == Side.Buy ? trend == "UP" : trend == "DOWN";
+        }
+    }
 }

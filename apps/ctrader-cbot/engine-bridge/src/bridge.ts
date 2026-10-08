@@ -65,6 +65,14 @@ export interface ScanResult {
   /** The binding level closest to the latest close: how near the market is to a possible setup. */
   readonly nearestLevel: { readonly distance: number; readonly level: number; readonly side: Side } | null;
   readonly lastClose: number;
+  /** Context-timeframe structure (higher highs/lows etc.), for the EA's trend filter. */
+  readonly trend: Trend;
+  /**
+   * True when some location level is within the chase distance of the latest close but has no
+   * context swing beyond it to target ("open sky"). The EA then rescans with a higher context
+   * timeframe, whose older swings can supply a target.
+   */
+  readonly openSky: boolean;
   /** Bindings not judged because they cannot be READY at the latest close (readyOnly). */
   readonly skippedNotReadyable: number;
   readonly errors: readonly string[];
@@ -75,6 +83,23 @@ const STATE_RANK: Record<string, number> = { STRUCTURAL_READY: 3, STRUCTURAL_WAT
 
 function ref(id: string, version: string) { return { id, version }; }
 function point(f: { geometry: { type: string; price?: number } }): number | null { return f.geometry.type === "POINT" && typeof f.geometry.price === "number" ? f.geometry.price : null; }
+
+type Trend = "UP" | "DOWN" | "MIXED" | "UNKNOWN";
+/**
+ * Structure of the context timeframe from decision-core's own confirmed pivots: UP when the
+ * last two swing highs and the last two swing lows both rise (higher highs, higher lows),
+ * DOWN when both fall, MIXED otherwise, UNKNOWN with fewer than two of either. Descriptive
+ * only: the EA uses it as an abort-only filter, never as an entry signal.
+ */
+export function trendOf(facts: readonly { concept: string; geometry: { type: string; price?: number; time?: string } }[]): Trend {
+  const lastTwo = (concept: string) => facts.filter((f) => f.concept === concept && point(f) !== null && typeof f.geometry.time === "string")
+    .sort((a, b) => Date.parse(a.geometry.time!) - Date.parse(b.geometry.time!)).slice(-2).map((f) => point(f)!);
+  const highs = lastTwo("SWING_HIGH"), lows = lastTwo("SWING_LOW");
+  if (highs.length < 2 || lows.length < 2) return "UNKNOWN";
+  if (highs[1]! > highs[0]! && lows[1]! > lows[0]!) return "UP";
+  if (highs[1]! < highs[0]! && lows[1]! < lows[0]!) return "DOWN";
+  return "MIXED";
+}
 
 function profiles(r: ScanRequest) {
   const v = r.configVersion;
@@ -162,6 +187,7 @@ function scanWith(shared: Prepared, r: ScanRequest, route: Route): ScanResult {
   const tickSize = r.instrument.tickSize;
   let skipped = 0;
   let nearest: { distance: number; level: number; side: Side } | null = null;
+  let openSky = false;
   const k = Math.max(1, Math.floor(r.enumeration.recentFactsPerRole));
   const out: ScanCandidate[] = [];
 
@@ -179,7 +205,10 @@ function scanWith(shared: Prepared, r: ScanRequest, route: Route): ScanResult {
         // decision-core itself rejects any objective other than the nearest one (NEARER_OBJECTIVE_EXISTS).
         const objective = ctxFacts.filter((f) => f.concept === resistance && point(f) !== null && sign * (point(f)! - level) > 0)
           .sort((a, b) => sign * (point(a)! - point(b)!))[0];
-        if (!objective) continue;
+        if (!objective) {
+          if (Math.abs(lastClose - level) <= r.model.maxChaseTicks * tickSize) openSky = true;
+          continue;
+        }
         const distance = Math.abs(lastClose - level);
         if (!nearest || distance < nearest.distance) nearest = { distance, level, side };
         if (r.enumeration.readyOnly) {
@@ -207,7 +236,7 @@ function scanWith(shared: Prepared, r: ScanRequest, route: Route): ScanResult {
     || (a.opportunityId < b.opportunityId ? -1 : a.opportunityId > b.opportunityId ? 1 : 0));
   const best = ranked.find((x) => x.state === "STRUCTURAL_READY") ?? null;
   return { schema: "zugrio.ea-scan-result/v1", configVersion: r.configVersion, evaluatedAt: r.evaluatedAt, route, ranking: RANKING, candidates: ranked, best,
-    skippedNotReadyable: skipped, nearestLevel: nearest, lastClose, errors };
+    skippedNotReadyable: skipped, nearestLevel: nearest, lastClose, trend: trendOf(facts.get(r.timeframes.context) ?? []), openSky, errors };
 }
 
 /** Engine integrity check the EA runs before trading: decision-core's own fixture must give its known answer. */
