@@ -54,7 +54,7 @@ namespace Zugrio.CBot.EA
         [Parameter("Entry timeframe", DefaultValue = "M5", Group = "Engine timeframes")] public string EntryTf { get; set; } = "M5";
         [Parameter("Bars of history per timeframe", DefaultValue = 300, MinValue = 50, MaxValue = 2000, Group = "Engine timeframes")] public int HistoryBars { get; set; }
 
-        [Parameter("Route (CONTINUATION_RETEST / REVERSAL_RECLAIM)", DefaultValue = "CONTINUATION_RETEST", Group = "Entry model (research, ATR multiples)")] public string Route { get; set; } = "CONTINUATION_RETEST";
+        [Parameter("Routes (comma list: CONTINUATION_RETEST, REVERSAL_RECLAIM)", DefaultValue = "CONTINUATION_RETEST,REVERSAL_RECLAIM", Group = "Entry model (research, ATR multiples)")] public string RoutesText { get; set; } = "CONTINUATION_RETEST,REVERSAL_RECLAIM";
         [Parameter("Pivot bars left/right", DefaultValue = 2, MinValue = 1, MaxValue = 10, Group = "Entry model (research, ATR multiples)")] public int PivotBars { get; set; }
         [Parameter("ATR period (location timeframe)", DefaultValue = 14, MinValue = 2, MaxValue = 200, Group = "Entry model (research, ATR multiples)")] public int AtrPeriod { get; set; }
         [Parameter("Break threshold (x ATR)", DefaultValue = 0.10, MinValue = 0.001, Group = "Entry model (research, ATR multiples)")] public double BreakAtr { get; set; }
@@ -71,6 +71,12 @@ namespace Zugrio.CBot.EA
         [Parameter("Max units per order", DefaultValue = 1000000, MinValue = 1, Group = "Risk (research)")] public double MaxUnits { get; set; }
         [Parameter("Daily loss limit (% of day-start equity)", DefaultValue = 5.0, MinValue = 0.5, MaxValue = 50, Group = "Risk (research)")] public double MaxDailyLossPct { get; set; }
         [Parameter("Never lose more in a day than the previous day made", DefaultValue = true, Group = "Risk (research)")] public bool ProtectPreviousDayProfit { get; set; } = true;
+        [Parameter("Daily profit lock (share of the day's peak gain kept)", DefaultValue = 0.5, MinValue = 0, MaxValue = 0.95, Group = "Risk (research)")] public double ProfitLockFraction { get; set; }
+
+        [Parameter("Move stop to break-even at (x R profit)", DefaultValue = 1.0, MinValue = 0.1, Group = "Protect open profit (research)")] public double BreakEvenAtR { get; set; }
+        [Parameter("Break-even lock past entry (x ATR)", DefaultValue = 0.05, MinValue = 0, Group = "Protect open profit (research)")] public double BreakEvenLockAtr { get; set; }
+        [Parameter("Start trailing at (x R profit)", DefaultValue = 1.5, MinValue = 0.1, Group = "Protect open profit (research)")] public double TrailStartR { get; set; }
+        [Parameter("Trail distance behind best price (x ATR)", DefaultValue = 1.0, MinValue = 0.05, Group = "Protect open profit (research)")] public double TrailAtr { get; set; }
 
         [Parameter("Max quote age (seconds)", DefaultValue = 10, MinValue = 1, Group = "Execution safety (research)")] public int MaxQuoteAgeSeconds { get; set; }
         [Parameter("Max clock skew (seconds)", DefaultValue = 30, MinValue = 1, Group = "Execution safety (research)")] public int MaxClockSkewSeconds { get; set; }
@@ -108,6 +114,10 @@ namespace Zugrio.CBot.EA
         private IReadOnlyList<Tier> _tiers = Array.Empty<Tier>();
         private readonly List<Market> _markets = new();
         private readonly List<Pending> _pending = new();
+        private IReadOnlyList<string> _routes = Array.Empty<string>();
+        private TrailSettings _trail = null!;
+        private readonly Dictionary<long, DateTime> _lastTrail = new();
+        private static readonly TimeSpan TrailInterval = TimeSpan.FromSeconds(10);
         private DateTime _pendingSince = DateTime.MinValue;
         private DailyLossKillSwitch _killSwitch = null!;
         private DateTime _reportDay = DateTime.MinValue;
@@ -120,8 +130,15 @@ namespace Zugrio.CBot.EA
             _venue = (_exec.IsLive ? "ctrader-live:" : "ctrader-demo:") + Account.BrokerName;
 
             IReadOnlyList<WatchItem> watch;
-            try { watch = Watchlist.Parse(WatchlistText); _tiers = Watchlist.ParseTiers(TiersText); }
-            catch (FormatException e) { Print("Zugrio EA: invalid watchlist or tiers: " + e.Message + ". Not trading."); Stop(); return; }
+            try
+            {
+                watch = Watchlist.Parse(WatchlistText); _tiers = Watchlist.ParseTiers(TiersText);
+                _routes = RoutesText.Split(',').Select(r => r.Trim().ToUpperInvariant()).Where(r => r.Length > 0).Distinct().ToList();
+                if (_routes.Count == 0 || _routes.Any(r => r != "CONTINUATION_RETEST" && r != "REVERSAL_RECLAIM"))
+                    throw new FormatException("routes must be CONTINUATION_RETEST and/or REVERSAL_RECLAIM");
+            }
+            catch (FormatException e) { Print("Zugrio EA: invalid watchlist, tiers or routes: " + e.Message + ". Not trading."); Stop(); return; }
+            _trail = new TrailSettings(BreakEvenAtR, BreakEvenLockAtr, TrailStartR, TrailAtr, MinStepAtr: 0.1, MinGapAtr: 0.2);
 
             var config = Config();
             _configVersion = CanonicalJson.Sha256Hex("zugrio:ea-config:v1", config);
@@ -164,7 +181,7 @@ namespace Zugrio.CBot.EA
                 MaxClockSkew: TimeSpan.FromSeconds(MaxClockSkewSeconds), PinnedBrokerExecutionPolicyHash: _configVersion,
                 PinnedExecutionAuthorityManifestHash: _engine.BundleSha256, ClientOrderIdLength: CoidLength));
 
-            _killSwitch = new DailyLossKillSwitch(MaxDailyLossPct, ProtectPreviousDayProfit);
+            _killSwitch = new DailyLossKillSwitch(MaxDailyLossPct, ProtectPreviousDayProfit, ProfitLockFraction);
             // Restarts (every cloud restart) must not reset today's loss baseline: rebuild it from
             // the broker's record of trades closed today.
             var today = Server.TimeInUtc.Date;
@@ -220,13 +237,13 @@ namespace Zugrio.CBot.EA
             }
             var dayBefore = _killSwitch.DayStartEquity;
             if (_killSwitch.Update(now, Account.Equity))
-                _log.Write(now, "kill_switch", new Dictionary<string, object?> { ["dayStartEquity"] = _killSwitch.DayStartEquity, ["equity"] = Account.Equity, ["limit"] = _killSwitch.LimitMoney });
+                _log.Write(now, "kill_switch", new Dictionary<string, object?> { ["dayStartEquity"] = _killSwitch.DayStartEquity, ["equity"] = Account.Equity, ["limit"] = _killSwitch.LimitMoney, ["peakEquity"] = _killSwitch.PeakEquity, ["floor"] = _killSwitch.Floor });
             if (_killSwitch.DayStartEquity != dayBefore)
                 _log.Write(now, "day", new Dictionary<string, object?> { ["dayStartEquity"] = _killSwitch.DayStartEquity, ["previousDayProfit"] = _killSwitch.PreviousDayProfit, ["lossLimitToday"] = _killSwitch.LimitMoney });
             if (_guard.KillSwitch != _killSwitch.Tripped)
             {
                 _guard.KillSwitch = _killSwitch.Tripped;   // blocks new entries only; never blocks risk reduction (RR-3)
-                Print(_killSwitch.Tripped ? "Zugrio EA: daily loss limit reached. New entries stopped until the next UTC day." : "Zugrio EA: new UTC day. Entries resumed.");
+                Print(_killSwitch.Tripped ? "Zugrio EA: daily loss limit or profit lock reached. New entries stopped until the next UTC day." : "Zugrio EA: new UTC day. Entries resumed.");
             }
             var tier = Watchlist.TierFor(_tiers, Account.Balance);
             if (_lastTier != tier)
@@ -236,6 +253,7 @@ namespace Zugrio.CBot.EA
                 _lastTier = tier;
             }
             if (now.Date != _reportDay) ReportAffordability(now);
+            ManageOpenProfit(now);
             if (_pending.Count > 0 && now - _pendingSince >= GatherWindow) ProcessPending(now);
         }
 
@@ -245,19 +263,24 @@ namespace Zugrio.CBot.EA
             if (!m.Sym.IsTradingEnabled || !m.Sym.MarketHours.IsOpened(now)) return;
             var atr = LocationAtr(m);
             if (!(atr > 0)) { _log.Write(now, "scan_skipped", new Dictionary<string, object?> { ["symbol"] = m.Name, ["reason"] = "ATR_UNAVAILABLE" }); return; }
+            foreach (var route in _routes) ScanRoute(m, route, atr, now);
+        }
+
+        private void ScanRoute(Market m, string route, double atr, DateTime now)
+        {
             JsonObject request;
-            try { request = BuildRequest(m, atr); }
-            catch (Exception e) { _log.Write(now, "scan_skipped", new Dictionary<string, object?> { ["symbol"] = m.Name, ["reason"] = e.Message }); return; }
+            try { request = BuildRequest(m, atr, route); }
+            catch (Exception e) { _log.Write(now, "scan_skipped", new Dictionary<string, object?> { ["symbol"] = m.Name, ["route"] = route, ["reason"] = e.Message }); return; }
 
             JsonElement result;
             try { result = JsonDocument.Parse(_engine.ScanJson(request.ToJsonString())).RootElement.Clone(); }
-            catch (Exception e) { _log.Write(now, "engine_error", new Dictionary<string, object?> { ["symbol"] = m.Name, ["error"] = e.Message }); return; }
+            catch (Exception e) { _log.Write(now, "engine_error", new Dictionary<string, object?> { ["symbol"] = m.Name, ["route"] = route, ["error"] = e.Message }); return; }
 
             var candidates = result.GetProperty("candidates");
             var best = result.GetProperty("best");
             _log.Write(now, "scan", new Dictionary<string, object?>
             {
-                ["symbol"] = m.Name, ["evaluatedAt"] = request["evaluatedAt"]!.GetValue<string>(), ["atr"] = atr, ["candidates"] = candidates.GetArrayLength(),
+                ["symbol"] = m.Name, ["route"] = route, ["evaluatedAt"] = request["evaluatedAt"]!.GetValue<string>(), ["atr"] = atr, ["candidates"] = candidates.GetArrayLength(),
                 ["notReadyable"] = result.TryGetProperty("skippedNotReadyable", out var sk) ? sk.GetInt32() : 0, ["ready"] = candidates.EnumerateArray().Count(c => c.GetProperty("state").GetString() == "STRUCTURAL_READY"),
                 ["best"] = best.ValueKind == JsonValueKind.Null ? null : best.GetRawText(), ["engineErrors"] = result.GetProperty("errors").GetArrayLength(),
             });
@@ -362,7 +385,7 @@ namespace Zugrio.CBot.EA
             var slPips = Math.Abs(price - p.Stop) / m.Sym.PipSize;
             var tpPips = Math.Abs(p.Target - price) / m.Sym.PipSize;
             TradeResult r;
-            try { r = _exec.MarketOrder(p.Side == Side.Buy ? TradeType.Buy : TradeType.Sell, m.Name, size.Units, label, slPips, tpPips, Comment(p.OpportunityId)); }
+            try { r = _exec.MarketOrder(p.Side == Side.Buy ? TradeType.Buy : TradeType.Sell, m.Name, size.Units, label, slPips, tpPips, ProtectionManager.WithInitialStop(Comment(p.OpportunityId), Math.Round(p.Stop, m.Sym.Digits))); }
             catch (Exception e)
             {
                 _boundary.OnSubmissionUnknown(_accountId, p.FireEventId, now);
@@ -406,6 +429,44 @@ namespace Zugrio.CBot.EA
                 if (r.IsSuccessful) pos = r.Position;
             }
             if (pos.StopLoss != null) _boundary.OnProtectionConfirmed(_accountId, fireEventId, now);
+        }
+
+        /// <summary>
+        /// Anti round-trip: moves each open Zugrio stop to break-even at +1R and trails it from +1.5R
+        /// (ProtectionManager). Only ever tightens: every change is checked RISK_REDUCING first.
+        /// The initial stop comes from the broker comment, so this works after a cloud restart.
+        /// </summary>
+        private void ManageOpenProfit(DateTime now)
+        {
+            foreach (var pos in Positions.Where(p => IsZugrio(p) && p.StopLoss.HasValue).ToList())
+            {
+                if (_lastTrail.TryGetValue(pos.Id, out var last) && now - last < TrailInterval) continue;
+                _lastTrail[pos.Id] = now;
+                var m = _markets.FirstOrDefault(x => x.Name == pos.SymbolName);
+                var initialStop = ProtectionManager.InitialStopFrom(pos.Comment);
+                if (m == null || initialStop == null) continue;
+                var atr = LocationAtr(m);
+                if (!(atr > 0)) continue;
+                var buy = pos.TradeType == TradeType.Buy;
+                var best = buy ? m.Sym.Bid : m.Sym.Ask;
+                // Only bars that opened after the fill: the fill bar's earlier range is not this trade's profit.
+                for (var i = m.Entry.Count - 1; i >= 0 && m.Entry[i].OpenTime >= pos.EntryTime; i--)
+                    best = buy ? Math.Max(best, m.Entry[i].High) : Math.Min(best, m.Entry[i].Low);
+                var exit = buy ? m.Sym.Bid : m.Sym.Ask;
+                var proposal = ProtectionManager.Propose(buy, pos.EntryPrice, initialStop.Value, pos.StopLoss!.Value, best, exit, atr, _trail);
+                if (proposal == null) continue;
+                var newStop = Math.Round(proposal.Value, m.Sym.Digits);
+                var view = View(pos);
+                if (OrderClassifier.Classify(view, new SetStopLoss(view.PositionId, (decimal)newStop)) != RiskEffect.RiskReducing) continue;
+                var gate = RiskReducingGate.Check(view, new SetStopLoss(view.PositionId, (decimal)newStop), _accountId, _accountId, adapterIntegrityOk: true, brokerReachable: Server.IsConnected);
+                if (!gate.Allowed) continue;
+                var r = _exec.SetProtection(pos, newStop, pos.TakeProfit);
+                _log.Write(now, "protect_profit", new Dictionary<string, object?>
+                {
+                    ["symbol"] = pos.SymbolName, ["label"] = pos.Label, ["from"] = view.StopLoss, ["to"] = newStop, ["best"] = best, ["entry"] = pos.EntryPrice,
+                    ["initialStop"] = initialStop, ["atr"] = atr, ["ok"] = r.IsSuccessful, ["error"] = r.Error?.ToString(),
+                });
+            }
         }
 
         private SizingResult SizeFor(Market m, double price, double stop) =>
@@ -464,6 +525,7 @@ namespace Zugrio.CBot.EA
         private void OnPositionClosed(PositionClosedEventArgs args)
         {
             var p = args.Position;
+            _lastTrail.Remove(p.Id);
             if (!IsZugrio(p)) return;
             _log.Write(Server.TimeInUtc, "close", new Dictionary<string, object?>
             {
@@ -484,18 +546,20 @@ namespace Zugrio.CBot.EA
             ["timeframes"] = new JsonObject { ["context"] = ContextTf, ["location"] = LocationTf, ["entry"] = EntryTf, ["historyBars"] = HistoryBars },
             ["model"] = new JsonObject
             {
-                ["route"] = Route, ["pivotBars"] = PivotBars, ["atrPeriod"] = AtrPeriod, ["breakAtr"] = (decimal)BreakAtr, ["touchAtr"] = (decimal)TouchAtr,
+                ["routes"] = string.Join(",", _routes), ["pivotBars"] = PivotBars, ["atrPeriod"] = AtrPeriod, ["breakAtr"] = (decimal)BreakAtr, ["touchAtr"] = (decimal)TouchAtr,
                 ["stopAtr"] = (decimal)StopAtr, ["maxChaseAtr"] = (decimal)MaxChaseAtr, ["minRunwayAtr"] = (decimal)MinRunwayAtr,
                 ["setupExpiryHours"] = (decimal)SetupExpiryHours, ["entryExpiryMinutes"] = (decimal)EntryExpiryMinutes, ["recentFacts"] = RecentFacts,
             },
             ["risk"] = new JsonObject
             {
                 ["riskPct"] = (decimal)RiskPct, ["maxRiskPctAtMinVolume"] = (decimal)MaxRiskPctAtMinVolume, ["maxUnits"] = (decimal)MaxUnits, ["maxDailyLossPct"] = (decimal)MaxDailyLossPct, ["protectPreviousDayProfit"] = ProtectPreviousDayProfit,
+                ["profitLockFraction"] = (decimal)ProfitLockFraction, ["breakEvenAtR"] = (decimal)BreakEvenAtR, ["breakEvenLockAtr"] = (decimal)BreakEvenLockAtr,
+                ["trailStartR"] = (decimal)TrailStartR, ["trailAtr"] = (decimal)TrailAtr,
             },
             ["execution"] = new JsonObject { ["maxQuoteAgeSeconds"] = MaxQuoteAgeSeconds, ["maxClockSkewSeconds"] = MaxClockSkewSeconds, ["protectionDeadlineSeconds"] = ProtectionDeadlineSeconds },
         };
 
-        private JsonObject BuildRequest(Market m, double atr)
+        private JsonObject BuildRequest(Market m, double atr, string route)
         {
             var markets = new JsonArray();
             var latest = DateTime.MinValue;
@@ -537,7 +601,7 @@ namespace Zugrio.CBot.EA
                 },
                 ["model"] = new JsonObject
                 {
-                    ["route"] = Route, ["breakTicks"] = BreakAtr * ticks, ["touchTicks"] = TouchAtr * ticks, ["stopTicks"] = StopAtr * ticks,
+                    ["route"] = route, ["breakTicks"] = BreakAtr * ticks, ["touchTicks"] = TouchAtr * ticks, ["stopTicks"] = StopAtr * ticks,
                     ["maxChaseTicks"] = MaxChaseAtr * ticks, ["minimumRunwayTicks"] = MinRunwayAtr * ticks,
                 },
                 ["pivots"] = new JsonArray(new JsonObject { ["definitionId"] = "p1", ["scale"] = "INTERMEDIATE", ["leftBars"] = PivotBars, ["rightBars"] = PivotBars }),

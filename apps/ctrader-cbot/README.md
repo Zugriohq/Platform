@@ -33,6 +33,14 @@ One instance scans a **watchlist** of synthetics, forex and gold. The chart it i
 
 - **Zugrio's decisions, not a copy.** On each closed M5 bar of every watchlist symbol it sends closed H1/M15/M5 bars to decision-core, which looks for continuation-retest setups. Entry, stop and target are the engine's frozen geometry. Model distances (break, retest tolerance, stop, chase, runway) are multiples of each symbol's M15 ATR, so one setting fits a synthetic index, EURUSD and gold.
 - **Speed.** Before asking decision-core to judge a candidate, the bridge drops those that cannot be READY at the latest close, using decision-core's own READY conditions with identical arithmetic. Tests show the READY results are unchanged. A scan is about 7x faster (in cTrader's cloud, roughly 3 s instead of 22 s per market).
+- **Both Zugrio setup types.** Every market is scanned for continuation-retest (break, retest, continue) and reversal-reclaim (dip through a level, reclaim it). Both are decision-core routes. Only one position per symbol is open at a time.
+- **No round-tripping: open trades.** R is a trade's initial risk (entry to stop). The EA checks every 10 s:
+  - At +1R profit, the stop moves to break-even plus 0.05 ATR.
+  - From +1.5R, the stop trails 1 ATR behind the best price since entry.
+  - Stops only tighten. Each change is checked RISK_REDUCING and goes through the risk-reducing gate, so the kill switch never blocks it.
+  - The initial stop is written into the trade's broker comment (`sl=`), so this keeps working after a cloud restart.
+  - The original target stays in place. Partial closes are not used, because small accounts trade minimum volume.
+- **No round-tripping: the day.** Once equity rises above the day's start, the day's floor rises to keep 50% of the best gain so far (*Daily profit lock*). If equity falls back to the floor, new entries stop until the next UTC day, and open trades keep their trailing stops. This combines with the loss limit: the floor is whichever of the two is higher.
 - **Choosing between markets.** READY setups from all markets are gathered for 3 seconds, then ranked: most recent confirmation first (the frozen spec's SEL-4 order), then lower risk %, then name. They are admitted in that order while the current tier allows it.
 - **Capital tiers: small accounts keep trading, more unlocks as the balance grows.** Each watchlist symbol has an unlock balance, and each tier caps open positions and total open risk. Tiers follow the current balance, so they lock again if it falls (open trades are not touched). Defaults:
 

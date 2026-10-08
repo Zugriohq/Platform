@@ -74,6 +74,10 @@ namespace Zugrio.CBot.Core
     /// the risk already open plus the new trade's risk, so the limit holds before a loss
     /// happens, not only after. It only gates new entries, never a risk reduction (RR-3).
     /// A stop that gaps can still lose more than planned. The percentage is a research parameter.
+    ///
+    /// Profit lock (anti round-trip): with <c>profitLockFraction</c> f &gt; 0, once equity has risen
+    /// above the day's start, the day's floor rises to start + f × (peak − start). Falling back to
+    /// that floor stops new entries for the day, so a good day cannot be handed back in full.
     /// </summary>
     public sealed class DailyLossKillSwitch
     {
@@ -82,12 +86,30 @@ namespace Zugrio.CBot.Core
         private DateTime _day = DateTime.MinValue;
         private double _dayStartEquity;
         private double _previousDayProfit;
+        private readonly double _profitLockFraction;
+        private double _peakEquity;
 
-        public DailyLossKillSwitch(double maxDailyLossPct, bool protectPreviousDayProfit = false)
+        public DailyLossKillSwitch(double maxDailyLossPct, bool protectPreviousDayProfit = false, double profitLockFraction = 0)
         {
             if (!(maxDailyLossPct > 0)) throw new ArgumentOutOfRangeException(nameof(maxDailyLossPct));
+            if (!(profitLockFraction >= 0 && profitLockFraction < 1)) throw new ArgumentOutOfRangeException(nameof(profitLockFraction));
             _maxDailyLossPct = maxDailyLossPct;
             _protectPreviousDayProfit = protectPreviousDayProfit;
+            _profitLockFraction = profitLockFraction;
+        }
+
+        public double PeakEquity => _peakEquity;
+
+        /// <summary>Lowest equity allowed today: the loss limit, raised by the profit lock once the day is up.</summary>
+        public double Floor
+        {
+            get
+            {
+                var floor = _dayStartEquity - LimitMoney;
+                if (_profitLockFraction > 0 && _peakEquity > _dayStartEquity)
+                    floor = Math.Max(floor, _dayStartEquity + _profitLockFraction * (_peakEquity - _dayStartEquity));
+                return floor;
+            }
         }
 
         public bool Tripped { get; private set; }
@@ -105,7 +127,7 @@ namespace Zugrio.CBot.Core
         }
 
         /// <summary>Loss still allowed today at this equity (never negative).</summary>
-        public double Remaining(double equity) => Math.Max(0, LimitMoney - Math.Max(0, _dayStartEquity - equity));
+        public double Remaining(double equity) => Math.Max(0, equity - Floor);
 
         /// <summary>
         /// Sets today's baseline after a restart (balance minus profit of trades closed today) and
@@ -115,7 +137,7 @@ namespace Zugrio.CBot.Core
         public void Seed(DateTime utcNow, double dayStartEquity, double previousDayProfit = 0)
         {
             if (utcNow.Date == _day) return;
-            _day = utcNow.Date; _dayStartEquity = dayStartEquity; _previousDayProfit = previousDayProfit; Tripped = false;
+            _day = utcNow.Date; _dayStartEquity = dayStartEquity; _previousDayProfit = previousDayProfit; _peakEquity = dayStartEquity; Tripped = false;
         }
 
         /// <summary>Returns true only on the update that trips the switch.</summary>
@@ -125,10 +147,11 @@ namespace Zugrio.CBot.Core
             {
                 // Yesterday's result is the equity change across it (only known if we saw its start).
                 _previousDayProfit = _day == utcNow.Date.AddDays(-1) ? equity - _dayStartEquity : 0;
-                _day = utcNow.Date; _dayStartEquity = equity; Tripped = false;
+                _day = utcNow.Date; _dayStartEquity = equity; _peakEquity = equity; Tripped = false;
             }
+            if (equity > _peakEquity) _peakEquity = equity;
             if (Tripped || !(_dayStartEquity > 0)) return false;
-            if (_dayStartEquity - equity < LimitMoney * (1 - 1e-9)) return false;
+            if (equity - Floor > LimitMoney * 1e-9) return false;
             Tripped = true;
             return true;
         }

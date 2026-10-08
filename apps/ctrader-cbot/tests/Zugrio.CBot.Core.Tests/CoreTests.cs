@@ -465,6 +465,19 @@ namespace Zugrio.CBot.Core.Tests
         }
 
         [Fact]
+        public void Profit_protection_only_sends_stop_changes_classified_risk_reducing()
+        {
+            var text = File.ReadAllText(Path.Combine(FindRoot(), EaFile));
+            var start = text.IndexOf("private void ManageOpenProfit", StringComparison.Ordinal);
+            Assert.True(start > 0, "ManageOpenProfit not found");
+            var body = text[start..text.IndexOf("private SizingResult SizeFor", start, StringComparison.Ordinal)];
+            var classify = body.IndexOf("!= RiskEffect.RiskReducing) continue;", StringComparison.Ordinal);
+            var gate = body.IndexOf("RiskReducingGate.Check(", StringComparison.Ordinal);
+            var send = body.IndexOf("_exec.SetProtection(", StringComparison.Ordinal);
+            Assert.True(classify > 0 && gate > classify && send > gate, "classify, then gate, then send");
+        }
+
+        [Fact]
         public void Planted_violations_are_caught()
         {
             Assert.Single(Violations("src/Zugrio.CBot.Core/Planted.cs", new[] { "ExecuteMarketOrder(TradeType.Buy, \"X\", 1);" }));
