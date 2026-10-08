@@ -49,3 +49,24 @@ Two facts about cTrader shape this ([cloud features](https://help.ctrader.com/ct
 ## Rollback
 
 Stop the instance in cTrader, from any device. To restore demo-only, revert the PR #116 commit "cTrader EA: live trading by owner decision…" (ADR-0009's lock and tests return).
+
+## Addendum, 2026-10-08: market scanner, capital tiers, and the previous-day loss rule
+
+The owner asked for three things:
+- one EA that scans synthetics, forex and gold;
+- small accounts that keep trading, with more unlocking as capital grows;
+- "loss limit should not be more than previous day again".
+
+Owner rule, as implemented: a day may not lose more than the previous day made. After a profitable day, today's loss limit is the lesser of that profit and the percentage limit. After a losing or flat day, the percentage limit applies. The limit is enforced before each entry: open risk plus the new trade's risk must fit inside the loss still allowed today.
+
+What was built (PR #116, commit 8230fa4):
+- **Scanner.** A single instance scans the watchlist. When several markets are READY together, they are ranked by SEL-4 causal age, then by two EA tie-breaks.
+- **Capital tiers.** Each tier sets a maximum number of positions and a maximum total open risk. Each symbol has its own unlock balance.
+- **Portfolio rules:**
+  - one position per symbol;
+  - no shared forex or gold currency across positions;
+  - a spread filter;
+  - ATR-scaled model distances.
+- **Affordability report.** The EA reports, from the broker's own contract data, the smallest balance that can trade each market.
+
+The default watchlist and tiers are research judgement. Their reasoning is in `apps/ctrader-cbot/README.md`. Deriv's cTrader contract specifications could not be read, so affordability is measured at runtime. The owner's illustration of 12% compounded daily growth is not a target the EA can pursue or promise. The EA takes only the setups the engine finds, at the configured risk.
