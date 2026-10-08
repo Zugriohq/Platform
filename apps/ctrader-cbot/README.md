@@ -32,7 +32,13 @@ The EA trades fully automatically on the **demo or live** account it is started 
 One instance scans a **watchlist** of synthetics, forex and gold. The chart it is attached to does not matter.
 
 - **Zugrio's decisions, not a copy.** On each closed M5 bar of every watchlist symbol it sends closed H1/M15/M5 bars to decision-core, which looks for continuation-retest setups. Entry, stop and target are the engine's frozen geometry. Model distances (break, retest tolerance, stop, chase, runway) are multiples of each symbol's M15 ATR, so one setting fits a synthetic index, EURUSD and gold.
-- **Speed.** Before asking decision-core to judge a candidate, the bridge drops those that cannot be READY at the latest close, using decision-core's own READY conditions with identical arithmetic. Tests show the READY results are unchanged. A scan is about 7x faster (in cTrader's cloud, roughly 3 s instead of 22 s per market).
+- **Reading the Journal.**
+  - Plain-English lines start `Zugrio EA:`. One is printed the first time a setup is found (`SETUP …`), skipped (`skipped a … setup: <reason>`), traded (`TRADE OPENED …`), protected (`stop on … moved …`) and closed (`TRADE CLOSED … P/L …`).
+  - Every hour a summary shows: scans, setups, trades, skip reasons, the three markets closest to a setup (distance from price to the nearest level, in ATR), balance, open trades, and today's floor.
+  - The `ZUGRIO {…}` JSON lines are the data record. They carry 12-character config and engine hash prefixes; the start record holds the full hashes.
+  - Each scan line's `nearestLevelAtr` shows how far price is from the closest level. When it falls to 0.5 or below, a setup is possible.
+  - The 18 = `candidates` + `notReadyable` is fixed by design: 2 sides × 3 H1 swings × 3 M15 levels. It is the number of combinations checked, not a market reading.
+- **Speed.** Both routes are judged in one engine call per market (bars validated and pivots computed once), and history is 120 H1 / 200 M15 / 300 M5 bars. A scan is about 2x faster than two separate calls. Before asking decision-core to judge a candidate, the bridge drops those that cannot be READY at the latest close, using decision-core's own READY conditions with identical arithmetic. Tests show the READY results are unchanged. A scan is about 7x faster (in cTrader's cloud, roughly 3 s instead of 22 s per market).
 - **Both Zugrio setup types.** Every market is scanned for continuation-retest (break, retest, continue) and reversal-reclaim (dip through a level, reclaim it). Both are decision-core routes. Only one position per symbol is open at a time.
 - **No round-tripping: open trades.** R is a trade's initial risk (entry to stop). The EA checks every 10 s:
   - At +1R profit, the stop moves to break-even plus 0.05 ATR.

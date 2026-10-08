@@ -104,3 +104,27 @@ test("readyOnly gives the same READY setups on random-walk markets", () => {
   assert.ok(cases === 80);
   assert.ok(ready > 0, "random walks with a wide chase should produce some READY setups to compare");
 });
+
+test("scanRoutes gives each route exactly what scan() gives for it", () => {
+  const bridge = load();
+  let ready = 0;
+  for (let seed = 1; seed <= 8; seed++) {
+    const base = walkRequest(seed, "CONTINUATION_RETEST", { chaseAtr: 3, runwayAtr: 0.2, k: 6 });
+    for (const readyOnly of [false, true]) {
+      const req = { ...base, enumeration: { ...base.enumeration, readyOnly } };
+      const multi = JSON.parse(bridge.scanRoutes(JSON.stringify({ ...req, routes: ["CONTINUATION_RETEST", "REVERSAL_RECLAIM"] })));
+      for (const res of multi.results) {
+        const single = JSON.parse(bridge.scan(JSON.stringify({ ...req, model: { ...req.model, route: res.route } })));
+        assert.deepEqual(res, single);
+        ready += readyIds(single).length;
+      }
+    }
+  }
+  assert.ok(ready > 0);
+});
+
+test("nearestLevel reports the closest binding level to the latest close", () => {
+  const r = JSON.parse(load().scan(JSON.stringify(walkRequest(3, "CONTINUATION_RETEST"))));
+  assert.ok(r.nearestLevel && r.nearestLevel.distance >= 0);
+  assert.equal(r.nearestLevel.distance, Math.abs(r.lastClose - r.nearestLevel.level));
+});

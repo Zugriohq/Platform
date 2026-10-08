@@ -52,7 +52,9 @@ namespace Zugrio.CBot.EA
         [Parameter("Context timeframe", DefaultValue = "H1", Group = "Engine timeframes")] public string ContextTf { get; set; } = "H1";
         [Parameter("Location timeframe", DefaultValue = "M15", Group = "Engine timeframes")] public string LocationTf { get; set; } = "M15";
         [Parameter("Entry timeframe", DefaultValue = "M5", Group = "Engine timeframes")] public string EntryTf { get; set; } = "M5";
-        [Parameter("Bars of history per timeframe", DefaultValue = 300, MinValue = 50, MaxValue = 2000, Group = "Engine timeframes")] public int HistoryBars { get; set; }
+        [Parameter("Context bars (H1)", DefaultValue = 120, MinValue = 50, MaxValue = 2000, Group = "Engine timeframes")] public int ContextBars { get; set; }
+        [Parameter("Location bars (M15)", DefaultValue = 200, MinValue = 50, MaxValue = 2000, Group = "Engine timeframes")] public int LocationBars { get; set; }
+        [Parameter("Entry bars (M5)", DefaultValue = 300, MinValue = 50, MaxValue = 2000, Group = "Engine timeframes")] public int EntryBars { get; set; }
 
         [Parameter("Routes (comma list: CONTINUATION_RETEST, REVERSAL_RECLAIM)", DefaultValue = "CONTINUATION_RETEST,REVERSAL_RECLAIM", Group = "Entry model (research, ATR multiples)")] public string RoutesText { get; set; } = "CONTINUATION_RETEST,REVERSAL_RECLAIM";
         [Parameter("Pivot bars left/right", DefaultValue = 2, MinValue = 1, MaxValue = 10, Group = "Entry model (research, ATR multiples)")] public int PivotBars { get; set; }
@@ -114,6 +116,8 @@ namespace Zugrio.CBot.EA
         private IReadOnlyList<Tier> _tiers = Array.Empty<Tier>();
         private readonly List<Market> _markets = new();
         private readonly List<Pending> _pending = new();
+        private readonly EaActivity _activity = new();
+        private DateTime _activityHour = DateTime.MinValue;
         private IReadOnlyList<string> _routes = Array.Empty<string>();
         private TrailSettings _trail = null!;
         private readonly Dictionary<long, DateTime> _lastTrail = new();
@@ -197,7 +201,8 @@ namespace Zugrio.CBot.EA
             _log.Write(Server.TimeInUtc, "start", new Dictionary<string, object?>
             {
                 ["account"] = _accountId, ["broker"] = Account.BrokerName, ["currency"] = Account.Asset.Name, ["isLive"] = Account.IsLive,
-                ["balance"] = Account.Balance, ["markets"] = _markets.Select(m => m.Name).ToArray(), ["config"] = config.ToJsonString(),
+                ["balance"] = Account.Balance, ["markets"] = _markets.Select(m => m.Name).ToArray(), ["configVersion"] = _configVersion, ["engineSha256"] = _engine.BundleSha256,
+                ["config"] = JsonDocument.Parse(config.ToJsonString()).RootElement.Clone(),
             });
             Print($"Zugrio EA started: {(_exec.IsLive ? "LIVE" : "demo")} account {_accountId}, {_markets.Count} markets. Config {_configVersion[..12]}, engine {_engine.BundleSha256[..12]}.");
             ProtectUnprotectedOnStart();
@@ -254,6 +259,14 @@ namespace Zugrio.CBot.EA
             }
             if (now.Date != _reportDay) ReportAffordability(now);
             ManageOpenProfit(now);
+            var hour = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0, DateTimeKind.Utc);
+            if (_activityHour == DateTime.MinValue) _activityHour = hour;
+            else if (hour > _activityHour)
+            {
+                Print(_activity.Summary(hour, Account.Balance, Account.Equity, Positions.Count(IsZugrio), tier, _killSwitch.Remaining(Account.Equity), _killSwitch.Floor));
+                _activity.NextHour();
+                _activityHour = hour;
+            }
             if (_pending.Count > 0 && now - _pendingSince >= GatherWindow) ProcessPending(now);
         }
 
@@ -263,33 +276,36 @@ namespace Zugrio.CBot.EA
             if (!m.Sym.IsTradingEnabled || !m.Sym.MarketHours.IsOpened(now)) return;
             var atr = LocationAtr(m);
             if (!(atr > 0)) { _log.Write(now, "scan_skipped", new Dictionary<string, object?> { ["symbol"] = m.Name, ["reason"] = "ATR_UNAVAILABLE" }); return; }
-            foreach (var route in _routes) ScanRoute(m, route, atr, now);
-        }
-
-        private void ScanRoute(Market m, string route, double atr, DateTime now)
-        {
             JsonObject request;
-            try { request = BuildRequest(m, atr, route); }
-            catch (Exception e) { _log.Write(now, "scan_skipped", new Dictionary<string, object?> { ["symbol"] = m.Name, ["route"] = route, ["reason"] = e.Message }); return; }
+            try { request = BuildRequest(m, atr, _routes[0]); request["routes"] = new JsonArray(_routes.Select(r => (JsonNode)JsonValue.Create(r)!).ToArray()); }
+            catch (Exception e) { _log.Write(now, "scan_skipped", new Dictionary<string, object?> { ["symbol"] = m.Name, ["reason"] = e.Message }); return; }
 
-            JsonElement result;
-            try { result = JsonDocument.Parse(_engine.ScanJson(request.ToJsonString())).RootElement.Clone(); }
-            catch (Exception e) { _log.Write(now, "engine_error", new Dictionary<string, object?> { ["symbol"] = m.Name, ["route"] = route, ["error"] = e.Message }); return; }
+            JsonElement multi;
+            // One engine call for every route: the bars are validated and their pivots computed once.
+            try { multi = JsonDocument.Parse(_engine.ScanRoutesJson(request.ToJsonString())).RootElement.Clone(); }
+            catch (Exception e) { _log.Write(now, "engine_error", new Dictionary<string, object?> { ["symbol"] = m.Name, ["error"] = e.Message }); return; }
 
-            var candidates = result.GetProperty("candidates");
-            var best = result.GetProperty("best");
-            _log.Write(now, "scan", new Dictionary<string, object?>
+            foreach (var result in multi.GetProperty("results").EnumerateArray())
             {
-                ["symbol"] = m.Name, ["route"] = route, ["evaluatedAt"] = request["evaluatedAt"]!.GetValue<string>(), ["atr"] = atr, ["candidates"] = candidates.GetArrayLength(),
-                ["notReadyable"] = result.TryGetProperty("skippedNotReadyable", out var sk) ? sk.GetInt32() : 0, ["ready"] = candidates.EnumerateArray().Count(c => c.GetProperty("state").GetString() == "STRUCTURAL_READY"),
-                ["best"] = best.ValueKind == JsonValueKind.Null ? null : best.GetRawText(), ["engineErrors"] = result.GetProperty("errors").GetArrayLength(),
-            });
-            if (best.ValueKind == JsonValueKind.Null) return;
-            Evaluate(m, best, atr, now);
+                var route = result.GetProperty("route").GetString()!;
+                var candidates = result.GetProperty("candidates");
+                var best = result.GetProperty("best");
+                var nearest = result.GetProperty("nearestLevel");
+                double? nearestAtr = nearest.ValueKind == JsonValueKind.Object ? nearest.GetProperty("distance").GetDouble() / atr : null;
+                _activity.Scanned(m.Name, nearestAtr);
+                _log.Write(now, "scan", new Dictionary<string, object?>
+                {
+                    ["symbol"] = m.Name, ["route"] = route, ["evaluatedAt"] = request["evaluatedAt"]!.GetValue<string>(), ["atr"] = atr,
+                    ["nearestLevelAtr"] = nearestAtr is double d ? Math.Round(d, 2) : null, ["candidates"] = candidates.GetArrayLength(),
+                    ["notReadyable"] = result.GetProperty("skippedNotReadyable").GetInt32(), ["ready"] = candidates.EnumerateArray().Count(c => c.GetProperty("state").GetString() == "STRUCTURAL_READY"),
+                    ["best"] = best.ValueKind == JsonValueKind.Null ? null : best.GetRawText(), ["engineErrors"] = result.GetProperty("errors").GetArrayLength(),
+                });
+                if (best.ValueKind != JsonValueKind.Null) Evaluate(m, best, atr, now, route);
+            }
         }
 
         /// <summary>Per-market checks and sizing. A setup that passes waits for the gather window, then competes with other markets.</summary>
-        private void Evaluate(Market m, JsonElement best, double atr, DateTime now)
+        private void Evaluate(Market m, JsonElement best, double atr, DateTime now, string route)
         {
             var opportunityId = best.GetProperty("opportunityId").GetString()!;
             var g = best.GetProperty("geometry");
@@ -300,6 +316,12 @@ namespace Zugrio.CBot.EA
             // The label is derived from the setup, so the broker's own records show whether this
             // setup was already traded, even after a cloud restart wiped the journal.
             if (Positions.Find(label) != null || History.FindLast(label) != null) return;
+            if (_activity.SetupFound(fireEventId))
+            {
+                var gg = best.GetProperty("geometry");
+                Print($"Zugrio EA: SETUP {best.GetProperty("side").GetString()} {m.Name} ({(route == "CONTINUATION_RETEST" ? "break and retest" : "reclaim")}): " +
+                      $"entry ~{gg.GetProperty("entryReference").GetDouble().ToString(System.Globalization.CultureInfo.InvariantCulture)}, stop {Math.Round(gg.GetProperty("childInvalidation").GetDouble(), m.Sym.Digits).ToString(System.Globalization.CultureInfo.InvariantCulture)}, target {gg.GetProperty("objective").GetDouble().ToString(System.Globalization.CultureInfo.InvariantCulture)}.");
+            }
 
             if (Account.Balance < m.Item.UnlockBalance)
             { Skip(now, m, fireEventId, "LOCKED_UNTIL_BALANCE", new() { ["unlockBalance"] = m.Item.UnlockBalance, ["balance"] = Account.Balance }); return; }
@@ -410,6 +432,9 @@ namespace Zugrio.CBot.EA
                 ["price"] = price, ["fill"] = r.Position.EntryPrice, ["engineStop"] = p.Stop, ["engineTarget"] = p.Target, ["entryReference"] = p.EntryRef,
                 ["brokerStop"] = r.Position.StopLoss, ["brokerTarget"] = r.Position.TakeProfit, ["label"] = label, ["atr"] = atr,
             });
+            _activity.Entered();
+            Print($"Zugrio EA: TRADE OPENED {p.Side.ToString().ToUpperInvariant()} {m.Name} {r.Position.Quantity.ToString(System.Globalization.CultureInfo.InvariantCulture)} lots at {r.Position.EntryPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)}, " +
+                  $"stop {r.Position.StopLoss?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "none"}, target {r.Position.TakeProfit?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "none"}, risk {size.RiskMoney:F2} ({size.RiskPctActual:F1}%).");
             ConfirmProtection(m, r.Position, p.FireEventId, p.Stop, p.Target);
         }
 
@@ -466,6 +491,9 @@ namespace Zugrio.CBot.EA
                     ["symbol"] = pos.SymbolName, ["label"] = pos.Label, ["from"] = view.StopLoss, ["to"] = newStop, ["best"] = best, ["entry"] = pos.EntryPrice,
                     ["initialStop"] = initialStop, ["atr"] = atr, ["ok"] = r.IsSuccessful, ["error"] = r.Error?.ToString(),
                 });
+                if (r.IsSuccessful)
+                    Print($"Zugrio EA: stop on {pos.SymbolName} moved {view.StopLoss} -> {newStop.ToString(System.Globalization.CultureInfo.InvariantCulture)} " +
+                          $"({((buy ? newStop >= pos.EntryPrice : newStop <= pos.EntryPrice) ? "profit locked" : "risk reduced")}).");
             }
         }
 
@@ -532,6 +560,8 @@ namespace Zugrio.CBot.EA
                 ["symbol"] = p.SymbolName, ["label"] = p.Label, ["reason"] = args.Reason.ToString(), ["side"] = p.TradeType.ToString(), ["units"] = p.VolumeInUnits,
                 ["entry"] = p.EntryPrice, ["netProfit"] = p.NetProfit, ["pips"] = p.Pips, ["balance"] = Account.Balance,
             });
+            _activity.Closed(p.NetProfit);
+            Print($"Zugrio EA: TRADE CLOSED {p.TradeType.ToString().ToUpperInvariant()} {p.SymbolName} ({args.Reason}), P/L {p.NetProfit:+0.00;-0.00;0.00}, balance {Account.Balance:F2}.");
         }
 
         protected override void OnStop()
@@ -543,7 +573,7 @@ namespace Zugrio.CBot.EA
         {
             ["schema"] = "zugrio.ea-config/v2", ["calibrationStatus"] = "UNVALIDATED_RESEARCH",
             ["markets"] = new JsonObject { ["watchlist"] = WatchlistText, ["tiers"] = TiersText, ["maxSpreadShareOfStop"] = (decimal)MaxSpreadShareOfStop },
-            ["timeframes"] = new JsonObject { ["context"] = ContextTf, ["location"] = LocationTf, ["entry"] = EntryTf, ["historyBars"] = HistoryBars },
+            ["timeframes"] = new JsonObject { ["context"] = ContextTf, ["location"] = LocationTf, ["entry"] = EntryTf, ["contextBars"] = ContextBars, ["locationBars"] = LocationBars, ["entryBars"] = EntryBars },
             ["model"] = new JsonObject
             {
                 ["routes"] = string.Join(",", _routes), ["pivotBars"] = PivotBars, ["atrPeriod"] = AtrPeriod, ["breakAtr"] = (decimal)BreakAtr, ["touchAtr"] = (decimal)TouchAtr,
@@ -563,13 +593,13 @@ namespace Zugrio.CBot.EA
         {
             var markets = new JsonArray();
             var latest = DateTime.MinValue;
-            foreach (var (code, bars) in new[] { (ContextTf, m.Context), (LocationTf, m.Location), (EntryTf, m.Entry) }.GroupBy(x => x.Item1).Select(g => g.First()))
+            foreach (var (code, bars, history) in new[] { (ContextTf, m.Context, ContextBars), (LocationTf, m.Location, LocationBars), (EntryTf, m.Entry, EntryBars) }.GroupBy(x => x.Item1).Select(g => g.OrderByDescending(x => x.Item3).First()))
             {
                 var len = Timeframes.Length(code);
                 var closedCount = bars.Count - 1;   // the last bar is still forming
                 if (closedCount < 10) throw new InvalidOperationException("not enough closed " + code + " bars");
                 var arr = new JsonArray();
-                for (var i = Math.Max(0, closedCount - HistoryBars); i < closedCount; i++)
+                for (var i = Math.Max(0, closedCount - history); i < closedCount; i++)
                 {
                     var b = bars[i];
                     var closedAt = b.OpenTime + len;
@@ -654,6 +684,7 @@ namespace Zugrio.CBot.EA
             var f = extra ?? new Dictionary<string, object?>();
             f["symbol"] = m.Name; f["fireEventId"] = fireEventId; f["reason"] = reason;
             _log.Write(now, "skip", f);
+            if (_activity.Skipped(fireEventId, reason)) Print($"Zugrio EA: skipped a {m.Name} setup: {EaActivity.ReasonText(reason)}.");
         }
 
         private void Log(DateTime now, string kind, TradeResult r, string fireEventId) =>

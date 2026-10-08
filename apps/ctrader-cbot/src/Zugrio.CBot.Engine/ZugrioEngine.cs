@@ -49,6 +49,9 @@ namespace Zugrio.CBot.Engine
         /// <summary>Request and result are the bridge's JSON contracts (zugrio.ea-scan-request/v1, -result/v1).</summary>
         public string ScanJson(string requestJson) => Call("scan", requestJson);
 
+        /// <summary>Several routes over the same bars in one call (bars validated and pivots computed once). Request adds "routes": [...].</summary>
+        public string ScanRoutesJson(string requestJson) => Call("scanRoutes", requestJson);
+
         private string Call(string fn, params object[] args)
         {
             var f = _bridge.AsObject().Get(fn);

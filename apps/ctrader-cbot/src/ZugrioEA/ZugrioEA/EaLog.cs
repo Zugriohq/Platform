@@ -33,7 +33,8 @@ namespace Zugrio.CBot.EA
         {
             var record = new Dictionary<string, object?>(fields)
             {
-                ["t"] = utc.ToString("O"), ["kind"] = kind, ["configVersion"] = _configVersion, ["engineSha256"] = _engineSha,
+                // 12-hex prefixes keep Journal lines readable; the start record carries the full hashes.
+                ["t"] = utc.ToString("O"), ["kind"] = kind, ["cfg"] = _configVersion[..Math.Min(12, _configVersion.Length)], ["eng"] = _engineSha[..Math.Min(12, _engineSha.Length)],
             };
             var line = JsonSerializer.Serialize(record);
             _print("ZUGRIO " + (line.Length <= MaxPrintChars ? line : line[..MaxPrintChars] + "…"));

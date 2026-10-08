@@ -3678,23 +3678,40 @@
   }
   function scan(r) {
     if (r.schema !== "zugrio.ea-scan-request/v1") throw new Error("unknown request schema");
-    const errors = [];
-    const p = profiles(r);
+    return scanWith(prepare(r), r, r.model.route);
+  }
+  function scanRoutes(r) {
+    if (r.schema !== "zugrio.ea-scan-request/v1") throw new Error("unknown request schema");
+    if (!Array.isArray(r.routes) || r.routes.length === 0) throw new Error("routes required");
+    const shared = prepare(r);
+    const results = [...new Set(r.routes)].map((route) => {
+      if (route !== "CONTINUATION_RETEST" && route !== "REVERSAL_RECLAIM") throw new Error(`unknown route ${route}`);
+      return scanWith(shared, { ...r, model: { ...r.model, route } }, route);
+    });
+    return { schema: "zugrio.ea-multi-scan-result/v1", configVersion: r.configVersion, evaluatedAt: r.evaluatedAt, results };
+  }
+  function prepare(r) {
     const markets = marketInputs(r);
     const engine = new SharedEntryEngine();
     const store = engine.markets;
     const facts = new Map(markets.map((m) => [m.timeframe, store.materialize(m).facts]));
     const entryBars = [...markets.find((m) => m.timeframe === r.timeframes.entry).bars].sort((a, b) => Date.parse(a.sourceClosedAt) - Date.parse(b.sourceClosedAt));
-    const lastClose = entryBars.at(-1).close;
+    return { markets, engine, facts, lastClose: entryBars.at(-1).close };
+  }
+  function scanWith(shared, r, route) {
+    const errors = [];
+    const p = profiles(r);
+    const { markets, engine, facts, lastClose } = shared;
     const tickSize = r.instrument.tickSize;
     let skipped = 0;
+    let nearest = null;
     const k = Math.max(1, Math.floor(r.enumeration.recentFactsPerRole));
     const out = [];
     for (const side of ["BUY", "SELL"]) {
       const sign = side === "BUY" ? 1 : -1;
       const support = side === "BUY" ? "SWING_LOW" : "SWING_HIGH";
       const resistance = side === "BUY" ? "SWING_HIGH" : "SWING_LOW";
-      const locationConcept = r.model.route === "CONTINUATION_RETEST" ? resistance : support;
+      const locationConcept = route === "CONTINUATION_RETEST" ? resistance : support;
       const ctxFacts = facts.get(r.timeframes.context) ?? [];
       const locFacts = facts.get(r.timeframes.location) ?? [];
       const recent = (xs) => [...xs].sort((a, b) => Date.parse(b.knownAt) - Date.parse(a.knownAt)).slice(0, k);
@@ -3703,6 +3720,8 @@
           const level = point2(l);
           const objective = ctxFacts.filter((f) => f.concept === resistance && point2(f) !== null && sign * (point2(f) - level) > 0).sort((a, b) => sign * (point2(a) - point2(b)))[0];
           if (!objective) continue;
+          const distance = Math.abs(lastClose - level);
+          if (!nearest || distance < nearest.distance) nearest = { distance, level, side };
           if (r.enumeration.readyOnly) {
             const stop = level - sign * r.model.stopTicks * tickSize;
             const objectivePrice = point2(objective);
@@ -3733,7 +3752,19 @@
     }
     const ranked = [...out].sort((a, b) => (STATE_RANK[b.state] ?? 0) - (STATE_RANK[a.state] ?? 0) || Date.parse(b.geometry?.frozenAt ?? b.knownAt) - Date.parse(a.geometry?.frozenAt ?? a.knownAt) || (a.opportunityId < b.opportunityId ? -1 : a.opportunityId > b.opportunityId ? 1 : 0));
     const best = ranked.find((x) => x.state === "STRUCTURAL_READY") ?? null;
-    return { schema: "zugrio.ea-scan-result/v1", configVersion: r.configVersion, evaluatedAt: r.evaluatedAt, ranking: RANKING, candidates: ranked, best, skippedNotReadyable: skipped, errors };
+    return {
+      schema: "zugrio.ea-scan-result/v1",
+      configVersion: r.configVersion,
+      evaluatedAt: r.evaluatedAt,
+      route,
+      ranking: RANKING,
+      candidates: ranked,
+      best,
+      skippedNotReadyable: skipped,
+      nearestLevel: nearest,
+      lastClose,
+      errors
+    };
   }
   function selfTest() {
     const e = new SharedEntryEngine().evaluate(createEntryValidationInput("CONTINUATION_RETEST", "GOLD", "INTRADAY", 7));
@@ -3743,6 +3774,7 @@
   }
   globalThis.ZugrioEngineBridge = {
     scan: (json) => JSON.stringify(scan(JSON.parse(json))),
+    scanRoutes: (json) => JSON.stringify(scanRoutes(JSON.parse(json))),
     selfTest: () => JSON.stringify(selfTest())
   };
 })();

@@ -60,7 +60,11 @@ export interface ScanResult {
   readonly evaluatedAt: string;
   readonly ranking: string;
   readonly candidates: readonly ScanCandidate[];
+  readonly route: Route;
   readonly best: ScanCandidate | null;
+  /** The binding level closest to the latest close: how near the market is to a possible setup. */
+  readonly nearestLevel: { readonly distance: number; readonly level: number; readonly side: Side } | null;
+  readonly lastClose: number;
   /** Bindings not judged because they cannot be READY at the latest close (readyOnly). */
   readonly skippedNotReadyable: number;
   readonly errors: readonly string[];
@@ -109,17 +113,55 @@ function marketInputs(r: ScanRequest): MarketStateInput[] {
 /** Enumerates bindings from decision-core's own facts and lets decision-core judge each. */
 export function scan(r: ScanRequest): ScanResult {
   if (r.schema !== "zugrio.ea-scan-request/v1") throw new Error("unknown request schema");
-  const errors: string[] = [];
-  const p = profiles(r);
+  return scanWith(prepare(r), r, r.model.route);
+}
+
+/**
+ * Several routes over the same bars in one call (zugrio.ea-multi-scan/v1). The bars are
+ * validated and their pivots computed once, and one engine judges every route, so this is
+ * much cheaper than one scan() per route. Each route's result equals scan() for that route.
+ */
+export interface MultiScanResult {
+  readonly schema: "zugrio.ea-multi-scan-result/v1";
+  readonly configVersion: string;
+  readonly evaluatedAt: string;
+  readonly results: readonly ScanResult[];
+}
+export function scanRoutes(r: ScanRequest & { readonly routes: readonly Route[] }): MultiScanResult {
+  if (r.schema !== "zugrio.ea-scan-request/v1") throw new Error("unknown request schema");
+  if (!Array.isArray(r.routes) || r.routes.length === 0) throw new Error("routes required");
+  const shared = prepare(r);
+  const results = [...new Set(r.routes)].map((route) => {
+    if (route !== "CONTINUATION_RETEST" && route !== "REVERSAL_RECLAIM") throw new Error(`unknown route ${route}`);
+    return scanWith(shared, { ...r, model: { ...r.model, route } }, route);
+  });
+  return { schema: "zugrio.ea-multi-scan-result/v1", configVersion: r.configVersion, evaluatedAt: r.evaluatedAt, results };
+}
+
+interface Prepared {
+  readonly markets: MarketStateInput[];
+  readonly engine: SharedEntryEngine;
+  readonly facts: Map<string, readonly { factId: string; concept: string; knownAt: string; geometry: { type: string; price?: number } }[]>;
+  readonly lastClose: number;
+}
+
+function prepare(r: ScanRequest): Prepared {
   const markets = marketInputs(r);
   const engine = new SharedEntryEngine();
   // The engine's own store, so its later materialisations share the pivot computation.
   const store: SharedMarketStore = engine.markets;
   const facts = new Map(markets.map((m) => [m.timeframe, store.materialize(m).facts]));
   const entryBars = [...markets.find((m) => m.timeframe === r.timeframes.entry)!.bars].sort((a, b) => Date.parse(a.sourceClosedAt) - Date.parse(b.sourceClosedAt));
-  const lastClose = entryBars.at(-1)!.close;
+  return { markets, engine, facts: facts as Prepared["facts"], lastClose: entryBars.at(-1)!.close };
+}
+
+function scanWith(shared: Prepared, r: ScanRequest, route: Route): ScanResult {
+  const errors: string[] = [];
+  const p = profiles(r);
+  const { markets, engine, facts, lastClose } = shared;
   const tickSize = r.instrument.tickSize;
   let skipped = 0;
+  let nearest: { distance: number; level: number; side: Side } | null = null;
   const k = Math.max(1, Math.floor(r.enumeration.recentFactsPerRole));
   const out: ScanCandidate[] = [];
 
@@ -127,7 +169,7 @@ export function scan(r: ScanRequest): ScanResult {
     const sign = side === "BUY" ? 1 : -1;
     const support = side === "BUY" ? "SWING_LOW" : "SWING_HIGH";
     const resistance = side === "BUY" ? "SWING_HIGH" : "SWING_LOW";
-    const locationConcept = r.model.route === "CONTINUATION_RETEST" ? resistance : support;
+    const locationConcept = route === "CONTINUATION_RETEST" ? resistance : support;
     const ctxFacts = facts.get(r.timeframes.context) ?? [];
     const locFacts = facts.get(r.timeframes.location) ?? [];
     const recent = <T extends { knownAt: string }>(xs: readonly T[]) => [...xs].sort((a, b) => Date.parse(b.knownAt) - Date.parse(a.knownAt)).slice(0, k);
@@ -138,6 +180,8 @@ export function scan(r: ScanRequest): ScanResult {
         const objective = ctxFacts.filter((f) => f.concept === resistance && point(f) !== null && sign * (point(f)! - level) > 0)
           .sort((a, b) => sign * (point(a)! - point(b)!))[0];
         if (!objective) continue;
+        const distance = Math.abs(lastClose - level);
+        if (!nearest || distance < nearest.distance) nearest = { distance, level, side };
         if (r.enumeration.readyOnly) {
           // Same expressions as decision-core's interpret(): stop, geometryCurrent, targetRunwayAvailable.
           const stop = level - sign * r.model.stopTicks * tickSize;
@@ -162,7 +206,8 @@ export function scan(r: ScanRequest): ScanResult {
     || Date.parse(b.geometry?.frozenAt ?? b.knownAt) - Date.parse(a.geometry?.frozenAt ?? a.knownAt)
     || (a.opportunityId < b.opportunityId ? -1 : a.opportunityId > b.opportunityId ? 1 : 0));
   const best = ranked.find((x) => x.state === "STRUCTURAL_READY") ?? null;
-  return { schema: "zugrio.ea-scan-result/v1", configVersion: r.configVersion, evaluatedAt: r.evaluatedAt, ranking: RANKING, candidates: ranked, best, skippedNotReadyable: skipped, errors };
+  return { schema: "zugrio.ea-scan-result/v1", configVersion: r.configVersion, evaluatedAt: r.evaluatedAt, route, ranking: RANKING, candidates: ranked, best,
+    skippedNotReadyable: skipped, nearestLevel: nearest, lastClose, errors };
 }
 
 /** Engine integrity check the EA runs before trading: decision-core's own fixture must give its known answer. */
@@ -175,5 +220,6 @@ export function selfTest(): { ok: boolean; detail: string } {
 
 (globalThis as unknown as { ZugrioEngineBridge: unknown }).ZugrioEngineBridge = {
   scan: (json: string) => JSON.stringify(scan(JSON.parse(json) as ScanRequest)),
+  scanRoutes: (json: string) => JSON.stringify(scanRoutes(JSON.parse(json))),
   selfTest: () => JSON.stringify(selfTest()),
 };
