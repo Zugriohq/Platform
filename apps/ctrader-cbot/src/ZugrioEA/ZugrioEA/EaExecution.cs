@@ -35,10 +35,10 @@ namespace Zugrio.CBot.EA
             }
         }
 
-        public TradeResult MarketOrder(TradeType side, double units, string label, double stopLossPips, double takeProfitPips, string comment)
+        public TradeResult MarketOrder(TradeType side, string symbolName, double units, string label, double stopLossPips, double takeProfitPips, string comment)
         {
             RequireBoundAccount();
-            return _robot.ExecuteMarketOrder(side, _robot.SymbolName, units, label, stopLossPips, takeProfitPips, comment);
+            return _robot.ExecuteMarketOrder(side, symbolName, units, label, stopLossPips, takeProfitPips, comment);
         }
 
         /// <summary>Absolute stop and target. Callers use it only when OrderClassifier says RISK_REDUCING, or to attach missing protection.</summary>

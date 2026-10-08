@@ -63,42 +63,72 @@ namespace Zugrio.CBot.Core
 namespace Zugrio.CBot.Core
 {
     /// <summary>
-    /// Daily loss kill switch for the EA. Once equity has fallen <c>maxDailyLossPct</c>
-    /// from the UTC day's starting equity, new entries stop until the next UTC day. It only
-    /// feeds <see cref="EntryGuard.KillSwitch"/>, so it never blocks a risk reduction (RR-3).
-    /// The percentage is a research parameter (ADR-0009 §4).
+    /// Daily loss limit for the EA. Today's limit is <c>maxDailyLossPct</c> of the UTC day's
+    /// starting equity. With <c>protectPreviousDayProfit</c> (owner rule, 2026-10-08: a day
+    /// may not lose more than the previous day made), a profitable previous day lowers the
+    /// limit to that profit, so a bad day can give back at most yesterday's gain. After a
+    /// losing or flat day the percentage limit applies.
+    ///
+    /// Two uses: <see cref="Tripped"/> stops new entries once today's loss reaches the limit,
+    /// and <see cref="Remaining"/> is the loss still allowed today, which callers compare with
+    /// the risk already open plus the new trade's risk, so the limit holds before a loss
+    /// happens, not only after. It only gates new entries, never a risk reduction (RR-3).
+    /// A stop that gaps can still lose more than planned. The percentage is a research parameter.
     /// </summary>
     public sealed class DailyLossKillSwitch
     {
         private readonly double _maxDailyLossPct;
+        private readonly bool _protectPreviousDayProfit;
         private DateTime _day = DateTime.MinValue;
         private double _dayStartEquity;
+        private double _previousDayProfit;
 
-        public DailyLossKillSwitch(double maxDailyLossPct)
+        public DailyLossKillSwitch(double maxDailyLossPct, bool protectPreviousDayProfit = false)
         {
             if (!(maxDailyLossPct > 0)) throw new ArgumentOutOfRangeException(nameof(maxDailyLossPct));
             _maxDailyLossPct = maxDailyLossPct;
+            _protectPreviousDayProfit = protectPreviousDayProfit;
         }
 
         public bool Tripped { get; private set; }
         public double DayStartEquity => _dayStartEquity;
+        public double PreviousDayProfit => _previousDayProfit;
+
+        /// <summary>Money today may lose in total.</summary>
+        public double LimitMoney
+        {
+            get
+            {
+                var pct = _dayStartEquity * _maxDailyLossPct / 100.0;
+                return _protectPreviousDayProfit && _previousDayProfit > 0 ? Math.Min(pct, _previousDayProfit) : pct;
+            }
+        }
+
+        /// <summary>Loss still allowed today at this equity (never negative).</summary>
+        public double Remaining(double equity) => Math.Max(0, LimitMoney - Math.Max(0, _dayStartEquity - equity));
 
         /// <summary>
-        /// Sets today's baseline after a restart (e.g. balance minus profit of trades closed
-        /// today), so restarting never resets the day's loss limit. Only the first call per day counts.
+        /// Sets today's baseline after a restart (balance minus profit of trades closed today) and
+        /// yesterday's result (profit of trades closed yesterday), so restarting never resets the
+        /// day's limit. Only the first call per day counts.
         /// </summary>
-        public void Seed(DateTime utcNow, double dayStartEquity)
+        public void Seed(DateTime utcNow, double dayStartEquity, double previousDayProfit = 0)
         {
             if (utcNow.Date == _day) return;
-            _day = utcNow.Date; _dayStartEquity = dayStartEquity; Tripped = false;
+            _day = utcNow.Date; _dayStartEquity = dayStartEquity; _previousDayProfit = previousDayProfit; Tripped = false;
         }
 
         /// <summary>Returns true only on the update that trips the switch.</summary>
         public bool Update(DateTime utcNow, double equity)
         {
-            if (utcNow.Date != _day) { _day = utcNow.Date; _dayStartEquity = equity; Tripped = false; }
+            if (utcNow.Date != _day)
+            {
+                // Yesterday's result is the equity change across it (only known if we saw its start).
+                _previousDayProfit = _day == utcNow.Date.AddDays(-1) ? equity - _dayStartEquity : 0;
+                _day = utcNow.Date; _dayStartEquity = equity; Tripped = false;
+            }
             if (Tripped || !(_dayStartEquity > 0)) return false;
-            if ((_dayStartEquity - equity) / _dayStartEquity * 100.0 < _maxDailyLossPct) return false;
+            if (_dayStartEquity - equity < LimitMoney * (1 - 1e-9)) return false;
             Tripped = true;
             return true;
         }

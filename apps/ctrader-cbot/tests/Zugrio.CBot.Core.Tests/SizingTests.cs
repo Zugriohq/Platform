@@ -93,6 +93,34 @@ namespace Zugrio.CBot.Core.Tests
         }
 
         [Fact]
+        public void A_day_may_not_lose_more_than_the_previous_day_made()
+        {
+            var k = new DailyLossKillSwitch(5, protectPreviousDayProfit: true);
+            k.Update(D1, 100);
+            k.Update(D1.AddHours(20), 102.40);                  // day 1 made +2.40
+            Assert.False(k.Update(D1.AddDays(1), 102.40));      // day 2 starts
+            Assert.Equal(2.40, k.PreviousDayProfit, 9);
+            Assert.Equal(2.40, k.LimitMoney, 9);                // not 5% (5.12)
+            Assert.Equal(1.40, k.Remaining(101.40), 9);
+            Assert.False(k.Update(D1.AddDays(1).AddHours(1), 100.01));
+            Assert.True(k.Update(D1.AddDays(1).AddHours(2), 100.00));   // gave back exactly day 1's gain
+        }
+
+        [Fact]
+        public void After_a_losing_day_or_a_big_profit_the_percentage_limit_applies()
+        {
+            var k = new DailyLossKillSwitch(5, protectPreviousDayProfit: true);
+            k.Seed(D1, 100, previousDayProfit: -3);
+            Assert.Equal(5, k.LimitMoney, 9);
+            var big = new DailyLossKillSwitch(5, protectPreviousDayProfit: true);
+            big.Seed(D1, 100, previousDayProfit: 20);
+            Assert.Equal(5, big.LimitMoney, 9);                  // the lesser of 5% and yesterday's profit
+            var off = new DailyLossKillSwitch(5);
+            off.Seed(D1, 100, previousDayProfit: 1);
+            Assert.Equal(5, off.LimitMoney, 9);                  // rule switched off
+        }
+
+        [Fact]
         public void Rejects_a_non_positive_limit() => Assert.Throws<ArgumentOutOfRangeException>(() => new DailyLossKillSwitch(0));
     }
 
