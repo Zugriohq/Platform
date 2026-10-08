@@ -12,7 +12,7 @@ The frozen spec says: "Promotion beyond OBSERVE requires Gate 6. **Executable ca
 |---|---|---|
 | 0. Display | Draws Zugrio setups, levels and invalidation on cTrader charts. **No orders.** | **Now** |
 | 1. Boundary core | Envelope signature verification, the SB-1…SB-18 state machines, reconciliation and the risk-reducing kernel, all tested against fakes. **No order API calls.** | **Now** (ADR-0008, capital/safety impact) |
-| EA. Demo validation instrument | **Built (PR #116).** Full auto on **demo accounts only**, `FullAccess`, running Zugrio's own decision-core under Jint. Collects decision and execution data. Carries no capital authority | **Now** (ADR-0009, owner decision 2026-10-07). It is not phase 2: it runs research parameters, not admitted policy, and its data is Gate-6 development material |
+| EA (owner's own accounts) | **Built (PR #116).** Full auto on the **demo or live** account it starts on, running Zugrio's own decision-core under Jint. `AccessRights.None`, so it runs as a cTrader cloud instance started from cTrader Mobile | **Now** (ADR-0009 2026-10-07; live by ADR-0010, owner decision 2026-10-08). It is not the product's phase 2–4: it runs research parameters, not admitted policy, and its results are development data |
 | 2. Demo execution | Places and manages orders on a cTrader **demo** account under signed manifests | **After Gate 4 is authorised** and the §17 Gate 4 tests pass |
 | 3. Forward shadow/demo certification | Runs the frozen system unchanged on demo | Gate 8 ("then forward shadow/demo") |
 | 4. Live | Real-money orders, admitted scopes only | **After Gate 8**, plus the owner's live-activation decision |

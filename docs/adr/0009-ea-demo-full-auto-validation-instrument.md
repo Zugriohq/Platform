@@ -1,6 +1,6 @@
 # ADR-0009: The cTrader EA as a demo-only, full-auto validation instrument
 
-- **Status:** Accepted by the owner, 2026-10-07. Independent review: requested. It applies to the EA only. The Windows product's rules are unchanged.
+- **Status:** Accepted by the owner, 2026-10-07; §1–2 (demo-only) superseded by ADR-0010 on 2026-10-08. Independent review: requested. It applies to the EA only. The Windows product's rules are unchanged.
 - **Date:** 2026-10-07
 - **Decision owners:** Founder / Product Lead (decided); independent reviewer (to review)
 - **Supersedes:** nothing. It narrows how ADR-0008's phases apply to the EA.
