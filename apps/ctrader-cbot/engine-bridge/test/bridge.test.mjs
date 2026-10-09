@@ -83,6 +83,7 @@ function compare(req) {
   assert.deepEqual(readyIds(fast), readyIds(full));
   assert.deepEqual(fast.best, full.best);
   assert.equal(fast.candidates.length + fast.skippedNotReadyable, full.candidates.length);
+  assert.equal(fast.notReadyableBy.pastStop + fast.notReadyableBy.tooFar + fast.notReadyableBy.noRunway, fast.skippedNotReadyable);
   return readyIds(full).length;
 }
 

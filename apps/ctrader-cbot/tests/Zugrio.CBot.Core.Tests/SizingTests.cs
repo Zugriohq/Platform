@@ -11,6 +11,34 @@ namespace Zugrio.CBot.Core.Tests
             new(balance, riskPct, maxAtMin, 1.10000, 1.10000 - stopDistance, 0.00001, 0.00001, 1000, 1000, 10_000_000, 1_000_000);
 
         [Fact]
+        public void A_small_daily_allowance_shrinks_the_trade_instead_of_blocking_it()
+        {
+            // 2026-10-09: yesterday made 23.20, so today may lose 23.20; 1% of 10031 would risk 100.
+            var full = Sizing.Compute(Eur(10031, 1, 5, 0.0010));
+            Assert.Equal(100_000, full.Units);
+            var capped = Sizing.Compute(Eur(10031, 1, 5, 0.0010) with { RiskMoneyCap = 23.20 });
+            Assert.True(capped.Trade);
+            Assert.Equal(23_000, capped.Units);                      // 23.00 of risk: fits, rounded down to the step
+            Assert.True(capped.RiskMoney <= 23.20);
+        }
+
+        [Fact]
+        public void No_allowance_left_or_minimum_volume_too_big_for_it_is_DAILY_LOSS_ALLOWANCE()
+        {
+            Assert.Equal("DAILY_LOSS_ALLOWANCE", Sizing.Compute(Eur(10031, 1, 5, 0.0010) with { RiskMoneyCap = 0 }).Reason);
+            Assert.Equal("DAILY_LOSS_ALLOWANCE", Sizing.Compute(Eur(10031, 1, 5, 0.0010) with { RiskMoneyCap = -3 }).Reason);
+            var r = Sizing.Compute(Eur(10031, 1, 5, 0.0010) with { RiskMoneyCap = 0.5 });   // minimum 1000 units risks 1.00
+            Assert.False(r.Trade);
+            Assert.Equal("DAILY_LOSS_ALLOWANCE", r.Reason);
+        }
+
+        [Fact]
+        public void A_large_allowance_never_increases_the_trade()
+        {
+            Assert.Equal(Sizing.Compute(Eur(10031, 1, 5, 0.0010)).Units, Sizing.Compute(Eur(10031, 1, 5, 0.0010) with { RiskMoneyCap = 1e9 }).Units);
+        }
+
+        [Fact]
         public void Normal_account_sizes_to_the_risk_budget()
         {
             var r = Sizing.Compute(Eur(10_000, 1, 5, 0.00200)); // 20 pips, $100 budget -> 50,000 units

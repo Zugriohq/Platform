@@ -23,6 +23,17 @@ namespace Zugrio.CBot.Core
         public double ClosedProfit { get; private set; }
         /// <summary>Seconds spent in engine scans this hour: how much of the cloud instance's time scanning takes.</summary>
         public double ScanSeconds { get; private set; }
+        /// <summary>Why level/target combinations were not setups this hour (from the engine bridge).</summary>
+        public int NoRunway { get; private set; }
+        public int TooFar { get; private set; }
+        public int PastStop { get; private set; }
+        /// <summary>Combinations in place geometrically that decision-core judged not READY (sequence not confirmed yet).</summary>
+        public int NotConfirmed { get; private set; }
+
+        public void WhyNot(int pastStop, int tooFar, int noRunway, int notConfirmed)
+        {
+            PastStop += Math.Max(0, pastStop); TooFar += Math.Max(0, tooFar); NoRunway += Math.Max(0, noRunway); NotConfirmed += Math.Max(0, notConfirmed);
+        }
 
         public void Scanned(string symbol, double? nearestLevelAtr, double seconds = 0)
         {
@@ -60,6 +71,9 @@ namespace Zugrio.CBot.Core
                    $"(P/L {ClosedProfit.ToString("+0.00;-0.00;0.00", ci)}). Skipped: {skips}. " +
                    $"Closest to a setup: {(closest.Count == 0 ? "n/a" : string.Join(", ", closest))}. " +
                    $"Scanning took {ScanSeconds.ToString("0", ci)} s. " +
+                   (Setups == 0 && PastStop + TooFar + NoRunway + NotConfirmed > 0
+                       ? $"Why no setup: {NoRunway} too little room to the target, {TooFar} price too far from the level, {PastStop} price past the stop, {NotConfirmed} not confirmed yet. "
+                       : "") +
                    $"Balance {balance.ToString("0.00", ci)}, equity {equity.ToString("0.00", ci)}, {openTrades} open (max {tier.MaxPositions}). " +
                    $"Today's floor {dailyFloor.ToString("0.00", ci)}, loss still allowed {lossStillAllowed.ToString("0.00", ci)}.";
         }
@@ -68,6 +82,7 @@ namespace Zugrio.CBot.Core
         public void NextHour()
         {
             Scans = Setups = Entries = Closes = 0; ClosedProfit = 0; ScanSeconds = 0;
+            NoRunway = TooFar = PastStop = NotConfirmed = 0;
             _skips.Clear(); _nearestAtr.Clear();
             if (_announced.Count > 20_000) _announced.Clear();
         }

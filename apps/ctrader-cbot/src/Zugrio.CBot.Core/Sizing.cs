@@ -5,7 +5,8 @@ namespace Zugrio.CBot.Core
     public sealed record SizingInput(
         double Balance, double RiskPct, double MaxRiskPctAtMinimumVolume,
         double EntryPrice, double StopPrice, double TickSize, double TickValuePerUnit,
-        double MinUnits, double StepUnits, double MaxUnits, double LocalMaxUnits);
+        double MinUnits, double StepUnits, double MaxUnits, double LocalMaxUnits,
+        double RiskMoneyCap = double.PositiveInfinity);
 
     public sealed record SizingResult(bool Trade, long Units, double RiskMoney, double RiskPctActual, string Reason);
 
@@ -14,6 +15,10 @@ namespace Zugrio.CBot.Core
     /// research parameters (ADR-0009 §4), not validated policy. If even the broker's
     /// minimum volume risks more than <c>MaxRiskPctAtMinimumVolume</c>, the EA does not
     /// trade. A small account is never sized past the declared cap.
+    ///
+    /// <c>RiskMoneyCap</c> is the loss still allowed today minus open risk: the trade is sized down
+    /// to fit it rather than refused, so a day whose limit is a small previous-day profit still
+    /// trades, smaller. If even the minimum volume does not fit, it is DAILY_LOSS_ALLOWANCE.
     /// </summary>
     public static class Sizing
     {
@@ -24,7 +29,8 @@ namespace Zugrio.CBot.Core
             var distance = Math.Abs(s.EntryPrice - s.StopPrice);
             if (!(distance > 0)) return new SizingResult(false, 0, 0, 0, "STOP_DISTANCE_ZERO");
             var lossPerUnit = distance / s.TickSize * s.TickValuePerUnit;
-            var budget = s.Balance * s.RiskPct / 100.0;
+            if (!(s.RiskMoneyCap > 0)) return new SizingResult(false, 0, 0, 0, "DAILY_LOSS_ALLOWANCE");
+            var budget = Math.Min(s.Balance * s.RiskPct / 100.0, s.RiskMoneyCap);
             var cap = Math.Min(s.MaxUnits, s.LocalMaxUnits);
             // A 1e-9 relative tolerance absorbs binary rounding (e.g. 0.002/0.00001 = 199.999…)
             // so a whole step is not lost; it can never add a full step of risk.
@@ -32,6 +38,8 @@ namespace Zugrio.CBot.Core
             if (units >= s.MinUnits)
                 return Result((long)units, lossPerUnit, s.Balance, "WITHIN_RISK_BUDGET");
             var minRiskPct = s.MinUnits * lossPerUnit / s.Balance * 100.0;
+            if (s.MinUnits * lossPerUnit > s.RiskMoneyCap)
+                return new SizingResult(false, 0, s.MinUnits * lossPerUnit, minRiskPct, "DAILY_LOSS_ALLOWANCE");
             if (s.MinUnits <= cap && minRiskPct <= s.MaxRiskPctAtMinimumVolume)
                 return Result((long)s.MinUnits, lossPerUnit, s.Balance, "MINIMUM_VOLUME_WITHIN_SMALL_ACCOUNT_CAP");
             return new SizingResult(false, 0, s.MinUnits * lossPerUnit, minRiskPct, "MINIMUM_VOLUME_EXCEEDS_RISK_CAP");

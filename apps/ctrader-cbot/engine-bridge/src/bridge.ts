@@ -75,6 +75,12 @@ export interface ScanResult {
   readonly openSky: boolean;
   /** Bindings not judged because they cannot be READY at the latest close (readyOnly). */
   readonly skippedNotReadyable: number;
+  /**
+   * Why those bindings cannot be READY, by the first failing condition (decision-core's order):
+   * close at or past the stop, close beyond the chase distance from the level, or less runway to
+   * the objective than the minimum. Diagnostic only: it changes no decision.
+   */
+  readonly notReadyableBy: { readonly pastStop: number; readonly tooFar: number; readonly noRunway: number };
   readonly errors: readonly string[];
 }
 
@@ -186,6 +192,7 @@ function scanWith(shared: Prepared, r: ScanRequest, route: Route): ScanResult {
   const { markets, engine, facts, lastClose } = shared;
   const tickSize = r.instrument.tickSize;
   let skipped = 0;
+  const by = { pastStop: 0, tooFar: 0, noRunway: 0 };
   let nearest: { distance: number; level: number; side: Side } | null = null;
   let openSky = false;
   const k = Math.max(1, Math.floor(r.enumeration.recentFactsPerRole));
@@ -215,9 +222,14 @@ function scanWith(shared: Prepared, r: ScanRequest, route: Route): ScanResult {
           // Same expressions as decision-core's interpret(): stop, geometryCurrent, targetRunwayAvailable.
           const stop = level - sign * r.model.stopTicks * tickSize;
           const objectivePrice = point(objective)!;
-          const readyable = sign * (lastClose - stop) > 0 && Math.abs(lastClose - level) <= r.model.maxChaseTicks * tickSize
-            && sign * (objectivePrice - lastClose) >= r.model.minimumRunwayTicks * tickSize;
-          if (!readyable) { skipped++; continue; }
+          const beyondStop = sign * (lastClose - stop) > 0;
+          const withinChase = Math.abs(lastClose - level) <= r.model.maxChaseTicks * tickSize;
+          const runway = sign * (objectivePrice - lastClose) >= r.model.minimumRunwayTicks * tickSize;
+          if (!(beyondStop && withinChase && runway)) {
+            skipped++;
+            if (!beyondStop) by.pastStop++; else if (!withinChase) by.tooFar++; else by.noRunway++;
+            continue;
+          }
         }
         const input: EntryEvaluationInput = { markets, ...p, binding: { side, contextFactId: c.factId, locationFactId: l.factId, objectiveFactId: objective.factId } } as unknown as EntryEvaluationInput;
         try {
@@ -236,7 +248,7 @@ function scanWith(shared: Prepared, r: ScanRequest, route: Route): ScanResult {
     || (a.opportunityId < b.opportunityId ? -1 : a.opportunityId > b.opportunityId ? 1 : 0));
   const best = ranked.find((x) => x.state === "STRUCTURAL_READY") ?? null;
   return { schema: "zugrio.ea-scan-result/v1", configVersion: r.configVersion, evaluatedAt: r.evaluatedAt, route, ranking: RANKING, candidates: ranked, best,
-    skippedNotReadyable: skipped, nearestLevel: nearest, lastClose, trend: trendOf(facts.get(r.timeframes.context) ?? []), openSky, errors };
+    skippedNotReadyable: skipped, notReadyableBy: by, nearestLevel: nearest, lastClose, trend: trendOf(facts.get(r.timeframes.context) ?? []), openSky, errors };
 }
 
 /** Engine integrity check the EA runs before trading: decision-core's own fixture must give its known answer. */

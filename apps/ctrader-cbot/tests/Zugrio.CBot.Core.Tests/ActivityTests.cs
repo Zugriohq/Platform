@@ -29,6 +29,19 @@ namespace Zugrio.CBot.Core.Tests
             Assert.False(a.SetupFound("f1"));               // a setup spanning the hour is not re-announced
         }
 
+        [Fact]
+        public void An_hour_without_setups_says_why()
+        {
+            var a = new EaActivity();
+            a.Scanned("Step Index (scalp)", 0.2, 1);
+            a.WhyNot(pastStop: 2, tooFar: 10, noRunway: 6, notConfirmed: 0);
+            a.WhyNot(pastStop: 0, tooFar: 4, noRunway: 2, notConfirmed: 1);
+            var s = a.Summary(new DateTime(2026, 10, 9, 2, 0, 0, DateTimeKind.Utc), 100, 100, 0, new Tier(0, 1, 5), 5, 95);
+            Assert.Contains("Why no setup: 8 too little room to the target, 14 price too far from the level, 2 price past the stop, 1 not confirmed yet.", s);
+            a.NextHour();
+            Assert.DoesNotContain("Why no setup", a.Summary(new DateTime(2026, 10, 9, 3, 0, 0, DateTimeKind.Utc), 100, 100, 0, new Tier(0, 1, 5), 5, 95));
+        }
+
         [Theory]
         [InlineData("DAILY_LOSS_ALLOWANCE", "daily loss limit or profit lock")]
         [InlineData("CONTRACT: bad field", "instruction check failed")]

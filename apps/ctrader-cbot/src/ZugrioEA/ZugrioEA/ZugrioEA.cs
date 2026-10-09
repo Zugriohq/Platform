@@ -344,12 +344,15 @@ namespace Zugrio.CBot.EA
                 if (sky) openSky.Add(route);
                 double? nearestAtr = nearest.ValueKind == JsonValueKind.Object ? nearest.GetProperty("distance").GetDouble() / atr : null;
                 _activity.Scanned(where, nearestAtr, seconds);
+                var whyNot = result.GetProperty("notReadyableBy");
+                var readyCount = candidates.EnumerateArray().Count(c => c.GetProperty("state").GetString() == "STRUCTURAL_READY");
+                _activity.WhyNot(whyNot.GetProperty("pastStop").GetInt32(), whyNot.GetProperty("tooFar").GetInt32(), whyNot.GetProperty("noRunway").GetInt32(), candidates.GetArrayLength() - readyCount);
                 _log.Write(now, "scan", new Dictionary<string, object?>
                 {
                     ["symbol"] = m.Name, ["style"] = style.Name, ["route"] = route, ["context"] = contextTf, ["ms"] = (int)(seconds * 1000), ["trend"] = trend, ["openSky"] = sky,
                     ["evaluatedAt"] = request["evaluatedAt"]!.GetValue<string>(), ["atr"] = atr,
                     ["nearestLevelAtr"] = nearestAtr is double d ? Math.Round(d, 2) : null, ["candidates"] = candidates.GetArrayLength(),
-                    ["notReadyable"] = result.GetProperty("skippedNotReadyable").GetInt32(), ["ready"] = candidates.EnumerateArray().Count(c => c.GetProperty("state").GetString() == "STRUCTURAL_READY"),
+                    ["notReadyable"] = result.GetProperty("skippedNotReadyable").GetInt32(), ["why"] = whyNot.GetRawText(), ["ready"] = readyCount,
                     ["best"] = best.ValueKind == JsonValueKind.Null ? null : best.GetRawText(), ["engineErrors"] = result.GetProperty("errors").GetArrayLength(),
                 });
                 if (best.ValueKind != JsonValueKind.Null) Evaluate(m, style, best, atr, now, route, contextTf, trend);
@@ -557,9 +560,11 @@ namespace Zugrio.CBot.EA
             }
         }
 
+        /// <summary>Sized at RiskPct, or smaller to fit the loss still allowed today after open risk (never larger).</summary>
         private SizingResult SizeFor(Market m, double price, double stop) =>
             Sizing.Compute(new SizingInput(Account.Balance, RiskPct, MaxRiskPctAtMinVolume, price, stop, m.Sym.TickSize, m.Sym.TickValue,
-                m.Sym.VolumeInUnitsMin, m.Sym.VolumeInUnitsStep, m.Sym.VolumeInUnitsMax, MaxUnits));
+                m.Sym.VolumeInUnitsMin, m.Sym.VolumeInUnitsStep, m.Sym.VolumeInUnitsMax, MaxUnits,
+                RiskMoneyCap: _killSwitch.Remaining(Account.Equity) - OpenExposures().Sum(e => e.RiskMoney)));
 
         /// <summary>Open Zugrio positions and the money each can still lose from here to its stop (unbounded without a stop).</summary>
         private IReadOnlyList<OpenExposure> OpenExposures() =>

@@ -3712,6 +3712,7 @@
     const { markets, engine, facts, lastClose } = shared;
     const tickSize = r.instrument.tickSize;
     let skipped = 0;
+    const by = { pastStop: 0, tooFar: 0, noRunway: 0 };
     let nearest = null;
     let openSky = false;
     const k = Math.max(1, Math.floor(r.enumeration.recentFactsPerRole));
@@ -3737,9 +3738,14 @@
           if (r.enumeration.readyOnly) {
             const stop = level - sign * r.model.stopTicks * tickSize;
             const objectivePrice = point2(objective);
-            const readyable = sign * (lastClose - stop) > 0 && Math.abs(lastClose - level) <= r.model.maxChaseTicks * tickSize && sign * (objectivePrice - lastClose) >= r.model.minimumRunwayTicks * tickSize;
-            if (!readyable) {
+            const beyondStop = sign * (lastClose - stop) > 0;
+            const withinChase = Math.abs(lastClose - level) <= r.model.maxChaseTicks * tickSize;
+            const runway = sign * (objectivePrice - lastClose) >= r.model.minimumRunwayTicks * tickSize;
+            if (!(beyondStop && withinChase && runway)) {
               skipped++;
+              if (!beyondStop) by.pastStop++;
+              else if (!withinChase) by.tooFar++;
+              else by.noRunway++;
               continue;
             }
           }
@@ -3773,6 +3779,7 @@
       candidates: ranked,
       best,
       skippedNotReadyable: skipped,
+      notReadyableBy: by,
       nearestLevel: nearest,
       lastClose,
       trend: trendOf(facts.get(r.timeframes.context) ?? []),
