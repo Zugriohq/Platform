@@ -14,8 +14,12 @@ namespace Zugrio.CBot.Core
     /// <param name="Horizon">The horizon id handed to decision-core. DAY keeps "INTRADAY" so its setup ids are unchanged.</param>
     /// <param name="FallbackContexts">Longer context timeframes tried, in order, when the primary context has no swing to target.</param>
     /// <param name="Classes">Asset classes this style scans.</param>
+    /// <param name="TargetR">Take profit at this multiple of the risk, or the engine objective if nearer; 0 = engine objective.</param>
+    /// <param name="MaxMinutes">Close a trade still open after this many minutes; 0 = no time stop.</param>
+    /// <param name="MinRunwayAtr">decision-core's minimum runway to the objective for this style (x ATR).</param>
     public sealed record TradingStyle(string Name, string Horizon, string ContextTf, string LocationTf, string EntryTf,
-        IReadOnlyList<string> FallbackContexts, double SetupExpiryHours, double EntryExpiryMinutes, IReadOnlyList<AssetClass> Classes)
+        IReadOnlyList<string> FallbackContexts, double SetupExpiryHours, double EntryExpiryMinutes, IReadOnlyList<AssetClass> Classes,
+        double TargetR = 0, double MaxMinutes = 0, double MinRunwayAtr = 1.0)
     {
         /// <summary>Each context timeframe is its own decision-core profile: the primary keeps the style's horizon id.</summary>
         public string HorizonFor(string contextTf) => contextTf == ContextTf ? Horizon : Horizon + "_" + contextTf;
@@ -40,6 +44,8 @@ namespace Zugrio.CBot.Core
                 if (!(L(f) > L(ContextTf))) throw new FormatException($"{Name}: fallback {f} must be longer than the context {ContextTf}");
             if (!(SetupExpiryHours > 0) || !(EntryExpiryMinutes > 0)) throw new FormatException(Name + ": expiries must be positive");
             if (Classes.Count == 0) throw new FormatException(Name + ": at least one asset class");
+            if (!(MinRunwayAtr > 0)) throw new FormatException(Name + ": minimum runway must be positive");
+            if (TargetR < 0 || MaxMinutes < 0) throw new FormatException(Name + ": take-profit multiple and time stop must be 0 (off) or positive");
             return this;
         }
     }
@@ -73,6 +79,20 @@ namespace Zugrio.CBot.Core
 
         /// <summary>The style travels in the broker comment, so a restarted EA manages each trade with its own timeframes.</summary>
         public static string WithStyle(string comment, string style) => comment + Tag + style;
+
+        private const string RouteTag = " rt=";
+
+        /// <summary>The route travels in the broker comment too ("C" continuation-retest, "R" reversal-reclaim), for per-setup results.</summary>
+        public static string WithRoute(string comment, string route) => comment + RouteTag + (route == "REVERSAL_RECLAIM" ? "R" : "C");
+
+        /// <summary>The route in a broker comment, or null for trades from before routes were tagged.</summary>
+        public static string? RouteFromComment(string? comment)
+        {
+            if (string.IsNullOrEmpty(comment)) return null;
+            var i = comment.LastIndexOf(RouteTag, StringComparison.Ordinal);
+            if (i < 0) return null;
+            return comment[(i + RouteTag.Length)..].Split(' ')[0] switch { "R" => "REVERSAL_RECLAIM", "C" => "CONTINUATION_RETEST", _ => null };
+        }
 
         /// <summary>The style in a broker comment; trades from before styles existed are DAY.</summary>
         public static string FromComment(string? comment)

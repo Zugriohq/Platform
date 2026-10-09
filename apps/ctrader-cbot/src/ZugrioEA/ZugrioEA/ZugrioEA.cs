@@ -52,6 +52,7 @@ namespace Zugrio.CBot.EA
         [Parameter("Tiers (min balance:max positions:max total risk %; ...)", DefaultValue = DefaultTiers, Group = "Markets and capital tiers (research)")] public string TiersText { get; set; } = DefaultTiers;
         [Parameter("Trend filter: trade only with the context structure", DefaultValue = true, Group = "Markets and capital tiers (research)")] public bool TrendFilterOn { get; set; } = true;
         [Parameter("Trend filter also on reclaim setups", DefaultValue = false, Group = "Markets and capital tiers (research)")] public bool TrendFilterOnReclaims { get; set; }
+        [Parameter("Never fade a clear trend (reclaim setups)", DefaultValue = true, Group = "Markets and capital tiers (research)")] public bool NoCounterTrendReclaims { get; set; } = true;
         [Parameter("Max spread as share of stop distance", DefaultValue = 0.25, MinValue = 0.01, MaxValue = 1, Group = "Markets and capital tiers (research)")] public double MaxSpreadShareOfStop { get; set; }
 
         [Parameter("Trading styles (DAY, SCALP)", DefaultValue = "DAY,SCALP", Group = "Trading styles")] public string StylesText { get; set; } = "DAY,SCALP";
@@ -73,6 +74,9 @@ namespace Zugrio.CBot.EA
         [Parameter("Scalp: target fallback timeframes", DefaultValue = "H1", Group = "Scalping (research)")] public string ScalpFallbackText { get; set; } = "H1";
         [Parameter("Scalp: setup expiry (hours)", DefaultValue = 6.0, MinValue = 0.1, Group = "Scalping (research)")] public double ScalpSetupExpiryHours { get; set; }
         [Parameter("Scalp: entry expiry (minutes)", DefaultValue = 3.0, MinValue = 1, Group = "Scalping (research)")] public double ScalpEntryExpiryMinutes { get; set; }
+        [Parameter("Scalp: minimum runway to objective (x ATR)", DefaultValue = 0.30, MinValue = 0.01, Group = "Scalping (research)")] public double ScalpMinRunwayAtr { get; set; }
+        [Parameter("Scalp: take profit at (x risk, 0 = engine target)", DefaultValue = 1.0, MinValue = 0, Group = "Scalping (research)")] public double ScalpTargetR { get; set; }
+        [Parameter("Scalp: close after (minutes, 0 = never)", DefaultValue = 30, MinValue = 0, Group = "Scalping (research)")] public double ScalpMaxMinutes { get; set; }
 
         [Parameter("Routes (comma list: CONTINUATION_RETEST, REVERSAL_RECLAIM)", DefaultValue = "CONTINUATION_RETEST,REVERSAL_RECLAIM", Group = "Entry model (research, ATR multiples)")] public string RoutesText { get; set; } = "CONTINUATION_RETEST,REVERSAL_RECLAIM";
         [Parameter("Pivot bars left/right", DefaultValue = 2, MinValue = 1, MaxValue = 10, Group = "Entry model (research, ATR multiples)")] public int PivotBars { get; set; }
@@ -81,6 +85,7 @@ namespace Zugrio.CBot.EA
         [Parameter("Retest touch tolerance (x ATR)", DefaultValue = 0.25, MinValue = 0.001, Group = "Entry model (research, ATR multiples)")] public double TouchAtr { get; set; }
         [Parameter("Stop beyond level (x ATR)", DefaultValue = 0.30, MinValue = 0.001, Group = "Entry model (research, ATR multiples)")] public double StopAtr { get; set; }
         [Parameter("Max chase from level (x ATR)", DefaultValue = 0.50, MinValue = 0.001, Group = "Entry model (research, ATR multiples)")] public double MaxChaseAtr { get; set; }
+        [Parameter("Minimum stop distance from entry (x ATR)", DefaultValue = 0.30, MinValue = 0, Group = "Entry model (research, ATR multiples)")] public double MinStopAtr { get; set; }
         [Parameter("Minimum runway to objective (x ATR)", DefaultValue = 1.0, MinValue = 0.001, Group = "Entry model (research, ATR multiples)")] public double MinRunwayAtr { get; set; }
         [Parameter("Recent facts per role", DefaultValue = 3, MinValue = 1, MaxValue = 10, Group = "Entry model (research, ATR multiples)")] public int RecentFacts { get; set; }
 
@@ -121,7 +126,7 @@ namespace Zugrio.CBot.EA
         }
 
         /// <summary>A READY setup waiting for the gather window to close.</summary>
-        private sealed record Pending(Market M, TradingStyle Style, string OpportunityId, string FireEventId, Side Side, double EntryRef, double Stop, double Target, ReadyCandidate Candidate);
+        private sealed record Pending(Market M, TradingStyle Style, string Route, string OpportunityId, string FireEventId, Side Side, double EntryRef, double Stop, double Target, ReadyCandidate Candidate);
 
         private EaExecution _exec = null!;
         private ZugrioEngine _engine = null!;
@@ -143,6 +148,8 @@ namespace Zugrio.CBot.EA
         private IReadOnlyDictionary<string, TradingStyle> _styleDefs = new Dictionary<string, TradingStyle>();
         private TrailSettings _trail = null!;
         private readonly Dictionary<long, DateTime> _lastTrail = new();
+        private readonly Dictionary<long, DateTime> _timeStopTried = new();
+        private const int ResultsDays = 7;
         private static readonly TimeSpan TrailInterval = TimeSpan.FromSeconds(10);
         private DateTime _pendingSince = DateTime.MinValue;
         private DailyLossKillSwitch _killSwitch = null!;
@@ -164,10 +171,10 @@ namespace Zugrio.CBot.EA
                     throw new FormatException("routes must be CONTINUATION_RETEST and/or REVERSAL_RECLAIM");
                 var day = new TradingStyle(TradingStyles.Day, "INTRADAY", ContextTf.Trim().ToUpperInvariant(), LocationTf.Trim().ToUpperInvariant(), EntryTf.Trim().ToUpperInvariant(),
                     TradingStyles.ParseFallbacks(FallbackContextText, ContextTf.Trim().ToUpperInvariant()), SetupExpiryHours, EntryExpiryMinutes,
-                    new[] { AssetClass.Synthetic, AssetClass.Fx, AssetClass.Metal }).Validated();
+                    new[] { AssetClass.Synthetic, AssetClass.Fx, AssetClass.Metal }, MinRunwayAtr: MinRunwayAtr).Validated();
                 var scalp = new TradingStyle(TradingStyles.Scalp, "SCALP", ScalpContextTf.Trim().ToUpperInvariant(), ScalpLocationTf.Trim().ToUpperInvariant(), ScalpEntryTf.Trim().ToUpperInvariant(),
                     TradingStyles.ParseFallbacks(ScalpFallbackText, ScalpContextTf.Trim().ToUpperInvariant()), ScalpSetupExpiryHours, ScalpEntryExpiryMinutes,
-                    TradingStyles.ParseClasses(ScalpClassesText)).Validated();
+                    TradingStyles.ParseClasses(ScalpClassesText), ScalpTargetR, ScalpMaxMinutes, ScalpMinRunwayAtr).Validated();
                 _styleDefs = new Dictionary<string, TradingStyle> { [day.Name] = day, [scalp.Name] = scalp };
                 _styles = TradingStyles.ParseNames(StylesText).Select(n => _styleDefs[n]).ToList();
             }
@@ -290,11 +297,13 @@ namespace Zugrio.CBot.EA
             }
             if (now.Date != _reportDay) ReportAffordability(now);
             ManageOpenProfit(now);
+            ManageTimeStops(now);
             var hour = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0, DateTimeKind.Utc);
             if (_activityHour == DateTime.MinValue) _activityHour = hour;
             else if (hour > _activityHour)
             {
                 Print(_activity.Summary(hour, Account.Balance, Account.Equity, Positions.Count(IsZugrio), tier, _killSwitch.Remaining(Account.Equity), _killSwitch.Floor));
+                Print(Scoreboard.Format(ClosedTrades(now.AddDays(-ResultsDays)), ResultsDays));
                 _activity.NextHour();
                 _activityHour = hour;
             }
@@ -372,7 +381,7 @@ namespace Zugrio.CBot.EA
             // The label is derived from the setup, so the broker's own records show whether this
             // setup was already traded, even after a cloud restart wiped the journal.
             if (Positions.Find(label) != null || History.FindLast(label) != null) return;
-            if (_activity.SetupFound(fireEventId))
+            if (_activity.SetupFound(fireEventId, style.Name == TradingStyles.Scalp))
             {
                 var gg = best.GetProperty("geometry");
                 Print($"Zugrio EA: SETUP {best.GetProperty("side").GetString()} {m.Name} ({(style.Name == TradingStyles.Scalp ? "scalp, " : "")}{(route == "CONTINUATION_RETEST" ? "break and retest" : "reclaim")}, {contextTf} trend {trend}): " +
@@ -380,8 +389,11 @@ namespace Zugrio.CBot.EA
             }
 
             var setupSide = best.GetProperty("side").GetString() == "BUY" ? Side.Buy : Side.Sell;
-            if (TrendFilterOn && !TrendFilter.Allows(setupSide, trend, route, TrendFilterOnReclaims))
-            { Skip(now, m, fireEventId, "TREND_NOT_ALIGNED", new() { ["style"] = style.Name, ["context"] = contextTf, ["trend"] = trend, ["route"] = route }); return; }
+            if (TrendFilterOn && !TrendFilter.Allows(setupSide, trend, route, TrendFilterOnReclaims, NoCounterTrendReclaims))
+            {
+                var counter = route == "REVERSAL_RECLAIM" && !TrendFilterOnReclaims;
+                Skip(now, m, fireEventId, counter ? "COUNTER_TREND_RECLAIM" : "TREND_NOT_ALIGNED", new() { ["style"] = style.Name, ["context"] = contextTf, ["trend"] = trend, ["route"] = route }); return;
+            }
 
             if (Account.Balance < m.Item.UnlockBalance)
             { Skip(now, m, fireEventId, "LOCKED_UNTIL_BALANCE", new() { ["unlockBalance"] = m.Item.UnlockBalance, ["balance"] = Account.Balance }); return; }
@@ -394,6 +406,10 @@ namespace Zugrio.CBot.EA
             if (!EntrySide.PriceBetweenStopAndTarget(side == Side.Buy, price, stop, target))
             { Skip(now, m, fireEventId, "PRICE_NOT_BETWEEN_STOP_AND_TARGET", new() { ["price"] = price, ["stop"] = stop, ["target"] = target }); return; }
             var stopDistance = Math.Abs(price - stop);
+            if (!ExitPlan.StopFarEnough(price, stop, atr, MinStopAtr))
+            { Skip(now, m, fireEventId, "STOP_TOO_CLOSE", new() { ["style"] = style.Name, ["stopDistance"] = stopDistance, ["minStop"] = MinStopAtr * atr }); return; }
+            if (!ExitPlan.RewardRoom(price, stop, target, style.TargetR))
+            { Skip(now, m, fireEventId, "TARGET_TOO_CLOSE", new() { ["style"] = style.Name, ["target"] = target, ["targetR"] = style.TargetR }); return; }
             var spread = m.Sym.Ask - m.Sym.Bid;
             if (spread > MaxSpreadShareOfStop * stopDistance)
             { Skip(now, m, fireEventId, "SPREAD_TOO_WIDE_FOR_STOP", new() { ["spread"] = spread, ["stopDistance"] = stopDistance }); return; }
@@ -402,7 +418,7 @@ namespace Zugrio.CBot.EA
             if (!size.Trade) { Skip(now, m, fireEventId, size.Reason, new() { ["riskPctAtMinimum"] = size.RiskPctActual }); return; }
 
             if (_pending.Count == 0) _pendingSince = now;
-            _pending.Add(new Pending(m, style, opportunityId, fireEventId, side, entryRef, stop, target,
+            _pending.Add(new Pending(m, style, route, opportunityId, fireEventId, side, entryRef, stop, target,
                 new ReadyCandidate(m.Name, m.Item.Class, DateTimeOffset.Parse(frozenAt, System.Globalization.CultureInfo.InvariantCulture), opportunityId, size.RiskMoney, size.RiskPctActual)));
         }
 
@@ -431,6 +447,9 @@ namespace Zugrio.CBot.EA
 
             var atr = StyleAtr(m, p.Style);
             if (!(atr > 0)) { Skip(now, m, p.FireEventId, "ATR_UNAVAILABLE"); return; }
+            if (!ExitPlan.StopFarEnough(price, p.Stop, atr, MinStopAtr)) { Skip(now, m, p.FireEventId, "STOP_TOO_CLOSE", new() { ["price"] = price }); return; }
+            // The style's take-profit: the engine objective, or nearer at TargetR x risk (scalps).
+            var target = ExitPlan.Target(p.Side == Side.Buy, price, p.Stop, p.Target, p.Style.TargetR);
             var chase = MaxChaseAtr * atr;
             var limit = Math.Round(p.Side == Side.Buy ? p.EntryRef + chase : p.EntryRef - chase, m.Sym.Digits);
             var entryIntentId = "intent:" + p.FireEventId;
@@ -448,7 +467,7 @@ namespace Zugrio.CBot.EA
                 ["entryIntent"] = new JsonObject
                 {
                     ["entryIntentId"] = entryIntentId, ["instrument"] = m.Name, ["side"] = p.Side == Side.Buy ? "BUY" : "SELL", ["volumeUnits"] = size.Units,
-                    ["stopLossPrice"] = (decimal)Math.Round(p.Stop, m.Sym.Digits), ["takeProfitPrice"] = (decimal)Math.Round(p.Target, m.Sym.Digits),
+                    ["stopLossPrice"] = (decimal)Math.Round(p.Stop, m.Sym.Digits), ["takeProfitPrice"] = (decimal)Math.Round(target, m.Sym.Digits),
                 },
                 ["executionAuthorityManifestHash"] = _engine.BundleSha256,
                 ["expiresAt"] = Timeframes.Iso(now.AddMinutes(1)),
@@ -465,17 +484,17 @@ namespace Zugrio.CBot.EA
             _boundary.Reserve(_accountId, p.FireEventId, coid, m.Name, now);
             _boundary.MarkSubmitted(_accountId, p.FireEventId, now);
             var slPips = Math.Abs(price - p.Stop) / m.Sym.PipSize;
-            var tpPips = Math.Abs(p.Target - price) / m.Sym.PipSize;
+            var tpPips = Math.Abs(target - price) / m.Sym.PipSize;
             TradeResult r;
             try { r = _exec.MarketOrder(p.Side == Side.Buy ? TradeType.Buy : TradeType.Sell, m.Name, size.Units, label, slPips, tpPips,
-                    ProtectionManager.WithInitialStop(TradingStyles.WithStyle(Comment(p.OpportunityId), p.Style.Name), Math.Round(p.Stop, m.Sym.Digits))); }
+                    ProtectionManager.WithInitialStop(TradingStyles.WithRoute(TradingStyles.WithStyle(Comment(p.OpportunityId), p.Style.Name), p.Route), Math.Round(p.Stop, m.Sym.Digits))); }
             catch (Exception e)
             {
                 _boundary.OnSubmissionUnknown(_accountId, p.FireEventId, now);
                 var found = Positions.Find(label, m.Name);
                 _boundary.ResolveUnknown(_accountId, p.FireEventId, found != null, found == null ? 0 : (long)found.VolumeInUnits, Server.TimeInUtc);
                 _log.Write(now, "submission_unknown", new Dictionary<string, object?> { ["symbol"] = m.Name, ["fireEventId"] = p.FireEventId, ["error"] = e.Message, ["reconciledPresent"] = found != null });
-                if (found != null) ConfirmProtection(m, found, p.FireEventId, p.Stop, p.Target);
+                if (found != null) ConfirmProtection(m, found, p.FireEventId, p.Stop, target);
                 return;
             }
             if (!r.IsSuccessful)
@@ -490,13 +509,13 @@ namespace Zugrio.CBot.EA
             {
                 ["symbol"] = m.Name, ["class"] = m.Item.Class.ToString(), ["style"] = p.Style.Name, ["fireEventId"] = p.FireEventId, ["opportunityId"] = p.OpportunityId,
                 ["side"] = p.Side.ToString(), ["units"] = size.Units, ["riskMoney"] = size.RiskMoney, ["riskPct"] = size.RiskPctActual, ["sizingReason"] = size.Reason,
-                ["price"] = price, ["fill"] = r.Position.EntryPrice, ["engineStop"] = p.Stop, ["engineTarget"] = p.Target, ["entryReference"] = p.EntryRef,
+                ["route"] = p.Route, ["price"] = price, ["fill"] = r.Position.EntryPrice, ["engineStop"] = p.Stop, ["engineTarget"] = p.Target, ["target"] = target, ["entryReference"] = p.EntryRef,
                 ["brokerStop"] = r.Position.StopLoss, ["brokerTarget"] = r.Position.TakeProfit, ["label"] = label, ["atr"] = atr,
             });
-            _activity.Entered();
+            _activity.Entered(p.Style.Name == TradingStyles.Scalp);
             Print($"Zugrio EA: TRADE OPENED {p.Side.ToString().ToUpperInvariant()} {m.Name}{(p.Style.Name == TradingStyles.Scalp ? " (scalp)" : "")} {r.Position.Quantity.ToString(System.Globalization.CultureInfo.InvariantCulture)} lots at {r.Position.EntryPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)}, " +
                   $"stop {r.Position.StopLoss?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "none"}, target {r.Position.TakeProfit?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "none"}, risk {size.RiskMoney:F2} ({size.RiskPctActual:F1}%).");
-            ConfirmProtection(m, r.Position, p.FireEventId, p.Stop, p.Target);
+            ConfirmProtection(m, r.Position, p.FireEventId, p.Stop, target);
         }
 
         /// <summary>
@@ -559,6 +578,45 @@ namespace Zugrio.CBot.EA
                           $"({((buy ? newStop >= pos.EntryPrice : newStop <= pos.EntryPrice) ? "profit locked" : "risk reduced")}).");
             }
         }
+
+        /// <summary>
+        /// Time stop: a trade of a style with MaxMinutes (scalps) still open after that long is closed,
+        /// through the risk-reducing gate. A failed close is retried every 30 s.
+        /// </summary>
+        private void ManageTimeStops(DateTime now)
+        {
+            foreach (var pos in Positions.Where(IsZugrio).ToList())
+            {
+                if (!_styleDefs.TryGetValue(TradingStyles.FromComment(pos.Comment), out var style)) continue;
+                if (!ExitPlan.TimeUp(pos.EntryTime, now, style.MaxMinutes)) continue;
+                if (_timeStopTried.TryGetValue(pos.Id, out var tried) && now - tried < TimeSpan.FromSeconds(30)) continue;
+                _timeStopTried[pos.Id] = now;
+                var view = View(pos);
+                var gate = RiskReducingGate.Check(view, new ClosePosition(view.PositionId), _accountId, _accountId, adapterIntegrityOk: true, brokerReachable: Server.IsConnected);
+                if (!gate.Allowed) { _log.Write(now, "time_stop_blocked", new Dictionary<string, object?> { ["label"] = pos.Label, ["reasons"] = gate.AbortReasons }); continue; }
+                var pl = pos.NetProfit;
+                var r = _exec.Close(pos);
+                _log.Write(now, "time_stop", new Dictionary<string, object?> { ["symbol"] = pos.SymbolName, ["style"] = style.Name, ["label"] = pos.Label, ["minutes"] = style.MaxMinutes, ["netProfit"] = pl, ["ok"] = r.IsSuccessful, ["error"] = r.Error?.ToString() });
+                if (r.IsSuccessful) Print($"Zugrio EA: closed {pos.SymbolName} ({style.Name.ToLowerInvariant()}) after {style.MaxMinutes:0} min without reaching stop or target.");
+            }
+        }
+
+        /// <summary>Net profit over the trade's initial risk (from the "sl=" comment and the symbol's tick value); NaN if unknown.</summary>
+        private double RMultiple(string symbolName, string? comment, double entry, double units, double netProfit)
+        {
+            var sl = ProtectionManager.InitialStopFrom(comment);
+            var sym = Symbols.GetSymbol(symbolName);
+            if (sl == null || sym == null || !(sym.TickSize > 0)) return double.NaN;
+            var risk = Math.Abs(entry - sl.Value) / sym.TickSize * sym.TickValue * units;
+            return risk > 0 ? netProfit / risk : double.NaN;
+        }
+
+        /// <summary>Zugrio trades closed since the given time, from the broker's history (survives restarts).</summary>
+        private IReadOnlyCollection<ClosedTrade> ClosedTrades(DateTime sinceUtc) =>
+            History.Where(t => t.ClosingTime >= sinceUtc && (t.Label ?? "").StartsWith(RiskReducingGate.OwnershipTagPrefix, StringComparison.Ordinal))
+                .Select(t => new ClosedTrade(TradingStyles.FromComment(t.Comment), TradingStyles.RouteFromComment(t.Comment), t.SymbolName, t.NetProfit,
+                    RMultiple(t.SymbolName, t.Comment, t.EntryPrice, t.VolumeInUnits, t.NetProfit), (t.ClosingTime - t.EntryTime).TotalMinutes))
+                .ToList();
 
         /// <summary>Sized at RiskPct, or smaller to fit the loss still allowed today after open risk (never larger).</summary>
         private SizingResult SizeFor(Market m, double price, double stop) =>
@@ -628,14 +686,20 @@ namespace Zugrio.CBot.EA
         {
             var p = args.Position;
             _lastTrail.Remove(p.Id);
+            _timeStopTried.Remove(p.Id);
             if (!IsZugrio(p)) return;
+            var style = TradingStyles.FromComment(p.Comment);
+            var route = TradingStyles.RouteFromComment(p.Comment);
+            var r = RMultiple(p.SymbolName, p.Comment, p.EntryPrice, p.VolumeInUnits, p.NetProfit);
+            var minutes = (Server.TimeInUtc - p.EntryTime).TotalMinutes;
             _log.Write(Server.TimeInUtc, "close", new Dictionary<string, object?>
             {
-                ["symbol"] = p.SymbolName, ["label"] = p.Label, ["reason"] = args.Reason.ToString(), ["side"] = p.TradeType.ToString(), ["units"] = p.VolumeInUnits,
-                ["entry"] = p.EntryPrice, ["netProfit"] = p.NetProfit, ["pips"] = p.Pips, ["balance"] = Account.Balance,
+                ["symbol"] = p.SymbolName, ["style"] = style, ["route"] = route, ["label"] = p.Label, ["reason"] = args.Reason.ToString(), ["side"] = p.TradeType.ToString(), ["units"] = p.VolumeInUnits,
+                ["entry"] = p.EntryPrice, ["netProfit"] = p.NetProfit, ["r"] = double.IsFinite(r) ? Math.Round(r, 2) : null, ["minutes"] = Math.Round(minutes, 1), ["pips"] = p.Pips, ["balance"] = Account.Balance,
             });
             _activity.Closed(p.NetProfit);
-            Print($"Zugrio EA: TRADE CLOSED {p.TradeType.ToString().ToUpperInvariant()} {p.SymbolName} ({args.Reason}), P/L {p.NetProfit:+0.00;-0.00;0.00}, balance {Account.Balance:F2}.");
+            Print($"Zugrio EA: TRADE CLOSED {p.TradeType.ToString().ToUpperInvariant()} {p.SymbolName} ({style.ToLowerInvariant()}{(route == null ? "" : route == "REVERSAL_RECLAIM" ? ", reclaim" : ", break and retest")}; {args.Reason}), " +
+                  $"P/L {p.NetProfit:+0.00;-0.00;0.00}{(double.IsFinite(r) ? $" ({r:+0.0;-0.0;0.0}R)" : "")}, held {minutes:0} min, balance {Account.Balance:F2}.");
         }
 
         protected override void OnStop()
@@ -645,20 +709,20 @@ namespace Zugrio.CBot.EA
 
         private JsonObject Config() => new()
         {
-            ["schema"] = "zugrio.ea-config/v4", ["calibrationStatus"] = "UNVALIDATED_RESEARCH",
+            ["schema"] = "zugrio.ea-config/v5", ["calibrationStatus"] = "UNVALIDATED_RESEARCH",
             ["markets"] = new JsonObject { ["watchlist"] = WatchlistText, ["tiers"] = TiersText, ["maxSpreadShareOfStop"] = (decimal)MaxSpreadShareOfStop,
-                ["trendFilter"] = TrendFilterOn, ["trendFilterOnReclaims"] = TrendFilterOnReclaims },
+                ["trendFilter"] = TrendFilterOn, ["trendFilterOnReclaims"] = TrendFilterOnReclaims, ["noCounterTrendReclaims"] = NoCounterTrendReclaims },
             ["styles"] = new JsonArray(_styles.Select(st => (JsonNode)new JsonObject
             {
                 ["name"] = st.Name, ["horizon"] = st.Horizon, ["context"] = st.ContextTf, ["location"] = st.LocationTf, ["entry"] = st.EntryTf,
                 ["fallbackContexts"] = string.Join(",", st.FallbackContexts), ["setupExpiryHours"] = (decimal)st.SetupExpiryHours, ["entryExpiryMinutes"] = (decimal)st.EntryExpiryMinutes,
-                ["classes"] = string.Join(",", st.Classes),
+                ["classes"] = string.Join(",", st.Classes), ["targetR"] = (decimal)st.TargetR, ["maxMinutes"] = (decimal)st.MaxMinutes, ["minRunwayAtr"] = (decimal)st.MinRunwayAtr,
             }).ToArray()),
             ["bars"] = new JsonObject { ["context"] = ContextBars, ["location"] = LocationBars, ["entry"] = EntryBars },
             ["model"] = new JsonObject
             {
                 ["routes"] = string.Join(",", _routes), ["pivotBars"] = PivotBars, ["atrPeriod"] = AtrPeriod, ["breakAtr"] = (decimal)BreakAtr, ["touchAtr"] = (decimal)TouchAtr,
-                ["stopAtr"] = (decimal)StopAtr, ["maxChaseAtr"] = (decimal)MaxChaseAtr, ["minRunwayAtr"] = (decimal)MinRunwayAtr, ["recentFacts"] = RecentFacts,
+                ["stopAtr"] = (decimal)StopAtr, ["maxChaseAtr"] = (decimal)MaxChaseAtr, ["minRunwayAtr"] = (decimal)MinRunwayAtr, ["minStopAtr"] = (decimal)MinStopAtr, ["recentFacts"] = RecentFacts,
             },
             ["risk"] = new JsonObject
             {
@@ -714,7 +778,7 @@ namespace Zugrio.CBot.EA
                 ["model"] = new JsonObject
                 {
                     ["route"] = route, ["breakTicks"] = BreakAtr * ticks, ["touchTicks"] = TouchAtr * ticks, ["stopTicks"] = StopAtr * ticks,
-                    ["maxChaseTicks"] = MaxChaseAtr * ticks, ["minimumRunwayTicks"] = MinRunwayAtr * ticks,
+                    ["maxChaseTicks"] = MaxChaseAtr * ticks, ["minimumRunwayTicks"] = style.MinRunwayAtr * ticks,
                 },
                 ["pivots"] = new JsonArray(new JsonObject { ["definitionId"] = "p1", ["scale"] = "INTERMEDIATE", ["leftBars"] = PivotBars, ["rightBars"] = PivotBars }),
                 // readyOnly: the bridge skips bindings that cannot be READY at the latest close (same

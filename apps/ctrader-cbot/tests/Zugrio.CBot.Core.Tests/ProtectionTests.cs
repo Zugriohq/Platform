@@ -151,5 +151,58 @@ namespace Zugrio.CBot.Core.Tests
         [InlineData(Side.Buy, "DOWN", "REVERSAL_RECLAIM", true, false)]
         public void Trades_only_with_the_structure(Side side, string trend, string route, bool includeReversal, bool allowed) =>
             Assert.Equal(allowed, TrendFilter.Allows(side, trend, route, includeReversal));
+
+        [Theory]
+        [InlineData(Side.Sell, "UP", false)]      // XAUUSD 2026-10-09: reclaim sells into higher highs and lows
+        [InlineData(Side.Buy, "DOWN", false)]
+        [InlineData(Side.Sell, "DOWN", true)]     // with the trend
+        [InlineData(Side.Buy, "UP", true)]
+        [InlineData(Side.Sell, "MIXED", true)]    // a range: fading its edges stays allowed
+        [InlineData(Side.Buy, "UNKNOWN", true)]
+        public void Reclaims_never_fade_a_clear_trend(Side side, string trend, bool allowed) =>
+            Assert.Equal(allowed, TrendFilter.Allows(side, trend, "REVERSAL_RECLAIM", includeReversal: false, blockCounterTrendReclaims: true));
+    }
+
+    public class ExitPlanTests
+    {
+        [Fact]
+        public void Scalp_take_profit_is_the_nearer_of_one_R_and_the_engine_objective()
+        {
+            // Buy at 5020.533, stop 5018.860 (R 1.673), engine objective 5025.523: 1R = 5022.206 is nearer.
+            Assert.Equal(5022.206, ExitPlan.Target(true, 5020.533, 5018.860, 5025.523, 1.0), 6);
+            // Engine objective nearer than 3R: the engine's is kept (never further than the engine's).
+            Assert.Equal(5025.523, ExitPlan.Target(true, 5020.533, 5018.860, 5025.523, 3.5), 6);
+            // Sell: mirror image.
+            Assert.Equal(4190.39, ExitPlan.Target(false, 4196.15, 4201.91, 4168.63, 1.0), 6);
+            // 0 = engine objective (DAY).
+            Assert.Equal(5025.523, ExitPlan.Target(true, 5020.533, 5018.860, 5025.523, 0), 6);
+        }
+
+        [Fact]
+        public void A_stop_inside_the_noise_is_refused()
+        {
+            // XAUUSD 2026-10-09: a stop about 0.45 away with an ATR of ~4 (0.3 ATR = 1.2) is too close.
+            Assert.False(ExitPlan.StopFarEnough(4196.15, 4196.60, 4.0, 0.3));
+            Assert.True(ExitPlan.StopFarEnough(4196.15, 4201.91, 4.0, 0.3));
+            Assert.True(ExitPlan.StopFarEnough(100.0, 101.2, 4.0, 0.3));     // exactly 0.3 ATR
+            Assert.True(ExitPlan.StopFarEnough(100.0, 100.1, 4.0, 0));       // 0 = off
+        }
+
+        [Fact]
+        public void A_fixed_reward_needs_room_before_the_engine_objective()
+        {
+            Assert.True(ExitPlan.RewardRoom(5020.533, 5018.860, 5025.523, 1.0));    // 5.0 of room for a 1.67 risk
+            Assert.False(ExitPlan.RewardRoom(5020.533, 5018.860, 5021.500, 1.0));   // 0.97 of room: less than 1R
+            Assert.True(ExitPlan.RewardRoom(5020.533, 5018.860, 5021.500, 0));      // DAY: engine objective as is
+        }
+
+        [Fact]
+        public void Time_stop_after_the_style_limit_only()
+        {
+            var t = new DateTime(2026, 10, 9, 12, 0, 0, DateTimeKind.Utc);
+            Assert.False(ExitPlan.TimeUp(t, t.AddMinutes(29.9), 30));
+            Assert.True(ExitPlan.TimeUp(t, t.AddMinutes(30), 30));
+            Assert.False(ExitPlan.TimeUp(t, t.AddDays(3), 0));                 // 0 = no time stop (DAY)
+        }
     }
 }

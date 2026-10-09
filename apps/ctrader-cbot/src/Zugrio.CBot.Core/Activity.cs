@@ -20,6 +20,8 @@ namespace Zugrio.CBot.Core
         public int Setups { get; private set; }
         public int Entries { get; private set; }
         public int Closes { get; private set; }
+        public int ScalpSetups { get; private set; }
+        public int ScalpEntries { get; private set; }
         public double ClosedProfit { get; private set; }
         /// <summary>Seconds spent in engine scans this hour: how much of the cloud instance's time scanning takes.</summary>
         public double ScanSeconds { get; private set; }
@@ -43,10 +45,11 @@ namespace Zugrio.CBot.Core
         }
 
         /// <summary>True the first time a setup is seen, so its message is printed once, not on every bar it stays READY.</summary>
-        public bool SetupFound(string fireEventId)
+        public bool SetupFound(string fireEventId, bool scalp = false)
         {
             if (!_announced.Add("setup:" + fireEventId)) return false;
             Setups++;
+            if (scalp) ScalpSetups++;
             return true;
         }
 
@@ -58,7 +61,7 @@ namespace Zugrio.CBot.Core
             return true;
         }
 
-        public void Entered() => Entries++;
+        public void Entered(bool scalp = false) { Entries++; if (scalp) ScalpEntries++; }
         public void Closed(double netProfit) { Closes++; ClosedProfit += netProfit; }
 
         public string Summary(DateTime hourEndUtc, double balance, double equity, int openTrades, Tier tier, double lossStillAllowed, double dailyFloor)
@@ -68,7 +71,7 @@ namespace Zugrio.CBot.Core
                 .Select(kv => $"{kv.Key} {kv.Value.ToString("0.0", ci)} ATR").ToList();
             var skips = _skips.Count == 0 ? "none" : string.Join(", ", _skips.OrderByDescending(kv => kv.Value).Select(kv => $"{kv.Value} {ReasonText(kv.Key)}"));
             return $"Zugrio EA, hour to {hourEndUtc.ToString("HH:mm", ci)} UTC: {Scans} scans, {Setups} setups found, {Entries} trades opened, {Closes} closed " +
-                   $"(P/L {ClosedProfit.ToString("+0.00;-0.00;0.00", ci)}). Skipped: {skips}. " +
+                   $"(P/L {ClosedProfit.ToString("+0.00;-0.00;0.00", ci)}). Scalps: {ScalpSetups} setups, {ScalpEntries} trades. Skipped: {skips}. " +
                    $"Closest to a setup: {(closest.Count == 0 ? "n/a" : string.Join(", ", closest))}. " +
                    $"Scanning took {ScanSeconds.ToString("0", ci)} s. " +
                    (Setups == 0 && PastStop + TooFar + NoRunway + NotConfirmed > 0
@@ -81,7 +84,7 @@ namespace Zugrio.CBot.Core
         /// <summary>Starts the next hour. Setups already announced stay announced, so a setup spanning the hour is not repeated.</summary>
         public void NextHour()
         {
-            Scans = Setups = Entries = Closes = 0; ClosedProfit = 0; ScanSeconds = 0;
+            Scans = Setups = Entries = Closes = ScalpSetups = ScalpEntries = 0; ClosedProfit = 0; ScanSeconds = 0;
             NoRunway = TooFar = PastStop = NotConfirmed = 0;
             _skips.Clear(); _nearestAtr.Clear();
             if (_announced.Count > 20_000) _announced.Clear();
@@ -103,6 +106,9 @@ namespace Zugrio.CBot.Core
             "ATR_UNAVAILABLE" => "not enough price history",
             "GUARD" => "safety check failed",
             "TREND_NOT_ALIGNED" => "against the higher-timeframe trend",
+            "COUNTER_TREND_RECLAIM" => "would fade a clear trend",
+            "STOP_TOO_CLOSE" => "stop too close to the price",
+            "TARGET_TOO_CLOSE" => "target too close for the planned reward",
             _ => code.StartsWith("CONTRACT", StringComparison.Ordinal) ? "instruction check failed" : code.ToLowerInvariant().Replace('_', ' '),
         };
     }

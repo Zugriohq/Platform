@@ -71,13 +71,55 @@ namespace Zugrio.CBot.Core
     /// MIXED or UNKNOWN allows neither. Applies to continuation-retest, and to
     /// reversal-reclaim only when <c>includeReversal</c> is set (a reclaim at a turn is
     /// often against the old structure).
+    ///
+    /// <c>blockCounterTrendReclaims</c>: a reclaim exempt from the full filter is still refused
+    /// when it fades a clear trend (a sell while the structure is UP, a buy while it is DOWN).
+    /// In a MIXED or UNKNOWN structure (a range) it stays allowed. Owner evidence, 2026-10-09:
+    /// six XAUUSD sells in a row while H1 made higher highs and lows; the last three lost.
     /// </summary>
     public static class TrendFilter
     {
-        public static bool Allows(Side side, string? trend, string route, bool includeReversal)
+        public static bool Allows(Side side, string? trend, string route, bool includeReversal, bool blockCounterTrendReclaims = false)
         {
-            if (route == "REVERSAL_RECLAIM" && !includeReversal) return true;
+            if (route == "REVERSAL_RECLAIM" && !includeReversal)
+                return !blockCounterTrendReclaims || trend != (side == Side.Buy ? "DOWN" : "UP");
             return side == Side.Buy ? trend == "UP" : trend == "DOWN";
         }
+    }
+
+    /// <summary>EA exit and entry-geometry rules layered on decision-core's frozen geometry (abort-only or tighter).</summary>
+    public static class ExitPlan
+    {
+        /// <summary>
+        /// Take-profit for a style with a fixed reward multiple: the nearer of decision-core's objective
+        /// and entry ± targetR × (entry − stop). 0 (or less) keeps the engine objective. Never further than the engine's.
+        /// </summary>
+        public static double Target(bool buy, double price, double stop, double engineTarget, double targetR)
+        {
+            if (!(targetR > 0)) return engineTarget;
+            var r = Math.Abs(price - stop);
+            var capped = buy ? price + targetR * r : price - targetR * r;
+            return buy ? Math.Min(engineTarget, capped) : Math.Max(engineTarget, capped);
+        }
+
+        /// <summary>
+        /// The stop must be at least minStopAtr × ATR from the entry price. A stop closer than that is
+        /// inside ordinary noise and spread (owner evidence 2026-10-09: a 2.75-lot XAUUSD sell with a stop
+        /// about 0.45 away). With minStopAtr equal to the model's stop distance this means price has not
+        /// already moved past the level toward the stop.
+        /// </summary>
+        public static bool StopFarEnough(double price, double stop, double atr, double minStopAtr) =>
+            !(minStopAtr > 0) || Math.Abs(price - stop) >= minStopAtr * atr * (1 - 1e-9);
+
+        /// <summary>
+        /// With a fixed reward multiple, the engine objective must leave room for it: otherwise the trade
+        /// would risk 1R to make less than planned. 0 (no multiple) always passes.
+        /// </summary>
+        public static bool RewardRoom(double price, double stop, double engineTarget, double targetR) =>
+            !(targetR > 0) || Math.Abs(engineTarget - price) >= targetR * Math.Abs(price - stop) * (1 - 1e-9);
+
+        /// <summary>A trade held at least maxMinutes (0 = no limit) is closed by the time stop.</summary>
+        public static bool TimeUp(DateTime entryUtc, DateTime nowUtc, double maxMinutes) =>
+            maxMinutes > 0 && (nowUtc - entryUtc).TotalMinutes >= maxMinutes;
     }
 }

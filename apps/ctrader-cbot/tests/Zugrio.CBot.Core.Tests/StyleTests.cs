@@ -59,6 +59,25 @@ namespace Zugrio.CBot.Core.Tests
         }
 
         [Fact]
+        public void Route_style_and_initial_stop_all_survive_the_broker_comment()
+        {
+            var c = ProtectionManager.WithInitialStop(TradingStyles.WithRoute(TradingStyles.WithStyle("zugrio cfg=abc eng=def opp=123", "SCALP"), "REVERSAL_RECLAIM"), 4201.91);
+            Assert.Equal("REVERSAL_RECLAIM", TradingStyles.RouteFromComment(c));
+            Assert.Equal("SCALP", TradingStyles.FromComment(c));
+            Assert.Equal(4201.91, ProtectionManager.InitialStopFrom(c));
+            Assert.Equal("CONTINUATION_RETEST", TradingStyles.RouteFromComment(TradingStyles.WithRoute("zugrio", "CONTINUATION_RETEST")));
+            Assert.Null(TradingStyles.RouteFromComment("zugrio cfg=abc sl=1.1"));     // trades from before routes were tagged
+            Assert.True(c.Length < 100);
+        }
+
+        [Fact]
+        public void Rejects_a_negative_take_profit_multiple_or_time_stop()
+        {
+            Assert.Throws<FormatException>(() => (Scalp() with { TargetR = -1 }).Validated());
+            Assert.Throws<FormatException>(() => (Scalp() with { MaxMinutes = -5 }).Validated());
+        }
+
+        [Fact]
         public void Style_and_initial_stop_both_survive_the_broker_comment()
         {
             var c = ProtectionManager.WithInitialStop(TradingStyles.WithStyle("zugrio cfg=abc eng=def opp=123", "SCALP"), 7334.35);
