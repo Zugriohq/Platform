@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Pure boundary core: no cTrader dependency, no order API, fully unit-tested.
+       net6.0 because cTrader Automate runs cBots on .NET 6. -->
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>10.0</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>Zugrio.CBot.Core</RootNamespace>
+  </PropertyGroup>
+</Project>

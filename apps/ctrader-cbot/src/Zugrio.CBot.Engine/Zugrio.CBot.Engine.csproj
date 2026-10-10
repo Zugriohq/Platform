@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Hosts Zugrio decision-core (bundled to JS by engine-bridge) under Jint. ADR-0009. -->
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>10.0</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Jint" Version="4.1.0" />
+    <EmbeddedResource Include="../../engine-bridge/dist/zugrio-engine.js" LogicalName="zugrio-engine.js" />
+  </ItemGroup>
+</Project>
