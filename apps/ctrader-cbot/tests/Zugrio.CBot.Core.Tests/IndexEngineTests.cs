@@ -144,7 +144,10 @@ namespace Zugrio.CBot.Core.Tests
         public void Rule_values_are_checked()
         {
             Assert.Equal(TimeSpan.FromHours(16), IndexRule.ParseClock("16:00"));
+            Assert.Equal(new TimeSpan(9, 30, 0), IndexRule.ParseClock("9:30"));
+            Assert.Equal(new TimeSpan(9, 30, 0), IndexRule.ParseClock(" 09:30 "));
             Assert.Throws<FormatException>(() => IndexRule.ParseClock("4pm"));
+            Assert.Throws<FormatException>(() => IndexRule.ParseClock("24:00"));
             Assert.Throws<FormatException>(() => new IndexRule(StopAtr: 3, FarTargetAtr: 2).Validated());
             Assert.Throws<FormatException>(() => new IndexRule(LowerCloses: 0).Validated());
             Assert.Throws<FormatException>(() => new IndexRule(SessionStart: TimeSpan.FromHours(17)).Validated());
@@ -204,6 +207,24 @@ namespace Zugrio.CBot.Core.Tests
                 var at = body.IndexOf(must, StringComparison.Ordinal);
                 Assert.True(at > 0 && at < submit, must + " must come before Submit");
             }
+        }
+
+        [Fact]
+        public void Each_broker_symbol_is_resolved_into_at_most_one_market()
+        {
+            var body = Method(Ea(), "private void ResolveMarkets(");
+            var once = body.IndexOf("if (!resolved.Add(sym.Name))", StringComparison.Ordinal);
+            Assert.True(once > 0 && once < body.IndexOf("AddIndexMarket(item, sym)", StringComparison.Ordinal) && once < body.IndexOf("_markets.Add(m)", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Open_trades_of_switched_off_styles_stay_managed_but_their_markets_are_never_scanned()
+        {
+            var src = Ea();
+            var adopt = Method(src, "private void AdoptOpenTrades(");
+            Assert.Contains("_markets.Add(m)", adopt);
+            Assert.DoesNotContain("BarOpened", adopt);                                   // management only: no scan, no entry
+            Assert.True(src.IndexOf("AdoptOpenTrades(watch);", StringComparison.Ordinal) > src.IndexOf("ResolveMarkets(watch);", StringComparison.Ordinal));
         }
 
         [Fact]

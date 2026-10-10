@@ -71,10 +71,10 @@ namespace Zugrio.CBot.Core
             return this;
         }
 
-        /// <summary>"16:00" → 16 h.</summary>
+        /// <summary>"16:00" or "9:30" → the time of day.</summary>
         public static TimeSpan ParseClock(string? text)
         {
-            if (!TimeSpan.TryParseExact((text ?? "").Trim(), @"hh\:mm", System.Globalization.CultureInfo.InvariantCulture, out var t) || t <= TimeSpan.Zero || t >= TimeSpan.FromHours(24))
+            if (!TimeSpan.TryParseExact((text ?? "").Trim(), new[] { @"hh\:mm", @"h\:mm" }, System.Globalization.CultureInfo.InvariantCulture, out var t) || t <= TimeSpan.Zero || t >= TimeSpan.FromHours(24))
                 throw new FormatException($"time '{text}' must be HH:mm, for example 16:00");
             return t;
         }

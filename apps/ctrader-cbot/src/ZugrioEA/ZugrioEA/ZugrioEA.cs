@@ -283,6 +283,7 @@ namespace Zugrio.CBot.EA
             _killSwitch.Seed(Server.TimeInUtc, Account.Balance - closedToday, closedYesterday);
 
             ResolveMarkets(watch);
+            AdoptOpenTrades(watch);
             if (_markets.Count == 0 && _indexMarkets.Count == 0)
             { Print("Zugrio EA: nothing to trade: no watchlist symbol at this broker is in an enabled style or the index engine. Not trading."); Stop(); return; }
             Positions.Closed += OnPositionClosed;
@@ -307,6 +308,9 @@ namespace Zugrio.CBot.EA
         {
             var brokerNames = Enumerable.Range(0, Symbols.Count).Select(i => Symbols[i]).ToList();
             var notInAStyle = new List<string>();
+            // Two entries can name the same broker symbol (an alias list, or the main watchlist and Index markets):
+            // each broker symbol is traded once, by the first entry that resolves to it.
+            var resolved = new HashSet<string>(StringComparer.Ordinal);
             foreach (var item in watch)
             {
                 if (item.Class == AssetClass.Index && !IndexEngineOn) { notInAStyle.Add(item.Symbol); continue; }
@@ -320,6 +324,7 @@ namespace Zugrio.CBot.EA
                           (like.Count > 0 ? $" Similar broker symbols: {string.Join(", ", like)} (put the right one first in the watchlist entry)." : ""));
                     continue;
                 }
+                if (!resolved.Add(sym.Name)) { Print($"Zugrio EA: '{Watchlist.Alternatives(item.Symbol)[0]}' is {sym.Name}, already in the watchlist; listed once."); continue; }
                 if (item.Class == AssetClass.Index) { AddIndexMarket(item, sym); continue; }
                 var styles = _styles.Where(st => st.Trades(item.Class)).ToList();
                 var m = new Market(item, sym,
@@ -330,6 +335,26 @@ namespace Zugrio.CBot.EA
             }
             if (notInAStyle.Count > 0)
                 Print($"Zugrio EA: {notInAStyle.Count} watchlist entries are not traded (their style is off): {string.Join(", ", notInAStyle.Select(n => Watchlist.Alternatives(n)[0]))}.");
+        }
+
+        /// <summary>
+        /// Open decision-core trades on markets no enabled style scans (for example DAY trades from before the styles
+        /// were switched off) keep their break-even, keep-half and trailing management: their market is loaded for
+        /// management only, with the trade's own style bars and no scanning, so no new entry can come from it.
+        /// </summary>
+        private void AdoptOpenTrades(IReadOnlyList<WatchItem> watch)
+        {
+            foreach (var pos in Positions.Where(p => IsZugrio(p) && TradingStyles.FromComment(p.Comment) != TradingStyles.Index).ToList())
+            {
+                if (_markets.Any(x => x.Name == pos.SymbolName) || !_styleDefs.TryGetValue(TradingStyles.FromComment(pos.Comment), out var style)) continue;
+                var sym = Symbols.GetSymbol(pos.SymbolName);
+                if (sym == null) continue;
+                var item = watch.FirstOrDefault(w => Watchlist.Resolve(w.Symbol, new[] { sym.Name }) != null) ?? new WatchItem(sym.Name, AssetClass.Synthetic, 0);
+                var m = new Market(item, sym, style.AllTimeframes.ToDictionary(tf => tf, tf => MarketData.GetBars(ToTimeFrame(tf), sym.Name)), new[] { style });
+                sym.Tick += _ => m.LastTickUtc = Server.TimeInUtc;
+                _markets.Add(m);
+                Print($"Zugrio EA: managing the open {style.Name.ToLowerInvariant()} trade on {sym.Name} (break-even, keep-half, trailing) until it closes; that market is not scanned.");
+            }
         }
 
         /// <summary>Loads enough H1 history for the trend average (sessions are about 1.45 calendar days apart, plus margin).</summary>
@@ -385,7 +410,7 @@ namespace Zugrio.CBot.EA
             if (_activityHour == DateTime.MinValue) _activityHour = hour;
             else if (hour > _activityHour)
             {
-                Print(_markets.Count > 0
+                Print(_styles.Count > 0
                     ? _activity.Summary(hour, Account.Balance, Account.Equity, Positions.Count(IsZugrio), tier, _killSwitch.Remaining(Account.Equity), _killSwitch.Floor)
                     : $"Zugrio EA, hour to {hour:HH:mm} UTC: index engine only ({string.Join(", ", _indexMarkets.Select(x => x.Name))}); it decides once a day at " +
                       $"{(_indexRule.Close - _indexLead):hh\\:mm} New York ({IndexEngine.DecisionUtc(NewYorkTime.FromUtc(now).Date, _indexRule, _indexLead):HH:mm} UTC today). " +
