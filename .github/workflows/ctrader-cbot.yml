@@ -49,20 +49,23 @@ jobs:
         run: |
           dotnet build src/ZugrioSetups/ZugrioSetups -c Release
           dotnet build src/ZugrioEA/ZugrioEA -c Release
+          dotnet build src/ZugrioMarketLab/ZugrioMarketLab -c Release
       - name: SHA-256 of the .algo files
         working-directory: apps/ctrader-cbot
         run: |
           set -euo pipefail
-          for p in ZugrioSetups ZugrioEA; do
+          for p in ZugrioSetups ZugrioEA ZugrioMarketLab; do
             ( cd "src/$p/$p/bin/Release/net6.0" && sha256sum "$p.algo" | tee "$p.algo.sha256" )
           done
           {
             echo '### cTrader .algo files'
             echo '- ZugrioSetups.algo: display only, no orders.'
             echo '- ZugrioEA.algo: full-auto on the demo or **live** account it starts on (ADR-0010). Cloud-compatible: start it from cTrader Mobile.'
+            echo '- ZugrioMarketLab.algo: research only, no orders. Measures the behaviour family of each synthetic index on the broker history.'
             echo '```'
             cat src/ZugrioSetups/ZugrioSetups/bin/Release/net6.0/ZugrioSetups.algo.sha256
             cat src/ZugrioEA/ZugrioEA/bin/Release/net6.0/ZugrioEA.algo.sha256
+            cat src/ZugrioMarketLab/ZugrioMarketLab/bin/Release/net6.0/ZugrioMarketLab.algo.sha256
             echo "engine bundle: $(cut -d' ' -f1 engine-bridge/dist/zugrio-engine.js.sha256)"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
@@ -75,3 +78,5 @@ jobs:
             apps/ctrader-cbot/src/ZugrioSetups/ZugrioSetups/bin/Release/net6.0/ZugrioSetups.algo.sha256
             apps/ctrader-cbot/src/ZugrioEA/ZugrioEA/bin/Release/net6.0/ZugrioEA.algo
             apps/ctrader-cbot/src/ZugrioEA/ZugrioEA/bin/Release/net6.0/ZugrioEA.algo.sha256
+            apps/ctrader-cbot/src/ZugrioMarketLab/ZugrioMarketLab/bin/Release/net6.0/ZugrioMarketLab.algo
+            apps/ctrader-cbot/src/ZugrioMarketLab/ZugrioMarketLab/bin/Release/net6.0/ZugrioMarketLab.algo.sha256

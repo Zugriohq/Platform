@@ -97,3 +97,55 @@ The development edge was over-fitting and market luck. The sweep, shift and FVG 
 - **Against random long exposure on the same days:** the timing value is +0.041%/day on the S&P 500 (t=2.0) and +0.061%/day on the Nasdaq 100 (t=1.8). Most other indices are mildly positive and HSI is negative.
 
 That is a modest real timing edge on top of the equity drift: about 20 trades a year per index, held about 5 days. It is not a scalping edge.
+
+## Round 3, 2026-10-10: a separate engine for equity indices
+
+New files:
+- `ifetch.py`: daily bars for 11 world indices since 1990.
+- `idx2.mjs`: ten literature variants of index dip-buying (V0–V9).
+- `idx3.mjs`: the best variant with a protective stop, in R units for EA sizing, and the same logic on hourly bars.
+
+```sh
+mkdir -p ibars && python3 -I ifetch.py ibars
+node idx2.mjs; node idx3.mjs
+```
+
+**Split, declared before the run:**
+- **Development:** S&P 500 and Nasdaq 100, 1990–2009.
+- **Test in time:** the same two indices, 2010 onwards.
+- **Test in markets:** 9 other indices, all years (DJI, RUT, DAX, FTSE, N225, SX5E, CAC, HSI, ASX200).
+
+**Costs:** 0.02% of price per round trip plus 5% a year financing per night.
+
+**Timing value** is the mean daily return on days in a trade minus that market's mean on all days, i.e. the edge over random long exposure. Its standard error is clustered by date, because indices move together.
+
+**1. The best variant: V4, "3 lower closes".** Enter at the close when the close is above SMA200 and lower than each of the 3 closes before it. Exit at the first close above SMA5.
+
+| Sample | Trades/yr | Avg/trade | Win | PF | Timing t | Max DD (1×) | Years positive |
+|---|---|---|---|---|---|---|---|
+| Dev, SPX+NDX 1990–2009 | 17 | +0.71% | 75% | 3.17 | 3.6 | 11% | 16/19 |
+| Test, SPX+NDX 2010+ | 18 | +0.44% | 74% | 2.24 | 2.0 | 12% | 12/17 |
+| Test, 9 other indices | 64 (all 9) | +0.22% | 69% | 1.41 | 3.1 | 10% | 26/36 |
+
+V4 is the only variant that is positive with timing t ≥ 2 in all three samples.
+- **V3 (cumulative RSI(2) < 35) and V5 (RSI(2) < 10 and IBS < 0.25):** positive everywhere, but weaker.
+- **Turn of the month (V8):** +0.19% to +0.32% a trade and positive in all three samples, but timing t only 1.1–2.3.
+- **Combining V0 with turn of the month (V9):** dilutes the edge.
+
+**2. With a protective stop** (R = stop distance):
+
+| Stop | Dev | Test in time | Test in markets | Stopped |
+|---|---|---|---|---|
+| 2 ATR | +0.148R | +0.151R | +0.035R | 15–23% |
+| 2.5 ATR | +0.122R | +0.111R | +0.040R | 11–16% |
+| **3 ATR** | **+0.115R** (PF 2.05) | **+0.099R** (PF 1.72) | **+0.039R** (PF 1.23) | 7–12% |
+| 4 ATR | +0.096R | +0.070R | +0.028R | 3–7% |
+
+- **Which stop:** 3 ATR keeps most of the edge, with the smallest drawdown per unit of edge.
+- **Pooled t is overstated:** trades in different markets on the same dates are correlated, so the test-in-markets t is smaller than its pooled value.
+
+**3. The same logic on hourly bars (US500, US100, US30):** no edge (−0.04R to +0.003R in both halves). The effect is a daily-close phenomenon. It cannot be turned into a scalp.
+
+**4. What it is worth.** About 18 trades a year per index, held about 3 days. On US500 and US100 together that is about 35 trades a year at about +0.1R each, or roughly 3–4R a year with a worst historical drawdown of about 6R. It is slow, real and modest. It is not a growth engine for a small account on its own.
+
+**Correction.** The first version of `idx2.mjs` grouped the pooled daily series by raw timestamp. Yahoo stamps each exchange's bar at its own session open in UTC, so the 9-market pool compounded the markets one after another instead of averaging them. That broke the pooled CAGR, drawdown and Sharpe. Per-trade averages, PF, win rate and years positive were unaffected. The timing value was also recomputed: per market-day against each market's own mean, with errors clustered by date. That lowered several t values, for example turn of the month in the 9-market pool from 3.6 to 2.3.
