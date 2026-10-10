@@ -10,7 +10,7 @@ Nothing here places orders or changes decision-core. A model reaches the EA only
 
 ```sh
 mkdir -p ybars hbars out td
-python3 -I yfetch.py ybars ../../../../scratch-yraw   # 60 days of 5-minute bars (Yahoo), FX + gold
+mkdir -p yraw && python3 -I yfetch.py ybars yraw      # 60 days of 5-minute bars (Yahoo), FX + gold
 python3 -I hfetch.py hbars                            # ~2.8 years of hourly bars (Yahoo)
 node --test ta.test.mjs                               # detector exactness + no-look-ahead tests
 # Current EA (DAY rules) on real data, with Deriv-like spread floors:
@@ -57,3 +57,43 @@ Spread floors used: EURUSD 0.00008, GBPUSD 0.00012, AUDUSD 0.0001, USDJPY 0.012,
   - chart patterns at points of interest;
   - trendlines (per the ontology: two anchors propose a line, a third confirms it);
   - Elliott wave, which is not in the Zugrio ontology.
+
+## Round 2, 2026-10-10: refinement, pre-registered hold-out, and the classic families
+
+New files:
+- `topdown2.mjs`: entry/exit permutations per setup (market, FVG-edge limit, FVG midpoint; 1.5R/2R/3R/liquidity) plus higher-timeframe FVG location. Adds an `INTRA` style (H1 entry, H4 liquidity).
+- `analyze4.mjs`: consistency metrics (PF, max drawdown, % months positive, markets positive, halves, trades per year).
+- `markets.json`: 5 development + 12 hold-out markets with spread floors.
+- `prereg.json`: the four finalists, registered before the hold-out run.
+- `classic.mjs`, `idx.mjs`, `idxbench.mjs`: literature strategies, and the index dip-buying test against random long exposure.
+
+**1. Refinement on the 5 development markets.** The FVG-edge limit entry was the big lever:
+- SWING, all FVG setups: +0.37R, PF 1.56, 5/5 markets positive.
+- With reversal candle or inducement: +0.65R, PF 2.04.
+- INTRA with the same confluence and fixed 2R: +0.60R, PF 2.29.
+- DAY and SCALP on M5 stayed negative or inconclusive (11 weeks of data).
+
+**2. Pre-registered hold-out, 12 unseen markets** (forex crosses, silver, oil, US500/US100/US30). **All four finalists failed:**
+
+| Finalist | Development | Hold-out |
+|---|---|---|
+| SWING-A | +0.37R | −0.09R (5/12 markets positive) |
+| SWING-B | +0.65R | −0.15R |
+| INTRA-B | +0.60R | −0.01R |
+| SCALP-A | +0.20R | −0.32R |
+
+The development edge was over-fitting and market luck. The sweep, shift and FVG model has no robust edge on this data.
+
+**3. Classic families, literature parameters, no tuning, 10 years of daily data × 17 markets:**
+- **Donchian 55/20 trend:** −0.12R. Forex negative, indices and commodities positive.
+- **12-month time-series momentum:** +0.03R per month-trade, 7/10 years positive. Indices and gold carry it.
+- **RSI(2) mean reversion:** 0.00R overall. US500 +0.08R, US100 +0.13R.
+- **Forex** showed no robust edge in any family.
+
+**4. Index dip-buying, clean test** (pre-2016 history never examined, plus 11 world indices since 1990, CFD costs included):
+- **S&P 500:** +0.073R before 2016 and +0.089R after.
+- **Nasdaq 100:** +0.087R before 2016 and +0.104R after.
+- **All 11 indices together:** +0.024R, 20/37 years positive.
+- **Against random long exposure on the same days:** the timing value is +0.041%/day on the S&P 500 (t=2.0) and +0.061%/day on the Nasdaq 100 (t=1.8). Most other indices are mildly positive and HSI is negative.
+
+That is a modest real timing edge on top of the equity drift: about 20 trades a year per index, held about 5 days. It is not a scalping edge.
