@@ -44,6 +44,33 @@ namespace Zugrio.CBot.Core.Tests
         }
 
         [Fact]
+        public void A_boom_index_whose_bars_between_spikes_move_by_an_almost_constant_step_is_still_spike_up()
+        {
+            // Reproduces the Deriv Boom 300-1000 reading (2026-10-10): a near-deterministic down step per tick, rare up
+            // spikes. The robust sigma is about zero there, so every ordinary bar used to count as a "jump" (99.8%).
+            // Fair: the step (-0.005) offsets the expected spike (5 / 1000), so the price stays near its start.
+            var boom = MarketLab.Analyze(Bars((r, _) => r.NextDouble() < 1.0 / 1000 ? 5.0 : -0.005 + 0.00005 * Gauss(r), 20_000, seed: 12, start: 5000));
+            Assert.Equal("SPIKE_UP", boom.Family);
+            Assert.InRange(boom.JumpShare, 0.01, 0.06);    // about 1 - 0.999^30 = 3% of 30-tick bars hold a spike
+            Assert.True(boom.DriftPerBarPct < 0);
+        }
+
+        [Fact]
+        public void Regime_follow_finds_persistent_drift_between_symmetric_jumps_and_no_false_edge_on_a_jumpy_random_walk()
+        {
+            // Crash-Boom-Flip-like: drift switches sign every ~100 bars, plus jumps either way.
+            var flip = Bars((r, t) => r.NextDouble() < 1.0 / 400 ? (r.NextDouble() < 0.5 ? 3.0 : -3.0) : ((t / 3000) % 2 == 0 ? 0.01 : -0.01) + 0.03 * Gauss(r), 30_000, seed: 13);
+            var walk = Bars((r, _) => r.NextDouble() < 1.0 / 400 ? (r.NextDouble() < 0.5 ? 3.0 : -3.0) : 0.03 * Gauss(r), 30_000, seed: 14);
+            var onFlip = MarketLab.RegimeFollow(flip, 60, 1.5, 2.0, 1.0, 60, spread: 0);
+            var onWalk = MarketLab.RegimeFollow(walk, 60, 1.5, 2.0, 1.0, 60, spread: 0);
+            Assert.True(onFlip.AvgR > 0 && onFlip.T > 3, $"flip t={onFlip.T}");
+            // No false edge on a jumpy walk. It is in fact strongly negative: adverse jumps gap through the stop (filled at
+            // the bar's extreme, many R), favourable ones stop at the target. That is why jump indices are off the EA's watchlist.
+            Assert.True(onWalk.T < 3, $"walk t={onWalk.T}");
+            Assert.Contains(MarketLab.Battery(flip, MarketLab.Analyze(flip), 0), t => t.Name.StartsWith("regime"));
+        }
+
+        [Fact]
         public void Symmetric_jumps_and_trending_regimes_are_told_apart()
         {
             var jump = MarketLab.Analyze(Bars((r, _) => r.NextDouble() < 1.0 / 400 ? (r.NextDouble() < 0.5 ? 3.0 : -3.0) : 0.03 * Gauss(r), 20_000, seed: 3));

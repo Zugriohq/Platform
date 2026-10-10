@@ -47,6 +47,30 @@ namespace Zugrio.CBot.Core
             return 1.4826 * Median(r.Select(x => Math.Abs(x - med)).ToList());
         }
 
+        /// <summary>
+        /// The scale jumps are measured against: the larger of the robust sigma and sqrt(pi/2) x the mean absolute
+        /// deviation from the median (both equal sigma for normal returns). The second is a floor for markets whose
+        /// bars between spikes move by an almost constant step (Deriv Boom/Crash at M1): there the median absolute
+        /// deviation is about zero and every ordinary bar would count as a "jump" (Market Lab run, 2026-10-10:
+        /// Boom 1000 read 99.8% jumps and the wrong direction).
+        /// </summary>
+        public static double JumpScale(IReadOnlyList<double> r)
+        {
+            if (r.Count == 0) return 0;
+            var med = Median(r);
+            return Math.Max(RobustSigma(r), Math.Sqrt(Math.PI / 2) * r.Average(x => Math.Abs(x - med)));
+        }
+
+        /// <summary>Indices i where r[i] is a jump: more than JumpSigma x JumpScale from the median return.</summary>
+        public static bool[] JumpMask(IReadOnlyList<double> r)
+        {
+            var mask = new bool[r.Count];
+            if (r.Count == 0) return mask;
+            var med = Median(r); var scale = JumpScale(r);
+            for (var i = 0; i < r.Count; i++) mask[i] = scale > 0 && Math.Abs(r[i] - med) > JumpSigma * scale;
+            return mask;
+        }
+
         /// <summary>Variance of non-overlapping k-bar sums over k x variance of single bars.</summary>
         public static double VarianceRatio(IReadOnlyList<double> r, int k)
         {
@@ -76,9 +100,10 @@ namespace Zugrio.CBot.Core
         public static FamilyStats Analyze(IReadOnlyList<LabBar> bars)
         {
             var r = Returns(bars);
-            var sig = RobustSigma(r);
-            var jumps = r.Where(x => sig > 0 && Math.Abs(x) > JumpSigma * sig).ToList();
-            var rest = r.Where(x => !(sig > 0 && Math.Abs(x) > JumpSigma * sig)).ToList();
+            var sig = JumpScale(r);
+            var mask = JumpMask(r);
+            var jumps = r.Where((x, i) => mask[i]).ToList();
+            var rest = r.Where((x, i) => !mask[i]).ToList();
             var jumpShare = r.Length > 0 ? (double)jumps.Count / r.Length : 0;
             var upShare = jumps.Count > 0 ? (double)jumps.Count(x => x > 0) / jumps.Count : double.NaN;
             var vr60 = VarianceRatio(rest, 60);
@@ -103,32 +128,64 @@ namespace Zugrio.CBot.Core
         /// </summary>
         public static LabTest DriftFollow(IReadOnlyList<LabBar> b, int dir, double tpAtr, double slAtr, int maxBars, double spread, int afterSpikeBars = 0)
         {
-            var r = Returns(b); var sig = RobustSigma(r);
+            var r = Returns(b); var mask = JumpMask(r);
             var res = new List<double>(); var lastSpike = -1_000_000;
             for (var i = 15; i < b.Count - 1;)
             {
-                if (sig > 0 && r[i - 1] * dir < -JumpSigma * sig) lastSpike = i;
+                if (mask[i - 1] && r[i - 1] * dir < 0) lastSpike = i;
                 if (afterSpikeBars > 0 && i - lastSpike > afterSpikeBars) { i++; continue; }
                 var a = Atr(b, i, 14); if (!(a > 0)) { i++; continue; }
-                double e = b[i].C, stop = e - dir * slAtr * a, tp = e + dir * tpAtr * a, R = slAtr * a; double? outR = null; var k = i + 1;
-                for (; k < b.Count && k <= i + maxBars; k++)
-                {
-                    var x = b[k];
-                    var hitStop = dir > 0 ? x.L <= stop : x.H >= stop;
-                    var hitTp = dir > 0 ? x.H >= tp : x.L <= tp;
-                    var stopFirst = hitStop && (!hitTp || (dir > 0 ? x.C >= x.O : x.C <= x.O));
-                    if (stopFirst)
-                    {
-                        var extreme = dir > 0 ? x.L : x.H;
-                        var px = Math.Abs(extreme - stop) > 0.5 * a ? extreme : stop;
-                        outR = (dir * (px - e) - spread) / R; break;
-                    }
-                    if (hitTp) { outR = (dir * (tp - e) - spread) / R; break; }
-                }
-                if (outR == null) { k = Math.Min(k, b.Count - 1); outR = (dir * (b[k].C - e) - spread) / R; }
-                res.Add(outR.Value); i = k + 1;
+                var (outR, k) = Trade(b, i, dir, tpAtr * a, slAtr * a, a, maxBars, spread);
+                res.Add(outR); i = k + 1;
             }
             return Summarise($"drift {(dir > 0 ? "long" : "short")} tp{tpAtr} sl{slAtr} max{maxBars}{(afterSpikeBars > 0 ? $" after-spike{afterSpikeBars}" : "")}", res);
+        }
+
+        /// <summary>
+        /// One trade entered at bar i's close: target and stop distances in price, the OHLC path rule for a bar that
+        /// touches both, a stop overshot by more than half an ATR filled at the bar's extreme, else closed after
+        /// maxBars. Returns R (stop distance = 1R) after the spread, and the exit bar.
+        /// </summary>
+        private static (double R, int Exit) Trade(IReadOnlyList<LabBar> b, int i, int dir, double tpDist, double slDist, double atr, int maxBars, double spread)
+        {
+            double e = b[i].C, stop = e - dir * slDist, tp = e + dir * tpDist;
+            var k = i + 1;
+            for (; k < b.Count && k <= i + maxBars; k++)
+            {
+                var x = b[k];
+                var hitStop = dir > 0 ? x.L <= stop : x.H >= stop;
+                var hitTp = dir > 0 ? x.H >= tp : x.L <= tp;
+                var stopFirst = hitStop && (!hitTp || (dir > 0 ? x.C >= x.O : x.C <= x.O));
+                if (stopFirst)
+                {
+                    var extreme = dir > 0 ? x.L : x.H;
+                    var px = Math.Abs(extreme - stop) > 0.5 * atr ? extreme : stop;
+                    return ((dir * (px - e) - spread) / slDist, k);
+                }
+                if (hitTp) return ((dir * (tp - e) - spread) / slDist, k);
+            }
+            k = Math.Min(k, b.Count - 1);
+            return ((dir * (b[k].C - e) - spread) / slDist, k);
+        }
+
+        /// <summary>
+        /// Regime follow (for markets whose drift persists between jumps, e.g. Crash Boom Flip): the direction is the
+        /// sign of the last `lookback` bars' returns with jumps left out, taken only when that drift exceeds
+        /// z x scale x sqrt(lookback). Target tpAtr x ATR, stop slAtr x ATR, close after maxBars.
+        /// </summary>
+        public static LabTest RegimeFollow(IReadOnlyList<LabBar> b, int lookback, double z, double tpAtr, double slAtr, int maxBars, double spread)
+        {
+            var r = Returns(b); var mask = JumpMask(r); var scale = JumpScale(r.Where((x, i) => !mask[i]).ToList());
+            var res = new List<double>();
+            for (var i = Math.Max(lookback, 15); i < b.Count - 1;)
+            {
+                double drift = 0; for (var k = i - lookback; k < i; k++) if (!mask[k]) drift += r[k];
+                if (!(scale > 0) || Math.Abs(drift) < z * scale * Math.Sqrt(lookback)) { i++; continue; }
+                var a = Atr(b, i, 14); if (!(a > 0)) { i++; continue; }
+                var (outR, exit) = Trade(b, i, Math.Sign(drift), tpAtr * a, slAtr * a, a, maxBars, spread);
+                res.Add(outR); i = exit + 1;
+            }
+            return Summarise($"regime lb{lookback} z{z} tp{tpAtr} sl{slAtr} max{maxBars}", res);
         }
 
         /// <summary>
@@ -137,7 +194,7 @@ namespace Zugrio.CBot.Core
         /// </summary>
         public static LabTest Momentum(IReadOnlyList<LabBar> b, int lookback, double z, int hold, double spread, bool follow)
         {
-            var r = Returns(b); var sig = RobustSigma(r); var res = new List<double>();
+            var r = Returns(b); var sig = JumpScale(r); var res = new List<double>();
             for (var i = Math.Max(lookback, 15); i + hold < b.Count;)
             {
                 var move = b[i].C / b[i - lookback].C - 1;
@@ -163,7 +220,10 @@ namespace Zugrio.CBot.Core
             return new LabTest(name, rs.Count, m, sd / Math.Sqrt(rs.Count), (double)rs.Count(x => x > 0) / rs.Count, gl > 0 ? gw / gl : double.PositiveInfinity);
         }
 
-        /// <summary>The standard battery for a family: drift-follow for spike markets, momentum and fade for the rest.</summary>
+        /// <summary>
+        /// The standard battery for a family: drift-follow for spike markets; regime-follow where the drift between
+        /// jumps persists (VR(60) above 1.3); momentum and fade for all.
+        /// </summary>
         public static IReadOnlyList<LabTest> Battery(IReadOnlyList<LabBar> b, FamilyStats f, double spread)
         {
             var tests = new List<LabTest>();
@@ -176,6 +236,9 @@ namespace Zugrio.CBot.Core
                     tests.Add(DriftFollow(b, dir, tp, sl, 60, spread, afterSpikeBars: 5));
                 }
             }
+            if (f.Vr60 > 1.3)
+                foreach (var lb in new[] { 15, 60 }) foreach (var (tp, sl) in new[] { (1.0, 1.0), (2.0, 1.0) })
+                    tests.Add(RegimeFollow(b, lb, 1.5, tp, sl, 60, spread));
             foreach (var lb in new[] { 5, 15, 60 }) foreach (var hold in new[] { 5, 15, 60 })
             {
                 tests.Add(Momentum(b, lb, 1.5, hold, spread, follow: true));

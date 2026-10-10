@@ -92,6 +92,12 @@ Each synthetic is a published random process. A rule can only have an edge where
 | Range Break | Ranges, then a break after some touches | A breakout follow, *if* the break rule is predictable | Unknown | Market Lab momentum/fade; a range-specific test is next |
 | DEX, Drift Switch | Drift regimes that switch | Momentum, *if* regimes last long enough to detect and ride | Possible | Market Lab variance ratio and momentum tests |
 
+**Market Lab, batch 1 (owner's Deriv account, 2026-10-10).** 12 symbols, 7 days of M1 bars each: Boom 50–1000 and Crash Boom Flip 150/1000.
+- **Momentum and fade:** no rule passed after the spread. The best was Boom 500 fade (lb60, hold 60): +1.31R, t = 2.0, positive in both halves. Below the 3.5 bar for about 30 tests per symbol.
+- **Measurement bug, fixed in the next build.** Between spikes, Boom 300–1000 bars move by an almost constant step. The robust sigma was about zero, so 99% of bars read as "jumps" and they were labelled `SPIKE_DOWN`. That means their drift-follow tests ran in the **wrong direction**. Jumps are now measured from the median, against a scale with a floor (`MarketLab.JumpScale`).
+- **Crash Boom Flip 1000: strong persistence between jumps.** VR(5/15/60) = 1.9 / 4.0 / 9.4, lag-1 autocorrelation 0.24. The drift regime lasts. A regime-follow test (direction = drift with jumps left out) is added for it.
+- **Next:** re-run batch 1 with the fixed build, then batches 2+.
+
 Why the EA does not "just scalp" synthetics: scalping multiplies expectancy, it does not create it. On a random walk every rule's expectancy is minus the spread, so more trades lose faster. A synthetic gets an engine only where Market Lab finds structure that pays after the spread.
 
 ## Expansion families (not on the EA yet)
