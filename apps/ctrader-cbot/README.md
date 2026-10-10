@@ -12,7 +12,7 @@ The cBot is the cTrader **broker adapter**: the broker-side half of the frozen B
 | `src/Zugrio.CBot.Core` | 1 | The pure boundary core, with no cTrader dependency. Listed below. |
 | `engine-bridge` | EA | Bundles Zugrio's own `decision-core` plus a scan bridge into `dist/zugrio-engine.js` (committed; CI fails if it is stale). The bridge turns closed bars into decision-core inputs, enumerates bindings from decision-core's own facts, lets decision-core judge each, and ranks READY candidates by SEL-4. It holds no trading logic. |
 | `src/Zugrio.CBot.Engine` | EA | Runs the bundle under Jint inside cTrader. On load it runs decision-core's own fixture and refuses to start if the answer differs. Tests prove Jint output is byte-identical to Node. |
-| `src/ZugrioEA/ZugrioEA` | EA | **The EA (ADR-0010).** A full-auto market scanner across synthetics, forex and gold, with capital tiers, on the demo or live account it starts on. `AccessRights.None`, so it runs as a cTrader cloud instance started from cTrader Mobile. Described below. |
+| `src/ZugrioEA/ZugrioEA` | EA | **The EA (ADR-0010, ADR-0012).** Full-auto on the demo or live account it starts on, with capital tiers. It runs the Zugrio Index engine on equity-index CFDs (default) and, when switched on, the decision-core styles across synthetics, forex and gold. `AccessRights.None`, so it runs as a cTrader cloud instance started from cTrader Mobile. Described below. |
 | `src/ZugrioMarketLab/ZugrioMarketLab` | research | **Zugrio Market Lab.** A read-only cBot (`AccessRights.None`, **no orders**) that measures each synthetic index's behaviour family on the broker's own M1 history and self-tests that family's rules after the current spread. See "Market Lab" below. |
 | `research/lab` | research | Offline backtests on real history (no trading authority). Results in `research/lab/README.md`. |
 | `tests/Zugrio.CBot.Core.Tests` | all | Unit tests for core, engine and sizing, plus `NoOrderApiOutsideEaExecution`: cTrader order and position calls may appear only in `EaExecution.cs`, each one directly after `RequireBoundAccount();`; the EA must stay `AccessRights.None` with no absolute paths or HTTP; and the broker-side duplicate check must come before the order. |
@@ -31,7 +31,47 @@ The cBot is the cTrader **broker adapter**: the broker-side half of the frozen B
 
 The EA trades fully automatically on the **demo or live** account it is started on (owner decision, ADR-0010). It is not the Zugrio Windows product, whose gates are unchanged. Its parameters are **untested research values**: it can lose the money in the account.
 
-One instance scans a **watchlist** of synthetics, forex and gold. The chart it is attached to does not matter.
+One instance covers every market. The chart it is attached to does not matter.
+
+### Since ADR-0012 (proposed, 2026-10-10): one engine per market family
+
+- **Index engine on by default; decision-core styles off.** The EA now runs the **Zugrio Index engine** on equity-index CFDs. The decision-core styles (DAY, SCALP) are **off by default**: replays on real forex and gold data gave −0.17R per trade, and on synthetics structure has no edge by design (`research/lab/README.md`, rounds 1–3). To turn them back on, set *Decision-core styles* to `DAY`, `SCALP` or `DAY,SCALP`. Everything below about DAY and SCALP applies only then.
+- **Old setting replaced.** The old *Trading styles* parameter (`StylesText`) was replaced by *Decision-core styles* (`CoreStylesText`). An instance updated to this build therefore starts with the new default (off) instead of keeping `DAY,SCALP`.
+
+**The Zugrio Index engine.** Research, `UNVALIDATED_RESEARCH`; it is not decision-core.
+- **Markets:** the indices in *Index markets*. By default the US 500 and the US Tech 100. Each entry lists alternative broker names, and the first one the broker offers is used. If none matches, the log suggests similar broker symbols.
+- **When it decides:** once per New York trading day, at the US cash close minus *decide minutes before the close* (default 15:55 New York). Sessions are built from the CFD's H1 bars, 09:00–16:00 New York, with daylight saving computed. Days with fewer than 6 hour bars (holidays, half days) are left out.
+- **Buy:** after **3 lower closes in a row** (today's close is the current price) while the close is **above its 200-session average**. Long only.
+- **Stop:** **3 × the 14-session ATR** below the entry.
+- **Backstop target:** 10 ATR. The instruction contract needs a target; in 3,018 historical trades none came within 10 ATR.
+- **Sell:** at the first decision where the close is **above the 5-session average**. Never on the entry day, and no new entry on a day this market already closed an index trade.
+- **What it skips:** no break-even, keep-half or trailing. The tested rule exits on its own close rule, and its median best open profit is 0.3R.
+- **Same safety path as every entry:**
+  - unlock balance;
+  - spread filter;
+  - sizing at *Risk per trade*, fitted to the loss still allowed today;
+  - capital tier;
+  - one position per symbol;
+  - signed instruction and guards;
+  - journal;
+  - broker-record duplicate check (one entry per market per day, even across cloud restarts).
+  Exits are whole-position closes through the risk-reducing gate.
+- **Journal:**
+  - on start and once a day, one line per market: history loaded, the latest close, how many lower closes in a row, whether it is above the trend average, and the next decision time;
+  - at each decision, a `Zugrio Index: …` line with the numbers and the outcome (BUY, SELL, hold, or why not).
+- **Evidence** (research/lab round 3; not a performance claim):
+  - S&P 500 and Nasdaq 100: +0.115R per trade over 1990–2009 and +0.099R from 2010, both out of sample in time.
+  - Nine other world indices, never used to choose the rule: +0.039R.
+  - Index futures closes over 2000–2026: +0.109R (t = 5.4). Futures close on the futures session, as CFDs do, so the edge does not depend on the exact cash close.
+  - About 18 trades a year per index, held about 3 days, with about 75% winners.
+- **What it is worth:** roughly 3–4R a year on the two indices together. It is slow and it is not a scalping engine. The CFD's own close is not the cash auction, so individual trades differ from the research. On 2.8 years of hourly futures data the engine's trades averaged +0.067R (US 500) and +0.118R (US Tech 100) net, and 13 of 18 and 10 of 14 of its entry days matched the cash-close rule (`research/lab/indexreplay`).
+- **Small accounts.** Two of your own risk rules can stop it trading:
+  - The daily rules still apply. After a small winning day, *Never lose more in a day than the previous day made* can shrink or skip an index trade.
+  - The affordability line shows the smallest balance each index can trade. If the broker's minimum volume risks more than 5% at a 3-ATR stop, the engine skips.
+
+### Decision-core styles (off by default)
+
+The decision-core styles scan a **watchlist** of synthetics, forex and gold.
 
 - **Zugrio's decisions, not a copy.** On each closed M5 bar of every watchlist symbol it sends closed H1/M15/M5 bars to decision-core (the DAY style; SCALP is below), which looks for continuation-retest setups. Entry, stop and target are the engine's frozen geometry. Model distances (break, retest tolerance, stop, chase, runway) are multiples of each symbol's M15 ATR, so one setting fits a synthetic index, EURUSD and gold.
 - **Reading the Journal.**
@@ -52,7 +92,7 @@ One instance scans a **watchlist** of synthetics, forex and gold. The chart it i
   - Each style is its own decision-core profile (`INTRADAY`, `INTRADAY_H4`, `SCALP`, `SCALP_H1`), so DAY and SCALP setups have different ids. They share everything else: one position per symbol across both styles, the tier limits, the daily loss limit and the profit lock.
   - Each trade carries its style in the broker comment (`st=SCALP`). Break-even, keep-half and trailing use that style's ATR and bars, also after a cloud restart. Trades without the tag (older ones) are DAY.
   - Cost: scalping adds up to 8 scans a minute. A scan costs about 0.55 s on a laptop and more in the cloud. The hourly summary shows *Scanning took N s* and each scan record has `ms`, so the load is visible. If it approaches the hour, reduce *Scalp: markets* or the watchlist.
-  - Set *Trading styles* to `DAY`, `SCALP` or `DAY,SCALP` (default).
+  - Set *Decision-core styles* to `DAY`, `SCALP` or `DAY,SCALP` (default since ADR-0012: empty, both off).
   - **Scalp exits (2026-10-09).** Take profit at the nearer of the engine objective and **1R** (*Scalp: take profit at*); the setup is refused if the objective leaves less than 1R (`TARGET_TOO_CLOSE`). A scalp still open after **30 minutes** is closed through the risk-reducing gate (*Scalp: close after*). Scalp runway to the objective is **0.3 ATR** (*Scalp: minimum runway*); the 1R rule above still applies. DAY keeps the engine objective, no time stop, and 1 ATR runway.
   - **What to expect (replay).** On a tick-consistent random walk, the SCALP rules gave about 0.17 trades per market per hour (about 1.3 an hour across 8 synthetics), held 2–7 minutes, 61% won, average +0.16R ± 0.17R over 33 trades. That is statistically zero: Deriv's Volatility indices are generated by a random number generator, so structure carries no edge on them by design, and more trades multiply the expectancy, not create it. The scoreboard shows whether real data differs.
 - **Why no setup.** Each scan record carries `why`: how many level/target combinations could not be READY at the latest close, by the first failing condition (decision-core's order). The conditions are price at or past the stop, price further than the chase distance from the level, and less room to the target than the minimum runway. When an hour has no setups, the hourly summary says *Why no setup: N too little room to the target, N price too far from the level, N price past the stop, N not confirmed yet*. Diagnostic only: it changes no decision.

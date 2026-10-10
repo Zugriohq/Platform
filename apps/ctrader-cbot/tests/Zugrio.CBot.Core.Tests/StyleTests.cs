@@ -51,8 +51,12 @@ namespace Zugrio.CBot.Core.Tests
         {
             Assert.Equal(new[] { "DAY", "SCALP" }, TradingStyles.ParseNames(" day , SCALP, day"));
             Assert.Equal(new[] { "SCALP" }, TradingStyles.ParseNames("scalp"));
-            Assert.Throws<FormatException>(() => TradingStyles.ParseNames(""));
+            // Both decision-core styles can be switched off (ADR-0012: they showed no edge on real data).
+            Assert.Empty(TradingStyles.ParseNames(""));
+            Assert.Empty(TradingStyles.ParseNames(" none "));
             Assert.Throws<FormatException>(() => TradingStyles.ParseNames("DAY,SWING"));
+            Assert.Throws<FormatException>(() => TradingStyles.ParseNames("INDEX"));   // the index engine has its own switch
+            Assert.Throws<FormatException>(() => TradingStyles.ParseClasses("SYN,INDEX"));   // decision-core styles never trade indices
             Assert.Equal(new[] { AssetClass.Synthetic, AssetClass.Metal }, TradingStyles.ParseClasses("syn, METAL"));
             Assert.Throws<FormatException>(() => TradingStyles.ParseClasses("SYN,STOCK"));
             Assert.Equal(new[] { "H4", "D1" }, TradingStyles.ParseFallbacks("h4, H1 ,D1,", "H1"));

@@ -106,9 +106,15 @@ New files:
 - `idx3.mjs`: the best variant with a protective stop, in R units for EA sizing, and the same logic on hourly bars.
 
 ```sh
-mkdir -p ibars && python3 -I ifetch.py ibars
-node idx2.mjs; node idx3.mjs
+mkdir -p ibars fbars && python3 -I ifetch.py ibars fbars
+node idx2.mjs; node idx3.mjs; node idxfut.mjs
+# The EA's own engine (C#) on hourly futures bars vs the cash-close rule (hbars from hfetch.py):
+dotnet run --project indexreplay -c Release -- hbars/US500.json ibars/SPX.json
 ```
+
+More files:
+- `idxfut.mjs`: the rule on daily futures closes.
+- `indexreplay/`: replays `Zugrio.CBot.Core.IndexEngine`, the code the EA runs, on hourly bars.
 
 **Split, declared before the run:**
 - **Development:** S&P 500 and Nasdaq 100, 1990–2009.
@@ -149,3 +155,21 @@ V4 is the only variant that is positive with timing t ≥ 2 in all three samples
 **4. What it is worth.** About 18 trades a year per index, held about 3 days. On US500 and US100 together that is about 35 trades a year at about +0.1R each, or roughly 3–4R a year with a worst historical drawdown of about 6R. It is slow, real and modest. It is not a growth engine for a small account on its own.
 
 **Correction.** The first version of `idx2.mjs` grouped the pooled daily series by raw timestamp. Yahoo stamps each exchange's bar at its own session open in UTC, so the 9-market pool compounded the markets one after another instead of averaging them. That broke the pooled CAGR, drawdown and Sharpe. Per-trade averages, PF, win rate and years positive were unaffected. The timing value was also recomputed: per market-day against each market's own mean, with errors clustered by date. That lowered several t values, for example turn of the month in the 9-market pool from 3.6 to 2.3.
+
+**5. Does it survive a CFD's close?** Index CFDs and futures close on the futures session, not the cash closing auction. On daily index futures closes (Yahoo continuous front month, not back-adjusted), with the 3-ATR stop and the same costs:
+
+| Futures | 2000–2012 | 2013–2026 |
+|---|---|---|
+| S&P 500 (ES) | +0.142R, t=3.5 (n=79) | +0.102R, t=2.8 (n=114) |
+| Nasdaq 100 (NQ) | +0.099R, t=2.3 (n=81) | +0.099R, t=2.4 (n=105) |
+| Dow (YM) | +0.067R, t=1.5 | +0.029R, t=0.7 |
+
+- S&P 500 and Nasdaq 100 together: **+0.109R, t=5.4, n=379, PF 2.07**.
+- The Dow is weaker, so the EA's default index markets are the US 500 and the US Tech 100 only.
+
+**6. The EA's engine on a CFD-like feed.** `indexreplay` builds New York sessions from 2.8 years of hourly futures bars (about 23 hours a day, on UTC hours, like a CFD).
+- **Sessions vs the cash index:** up/down agrees with the cash index on 96.5% (S&P) and 98.1% (Nasdaq) of days.
+- **Results, net of costs:** +0.067R ± 0.104 (US500, 18 trades) and +0.118R ± 0.056 (US100, 14 trades).
+- **Entry days vs the cash-close rule:** 13 of 18 and 10 of 14 match. "3 lower closes" flips on small differences between futures and cash closes, which is why section 5 matters more than exact trade matching.
+- **Dropped sessions:** days missing from Yahoo's hourly feed (expiry Fridays, half days) are dropped by the 6-bar session rule, as intended.
+

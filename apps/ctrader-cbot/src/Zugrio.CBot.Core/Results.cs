@@ -29,7 +29,7 @@ namespace Zugrio.CBot.Core
                        $"avg {(rs.Count == 0 ? "n/a" : rs.Average().ToString("+0.00;-0.00;0.00", ci) + "R")}, " +
                        $"net {g.Sum(t => t.NetProfit).ToString("+0.00;-0.00;0.00", ci)}, avg hold {g.Average(t => t.Minutes).ToString("0", ci)} min";
             }
-            var byStyle = string.Join("; ", new[] { TradingStyles.Day, TradingStyles.Scalp }.Select(s => Line(s, trades.Where(t => t.Style == s))));
+            var byStyle = string.Join("; ", new[] { TradingStyles.Day, TradingStyles.Scalp, TradingStyles.Index }.Select(s => Line(s, trades.Where(t => t.Style == s))));
             var byRoute = string.Join("; ", new[] { ("break and retest", "CONTINUATION_RETEST"), ("reclaim", "REVERSAL_RECLAIM") }
                 .Select(x => Line(x.Item1, trades.Where(t => t.Route == x.Item2))));
             var bySymbol = string.Join("; ", trades.GroupBy(t => t.Symbol).OrderBy(g => g.Sum(t => t.NetProfit))

@@ -54,14 +54,15 @@ namespace Zugrio.CBot.Core
     {
         public const string Day = "DAY";
         public const string Scalp = "SCALP";
+        /// <summary>Trades of the index engine (not a decision-core style; it has its own switch and parameters).</summary>
+        public const string Index = "INDEX";
         private const string Tag = " st=";
 
-        /// <summary>"DAY,SCALP" → the enabled style names, in order, without duplicates.</summary>
+        /// <summary>"DAY,SCALP" → the enabled decision-core style names, in order, without duplicates. Empty (or NONE) = both off.</summary>
         public static IReadOnlyList<string> ParseNames(string? text)
         {
-            var names = (text ?? "").Split(',').Select(s => s.Trim().ToUpperInvariant()).Where(s => s.Length > 0).Distinct().ToList();
-            if (names.Count == 0) throw new FormatException("at least one trading style (DAY, SCALP)");
-            foreach (var n in names) if (n != Day && n != Scalp) throw new FormatException($"trading style '{n}' must be DAY or SCALP");
+            var names = (text ?? "").Split(',').Select(s => s.Trim().ToUpperInvariant()).Where(s => s.Length > 0 && s != "NONE").Distinct().ToList();
+            foreach (var n in names) if (n != Day && n != Scalp) throw new FormatException($"trading style '{n}' must be DAY or SCALP (the index engine has its own switch)");
             return names;
         }
 
