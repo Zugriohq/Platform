@@ -202,6 +202,21 @@ namespace Zugrio.CBot.Core
                 .OrderByDescending(c => c.Test.T).ToList();
         }
 
+        /// <summary>
+        /// The symbols for one run. Matching is by keyword (case-insensitive substring), ordered by the first keyword
+        /// each symbol matches, then by name, so the keyword order is the priority order. Runs are batches because a
+        /// cTrader cloud instance keeps every loaded bar series in memory until the cBot stops: one run over ~60
+        /// synthetics x 14 days of M1 bars ran out of memory (2026-10-10). <paramref name="first"/> is 1-based.
+        /// </summary>
+        public static (IReadOnlyList<string> Batch, int Total) SelectSymbols(IEnumerable<string> brokerSymbols, string? keywordsText, int first, int max)
+        {
+            var keys = (keywordsText ?? "").Split(',').Select(k => k.Trim()).Where(k => k.Length > 0).ToList();
+            var all = brokerSymbols
+                .Select(n => (n, rank: keys.FindIndex(k => n.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0)))
+                .Where(x => x.rank >= 0).OrderBy(x => x.rank).ThenBy(x => x.n, StringComparer.Ordinal).Select(x => x.n).Distinct().ToList();
+            return (all.Skip(Math.Max(0, first - 1)).Take(Math.Max(0, max)).ToList(), all.Count);
+        }
+
         private static double Var(IReadOnlyList<double> x) { if (x.Count < 2) return 0; var m = x.Average(); return x.Sum(v => (v - m) * (v - m)) / (x.Count - 1); }
         private static double Median(IReadOnlyList<double> x) { var s = x.OrderBy(v => v).ToList(); var n = s.Count; return n == 0 ? 0 : n % 2 == 1 ? s[n / 2] : (s[n / 2 - 1] + s[n / 2]) / 2; }
     }

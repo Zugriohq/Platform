@@ -14,30 +14,37 @@ namespace Zugrio.CBot.Lab
     /// jumps, trending regimes, mean reverting) and self-tests the family's obvious rules after the current spread:
     /// drift-follow for spike markets, momentum and fade for all. Results go to the Journal as "LAB" lines, then it stops.
     /// Many rules are tested per symbol, so only |t| above about 3.5 deserves a second look.
+    ///
+    /// Runs in batches: a cloud instance keeps every loaded bar series in memory until the cBot stops, and one run
+    /// over ~60 synthetics x 14 days of M1 bars ran out of memory (2026-10-10). Each run takes the next batch
+    /// (keyword order = priority) and prints each symbol's verdict as soon as it is known.
     /// </summary>
     [Robot(AccessRights = AccessRights.None, AddIndicators = false, TimeZone = TimeZones.UTC)]
     public class ZugrioMarketLab : Robot
     {
-        public const string DefaultKeywords = "Boom,Crash,Jump,Step,Volatility,Range Break,Drift,DEX,Hybrid,Skew,Trek,Spike,Multi,GainX,PainX";
+        // Volatility indices are left out by default: they are random walks by design (no rule can have an edge),
+        // and they are the largest group. Add "Volatility" to measure them anyway.
+        public const string DefaultKeywords = "Boom,Crash,Jump,Range Break,DEX,Drift,Step,Multi,Skew,Hybrid,Trek,Spike,GainX,PainX";
 
-        [Parameter("Symbol keywords (comma list)", DefaultValue = DefaultKeywords)] public string KeywordsText { get; set; } = DefaultKeywords;
-        [Parameter("Days of M1 history", DefaultValue = 14, MinValue = 1, MaxValue = 60)] public int Days { get; set; }
-        [Parameter("Max symbols", DefaultValue = 80, MinValue = 1, MaxValue = 200)] public int MaxSymbols { get; set; }
+        // Property names differ from the first version so an instance that saved its old values (80 symbols, 14 days) gets these.
+        [Parameter("Symbol keywords, in priority order", DefaultValue = DefaultKeywords)] public string Keywords { get; set; } = DefaultKeywords;
+        [Parameter("Days of M1 history", DefaultValue = 7, MinValue = 2, MaxValue = 30)] public int HistoryDays { get; set; } = 7;
+        [Parameter("Symbols per run (memory)", DefaultValue = 12, MinValue = 1, MaxValue = 40)] public int SymbolsPerRun { get; set; } = 12;
+        [Parameter("Start at symbol number", DefaultValue = 1, MinValue = 1, MaxValue = 500)] public int FirstSymbol { get; set; } = 1;
 
         protected override void OnStart()
         {
             var ci = CultureInfo.InvariantCulture;
-            var keys = (KeywordsText ?? "").Split(',').Select(k => k.Trim()).Where(k => k.Length > 0).ToList();
-            var names = Enumerable.Range(0, Symbols.Count).Select(i => Symbols[i])
-                .Where(n => keys.Any(k => n.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0)).OrderBy(n => n, StringComparer.Ordinal).Take(MaxSymbols).ToList();
-            Print($"Zugrio Market Lab: {names.Count} symbols, {Days} days of M1 history each. No orders are placed.");
+            var (names, total) = MarketLab.SelectSymbols(Enumerable.Range(0, Symbols.Count).Select(i => Symbols[i]), Keywords, FirstSymbol, SymbolsPerRun);
+            var last = FirstSymbol + names.Count - 1;
+            Print($"Zugrio Market Lab: symbols {FirstSymbol}-{last} of {total} matching, {HistoryDays} days of M1 history each: {string.Join(", ", names)}. No orders are placed.");
             var verdicts = new List<string>();
             foreach (var name in names)
             {
                 try
                 {
                     var bars = MarketData.GetBars(TimeFrame.Minute, name);
-                    var from = Server.TimeInUtc.AddDays(-Days);
+                    var from = Server.TimeInUtc.AddDays(-HistoryDays);
                     for (var k = 0; k < 300 && bars.Count > 0 && bars.OpenTimes[0] > from; k++) if (bars.LoadMoreHistory() == 0) break;
                     var list = new List<LabBar>();
                     for (var i = 0; i < bars.Count - 1; i++)   // the last bar is still forming
@@ -58,11 +65,14 @@ namespace Zugrio.CBot.Lab
                               $" halves {c.FirstHalfAvgR.ToString("+0.000;-0.000", ci)} / {c.SecondHalfAvgR.ToString("+0.000;-0.000", ci)}R");
                     }
                     var best = ranked.FirstOrDefault(c => c.IsEdgeCandidate);
-                    verdicts.Add($"{name}: {f.Family}, {(best != null ? $"EDGE CANDIDATE ({best.Test.Name}, t={best.Test.T.ToString("F1", ci)})" : "no edge after spread")}");
+                    var verdict = $"{name}: {f.Family}, {(best != null ? $"EDGE CANDIDATE ({best.Test.Name}, t={best.Test.T.ToString("F1", ci)})" : "no edge after spread")}";
+                    Print("LAB VERDICT " + verdict);
+                    verdicts.Add(verdict);
                 }
                 catch (Exception e) { Print($"Zugrio Market Lab: {name}: {e.Message}"); }
             }
-            Print("Zugrio Market Lab summary: " + (verdicts.Count == 0 ? "no symbols analysed" : string.Join(" | ", verdicts)));
+            Print($"Zugrio Market Lab summary (symbols {FirstSymbol}-{last} of {total}): " + (verdicts.Count == 0 ? "no symbols analysed" : string.Join(" | ", verdicts)));
+            if (last < total) Print($"Zugrio Market Lab: {total - last} more symbols. For the next batch, start a new run with 'Start at symbol number' = {last + 1}.");
             Print($"Zugrio Market Lab: done. A candidate needs t >= {MarketLab.CandidateT.ToString(ci)} and a positive average in both halves of the history: many rules are tested per symbol.");
             Stop();
         }

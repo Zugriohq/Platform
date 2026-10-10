@@ -91,6 +91,18 @@ namespace Zugrio.CBot.Core.Tests
         }
 
         [Fact]
+        public void Symbols_come_in_keyword_priority_batches()
+        {
+            var broker = new[] { "Volatility 75 Index", "Crash 500 Index", "Boom 1000 Index", "EURUSD", "Boom 300 Index", "Jump 25 Index", "Crash 1000 Index" };
+            var (b1, total) = MarketLab.SelectSymbols(broker, "boom, Crash ,Jump", first: 1, max: 3);
+            Assert.Equal(5, total);
+            Assert.Equal(new[] { "Boom 1000 Index", "Boom 300 Index", "Crash 1000 Index" }, b1);
+            var (b2, _) = MarketLab.SelectSymbols(broker, "boom, Crash ,Jump", first: 4, max: 3);
+            Assert.Equal(new[] { "Crash 500 Index", "Jump 25 Index" }, b2);
+            Assert.Empty(MarketLab.SelectSymbols(broker, "Boom", first: 9, max: 3).Batch);
+        }
+
+        [Fact]
         public void Variance_ratio_and_summary_arithmetic()
         {
             var alt = Enumerable.Range(0, 400).Select(i => i % 2 == 0 ? 1.0 : -1.0).ToList();   // perfectly mean-reverting
