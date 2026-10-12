@@ -1,0 +1,13 @@
+{
+  "registered": "2026-10-12, before any result of this test was seen",
+  "rules": {
+    "A_tsmom12": "each month end: position = sign(12-month return); hold one month (Moskowitz-Ooi-Pedersen 2012)",
+    "B_trend_ensemble": "each month end: position = mean of sign(1-month), sign(3-month), sign(12-month) returns, in [-1, 1] (Hurst-Ooi-Pedersen style)"
+  },
+  "unit": "R = position x next-month return / trailing 60-day daily volatility x sqrt(21)",
+  "costs": "spread floor per trade on the position change + 5%/yr financing on |position|, charged whichever side (conservative for CFDs)",
+  "samples": { "first": "2000-2012", "second": "2013-2026" },
+  "groups": { "gold": ["GOLD"], "metals": ["GOLD","SILVER","PLATINUM","COPPER"], "energy": ["OIL","NATGAS"], "fx": ["EURUSD","GBPUSD","USDJPY","AUDUSD","USDCAD","USDCHF","NZDUSD","EURJPY","GBPJPY"] },
+  "pass": "mean R > 0 in BOTH samples and pooled t >= 2 per group (only 2 rules x 4 groups are tested)",
+  "caveat": "Yahoo futures are continuous front-month, not back-adjusted: roll gaps bias energy most (contango), gold little"
+}

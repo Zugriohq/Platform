@@ -173,3 +173,30 @@ V4 is the only variant that is positive with timing t ≥ 2 in all three samples
 - **Entry days vs the cash-close rule:** 13 of 18 and 10 of 14 match. "3 lower closes" flips on small differences between futures and cash closes, which is why section 5 matters more than exact trade matching.
 - **Dropped sessions:** days missing from Yahoo's hourly feed (expiry Fridays, half days) are dropped by the 6-bar session rule, as intended.
 
+## Round 4, 2026-10-12: trend-following on gold, commodities and FX (pre-registered)
+
+New files:
+- `tsmom_prereg.json`: rules, samples, costs and the pass criterion, registered before the run.
+- `tsmom.mjs`: the test itself.
+
+**Data.** 25 years of daily bars (Yahoo):
+- Gold, silver, platinum, copper, oil and natural gas futures, as continuous front month;
+- 9 FX pairs.
+
+**Rules.** Monthly 12-month time-series momentum (A), and a 1/3/12-month trend ensemble (B). R is measured against monthly volatility. Each group is scored as a monthly portfolio.
+
+**Results:**
+
+| Group | Before financing | At 1.5%/yr financing | At 5%/yr (registered) |
+|---|---|---|---|
+| Gold, rule A | +0.177R/month, t=3.0; halves +0.28 / +0.09 | +0.148, t=2.5; halves +0.26 / +0.06 | +0.082, t=1.4; second half −0.01 |
+| Metals, rule A | +0.092, t=2.1 | +0.071, t=1.7 | +0.023 |
+| Energy | about 0 | about 0 | about 0 |
+| FX, rules A and B | +0.02, t=0.6 | −0.03 | −0.15 (financing alone) |
+
+**What it means.**
+- **FX.** Price trend gives no edge even before costs. This is consistent with rounds 1–2.
+- **Gold.** A real gross trend premium, weaker since 2013. Whether it survives depends on the broker's swap for holding XAUUSD, which is the next fact needed.
+- **The registered 5%/yr verdict is "fail".** The other rows are a sensitivity check, not a re-test.
+- **Caveat.** These futures series are not back-adjusted, so they behave like spot plus roll gaps. The financing deduction stands in for the carry a CFD holder pays.
+

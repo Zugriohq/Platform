@@ -64,7 +64,11 @@ Evidence comes from `research/lab/README.md` (rounds 1–3) and Market Lab (on t
 
 **Status.** No engine. Decision-core styles off by default.
 
-**Next test.** Carry, if the broker's swaps pay it: measure the swap on each pair first. It is a weeks-to-months holding strategy, not a day trade.
+**Round 4 confirms it (2026-10-12).** Monthly trend on 9 pairs over 20+ years gives +0.02R a month before costs (t = 0.6), and is negative after financing.
+
+**Next tests:**
+- **Carry.** Only if the broker's swaps pay it: read the swap on each pair first. It is a weeks-to-months holding strategy, not a day trade.
+- **Intraday session effects.** For example, around the London open and the 16:00 London fix. Pre-registered, on 2.8 years of hourly data.
 
 ## Gold
 
@@ -77,7 +81,14 @@ Evidence comes from `research/lab/README.md` (rounds 1–3) and Market Lab (on t
 
 **Status.** No engine yet.
 
-**Next test.** Monthly time-series momentum on gold with volatility sizing, on 25+ years of data, split in time.
+**Pre-registered trend test (research round 4, 2026-10-12).** Monthly 12-month trend on gold, 2000–2026:
+- **Before financing:** +0.18R a month, t = 3.0. Both halves positive (+0.28 / +0.09).
+- **At 1.5% a year financing:** +0.15R, t = 2.5. The 2013+ half falls to +0.06.
+- **At the registered 5% a year:** +0.08R, t = 1.4. This fails the registered test.
+
+**Status.** Undecided. The broker's XAUUSD swap (long and short) decides it.
+
+**Next.** Read the swap from cTrader. If holding costs are at or below about 1.5% a year, build a monthly gold trend engine for forward test.
 
 ## Synthetic indices (Deriv; generated, not markets)
 
