@@ -58,7 +58,15 @@ namespace Zugrio.CBot.Lab
                           $" ({(double.IsNaN(f.UpJumpShare) ? "-" : (100 * f.UpJumpShare).ToString("F0", ci))}% up, avg {f.MeanJumpPct.ToString("F3", ci)}%)," +
                           $" drift {f.DriftPerBarPct.ToString("F5", ci)}%/bar, net {f.NetPerBarPct.ToString("F5", ci)}%/bar," +
                           $" VR5 {f.Vr5.ToString("F2", ci)} VR15 {f.Vr15.ToString("F2", ci)} VR60 {f.Vr60.ToString("F2", ci)}, AC1 {f.Autocorr1.ToString("F3", ci)}");
-                    foreach (var c in ranked.Take(3))
+                    // The top 3 by t, plus the best of each family-specific rule (drift-follow, regime-follow) when it is not
+                    // already shown: the classic Boom/Crash trade must be visible even when it ranks low.
+                    var shown = ranked.Take(3).ToList();
+                    foreach (var kind in new[] { "drift", "regime" })
+                    {
+                        var bestOfKind = ranked.FirstOrDefault(c => c.Test.Name.StartsWith(kind, StringComparison.Ordinal));
+                        if (bestOfKind != null && !shown.Contains(bestOfKind)) shown.Add(bestOfKind);
+                    }
+                    foreach (var c in shown)
                     {
                         var t = c.Test;
                         Print($"LAB {name}:   {t.Name}: {t.Trades} trades, avg {t.AvgR.ToString("+0.000;-0.000", ci)}R t={t.T.ToString("F1", ci)}, win {(100 * t.WinRate).ToString("F0", ci)}%, PF {t.ProfitFactor.ToString("F2", ci)}," +

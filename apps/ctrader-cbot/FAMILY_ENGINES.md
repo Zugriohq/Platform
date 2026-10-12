@@ -98,6 +98,16 @@ Each synthetic is a published random process. A rule can only have an edge where
 - **Crash Boom Flip 1000: strong persistence between jumps.** VR(5/15/60) = 1.9 / 4.0 / 9.4, lag-1 autocorrelation 0.24. The drift regime lasts. A regime-follow test (direction = drift with jumps left out) is added for it.
 - **Next:** re-run batch 1 with the fixed build, then batches 2+.
 
+**Batch 1 re-run on the fixed build (2026-10-11).** Every Boom now reads `SPIKE_UP`, with jumps in 0.2–5.7% of bars, all up.
+- **No candidate.**
+  - Best results: Boom 900 momentum (lb5) t = 2.9, with halves +2.8 / −3.4. Boom 500 fade (lb60) t = 1.9, positive in both halves. Boom 50 fade (lb15) t = 1.7, positive in both halves.
+  - With about 360 tests over 12 symbols, a best t near 3 is expected by chance.
+- **Fair generators.** The net drift per bar, spikes included, is about 0 on every Boom (−0.0002% to +0.0004%).
+- **Drift-follow below them all.** Following the drift between spikes, the common retail Boom trade, never ranked in the top three on any Boom.
+- **Crash Boom Flip 1000.** The persistence is confirmed (VR60 9.65, AC1 0.25), but no rule converts it after the 0.63 spread. Jumps in either direction (2.8% of bars) hit the stops.
+- **Spreads.** Boom 99, 100 and 200 have spreads of 7.4–7.8, and every rule loses there.
+- **Status: Boom and Crash Boom Flip get no engine.** Next: batches 2+ (Crash, DEX, Drift Switch, Jump, Range Break, Step).
+
 Why the EA does not "just scalp" synthetics: scalping multiplies expectancy, it does not create it. On a random walk every rule's expectancy is minus the spread, so more trades lose faster. A synthetic gets an engine only where Market Lab finds structure that pays after the spread.
 
 ## Expansion families (not on the EA yet)
