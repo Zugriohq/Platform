@@ -156,6 +156,32 @@ namespace Zugrio.CBot.Core.Tests
         }
 
         [Fact]
+        public void Generator_stats_call_a_fair_crash_generator_fair_and_an_unfair_one_unfair()
+        {
+            var fair = MarketLab.Generator(CrashTicks(0.02, 3.0, 150, 0.1, 400_000, 31));
+            Assert.InRange(fair.FairZ, -3, 3);
+            Assert.InRange(fair.TicksPerJump, 120, 190);              // one drop per ~150 ticks
+            Assert.InRange(fair.AvgJump, -3.05, -2.95);
+            Assert.InRange(fair.DriftBetweenJumps, 0.018, 0.022);
+            Assert.Equal(0.1, fair.AvgSpread, 9);
+            var rich = MarketLab.Generator(CrashTicks(0.03, 3.0, 150, 0.1, 400_000, 32));
+            Assert.True(rich.FairZ > 3, $"z={rich.FairZ}");
+        }
+
+        [Fact]
+        public void Replica_grid_covers_every_target_stop_and_direction_with_halves()
+        {
+            var ticks = CrashTicks(0.02, 3.0, 150, 0.1, 100_000, 33);
+            var grid = MarketLab.ReplicaGrid(ticks, new[] { 1.0, 2.0 }, new[] { 1.0, 3.0 });
+            Assert.Equal(8, grid.Count);
+            Assert.Equal(4, grid.Count(x => x.All.Name.StartsWith("BUY")));
+            // The second half restarts flat, so its trade sequence takes a few trades to line up with the whole run's.
+            foreach (var x in grid) Assert.InRange(x.First.Trades + x.Second.Trades, 0.99 * x.All.Trades, 1.01 * x.All.Trades + 2);
+            // A fair generator gives no grid candidate.
+            Assert.DoesNotContain(grid, x => x.All.T >= MarketLab.CandidateT && x.First.AvgPts > 0 && x.Second.AvgPts > 0);
+        }
+
+        [Fact]
         public void Variance_ratio_and_summary_arithmetic()
         {
             var alt = Enumerable.Range(0, 400).Select(i => i % 2 == 0 ? 1.0 : -1.0).ToList();   // perfectly mean-reverting

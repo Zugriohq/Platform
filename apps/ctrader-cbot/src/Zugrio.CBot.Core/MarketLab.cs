@@ -36,6 +36,13 @@ namespace Zugrio.CBot.Core
     /// A fixed-distance rule replayed tick by tick, in price points (spread included through bid/ask fills).
     /// BreakEvenWinRate is the win rate at which this rule's average win and average loss cancel.
     /// </summary>
+    /// <summary>Tick-level generator measurements (MarketLab.Generator). FairZ = mean change per tick / its standard error.</summary>
+    public sealed record GeneratorStats(int Changes, double MeanChange, double SeMean, double MedianAbsChange, int Jumps, double AvgJump, double DriftBetweenJumps, double AvgSpread)
+    {
+        public double FairZ => SeMean > 0 ? MeanChange / SeMean : 0;
+        public double TicksPerJump => Jumps > 0 ? (double)Changes / Jumps : double.PositiveInfinity;
+    }
+
     public sealed record ReplicaResult(string Name, int Trades, int Wins, double AvgWinPts, double AvgLossPts, double AvgPts, double SePts)
     {
         public double WinRate => Trades > 0 ? (double)Wins / Trades : 0;
@@ -76,6 +83,41 @@ namespace Zugrio.CBot.Core
             var m = res.Average(); var sd = res.Count > 1 ? Math.Sqrt(res.Sum(v => (v - m) * (v - m)) / (res.Count - 1)) : 0;
             var w = res.Where(v => v > 0).ToList(); var l = res.Where(v => v <= 0).ToList();
             return new ReplicaResult(name, res.Count, wins, w.Count > 0 ? w.Average() : 0, l.Count > 0 ? -l.Average() : 0, m, sd / Math.Sqrt(res.Count));
+        }
+
+        /// <summary>
+        /// Is the generator fair? Average mid-price change per tick over the whole sample (spikes included), with its
+        /// standard error. A fair (martingale) generator has an average of zero, and then no rule on it can beat the spread.
+        /// Jumps are ticks moving more than 10x the median absolute tick change; "drift" is the average of the other ticks.
+        /// </summary>
+        public static GeneratorStats Generator(IReadOnlyList<LabTick> ticks)
+        {
+            var d = new List<double>(Math.Max(0, ticks.Count - 1));
+            for (var i = 1; i < ticks.Count; i++) d.Add((ticks[i].Bid + ticks[i].Ask) / 2 - (ticks[i - 1].Bid + ticks[i - 1].Ask) / 2);
+            if (d.Count < 2) return new GeneratorStats(d.Count, 0, 0, 0, 0, 0, 0, 0);
+            var mean = d.Average(); var sd = Math.Sqrt(d.Sum(v => (v - mean) * (v - mean)) / (d.Count - 1));
+            var medAbs = Median(d.Select(Math.Abs).ToList());
+            var cut = 10 * Math.Max(medAbs, 1e-12);
+            var jumps = d.Where(v => Math.Abs(v) > cut).ToList(); var calm = d.Where(v => Math.Abs(v) <= cut).ToList();
+            return new GeneratorStats(d.Count, mean, sd / Math.Sqrt(d.Count), medAbs, jumps.Count, jumps.Count > 0 ? jumps.Average() : 0,
+                calm.Count > 0 ? calm.Average() : 0, ticks.Average(x => x.Ask - x.Bid));
+        }
+
+        /// <summary>
+        /// Every target/stop pair in both directions (re-enter whenever flat), each on the whole sample and on its first and
+        /// second halves. With dozens of pairs tested, a best t near 2.5 is expected by chance: a candidate needs
+        /// t >= CandidateT and a positive average in both halves.
+        /// </summary>
+        public static IReadOnlyList<(ReplicaResult All, ReplicaResult First, ReplicaResult Second)> ReplicaGrid(IReadOnlyList<LabTick> ticks, IReadOnlyList<double> tps, IReadOnlyList<double> sls)
+        {
+            var mid = ticks.Count / 2;
+            var first = ticks.Take(mid).ToList(); var second = ticks.Skip(mid).ToList();
+            var outp = new List<(ReplicaResult, ReplicaResult, ReplicaResult)>();
+            foreach (var dir in new[] { 1, -1 })
+                foreach (var tp in tps)
+                    foreach (var sl in sls)
+                        outp.Add((TickReplica(ticks, dir, tp, sl), TickReplica(first, dir, tp, sl), TickReplica(second, dir, tp, sl)));
+            return outp;
         }
 
         public const double JumpSigma = 6;

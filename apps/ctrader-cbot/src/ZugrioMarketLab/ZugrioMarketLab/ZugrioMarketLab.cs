@@ -33,12 +33,15 @@ namespace Zugrio.CBot.Lab
         [Parameter("Start at symbol number", DefaultValue = 1, MinValue = 1, MaxValue = 500)] public int FirstSymbol { get; set; } = 1;
         // A fixed rule to replay tick by tick on the broker's own ticks (empty = skip). Default: the owner's friend's Crash 150 bot.
         [Parameter("Replay rule (symbol|BUY/SELL|TP points|SL points|lots)", DefaultValue = "Crash 150 Index|BUY|2|2|0.5")] public string ReplicaText { get; set; } = "Crash 150 Index|BUY|2|2|0.5";
-        [Parameter("Replay: days of ticks", DefaultValue = 2, MinValue = 1, MaxValue = 7)] public int ReplicaDays { get; set; } = 2;
+        // Names differ from the previous build so a saved instance picks up the new defaults (7 days; battery off).
+        [Parameter("Replay: days of ticks", DefaultValue = 7, MinValue = 1, MaxValue = 14)] public int ReplayDays { get; set; } = 7;
+        [Parameter("Also run the bar battery on the keyword symbols", DefaultValue = false)] public bool RunBattery { get; set; }
 
         protected override void OnStart()
         {
             var ci = CultureInfo.InvariantCulture;
             RunReplica(ci);
+            if (!RunBattery) { Print("Zugrio Market Lab: done (bar battery off; turn on 'Also run the bar battery' to measure the keyword symbols)."); Stop(); return; }
             var (names, total) = MarketLab.SelectSymbols(Enumerable.Range(0, Symbols.Count).Select(i => Symbols[i]), Keywords, FirstSymbol, SymbolsPerRun);
             var last = FirstSymbol + names.Count - 1;
             Print($"Zugrio Market Lab: symbols {FirstSymbol}-{last} of {total} matching, {HistoryDays} days of M1 history each: {string.Join(", ", names)}. No orders are placed.");
@@ -102,16 +105,35 @@ namespace Zugrio.CBot.Lab
                 var sym = Symbols.GetSymbol(parts[0]);
                 if (sym == null) { Print($"LAB REPLICA: '{parts[0]}' not found at this broker."); return; }
                 var ticks = MarketData.GetTicks(sym.Name);
-                var from = Server.TimeInUtc.AddDays(-ReplicaDays);
-                for (var k = 0; k < 2000 && ticks.Count > 0 && ticks[0].Time > from; k++) if (ticks.LoadMoreHistory() == 0) break;
+                var from = Server.TimeInUtc.AddDays(-ReplayDays);
+                for (var k = 0; k < 5000 && ticks.Count > 0 && ticks[0].Time > from; k++) if (ticks.LoadMoreHistory() == 0) break;
                 var list = new List<LabTick>(ticks.Count);
                 for (var i = 0; i < ticks.Count; i++) if (ticks[i].Time >= from) list.Add(new LabTick(ticks[i].Time, ticks[i].Bid, ticks[i].Ask));
                 var perPoint = sym.TickValue / sym.TickSize * sym.QuantityToVolumeInUnits(lots);
-                Print($"LAB REPLICA {sym.Name}: {list.Count} ticks over {ReplicaDays} days, typical spread {(list.Count > 0 ? list.Average(x => x.Ask - x.Bid) : 0).ToString("G4", ci)} points, {lots.ToString(ci)} lots = {perPoint.ToString("0.###", ci)} {Account.Asset.Name} per point.");
-                foreach (var r in new[] { MarketLab.TickReplica(list, dir, tp, sl), MarketLab.TickReplica(list, dir, tp, sl, afterDropPts: sl / 2, afterDropTicks: 10) })
-                    Print($"LAB REPLICA {sym.Name} {r.Name}: {r.Trades} trades, won {(100 * r.WinRate).ToString("F1", ci)}% (break-even {(100 * r.BreakEvenWinRate).ToString("F1", ci)}%), " +
+                Print($"LAB REPLICA {sym.Name}: {list.Count} ticks over {ReplayDays} days, typical spread {(list.Count > 0 ? list.Average(x => x.Ask - x.Bid) : 0).ToString("G4", ci)} points, {lots.ToString(ci)} lots = {perPoint.ToString("0.###", ci)} {Account.Asset.Name} per point.");
+                if (list.Count > 0) Print($"LAB REPLICA {sym.Name}: from {list[0].T:yyyy-MM-dd HH:mm} to {list[^1].T:yyyy-MM-dd HH:mm} UTC.");
+                // 1. The friend's rule as given, on the whole sample and on each half (an edge must show in both).
+                var half = list.Count / 2;
+                foreach (var (label, part) in new[] { ("all", (IReadOnlyList<LabTick>)list), ("first half", list.Take(half).ToList()), ("second half", list.Skip(half).ToList()) })
+                {
+                    var r = MarketLab.TickReplica(part, dir, tp, sl);
+                    Print($"LAB REPLICA {sym.Name} {r.Name} [{label}]: {r.Trades} trades, won {(100 * r.WinRate).ToString("F1", ci)}% (break-even {(100 * r.BreakEvenWinRate).ToString("F1", ci)}%), " +
                           $"avg win +{r.AvgWinPts.ToString("F2", ci)} / avg loss -{r.AvgLossPts.ToString("F2", ci)} points, avg {r.AvgPts.ToString("+0.000;-0.000", ci)} points per trade (t={r.T.ToString("F1", ci)}) " +
                           $"= {(r.AvgPts * perPoint).ToString("+0.000;-0.000", ci)} {Account.Asset.Name} per trade, {(r.AvgPts * perPoint * r.Trades).ToString("+0.00;-0.00", ci)} in total.");
+                }
+                // 2. Is the generator fair? Zero average change per tick (spikes included) means no rule can beat the spread.
+                var g = MarketLab.Generator(list);
+                Print($"LAB GENERATOR {sym.Name}: {g.Changes} tick changes, average {g.MeanChange.ToString("+0.00000;-0.00000", ci)} points per tick (z={g.FairZ.ToString("F1", ci)}; |z| < 2 = fair), " +
+                      $"{g.Jumps} jumps (one per {g.TicksPerJump.ToString("F0", ci)} ticks, average {g.AvgJump.ToString("+0.00;-0.00", ci)} points), drift between jumps {g.DriftBetweenJumps.ToString("+0.00000;-0.00000", ci)} points per tick, " +
+                      $"median tick move {g.MedianAbsChange.ToString("G4", ci)}, average spread {g.AvgSpread.ToString("G4", ci)}.");
+                // 3. The design space around the friend's rule: targets and stops of 0.5-2.5x his target, both directions.
+                var sizes = new[] { 0.5, 1, 1.5, 2.5 }.Select(k => k * tp).ToArray();
+                var grid = MarketLab.ReplicaGrid(list, sizes, sizes).Where(x => x.All.Trades >= 30).OrderByDescending(x => x.All.T).ToList();
+                var cands = grid.Count(x => x.All.T >= MarketLab.CandidateT && x.First.AvgPts > 0 && x.Second.AvgPts > 0);
+                Print($"LAB GRID {sym.Name}: {grid.Count} target/stop/direction rules tested; {cands} pass (t >= {MarketLab.CandidateT.ToString(ci)} and positive in both halves). Best by t:");
+                foreach (var x in grid.Take(6))
+                    Print($"LAB GRID {sym.Name} {x.All.Name}: {x.All.Trades} trades, won {(100 * x.All.WinRate).ToString("F1", ci)}%, avg {x.All.AvgPts.ToString("+0.000;-0.000", ci)} points (t={x.All.T.ToString("F1", ci)}), " +
+                          $"halves {x.First.AvgPts.ToString("+0.000;-0.000", ci)} / {x.Second.AvgPts.ToString("+0.000;-0.000", ci)} = {(x.All.AvgPts * perPoint).ToString("+0.000;-0.000", ci)} {Account.Asset.Name} per trade at {lots.ToString(ci)} lots.");
             }
             catch (Exception e) { Print($"LAB REPLICA: {e.Message}"); }
         }
