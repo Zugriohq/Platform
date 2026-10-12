@@ -129,6 +129,32 @@ namespace Zugrio.CBot.Core.Tests
             Assert.Empty(MarketLab.SelectSymbols(broker, "Boom", first: 9, max: 3).Batch);
         }
 
+        // Crash-like ticks: drift up between drops of `drop` points that come on average every `every` ticks.
+        private static List<LabTick> CrashTicks(double drift, double drop, int every, double spread, int n, int seed)
+        {
+            var r = new Random(seed); var p = 9500.0; var t = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc); var o = new List<LabTick>(n);
+            for (var i = 0; i < n; i++) { p += r.NextDouble() < 1.0 / every ? -drop : drift + 0.02 * Gauss(r); o.Add(new LabTick(t.AddSeconds(i), p - spread / 2, p + spread / 2)); }
+            return o;
+        }
+
+        [Fact]
+        public void Tick_replica_of_buy_tp2_sl2_on_a_fair_crash_index_loses_about_the_spread_and_wins_on_an_unfair_one()
+        {
+            // Fair: drift x 150 = drop (0.02 x 150 = 3 points). The win rate looks good, but losses jump past the stop.
+            var fair = MarketLab.TickReplica(CrashTicks(0.02, 3.0, 150, 0.1, 400_000, 21), +1, 2, 2);
+            Assert.True(fair.WinRate > 0.5);
+            Assert.True(fair.AvgLossPts > 2);                                      // drops go through the stop
+            Assert.True(fair.AvgPts < 0 && fair.T < 1);                            // about minus the spread, no edge
+            Assert.True(fair.WinRate < fair.BreakEvenWinRate + 0.02);
+            // Unfair (drift pays more than the drops take): the same rule wins clearly.
+            var rich = MarketLab.TickReplica(CrashTicks(0.03, 3.0, 150, 0.1, 400_000, 22), +1, 2, 2);
+            Assert.True(rich.AvgPts > 0 && rich.T > 3, $"t={rich.T}");
+            Assert.True(rich.WinRate > rich.BreakEvenWinRate);
+            // Buying only after a drop changes nothing on a memoryless generator.
+            var after = MarketLab.TickReplica(CrashTicks(0.02, 3.0, 150, 0.1, 400_000, 23), +1, 2, 2, afterDropPts: 1.5, afterDropTicks: 10);
+            Assert.True(after.AvgPts < 0.05 && after.T < 2);
+        }
+
         [Fact]
         public void Variance_ratio_and_summary_arithmetic()
         {

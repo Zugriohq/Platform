@@ -29,8 +29,55 @@ namespace Zugrio.CBot.Core
         public bool IsEdgeCandidate => Test.T >= MarketLab.CandidateT && FirstHalfAvgR > 0 && SecondHalfAvgR > 0;
     }
 
+    /// <summary>One broker tick for a tick-exact replay.</summary>
+    public readonly record struct LabTick(DateTime T, double Bid, double Ask);
+
+    /// <summary>
+    /// A fixed-distance rule replayed tick by tick, in price points (spread included through bid/ask fills).
+    /// BreakEvenWinRate is the win rate at which this rule's average win and average loss cancel.
+    /// </summary>
+    public sealed record ReplicaResult(string Name, int Trades, int Wins, double AvgWinPts, double AvgLossPts, double AvgPts, double SePts)
+    {
+        public double WinRate => Trades > 0 ? (double)Wins / Trades : 0;
+        public double BreakEvenWinRate => AvgWinPts + AvgLossPts > 0 ? AvgLossPts / (AvgWinPts + AvgLossPts) : double.NaN;
+        public double T => SePts > 0 ? AvgPts / SePts : 0;
+    }
+
     public static class MarketLab
     {
+        /// <summary>
+        /// Replays "enter, take profit tpPts away, stop slPts away" tick by tick, re-entering whenever flat. A buy enters
+        /// at the ask and exits at the bid: at the target price when the bid reaches it, and at the actual bid when the
+        /// stop is touched, so a drop that jumps through the stop loses what it really lost. A sell mirrors that. With
+        /// afterDropPts > 0 an entry needs a one-tick move of at least that size against the trade within the last
+        /// afterDropTicks ticks ("buy after a crash"). This is the owner's friend's Crash 150 rule (2026-10-12): buy, +2 / -2 points.
+        /// </summary>
+        public static ReplicaResult TickReplica(IReadOnlyList<LabTick> ticks, int dir, double tpPts, double slPts, double afterDropPts = 0, int afterDropTicks = 0)
+        {
+            var res = new List<double>(); var wins = 0; var lastDrop = -1_000_000;
+            double entry = 0; var open = false;
+            for (var i = 1; i < ticks.Count; i++)
+            {
+                var x = ticks[i];
+                var mid = (x.Bid + x.Ask) / 2; var prevMid = (ticks[i - 1].Bid + ticks[i - 1].Ask) / 2;
+                if (afterDropPts > 0 && dir * (mid - prevMid) <= -afterDropPts) lastDrop = i;
+                if (open)
+                {
+                    var exitPx = dir > 0 ? x.Bid : x.Ask;
+                    if (dir * (exitPx - entry) >= tpPts) { res.Add(tpPts); wins++; open = false; }
+                    else if (dir * (exitPx - entry) <= -slPts) { res.Add(dir * (exitPx - entry)); open = false; }
+                    continue;
+                }
+                if (afterDropPts > 0 && i - lastDrop > afterDropTicks) continue;
+                entry = dir > 0 ? x.Ask : x.Bid; open = true;
+            }
+            var name = $"{(dir > 0 ? "BUY" : "SELL")} tp {tpPts} sl {slPts}{(afterDropPts > 0 ? $" after a {afterDropPts}-point drop" : " (re-enter whenever flat)")}";
+            if (res.Count == 0) return new ReplicaResult(name, 0, 0, 0, 0, 0, 0);
+            var m = res.Average(); var sd = res.Count > 1 ? Math.Sqrt(res.Sum(v => (v - m) * (v - m)) / (res.Count - 1)) : 0;
+            var w = res.Where(v => v > 0).ToList(); var l = res.Where(v => v <= 0).ToList();
+            return new ReplicaResult(name, res.Count, wins, w.Count > 0 ? w.Average() : 0, l.Count > 0 ? -l.Average() : 0, m, sd / Math.Sqrt(res.Count));
+        }
+
         public const double JumpSigma = 6;
 
         public static double[] Returns(IReadOnlyList<LabBar> b)

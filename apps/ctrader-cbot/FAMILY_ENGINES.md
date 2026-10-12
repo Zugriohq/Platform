@@ -119,6 +119,12 @@ Each synthetic is a published random process. A rule can only have an edge where
 - **Spreads.** Boom 99, 100 and 200 have spreads of 7.4–7.8, and every rule loses there.
 - **Status: Boom and Crash Boom Flip get no engine.** Next: batches 2+ (Crash, DEX, Drift Switch, Jump, Range Break, Step).
 
+**A competitor's rule on Crash 150 (owner's friend's bot, 2026-10-12).** Buy 0.5 lots, take profit +2 points ($1), stop −2 points.
+- **Live:** 23 wins and 7 losses, about +$13 in a day. Losses run −$1.06 to −$1.88, because drops gap through the stop.
+- **The bot's own counter:** 155 wins and 89 losses (63.5%). The break-even win rate is about 57% at a $1.35 average loss.
+- **If both are accurate:** about +$0.14 per trade, t ≈ 1.9. Suggestive, not proof. A fair, memoryless generator would give about minus the spread.
+- **Test:** Market Lab now replays this exact rule tick by tick on the broker's own Crash 150 ticks (`MarketLab.TickReplica`, LAB REPLICA lines). That decides it.
+
 Why the EA does not "just scalp" synthetics: scalping multiplies expectancy, it does not create it. On a random walk every rule's expectancy is minus the spread, so more trades lose faster. A synthetic gets an engine only where Market Lab finds structure that pays after the spread.
 
 ## Expansion families (not on the EA yet)

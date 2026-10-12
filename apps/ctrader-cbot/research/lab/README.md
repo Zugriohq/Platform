@@ -200,3 +200,24 @@ New files:
 - **The registered 5%/yr verdict is "fail".** The other rows are a sensitivity check, not a re-test.
 - **Caveat.** These futures series are not back-adjusted, so they behave like spot plus roll gaps. The financing deduction stands in for the carry a CFD holder pays.
 
+## Round 5, 2026-10-12: intraday momentum, the day-trading candidate (pre-registered)
+
+New files:
+- `intraday_prereg.json`: the registration, written before the run.
+- `intraday.mjs`: the test.
+
+**Rule** (Gao, Han, Li and Zhou 2018). The move from the previous close into the first hour of the session sets the direction. Trade the last hour of the session in that direction, one trade per market per day.
+- Indices: on New York time.
+- Gold, silver, oil and 11 FX pairs: the analogue on London time (the 16:00 London fix hour).
+
+**Costs:** 0.01% per trade. **Data:** 2.4–2.8 years of hourly bars.
+
+| Group | Days | Gross | Net | t | Halves | Verdict |
+|---|---|---|---|---|---|---|
+| US indices (US500, US100, US30) | 579 | −0.25bp | −1.25bp | −1.2 | −1.2 / −1.3 | fail |
+| Gold, silver | 595 | +3.9bp | +2.9bp | 1.2 | +0.9 / +5.0 | fail |
+| Oil | 590 | +1.4bp | +0.4bp | 0.1 | −4.2 / +5.0 | fail |
+| 11 FX pairs | 726 | 0.0bp | −1.0bp | −3.2 | −0.4 / −1.7 | fail |
+
+The published intraday-momentum effect is absent in these recent years: below cost in every group, and about zero before cost.
+

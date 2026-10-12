@@ -31,10 +31,14 @@ namespace Zugrio.CBot.Lab
         [Parameter("Days of M1 history", DefaultValue = 7, MinValue = 2, MaxValue = 30)] public int HistoryDays { get; set; } = 7;
         [Parameter("Symbols per run (memory)", DefaultValue = 12, MinValue = 1, MaxValue = 40)] public int SymbolsPerRun { get; set; } = 12;
         [Parameter("Start at symbol number", DefaultValue = 1, MinValue = 1, MaxValue = 500)] public int FirstSymbol { get; set; } = 1;
+        // A fixed rule to replay tick by tick on the broker's own ticks (empty = skip). Default: the owner's friend's Crash 150 bot.
+        [Parameter("Replay rule (symbol|BUY/SELL|TP points|SL points|lots)", DefaultValue = "Crash 150 Index|BUY|2|2|0.5")] public string ReplicaText { get; set; } = "Crash 150 Index|BUY|2|2|0.5";
+        [Parameter("Replay: days of ticks", DefaultValue = 2, MinValue = 1, MaxValue = 7)] public int ReplicaDays { get; set; } = 2;
 
         protected override void OnStart()
         {
             var ci = CultureInfo.InvariantCulture;
+            RunReplica(ci);
             var (names, total) = MarketLab.SelectSymbols(Enumerable.Range(0, Symbols.Count).Select(i => Symbols[i]), Keywords, FirstSymbol, SymbolsPerRun);
             var last = FirstSymbol + names.Count - 1;
             Print($"Zugrio Market Lab: symbols {FirstSymbol}-{last} of {total} matching, {HistoryDays} days of M1 history each: {string.Join(", ", names)}. No orders are placed.");
@@ -83,6 +87,33 @@ namespace Zugrio.CBot.Lab
             if (last < total) Print($"Zugrio Market Lab: {total - last} more symbols. For the next batch, start a new run with 'Start at symbol number' = {last + 1}.");
             Print($"Zugrio Market Lab: done. A candidate needs t >= {MarketLab.CandidateT.ToString(ci)} and a positive average in both halves of the history: many rules are tested per symbol.");
             Stop();
+        }
+
+        /// <summary>The fixed rule in ReplicaText, replayed on the broker's own ticks with bid/ask fills; prints LAB REPLICA lines.</summary>
+        private void RunReplica(CultureInfo ci)
+        {
+            var parts = (ReplicaText ?? "").Split('|').Select(x => x.Trim()).ToArray();
+            if (parts.Length < 4 || parts[0].Length == 0) return;
+            try
+            {
+                var dir = parts[1].Equals("SELL", StringComparison.OrdinalIgnoreCase) ? -1 : 1;
+                var tp = double.Parse(parts[2], ci); var sl = double.Parse(parts[3], ci);
+                var lots = parts.Length > 4 ? double.Parse(parts[4], ci) : 1;
+                var sym = Symbols.GetSymbol(parts[0]);
+                if (sym == null) { Print($"LAB REPLICA: '{parts[0]}' not found at this broker."); return; }
+                var ticks = MarketData.GetTicks(sym.Name);
+                var from = Server.TimeInUtc.AddDays(-ReplicaDays);
+                for (var k = 0; k < 2000 && ticks.Count > 0 && ticks[0].Time > from; k++) if (ticks.LoadMoreHistory() == 0) break;
+                var list = new List<LabTick>(ticks.Count);
+                for (var i = 0; i < ticks.Count; i++) if (ticks[i].Time >= from) list.Add(new LabTick(ticks[i].Time, ticks[i].Bid, ticks[i].Ask));
+                var perPoint = sym.TickValue / sym.TickSize * sym.QuantityToVolumeInUnits(lots);
+                Print($"LAB REPLICA {sym.Name}: {list.Count} ticks over {ReplicaDays} days, typical spread {(list.Count > 0 ? list.Average(x => x.Ask - x.Bid) : 0).ToString("G4", ci)} points, {lots.ToString(ci)} lots = {perPoint.ToString("0.###", ci)} {Account.Asset.Name} per point.");
+                foreach (var r in new[] { MarketLab.TickReplica(list, dir, tp, sl), MarketLab.TickReplica(list, dir, tp, sl, afterDropPts: sl / 2, afterDropTicks: 10) })
+                    Print($"LAB REPLICA {sym.Name} {r.Name}: {r.Trades} trades, won {(100 * r.WinRate).ToString("F1", ci)}% (break-even {(100 * r.BreakEvenWinRate).ToString("F1", ci)}%), " +
+                          $"avg win +{r.AvgWinPts.ToString("F2", ci)} / avg loss -{r.AvgLossPts.ToString("F2", ci)} points, avg {r.AvgPts.ToString("+0.000;-0.000", ci)} points per trade (t={r.T.ToString("F1", ci)}) " +
+                          $"= {(r.AvgPts * perPoint).ToString("+0.000;-0.000", ci)} {Account.Asset.Name} per trade, {(r.AvgPts * perPoint * r.Trades).ToString("+0.00;-0.00", ci)} in total.");
+            }
+            catch (Exception e) { Print($"LAB REPLICA: {e.Message}"); }
         }
     }
 }
