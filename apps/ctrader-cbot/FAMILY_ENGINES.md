@@ -123,7 +123,22 @@ Each synthetic is a published random process. A rule can only have an edge where
 - **Live:** 23 wins and 7 losses, about +$13 in a day. Losses run −$1.06 to −$1.88, because drops gap through the stop.
 - **The bot's own counter:** 155 wins and 89 losses (63.5%). The break-even win rate is about 57% at a $1.35 average loss.
 - **If both are accurate:** about +$0.14 per trade, t ≈ 1.9. Suggestive, not proof. A fair, memoryless generator would give about minus the spread.
-- **Test:** Market Lab now replays this exact rule tick by tick on the broker's own Crash 150 ticks (`MarketLab.TickReplica`, LAB REPLICA lines). That decides it.
+- **Test:** Market Lab replays this exact rule tick by tick on the broker's own Crash 150 ticks (`MarketLab.TickReplica`, LAB REPLICA lines).
+
+**Result (owner's Deriv demo, 2026-10-05 to 2026-10-12: 601,014 ticks).** The generator is fair, and the rule loses the spread.
+- **The rule:** 1,008 trades.
+  - Won 52.9% against a break-even of 56.5%; the average loss is 2.59 points, because drops gap through the 2-point stop.
+  - Average −0.165 points per trade (t = −2.3), which is −$0.082 per trade at 0.5 lots, or −$83 over the week.
+  - Both halves lose: −0.169 and −0.161.
+- **The generator:** average change +0.00000 points per tick (z = 0.0).
+  - One drop per 152 ticks, averaging −0.97 points.
+  - Drift between drops +0.00644 points per tick.
+  - 152 × 0.00644 = 0.98, so the drift pays back the drops exactly.
+  - Average spread 0.16 points.
+- **The grid:** 32 rules (targets and stops of 1–5 points, buy and sell). None passes. The best lose −0.15 to −0.17 points per trade, which is the spread.
+- **Why:** on a fair generator every rule's expectancy is minus the spread, whatever its target, stop or timing.
+- **The friend's panel:** 63.5% wins over 244 trades is 3 standard errors above this replay's 52.9%. A reported run like that is what a lucky or selected sample looks like. Only his full account history can say more: every trade since the start, with deposits and withdrawals.
+- **Status: Crash 150 gets no engine.** The synthetic-scalping hypothesis is closed for spike indices.
 
 Why the EA does not "just scalp" synthetics: scalping multiplies expectancy, it does not create it. On a random walk every rule's expectancy is minus the spread, so more trades lose faster. A synthetic gets an engine only where Market Lab finds structure that pays after the spread.
 
