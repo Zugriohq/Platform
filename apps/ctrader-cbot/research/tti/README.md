@@ -61,3 +61,24 @@ For each fired signal, the study does the following:
   - its paired improvement over A has t ≥ 2; and
   - its own average R is above zero.
 - **Otherwise A stays.** The remedy is then the entry, not the exit.
+
+## Two-year replay and review (2026-10-12)
+
+`REVIEW.md` holds the adversarial review. It is based on two scripts:
+- `replay.mjs` runs TTI's own code on historical 1-minute bars, driven the way the live app drives it.
+- `evaluate.mjs` resolves every signal it fires.
+
+Results are in `replay_results.txt`.
+
+**Verdict:** on real forex and gold (1,362 signals, 2025-01 to 2026-09), TTI 4.2 loses −0.195R per trade (t = −7.3). On a random walk it loses −0.08R. No exit plan rescues it (best −0.16R). TTI's own record shows 53% wins on real data and 56% on the random walk.
+
+The exit study above is therefore answered: the problem is the entry, not the exit (decision rule, last line).
+
+Reproduce:
+
+```
+node replay.mjs <tti.html> <SYM.m1> <EURUSD|GBPUSD|USDJPY|XAUUSD> out.json [--walk 7]
+node evaluate.mjs <SYM.m1> out.json ...
+```
+
+Use `out.json.m1` as the bars for `--walk` runs.
