@@ -25,7 +25,8 @@ def ny_to_utc(dt):
 
 
 def fetch_month(sym, y, m):
-    page = f"https://www.histdata.com/download-free-forex-historical-data/?/ascii/1-minute-bar-quotes/{sym.lower()}/{y}/{m}"
+    """One month's zip; m=None fetches the whole-year zip (HistData serves older years as one file)."""
+    page = f"https://www.histdata.com/download-free-forex-historical-data/?/ascii/1-minute-bar-quotes/{sym.lower()}/{y}" + (f"/{m}" if m else "")
     op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(CookieJar()))
     for k in range(6):
         try:
@@ -33,14 +34,14 @@ def fetch_month(sym, y, m):
             tk = re.search(r'name="tk" id="tk" value="([a-f0-9]+)"', html)
             if not tk:
                 return b""
-            body = urllib.parse.urlencode({"tk": tk.group(1), "date": str(y), "datemonth": f"{y}{m:02d}", "platform": "ASCII", "timeframe": "M1", "fxpair": sym}).encode()
+            body = urllib.parse.urlencode({"tk": tk.group(1), "date": str(y), "datemonth": f"{y}{m:02d}" if m else str(y), "platform": "ASCII", "timeframe": "M1", "fxpair": sym}).encode()
             z = op.open(urllib.request.Request("https://www.histdata.com/get.php", data=body, headers={**UA, "Referer": page}), timeout=120).read()
             if z[:2] == b"PK":
                 return z
         except Exception:
             pass
         time.sleep(10 * (k + 1))
-    raise RuntimeError(f"failed {sym} {y}-{m:02d}")
+    raise RuntimeError(f"failed {sym} {y}-{m}")
 
 
 def main():
@@ -54,12 +55,19 @@ def main():
             if not os.path.exists(p):
                 open(p, "wb").write(fetch_month(s, y, m)); time.sleep(2)
             data = open(p, "rb").read()
+            if not data:
+                py = os.path.join(raw, f"{y}.zip")
+                if not os.path.exists(py):
+                    open(py, "wb").write(fetch_month(s, y, None)); time.sleep(2)
+                data, month_only = open(py, "rb").read(), f"{y}{m:02d}"
+            else:
+                month_only = None
             if data:
                 zf = zipfile.ZipFile(io.BytesIO(data))
                 name = next(n for n in zf.namelist() if n.endswith(".csv"))
                 for line in zf.read(name).decode().splitlines():
                     f = line.split(";")
-                    if len(f) < 5:
+                    if len(f) < 5 or (month_only and not f[0].startswith(month_only)):
                         continue
                     t = ny_to_utc(datetime.strptime(f[0], "%Y%m%d %H%M%S")).timestamp()
                     rows.append((t, float(f[1]), float(f[2]), float(f[3]), float(f[4])))

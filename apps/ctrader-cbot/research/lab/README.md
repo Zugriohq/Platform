@@ -221,3 +221,43 @@ New files:
 
 The published intraday-momentum effect is absent in these recent years: below cost in every group, and about zero before cost.
 
+
+## Round 6, 2026-10-12: minute-level day-trade and scalp rules (pre-registered)
+
+Files:
+- `minute_prereg.json`: registered before any minute data was downloaded. Amendment 1 changed the data source, also before data was seen.
+- `hdfetch.py`: HistData.com 1-minute bars.
+- `minute.mjs`: the test.
+
+**Data:** EURUSD, GBPUSD, XAUUSD and the S&P 500 CFD (SPXUSD), 2024-10 to 2026-09.
+- Design year: 2024-10 to 2025-09.
+- Test year: 2025-10 to 2026-09.
+
+Each rule names the party that pays the edge (METHODOLOGY.md step 2).
+
+**Costs** (round trip): EURUSD 1.0 pip, GBPUSD 1.5 pips, gold $0.35, S&P 500 0.6 points.
+
+**Pass:** net mean > 0 with t ≥ 2 in **both** years. t is date-clustered.
+
+| Rule | Group | Gross | Design net (t) | Test net (t) | Verdict |
+|---|---|---|---|---|---|
+| FX fix reversal (16:00 London) | EURUSD + GBPUSD | −0.04bp | −2.0bp (−3.3) | −0.05bp (−0.1) | fail |
+| same, month-end only (secondary) | | +2.3bp | +0.8bp (0.3), n=24 | +1.8bp (0.9), n=24 | fail |
+| Gold PM fix reversal (15:00 London) | XAUUSD | −0.20bp | −0.9bp (−0.5) | −1.5bp (−0.4) | fail |
+| 1-minute shock fade (scalp) | FX | +0.03R | −0.22R (−10.5), 62% wins | −0.27R (−11.6), 60% wins | fail |
+| | gold | −0.02R | −0.19R (−7.0) | −0.11R (−4.1) | fail |
+| | S&P 500 | 0.00R | −0.20R (−6.8) | −0.16R (−6.0) | fail |
+| 1-minute shock follow (secondary) | all | −0.02 to −0.05R | −0.21 to −0.30R | −0.10 to −0.34R | fail |
+| Opening-range breakout (London 08:00, NY 09:30) | FX | +0.06R | +0.02R (0.3) | −0.11R (−2.5) | fail |
+| | gold | +0.04R | +0.04R (0.7) | −0.06R (−1.1) | fail |
+| | S&P 500 | +0.04R | +0.04R (0.8) | −0.02R (−0.5) | fail |
+| Previous day's high/low, FADE | FX / gold / S&P 500 | −0.07 / −0.11 / −0.11R | all negative | all negative | fail |
+| Previous day's high/low, BREAK | FX / gold / S&P 500 | +0.07 / +0.11 / +0.11R | +0.04 / +0.01 / +0.11R | −0.03 / +0.16 / +0.03R | fail |
+
+**What it means.**
+- **No minute-level rule survives costs.** The scalps are the clearest case. A 1-minute shock fade wins 60% of the time and is about zero before cost: its 0.5× target and 0.75× stop produce the win rate by geometry alone. The spread (about 0.2R per trade at this size) makes it strongly negative.
+  - **The lesson:** a high win rate on a short scalp says nothing about an edge.
+- **The previous day's high and low tend to break rather than reverse.** This holds in all three groups, but the effect is small and below the bar (t ≤ 1.9 gross).
+  - **For TTI**, which targets those levels: price does not systematically turn at them. TTI's give-backs at 0.9–1R are not caused by the levels.
+- **Fix reversals:** about zero in these years. The month-end version is positive in both years, but on only 24 days each.
+- **Harness fix before the final run:** gold sessions reopen after the 17:00–18:00 New York break, and the first version's search for a session's first bar stopped one minute short of it. That left only 7 gold trades for the level rule; the fixed run has 180. No rule changed.
