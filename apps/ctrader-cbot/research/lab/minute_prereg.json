@@ -1,0 +1,40 @@
+{
+  "registered": "2026-10-12, before any minute data was downloaded or seen",
+  "data": "Dukascopy 1-minute bid bars, 2024-10-01 to 2026-10-09: XAUUSD, EURUSD, GBPUSD, USA500IDXUSD (dkfetch.py)",
+  "split": { "design": "2024-10-01 to 2025-09-30", "test": "2025-10-01 to 2026-10-09" },
+  "why": "Owner: the EA must scalp and day-trade the major markets. Each rule below names who pays the edge (METHODOLOGY.md step 2).",
+  "rules": {
+    "FIX_REVERSAL": {
+      "markets": ["EURUSD", "GBPUSD"],
+      "payer": "Price pressure from orders executed at the WM/R 16:00 London fix; dealers who absorb it are paid by the reversal (Melvin & Prins 2015; Evans 2018)",
+      "rule": "signal = close 16:00 minus close 15:30 London (bar closes). At the open of the 16:03 London bar take the opposite side; exit at the close of the 16:59 bar.",
+      "secondary": "the same on the last business day of each month only (reported, not pass-eligible on its own)"
+    },
+    "GOLD_FIX_REVERSAL": {
+      "markets": ["XAUUSD"],
+      "payer": "Same mechanism at the LBMA Gold Price PM auction, 15:00 London (Caminschi & Heaney 2014)",
+      "rule": "signal = close 15:00 minus close 14:30 London. At the open of the 15:05 bar take the opposite side; exit at the close of the 15:59 bar."
+    },
+    "SHOCK_FADE": {
+      "markets": ["EURUSD", "GBPUSD", "XAUUSD", "USA500IDXUSD"],
+      "payer": "Liquidity provision: a one-minute order-flow shock moves price past fair value, and the side that absorbs it is paid by the partial reversal",
+      "rule": "sigma = standard deviation of 1-minute close-to-close changes over the previous 60 bars. Shock = a bar with |close minus previous close| > 4 sigma and > 3 spreads. Enter at the next bar's open against the shock. TP = 0.5 x shock size, SL = 0.75 x shock size, exit after 30 bars otherwise. One trade at a time per market; none in the first 30 minutes after a weekend gap.",
+      "secondary": "the same rule following the shock (reported)"
+    },
+    "OPENING_RANGE_BREAKOUT": {
+      "markets": ["EURUSD", "GBPUSD", "XAUUSD", "USA500IDXUSD"],
+      "payer": "Information and order flow concentrate at the session open; a break of the first 30 minutes' range is followed by continuation (Crabel 1990; Holmberg, Lonnbark & Lundstrom 2013)",
+      "rule": "Range = high/low of 08:00-08:29 London (FX, gold) or 09:30-09:59 New York (US500). First bar after the range whose high (low) crosses the range high (low) before 12:00 local: buy (sell) at max(range high, bar open) (stop order). SL = the other side of the range, TP = entry + 1 x range, else exit at the close of the 11:59 local bar. One trade per market per day; if one bar crosses both sides, no trade."
+    },
+    "PRIOR_DAY_LEVEL": {
+      "markets": ["EURUSD", "GBPUSD", "XAUUSD", "USA500IDXUSD"],
+      "payer": "Orders cluster at well-known levels: take-profits just inside them (reversal), stop-losses just beyond (continuation) (Osler 2003, 2005). Also tests TTI's target placement at the previous day's high/low.",
+      "rule": "Day = New York 17:00 to 17:00 (FX, gold), New York cash session for US500. First touch of the previous day's high (low) today, after 02:00 New York. FADE: sell (buy) at the level; BREAK: buy (sell) at the level. Both with TP = SL = 0.25 x ATR14 of daily ranges, exit after 240 bars otherwise.",
+      "note": "FADE and BREAK are mirror images before cost, so at most one can pass."
+    }
+  },
+  "fills": "Bid bars plus the cost below. Stops fill at the stop, or at the bar open if it gaps through. If a bar touches both the target and the stop, the stop is assumed first.",
+  "costs_round_trip": { "EURUSD": 0.00010, "GBPUSD": 0.00015, "XAUUSD": 0.35, "USA500IDXUSD": 0.6, "sensitivity": "x0.5 and x2 reported; Deriv's own spreads replace these once read from cTrader" },
+  "pass": "Per rule and market group (FX = EURUSD + GBPUSD pooled with date-clustered standard errors; gold; US500): net mean > 0 with t >= 2 in the design year AND net mean > 0 with t >= 2 in the test year. A rule that passes is a candidate for a demo forward test, not a live engine.",
+  "unit": "R where a stop is defined (SL distance = 1R); basis points of price for the two fix rules"
+}
