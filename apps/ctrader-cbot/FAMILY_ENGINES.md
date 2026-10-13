@@ -138,7 +138,11 @@ Each synthetic is a published random process. A rule can only have an edge where
 - **The grid:** 32 rules (targets and stops of 1–5 points, buy and sell). None passes. The best lose −0.15 to −0.17 points per trade, which is the spread.
 - **Why:** on a fair generator every rule's expectancy is minus the spread, whatever its target, stop or timing.
 - **The friend's panel:** 63.5% wins over 244 trades is 3 standard errors above this replay's 52.9%. A reported run like that is what a lucky or selected sample looks like. Only his full account history can say more: every trade since the start, with deposits and withdrawals.
-- **Status: Crash 150 gets no engine.** The synthetic-scalping hypothesis is closed for spike indices.
+- **Second run (2026-10-06 to 2026-10-13, 601,205 ticks):** the same picture. 1,014 trades at 52.9% against a break-even of 56.4%, −0.162 points per trade, −$82 for the week. Generator z = 0.1.
+- **Status: Crash 150 gets no engine.**
+- **The friend's newer bots (MT5, 2026-10-13):** Boom 150 sell 2/2 at 0.5 lots; Boom 50 sell 10/10 at 0.1 lots; also Step, Volatility 75 and EURUSD. They are replayed the same way (Market Lab default *Replay rules*).
+  - **His Boom 150 "Scan Profit" panel:** 799 setups, 443 targets hit and 356 stops hit (55.4%), +$87.
+  - **What the panel assumes:** $87 = 443 × $1 − 356 × $1.00, so it books every stop at exactly −$1. On these indices a spike gaps through the stop. The Crash 150 losses averaged 2.59 points against a 2-point stop, about 30% more. At that size the same counts give 443 − 356 × 1.30 ≈ −$20, before the spread.
 
 Why the EA does not "just scalp" synthetics: scalping multiplies expectancy, it does not create it. On a random walk every rule's expectancy is minus the spread, so more trades lose faster. A synthetic gets an engine only where Market Lab finds structure that pays after the spread.
 

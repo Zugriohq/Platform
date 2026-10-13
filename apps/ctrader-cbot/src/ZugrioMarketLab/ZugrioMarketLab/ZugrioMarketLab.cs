@@ -32,7 +32,10 @@ namespace Zugrio.CBot.Lab
         [Parameter("Symbols per run (memory)", DefaultValue = 12, MinValue = 1, MaxValue = 40)] public int SymbolsPerRun { get; set; } = 12;
         [Parameter("Start at symbol number", DefaultValue = 1, MinValue = 1, MaxValue = 500)] public int FirstSymbol { get; set; } = 1;
         // A fixed rule to replay tick by tick on the broker's own ticks (empty = skip). Default: the owner's friend's Crash 150 bot.
-        [Parameter("Replay rule (symbol|BUY/SELL|TP points|SL points|lots)", DefaultValue = "Crash 150 Index|BUY|2|2|0.5")] public string ReplicaText { get; set; } = "Crash 150 Index|BUY|2|2|0.5";
+        // Several rules separated by ';', each printed as soon as it is done. Defaults: the owner's friend's bots as seen on
+        // 2026-10-13 (Boom 150 sell 2/2 at 0.5 lots, Boom 50 sell 10/10 at 0.1 lots) and the Crash 150 buy 2/2 measured first.
+        public const string DefaultReplayRules = "Boom 150 Index|SELL|2|2|0.5; Boom 50 Index|SELL|10|10|0.1; Crash 150 Index|BUY|2|2|0.5";
+        [Parameter("Replay rules (symbol|BUY/SELL|TP points|SL points|lots; ...)", DefaultValue = DefaultReplayRules)] public string ReplayRules { get; set; } = DefaultReplayRules;
         // Names differ from the previous build so a saved instance picks up the new defaults (7 days; battery off).
         [Parameter("Replay: days of ticks", DefaultValue = 7, MinValue = 1, MaxValue = 14)] public int ReplayDays { get; set; } = 7;
         [Parameter("Also run the bar battery on the keyword symbols", DefaultValue = false)] public bool RunBattery { get; set; }
@@ -92,10 +95,19 @@ namespace Zugrio.CBot.Lab
             Stop();
         }
 
-        /// <summary>The fixed rule in ReplicaText, replayed on the broker's own ticks with bid/ask fills; prints LAB REPLICA lines.</summary>
+        /// <summary>Each rule in ReplayRules, replayed on the broker's own ticks with bid/ask fills; prints LAB REPLICA/GENERATOR/GRID lines.</summary>
         private void RunReplica(CultureInfo ci)
         {
-            var parts = (ReplicaText ?? "").Split('|').Select(x => x.Trim()).ToArray();
+            foreach (var rule in (ReplayRules ?? "").Split(';').Select(x => x.Trim()).Where(x => x.Length > 0))
+            {
+                RunOneReplica(rule, ci);
+                GC.Collect();
+            }
+        }
+
+        private void RunOneReplica(string rule, CultureInfo ci)
+        {
+            var parts = rule.Split('|').Select(x => x.Trim()).ToArray();
             if (parts.Length < 4 || parts[0].Length == 0) return;
             try
             {
