@@ -40,11 +40,92 @@ namespace Zugrio.CBot.Lab
         [Parameter("Replay: days of ticks", DefaultValue = 7, MinValue = 1, MaxValue = 14)] public int ReplayDays { get; set; } = 7;
         [Parameter("Also run the bar battery on the keyword symbols", DefaultValue = false)] public bool RunBattery { get; set; }
 
+        // The work runs in steps on a 1-second timer, not inside OnStart. cTrader shows what OnStart prints only once
+        // OnStart returns (all lines of a run carried one timestamp, 2026-10-12), so a slow or stuck step showed nothing.
+        // Each timer step prints straight away, so the Journal shows how far a run got.
+        private readonly Queue<string> _rules = new();
+        private ReplayJob? _job;
+        private int _steps;
+
+        private sealed class ReplayJob
+        {
+            public string[] Parts = Array.Empty<string>();
+            public Symbol Sym = null!;
+            public Ticks? Ticks;
+            public DateTime From;
+            public System.Diagnostics.Stopwatch Clock = new();
+            public int Loads;
+            public bool Exhausted;
+        }
+
         protected override void OnStart()
         {
+            foreach (var rule in (ReplayRules ?? "").Split(';').Select(x => x.Trim()).Where(x => x.Length > 0)) _rules.Enqueue(rule);
+            Print($"Zugrio Market Lab: {_rules.Count} replay rule(s), {ReplayDays} days of ticks each; bar battery {(RunBattery ? "on" : "off")}. No orders are placed.");
+            Timer.Start(TimeSpan.FromSeconds(1));
+        }
+
+        protected override void OnTimer()
+        {
             var ci = CultureInfo.InvariantCulture;
-            RunReplica(ci);
+            try { Step(ci); }
+            catch (Exception e) { Print($"LAB REPLICA: {e.GetType().Name}: {e.Message}"); _job = null; }
+        }
+
+        private void Step(CultureInfo ci)
+        {
+            if (_job == null)
+            {
+                if (_rules.Count == 0) { Timer.Stop(); Finish(ci); return; }
+                _job = BeginJob(_rules.Dequeue(), ci);
+                return;
+            }
+            var j = _job;
+            if (j.Ticks == null)
+            {
+                // Its own step, so the "loading" line above is already in the Journal if this call never returns.
+                j.Ticks = MarketData.GetTicks(j.Sym.Name);
+                Print($"LAB REPLICA {j.Sym.Name}: {j.Ticks.Count} ticks to start with; loading history.");
+                return;
+            }
+            // A few history loads per step, so each step returns quickly and its lines appear.
+            for (var n = 0; n < 10; n++)
+            {
+                var done = j.Exhausted || j.Ticks.Count == 0 || j.Ticks[0].Time <= j.From || j.Loads >= 5000 || j.Clock.Elapsed.TotalSeconds > LoadSecondsLimit;
+                if (done)
+                {
+                    if (j.Clock.Elapsed.TotalSeconds > LoadSecondsLimit) Print($"LAB REPLICA {j.Sym.Name}: loading stopped after {LoadSecondsLimit}s; using the ticks loaded so far.");
+                    _job = null;
+                    Analyze(j, ci);
+                    GC.Collect();
+                    return;
+                }
+                if (j.Ticks.LoadMoreHistory() == 0) j.Exhausted = true;
+                j.Loads++;
+            }
+            if (++_steps % 5 == 0) Print($"LAB REPLICA {j.Sym.Name}: {j.Ticks.Count} ticks loaded, back to {j.Ticks[0].Time:yyyy-MM-dd HH:mm} UTC, {j.Clock.Elapsed.TotalSeconds:F0}s.");
+        }
+
+        private ReplayJob? BeginJob(string rule, CultureInfo ci)
+        {
+            var parts = rule.Split('|').Select(x => x.Trim()).ToArray();
+            if (parts.Length < 4 || parts[0].Length == 0) { Print($"LAB REPLICA: rule '{rule}' needs symbol|BUY/SELL|TP|SL|lots."); return null; }
+            var sym = Symbols.GetSymbol(parts[0]);
+            if (sym == null) { Print($"LAB REPLICA: '{parts[0]}' not found at this broker."); return null; }
+            Print($"LAB REPLICA {sym.Name}: loading {ReplayDays} days of ticks (rule {parts[1]} tp {parts[2]} sl {parts[3]})...");
+            var job = new ReplayJob { Parts = parts, Sym = sym, From = Server.TimeInUtc.AddDays(-ReplayDays) };
+            job.Clock.Start();
+            return job;
+        }
+
+        private void Finish(CultureInfo ci)
+        {
             if (!RunBattery) { Print("Zugrio Market Lab: done (bar battery off; turn on 'Also run the bar battery' to measure the keyword symbols)."); Stop(); return; }
+            RunBatteryAll(ci);
+        }
+
+        private void RunBatteryAll(CultureInfo ci)
+        {
             var (names, total) = MarketLab.SelectSymbols(Enumerable.Range(0, Symbols.Count).Select(i => Symbols[i]), Keywords, FirstSymbol, SymbolsPerRun);
             var last = FirstSymbol + names.Count - 1;
             Print($"Zugrio Market Lab: symbols {FirstSymbol}-{last} of {total} matching, {HistoryDays} days of M1 history each: {string.Join(", ", names)}. No orders are placed.");
@@ -95,40 +176,17 @@ namespace Zugrio.CBot.Lab
             Stop();
         }
 
-        /// <summary>Each rule in ReplayRules, replayed on the broker's own ticks with bid/ask fills; prints LAB REPLICA/GENERATOR/GRID lines.</summary>
-        private void RunReplica(CultureInfo ci)
-        {
-            foreach (var rule in (ReplayRules ?? "").Split(';').Select(x => x.Trim()).Where(x => x.Length > 0))
-            {
-                RunOneReplica(rule, ci);
-                GC.Collect();
-            }
-        }
-
         private const int LoadSecondsLimit = 180;
 
-        private void RunOneReplica(string rule, CultureInfo ci)
+        /// <summary>One replay rule on the loaded ticks, with bid/ask fills: prints LAB REPLICA/GENERATOR/GRID lines.</summary>
+        private void Analyze(ReplayJob j, CultureInfo ci)
         {
-            var parts = rule.Split('|').Select(x => x.Trim()).ToArray();
-            if (parts.Length < 4 || parts[0].Length == 0) return;
+            var parts = j.Parts; var sym = j.Sym; var ticks = j.Ticks!; var from = j.From;
             try
             {
                 var dir = parts[1].Equals("SELL", StringComparison.OrdinalIgnoreCase) ? -1 : 1;
                 var tp = double.Parse(parts[2], ci); var sl = double.Parse(parts[3], ci);
                 var lots = parts.Length > 4 ? double.Parse(parts[4], ci) : 1;
-                var sym = Symbols.GetSymbol(parts[0]);
-                if (sym == null) { Print($"LAB REPLICA: '{parts[0]}' not found at this broker."); return; }
-                // Say where the run is before each slow step: a cloud instance that dies (memory) prints nothing itself.
-                Print($"LAB REPLICA {sym.Name}: loading {ReplayDays} days of ticks (rule {parts[1]} tp {parts[2]} sl {parts[3]})...");
-                var ticks = MarketData.GetTicks(sym.Name);
-                var from = Server.TimeInUtc.AddDays(-ReplayDays);
-                var clock = System.Diagnostics.Stopwatch.StartNew();
-                for (var k = 0; k < 5000 && ticks.Count > 0 && ticks[0].Time > from; k++)
-                {
-                    if (ticks.LoadMoreHistory() == 0) break;
-                    if (k % 100 == 99) Print($"LAB REPLICA {sym.Name}: {ticks.Count} ticks loaded, back to {ticks[0].Time:yyyy-MM-dd HH:mm} UTC, {clock.Elapsed.TotalSeconds:F0}s.");
-                    if (clock.Elapsed.TotalSeconds > LoadSecondsLimit) { Print($"LAB REPLICA {sym.Name}: loading stopped after {LoadSecondsLimit}s; using the ticks loaded so far."); break; }
-                }
                 var list = new List<LabTick>(ticks.Count);
                 for (var i = 0; i < ticks.Count; i++) if (ticks[i].Time >= from) list.Add(new LabTick(ticks[i].Time, ticks[i].Bid, ticks[i].Ask));
                 var perPoint = sym.TickValue / sym.TickSize * sym.QuantityToVolumeInUnits(lots);
