@@ -59,11 +59,13 @@ namespace Zugrio.CBot.Core
         /// afterDropPts > 0 an entry needs a one-tick move of at least that size against the trade within the last
         /// afterDropTicks ticks ("buy after a crash"). This is the owner's friend's Crash 150 rule (2026-10-12): buy, +2 / -2 points.
         /// </summary>
-        public static ReplicaResult TickReplica(IReadOnlyList<LabTick> ticks, int dir, double tpPts, double slPts, double afterDropPts = 0, int afterDropTicks = 0)
+        /// <remarks>start/end select ticks [start, end) without copying (end &lt; 0 = to the last tick).</remarks>
+        public static ReplicaResult TickReplica(IReadOnlyList<LabTick> ticks, int dir, double tpPts, double slPts, double afterDropPts = 0, int afterDropTicks = 0, int start = 0, int end = -1)
         {
             var res = new List<double>(); var wins = 0; var lastDrop = -1_000_000;
             double entry = 0; var open = false;
-            for (var i = 1; i < ticks.Count; i++)
+            var stop = end < 0 ? ticks.Count : Math.Min(end, ticks.Count);
+            for (var i = Math.Max(1, start + 1); i < stop; i++)
             {
                 var x = ticks[i];
                 var mid = (x.Bid + x.Ask) / 2; var prevMid = (ticks[i - 1].Bid + ticks[i - 1].Ask) / 2;
@@ -96,11 +98,14 @@ namespace Zugrio.CBot.Core
             for (var i = 1; i < ticks.Count; i++) d.Add((ticks[i].Bid + ticks[i].Ask) / 2 - (ticks[i - 1].Bid + ticks[i - 1].Ask) / 2);
             if (d.Count < 2) return new GeneratorStats(d.Count, 0, 0, 0, 0, 0, 0, 0);
             var mean = d.Average(); var sd = Math.Sqrt(d.Sum(v => (v - mean) * (v - mean)) / (d.Count - 1));
-            var medAbs = Median(d.Select(Math.Abs).ToList());
+            var abs = new double[d.Count]; for (var i = 0; i < abs.Length; i++) abs[i] = Math.Abs(d[i]);
+            Array.Sort(abs);
+            var medAbs = abs.Length % 2 == 1 ? abs[abs.Length / 2] : (abs[abs.Length / 2 - 1] + abs[abs.Length / 2]) / 2;
             var cut = 10 * Math.Max(medAbs, 1e-12);
-            var jumps = d.Where(v => Math.Abs(v) > cut).ToList(); var calm = d.Where(v => Math.Abs(v) <= cut).ToList();
-            return new GeneratorStats(d.Count, mean, sd / Math.Sqrt(d.Count), medAbs, jumps.Count, jumps.Count > 0 ? jumps.Average() : 0,
-                calm.Count > 0 ? calm.Average() : 0, ticks.Average(x => x.Ask - x.Bid));
+            int nj = 0, nc = 0; double sj = 0, sc = 0, spread = 0;
+            foreach (var v in d) if (Math.Abs(v) > cut) { nj++; sj += v; } else { nc++; sc += v; }
+            for (var i = 0; i < ticks.Count; i++) spread += ticks[i].Ask - ticks[i].Bid;
+            return new GeneratorStats(d.Count, mean, sd / Math.Sqrt(d.Count), medAbs, nj, nj > 0 ? sj / nj : 0, nc > 0 ? sc / nc : 0, spread / ticks.Count);
         }
 
         /// <summary>
@@ -110,13 +115,12 @@ namespace Zugrio.CBot.Core
         /// </summary>
         public static IReadOnlyList<(ReplicaResult All, ReplicaResult First, ReplicaResult Second)> ReplicaGrid(IReadOnlyList<LabTick> ticks, IReadOnlyList<double> tps, IReadOnlyList<double> sls)
         {
-            var mid = ticks.Count / 2;
-            var first = ticks.Take(mid).ToList(); var second = ticks.Skip(mid).ToList();
+            var mid = ticks.Count / 2;   // halves are index ranges: no copies of a week of ticks (cloud memory)
             var outp = new List<(ReplicaResult, ReplicaResult, ReplicaResult)>();
             foreach (var dir in new[] { 1, -1 })
                 foreach (var tp in tps)
                     foreach (var sl in sls)
-                        outp.Add((TickReplica(ticks, dir, tp, sl), TickReplica(first, dir, tp, sl), TickReplica(second, dir, tp, sl)));
+                        outp.Add((TickReplica(ticks, dir, tp, sl), TickReplica(ticks, dir, tp, sl, end: mid), TickReplica(ticks, dir, tp, sl, start: mid)));
             return outp;
         }
 

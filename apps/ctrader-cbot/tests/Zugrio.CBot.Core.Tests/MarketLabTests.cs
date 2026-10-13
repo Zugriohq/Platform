@@ -182,6 +182,23 @@ namespace Zugrio.CBot.Core.Tests
         }
 
         [Fact]
+        public void Tick_replica_on_an_index_range_equals_the_replica_on_a_copy_of_that_range()
+        {
+            var ticks = CrashTicks(0.02, 3.0, 150, 0.1, 50_000, 34);
+            var mid = ticks.Count / 2;
+            foreach (var (copy, range) in new[]
+            {
+                (MarketLab.TickReplica(ticks.Take(mid).ToList(), +1, 2, 2), MarketLab.TickReplica(ticks, +1, 2, 2, end: mid)),
+                (MarketLab.TickReplica(ticks.Skip(mid).ToList(), -1, 1, 3), MarketLab.TickReplica(ticks, -1, 1, 3, start: mid)),
+            })
+            {
+                Assert.Equal(copy.Trades, range.Trades);
+                Assert.Equal(copy.Wins, range.Wins);
+                Assert.Equal(copy.AvgPts, range.AvgPts, 12);
+            }
+        }
+
+        [Fact]
         public void Variance_ratio_and_summary_arithmetic()
         {
             var alt = Enumerable.Range(0, 400).Select(i => i % 2 == 0 ? 1.0 : -1.0).ToList();   // perfectly mean-reverting

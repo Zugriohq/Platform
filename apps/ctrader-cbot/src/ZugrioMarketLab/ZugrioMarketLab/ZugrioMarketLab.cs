@@ -105,6 +105,8 @@ namespace Zugrio.CBot.Lab
             }
         }
 
+        private const int LoadSecondsLimit = 180;
+
         private void RunOneReplica(string rule, CultureInfo ci)
         {
             var parts = rule.Split('|').Select(x => x.Trim()).ToArray();
@@ -116,9 +118,17 @@ namespace Zugrio.CBot.Lab
                 var lots = parts.Length > 4 ? double.Parse(parts[4], ci) : 1;
                 var sym = Symbols.GetSymbol(parts[0]);
                 if (sym == null) { Print($"LAB REPLICA: '{parts[0]}' not found at this broker."); return; }
+                // Say where the run is before each slow step: a cloud instance that dies (memory) prints nothing itself.
+                Print($"LAB REPLICA {sym.Name}: loading {ReplayDays} days of ticks (rule {parts[1]} tp {parts[2]} sl {parts[3]})...");
                 var ticks = MarketData.GetTicks(sym.Name);
                 var from = Server.TimeInUtc.AddDays(-ReplayDays);
-                for (var k = 0; k < 5000 && ticks.Count > 0 && ticks[0].Time > from; k++) if (ticks.LoadMoreHistory() == 0) break;
+                var clock = System.Diagnostics.Stopwatch.StartNew();
+                for (var k = 0; k < 5000 && ticks.Count > 0 && ticks[0].Time > from; k++)
+                {
+                    if (ticks.LoadMoreHistory() == 0) break;
+                    if (k % 100 == 99) Print($"LAB REPLICA {sym.Name}: {ticks.Count} ticks loaded, back to {ticks[0].Time:yyyy-MM-dd HH:mm} UTC, {clock.Elapsed.TotalSeconds:F0}s.");
+                    if (clock.Elapsed.TotalSeconds > LoadSecondsLimit) { Print($"LAB REPLICA {sym.Name}: loading stopped after {LoadSecondsLimit}s; using the ticks loaded so far."); break; }
+                }
                 var list = new List<LabTick>(ticks.Count);
                 for (var i = 0; i < ticks.Count; i++) if (ticks[i].Time >= from) list.Add(new LabTick(ticks[i].Time, ticks[i].Bid, ticks[i].Ask));
                 var perPoint = sym.TickValue / sym.TickSize * sym.QuantityToVolumeInUnits(lots);
@@ -126,9 +136,9 @@ namespace Zugrio.CBot.Lab
                 if (list.Count > 0) Print($"LAB REPLICA {sym.Name}: from {list[0].T:yyyy-MM-dd HH:mm} to {list[^1].T:yyyy-MM-dd HH:mm} UTC.");
                 // 1. The friend's rule as given, on the whole sample and on each half (an edge must show in both).
                 var half = list.Count / 2;
-                foreach (var (label, part) in new[] { ("all", (IReadOnlyList<LabTick>)list), ("first half", list.Take(half).ToList()), ("second half", list.Skip(half).ToList()) })
+                foreach (var (label, a, b) in new[] { ("all", 0, -1), ("first half", 0, half), ("second half", half, -1) })
                 {
-                    var r = MarketLab.TickReplica(part, dir, tp, sl);
+                    var r = MarketLab.TickReplica(list, dir, tp, sl, start: a, end: b);
                     Print($"LAB REPLICA {sym.Name} {r.Name} [{label}]: {r.Trades} trades, won {(100 * r.WinRate).ToString("F1", ci)}% (break-even {(100 * r.BreakEvenWinRate).ToString("F1", ci)}%), " +
                           $"avg win +{r.AvgWinPts.ToString("F2", ci)} / avg loss -{r.AvgLossPts.ToString("F2", ci)} points, avg {r.AvgPts.ToString("+0.000;-0.000", ci)} points per trade (t={r.T.ToString("F1", ci)}) " +
                           $"= {(r.AvgPts * perPoint).ToString("+0.000;-0.000", ci)} {Account.Asset.Name} per trade, {(r.AvgPts * perPoint * r.Trades).ToString("+0.00;-0.00", ci)} in total.");
