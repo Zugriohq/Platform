@@ -1,10 +1,14 @@
 // TTI v5.16 APA replay (apa_prereg.json): TTI's own analyseAPA/buildPlan, run bar by bar on closed bars.
 // node apa_replay.mjs <TTI html> <SYMBOL.m1> <bar seconds> <spread: price | min,pct> <out.json>
 // Writes the funnel (each setupId's furthest stage and last reason) and every trade with its mirror control.
+// Env (apa_htf_prereg.json; unset = the original M1/M5 behaviour): CUT=21 aligns H4/D1 bars to a 21:00 UTC day;
+// FIN=0.05 charges that holding cost per year, per day held.
 import fs from "fs";
 
 const [html, m1, tfArg, spreadArg, outPath] = process.argv.slice(2);
-const TF = +tfArg, HTF = TF <= 60 ? 900 : 3600, W = 300, HOLD = 96;
+const TF = +tfArg, HTF = TF <= 60 ? 900 : TF <= 900 ? 3600 : TF <= 14400 ? 86400 : 604800, W = 300, HOLD = 96;
+const CUT = process.env.CUT === undefined ? null : +process.env.CUT, FIN = +(process.env.FIN || 0);
+const TFNAME = { 60: "M1", 300: "M5", 900: "M15", 3600: "H1", 14400: "H4", 86400: "D1" }[TF] || "M15";
 const src = fs.readFileSync(html, "utf8");
 const cut = (from, to) => { const a = src.indexOf(from), b = src.indexOf(to, a); if (a < 0 || b < 0) throw new Error("marker not found: " + from); return src.slice(a, b); };
 const code = [
@@ -20,7 +24,8 @@ const TTI = new Function(code + "\nreturn { analyseAPA, buildPlan, swings, APA_C
 function bars(sec) {
   const b = fs.readFileSync(m1), f = new Float64Array(b.buffer, b.byteOffset, b.length / 8), out = [];
   for (let i = 0; i < f.length; i += 5) {
-    const t = Math.floor(f[i] / sec) * sec, x = out.at(-1);
+    const off = CUT !== null && sec >= 14400 ? ((24 - CUT) % 24) * 3600 : 0;
+    const t = Math.floor((f[i] + off) / sec) * sec - off, x = out.at(-1);
     if (x && x.t === t) { x.h = Math.max(x.h, f[i + 2]); x.l = Math.min(x.l, f[i + 3]); x.c = f[i + 4]; }
     else out.push({ t, o: f[i + 1], h: f[i + 2], l: f[i + 3], c: f[i + 4] });
   }
@@ -43,14 +48,14 @@ function htfBias(closeT) {
   return null;
 }
 
-function walk(i0, dir, entry, stop, target, spread) {
-  const risk = Math.abs(entry - stop);
+function walk(i0, dir, entry, stop, target, spread0) {
+  const risk = Math.abs(entry - stop), carry = (n) => spread0 + entry * FIN * (n * TF / 86400) / 365;
   for (let j = i0; j < C.length && j < i0 + HOLD; j++) {
     const x = C[j], sHit = dir > 0 ? x.l <= stop : x.h >= stop, tHit = dir > 0 ? x.h >= target : x.l <= target;
-    if (sHit) { const px = j > i0 && (dir > 0 ? x.o < stop : x.o > stop) ? x.o : stop; return { r: (dir * (px - entry) - spread) / risk, bars: j - i0 + 1, how: "stop" }; }
-    if (tHit) { const px = j > i0 && (dir > 0 ? x.o > target : x.o < target) ? x.o : target; return { r: (dir * (px - entry) - spread) / risk, bars: j - i0 + 1, how: "target" }; }
+    if (sHit) { const px = j > i0 && (dir > 0 ? x.o < stop : x.o > stop) ? x.o : stop; return { r: (dir * (px - entry) - carry(j - i0 + 1)) / risk, bars: j - i0 + 1, how: "stop" }; }
+    if (tHit) { const px = j > i0 && (dir > 0 ? x.o > target : x.o < target) ? x.o : target; return { r: (dir * (px - entry) - carry(j - i0 + 1)) / risk, bars: j - i0 + 1, how: "target" }; }
   }
-  const j = Math.min(C.length - 1, i0 + HOLD - 1); return { r: (dir * (C[j].c - entry) - spread) / risk, bars: j - i0 + 1, how: "time" };
+  const j = Math.min(C.length - 1, i0 + HOLD - 1); return { r: (dir * (C[j].c - entry) - carry(j - i0 + 1)) / risk, bars: j - i0 + 1, how: "time" };
 }
 
 const funnel = new Map(), trades = [], skipped = { noPlan: 0, belowOneR: 0, openBeyond: 0 }, taken = new Set();
@@ -58,7 +63,7 @@ const rank = (s) => ["NO_CONTEXT", "BOS_WEAK", "BOS_DISPLACEMENT", "FVG_FORMED",
 const reasonCount = new Map();
 for (let i = W; i < C.length - 1; i++) {
   const win = C.slice(i - W + 1, i + 1);
-  const apa = TTI.analyseAPA(win, { timeframe: TF === 300 ? "M5" : TF === 60 ? "M1" : "M15", cfg: TTI.APA_CONFIG });
+  const apa = TTI.analyseAPA(win, { timeframe: TFNAME, cfg: TTI.APA_CONFIG });
   const key = apa.setupId || `${apa.stage}|${apa.dir}|${apa.components.bosIndex != null ? win[apa.components.bosIndex].t : "none"}`;
   if (apa.dir) {
     const prev = funnel.get(key) || { best: "BOS_WEAK", end: null }, terminal = ["INVALIDATED", "EXPIRED"].includes(apa.stage);

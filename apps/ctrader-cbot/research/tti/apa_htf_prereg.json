@@ -1,0 +1,16 @@
+{
+  "id": "TTI_5_16_APA_H4_D1",
+  "registered": "2026-10-14, before any APA run on H4 or D1 bars",
+  "question": "TTI 5.16 APA failed at M1-H1 on forex, gold, Volatility and Jump, and its positive control (Drift Switch) shows it pays where trends persist at the bar horizon. Real markets trend over weeks to months (crypto 4-week, gold 12-month). Does APA pay on H4 and D1 bars, where those trends live?",
+  "code": "apa_replay.mjs unchanged in method (TTI's own analyseAPA and buildPlan on the last 300 closed bars; fresh trigger; market entry at the next open; plan stop and TP1 (rule TTI, TP1 >= 1R) or 1.5R (rule FIX15); stop first when a bar touches both; gaps fill at the open; time exit after 96 bars; mirror control). Added for these timeframes: APA timeframe names H4 and D1 (TTI's setup expiry 8 bars on H4, its default 12 on D1); bars aligned to a 21:00 UTC day for non-crypto (CUT=21) and to UTC days for crypto; holding cost FIN per year charged per day held.",
+  "timeframes": ["H4", "D1"],
+  "htf_variant": "HTF = the next timeframe up agrees (H4 -> D1, D1 -> weekly): its last two confirmed k=5 swing highs and lows are HH/HL for a buy, LH/LL for a sell",
+  "groups": {
+    "INDEX": "SPXUSD, NSXUSD, UKXGBP, JPXJPY (HistData M1, 2010-11 to 2026-09); spread 0.02% of price; financing 5%/yr. GRXEUR is excluded: its file holds a different index from 2020-06-15 to 2023-12-04 (lab round 7).",
+    "GOLD": "XAUUSD (HistData M1, 2010-01 to 2026-09); spread 0.35; financing 1.5%/yr",
+    "FX": "EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, USDCHF, NZDUSD, EURJPY, GBPJPY, EURGBP (HistData M1, 2010-01 to 2026-09); spread 0.0001 (0.00015 GBPUSD, 0.012 USDJPY/EURJPY, 0.02 GBPJPY, 0.00015 EURGBP); financing 1.5%/yr",
+    "CRYPTO": "BTCUSDT, ETHUSDT (Binance 15m, 2017-08 to 2026-10); spread 0.2% of price; financing 10%/yr"
+  },
+  "halves": "2010-2017 and 2018-2026; crypto 2017-08..2021-12 and 2022-01..2026-10",
+  "pass": "per group x timeframe x rule (TTI, FIX15) x variant (ALL, HTF): net mean R > 0 with t >= 2 in BOTH halves, and the trade minus its mirror > 0 in both halves. 32 cells; anything else is a fail. A pass would be followed by a forward test, not by a direct EA engine."
+}

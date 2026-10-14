@@ -414,3 +414,35 @@ On M1, it is +0.04 to +1.34R before costs, but the spread takes most of it with 
 - **On forex, gold, Volatility and Jump at M1–H1 it gives 0R** because those markets have no persistence at those horizons. That matches every other test: the trends found in real markets are weeks to months long (crypto 4-week, gold 12-month).
 - **Even on Drift Switch, APA extracts less than plain momentum,** about +0.4R against about +1R gross. Waiting for a retest and a trigger gives up part of the move.
 - **So the model is not broken, but it is a short-horizon trend-continuation detector.** It can only pay where short-horizon trends exist.
+
+### APA on H4 and D1 bars (2026-10-14, pre-registered in `apa_htf_prereg.json`)
+
+**Why this test.** The positive control showed APA pays where trends persist at the bar's horizon. Real markets trend over weeks to months, so APA was run on H4 and D1 bars. The harness is the same, `apa_replay.mjs`, with three additions for these timeframes:
+- a 21:00 UTC day for non-crypto markets;
+- financing charged per day held;
+- TTI's H4/D1 setup expiry.
+
+**Data.**
+- Indices: S&P, Nasdaq, FTSE, Nikkei, 2010–2026.
+- Gold and 10 FX pairs, 2010–2026.
+- BTC and ETH, 2017–2026.
+
+**Results:** `apa_htf_results.txt` (summary: `apa_htf_summary.mjs`).
+
+**Result: 0 of 32 cells pass.** The large cells, before costs:
+
+| | H4, FIX15 | D1, FIX15 |
+|---|---|---|
+| Indices (575 / 128 trades) | +0.01R | −0.28R (t −2.7) |
+| Gold (168 / 31) | +0.03R | −0.14R |
+| FX, 10 pairs (1,648 / 354) | −0.09R (t −3.1) | −0.08R |
+| Crypto (265 / 51) | −0.13R | −0.05R |
+
+**What it shows.**
+- **APA's plan (TTI's TP1 ≥ 1R) almost never fires on these bars:** 0–6 trades per market in 16 years on D1.
+- **With the 1.5R target, before-cost results are about 0R or negative,** and no better than the mirror trade.
+- **The higher-timeframe filter adds nothing reliable.** Gold H4 HTF, +0.30R before costs (t 1.7, n 49), is the best cell and still fails both halves' t.
+
+**Why the slow trends do not reach APA.** The real-market trends are in returns over weeks to months and are small per day. APA trades a break, retest and trigger with a stop at the nearest internal swing, which is a structure a few bars long. It does not hold the trend.
+
+**Verdict.** APA is not validated on any timeframe tested, M1 to D1, on forex, gold, indices, crypto, Volatility or Jump. It works only where short-horizon persistence exists, as on Drift Switch.

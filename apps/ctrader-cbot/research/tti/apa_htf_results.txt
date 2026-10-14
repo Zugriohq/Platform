@@ -1,0 +1,34 @@
+net R (costs and financing paid) per half | trade minus mirror per half | before costs, all -> verdict
+TTI H4 INDEX ALL: -0.303R t -0.8 (n 9) / +0.070R t 0.1 (n 22) | +0.114R t 0.3 (n 9) / -0.092R t -0.1 (n 22) | gross +0.012R t 0.0 (n 31) -> fail
+TTI H4 INDEX HTF: -0.228R t -0.3 (n 2) / -0.618R t -2.5 (n 9) | +0.001R t 0.1 (n 2) / -0.936R t -1.5 (n 9) | gross -0.516R t -2.2 (n 11) -> fail
+TTI H4 GOLD ALL: -0.196R t -0.6 (n 8) / +0.392R t 0.5 (n 7) | +0.608R t 2.0 (n 8) / +1.086R t 1.2 (n 7) | gross +0.172R t 0.4 (n 15) -> fail
+TTI H4 GOLD HTF: -0.036R t -0.1 (n 3) / n 1 | +0.644R t 1.0 (n 3) / n 1 | gross +1.311R t 1.0 (n 4) -> fail
+TTI H4 FX ALL: +0.049R t 0.3 (n 53) / +0.070R t 0.4 (n 49) | +0.102R t 0.3 (n 53) / +0.196R t 0.7 (n 49) | gross +0.114R t 1.1 (n 102) -> fail
+TTI H4 FX HTF: +0.357R t 1.3 (n 20) / +0.242R t 0.6 (n 12) | -0.006R t -0.0 (n 20) / +0.572R t 1.0 (n 12) | gross +0.359R t 1.6 (n 32) -> fail
+TTI H4 CRYPTO ALL: -0.500R t -2.3 (n 8) / -0.359R t -1.1 (n 6) | -0.531R t -2.0 (n 8) / -0.491R t -0.6 (n 6) | gross -0.350R t -1.8 (n 14) -> fail
+TTI H4 CRYPTO HTF: -0.505R t -1.5 (n 4) / n 1 | -0.305R t -1.0 (n 4) / n 1 | gross -0.156R t -0.4 (n 5) -> fail
+TTI D1 INDEX ALL: +0.354R t 2.7 (n 2) / -0.556R t -1.0 (n 4) | +0.762R t 1.0 (n 2) / -1.091R t -0.8 (n 4) | gross -0.233R t -0.6 (n 6) -> fail
+TTI D1 INDEX HTF: n 0 / n 1 | n 0 / n 1 | gross n 1 -> fail
+TTI D1 GOLD ALL: n 1 / -0.129R t -0.1 (n 2) | n 1 / +0.102R t 0.1 (n 2) | gross -0.393R t -0.6 (n 3) -> fail
+TTI D1 GOLD HTF: n 0 / n 0 | n 0 / n 0 | gross n 0 -> fail
+TTI D1 FX ALL: +0.300R t 0.6 (n 13) / -0.212R t -1.2 (n 18) | +0.059R t 0.1 (n 13) / -0.051R t -0.2 (n 18) | gross +0.032R t 0.1 (n 31) -> fail
+TTI D1 FX HTF: +0.636R t 0.7 (n 7) / +0.019R t 0.1 (n 9) | -0.365R t -0.2 (n 7) / -0.234R t -0.6 (n 9) | gross +0.313R t 0.7 (n 16) -> fail
+TTI D1 CRYPTO ALL: n 0 / -0.867R t -2.8 (n 6) | n 0 / -0.999R t -1.5 (n 6) | gross -0.694R t -2.9 (n 6) -> fail
+TTI D1 CRYPTO HTF: n 0 / n 1 | n 0 / n 1 | gross n 1 -> fail
+FIX15 H4 INDEX ALL: -0.092R t -1.1 (n 224) / +0.006R t 0.1 (n 351) | +0.130R t 0.9 (n 224) / +0.032R t 0.3 (n 351) | gross +0.007R t 0.1 (n 575) -> fail
+FIX15 H4 INDEX HTF: -0.027R t -0.2 (n 63) / -0.034R t -0.3 (n 106) | +0.089R t 0.3 (n 63) / +0.108R t 0.5 (n 106) | gross +0.012R t 0.1 (n 169) -> fail
+FIX15 H4 GOLD ALL: +0.070R t 0.5 (n 77) / -0.091R t -0.7 (n 91) | +0.321R t 1.3 (n 77) / +0.075R t 0.3 (n 91) | gross +0.034R t 0.4 (n 168) -> fail
+FIX15 H4 GOLD HTF: +0.161R t 0.7 (n 26) / +0.379R t 1.5 (n 23) | +0.298R t 0.7 (n 26) / +0.744R t 1.7 (n 23) | gross +0.300R t 1.7 (n 49) -> fail
+FIX15 H4 FX ALL: -0.090R t -2.1 (n 794) / -0.169R t -4.2 (n 854) | +0.031R t 0.4 (n 794) / -0.170R t -2.3 (n 854) | gross -0.092R t -3.1 (n 1648) -> fail
+FIX15 H4 FX HTF: -0.097R t -1.2 (n 240) / -0.137R t -1.7 (n 233) | +0.055R t 0.4 (n 240) / -0.147R t -1.0 (n 233) | gross -0.076R t -1.4 (n 473) -> fail
+FIX15 H4 CRYPTO ALL: -0.266R t -2.5 (n 121) / -0.209R t -2.1 (n 144) | -0.249R t -1.3 (n 121) / -0.077R t -0.4 (n 144) | gross -0.129R t -1.8 (n 265) -> fail
+FIX15 H4 CRYPTO HTF: -0.453R t -2.6 (n 43) / -0.180R t -1.0 (n 49) | -0.695R t -2.1 (n 43) / +0.103R t 0.3 (n 49) | gross -0.203R t -1.6 (n 92) -> fail
+FIX15 D1 INDEX ALL: -0.352R t -2.2 (n 50) / -0.248R t -1.9 (n 78) | -0.559R t -1.8 (n 50) / -0.290R t -1.2 (n 78) | gross -0.275R t -2.7 (n 128) -> fail
+FIX15 D1 INDEX HTF: -0.227R t -0.7 (n 16) / -0.373R t -1.5 (n 22) | +0.115R t 0.2 (n 16) / -0.431R t -1.0 (n 22) | gross -0.298R t -1.6 (n 38) -> fail
+FIX15 D1 GOLD ALL: -0.336R t -1.1 (n 14) / -0.014R t -0.0 (n 17) | -0.349R t -0.6 (n 14) / +0.291R t 0.6 (n 17) | gross -0.136R t -0.6 (n 31) -> fail
+FIX15 D1 GOLD HTF: +0.220R t 0.2 (n 2) / +1.041R t 2.5 (n 6) | +1.244R t 1.0 (n 2) / +2.074R t 5.0 (n 6) | gross +0.849R t 2.1 (n 8) -> fail
+FIX15 D1 FX ALL: -0.088R t -0.9 (n 145) / -0.101R t -1.2 (n 209) | -0.093R t -0.5 (n 145) / +0.006R t 0.0 (n 209) | gross -0.079R t -1.2 (n 354) -> fail
+FIX15 D1 FX HTF: -0.024R t -0.1 (n 48) / -0.002R t -0.0 (n 63) | -0.055R t -0.2 (n 48) / +0.157R t 0.6 (n 63) | gross +0.002R t 0.0 (n 111) -> fail
+FIX15 D1 CRYPTO ALL: -0.032R t -0.1 (n 19) / -0.144R t -0.7 (n 32) | +0.237R t 0.5 (n 19) / +0.154R t 0.4 (n 32) | gross -0.046R t -0.3 (n 51) -> fail
+FIX15 D1 CRYPTO HTF: -0.050R t -0.1 (n 5) / -0.374R t -0.8 (n 7) | +0.508R t 0.5 (n 5) / -0.276R t -0.3 (n 7) | gross -0.209R t -0.6 (n 12) -> fail
+0 of 32 cells pass
