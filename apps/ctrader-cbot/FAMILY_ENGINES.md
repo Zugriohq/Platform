@@ -40,6 +40,8 @@ Evidence comes from `research/lab/README.md` (rounds 1–3) and Market Lab (on t
 
 **Status.** In the EA, forward test on demo.
 
+**Extended (2026-10-14).** The research's test-in-markets indices now run too, each on its own exchange's cash session: Wall Street 30, Germany 40, UK 100, Japan 225, Euro 50, France 40, Australia 200 and Hong Kong 50. Their edge was weaker (+0.039R with the stop, PF 1.23), so they are on from a $250 balance. The US pair still trades from $0. More markets means more trades from the same tested rule, about 18 a year per index.
+
 **What it is worth.** About 35 trades a year on two indices, roughly 3–4R a year. Slow, real and modest.
 
 **Not adopted:**
@@ -86,9 +88,7 @@ Evidence comes from `research/lab/README.md` (rounds 1–3) and Market Lab (on t
 - **At 1.5% a year financing:** +0.15R, t = 2.5. The 2013+ half falls to +0.06.
 - **At the registered 5% a year:** +0.08R, t = 1.4. This fails the registered test.
 
-**Status.** Undecided. The broker's XAUUSD swap (long and short) decides it.
-
-**Next.** Read the swap from cTrader. If holding costs are at or below about 1.5% a year, build a monthly gold trend engine for forward test.
+**Status (2026-10-14): built, with the swap as an automatic gate.** The EA's Gold trend engine decides monthly by rule A. It holds a side only while the broker's swap for that side costs at most 1.5% a year, the level at which the result held. It reads the swap itself and prints the cost of each side, so no manual lookup is needed. If the swap is above the limit, it stays flat and says so.
 
 ## Synthetic indices (Deriv; generated, not markets)
 
@@ -140,6 +140,13 @@ Each synthetic is a published random process. A rule can only have an edge where
 - **The friend's panel:** 63.5% wins over 244 trades is 3 standard errors above this replay's 52.9%. A reported run like that is what a lucky or selected sample looks like. Only his full account history can say more: every trade since the start, with deposits and withdrawals.
 - **Second run (2026-10-06 to 2026-10-13, 601,205 ticks):** the same picture. 1,014 trades at 52.9% against a break-even of 56.4%, −0.162 points per trade, −$82 for the week. Generator z = 0.1.
 - **Status: Crash 150 gets no engine.**
+- **Boom 150 sell 2/2 at 0.5 lots (the friend's bot; owner's Deriv demo, 2026-10-07 to 2026-10-14, 601,277 ticks).** The same verdict as Crash 150.
+  - 1,008 trades, 50.4% won against a break-even of 56.2%.
+  - −0.263 points per trade (t = −3.6), which is −$132.70 for the week. Both halves lose: −0.223 and −0.301.
+  - Generator fair: z = 1.1; one spike per 150 ticks of +0.99 points; drift −0.00646 per tick.
+  - None of the 32 grid rules passes.
+  - Boom 50's tick history did not finish loading in the cloud; not needed after these two results.
+- **Status: synthetic scalping is closed.** Both of the friend's spike-index rules lose the spread on fair generators.
 - **The friend's newer bots (MT5, 2026-10-13):** Boom 150 sell 2/2 at 0.5 lots; Boom 50 sell 10/10 at 0.1 lots; also Step, Volatility 75 and EURUSD. They are replayed the same way (Market Lab default *Replay rules*).
   - **His Boom 150 "Scan Profit" panel:** 799 setups, 443 targets hit and 356 stops hit (55.4%), +$87.
   - **What the panel assumes:** $87 = 443 × $1 − 356 × $1.00, so it books every stop at exactly −$1. On these indices a spike gaps through the stop. The Crash 150 losses averaged 2.59 points against a 2-point stop, about 30% more. At that size the same counts give 443 − 356 × 1.30 ≈ −$20, before the spread.

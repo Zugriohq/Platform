@@ -41,6 +41,90 @@ namespace Zugrio.CBot.Core
         }
     }
 
+    /// <summary>The exchange whose cash session an index CFD follows (2026-10-14: the index engine beyond the US indices).</summary>
+    public enum Exchange { NewYork, London, Frankfurt, Tokyo, Sydney, HongKong }
+
+    /// <summary>
+    /// Exchange wall time from UTC and back, with each exchange's daylight-saving rule computed (no time-zone database,
+    /// so the cTrader cloud behaves like every other machine). UK and EU clocks change at 01:00 UTC on the last Sundays of
+    /// March and October; Sydney is on daylight time from the first Sunday of October 02:00 to the first Sunday of April
+    /// 03:00 local (both 16:00 UTC the Saturday before); Tokyo and Hong Kong keep one offset all year.
+    /// </summary>
+    public static class ExchangeTime
+    {
+        public static TimeSpan Offset(Exchange x, DateTime utc) => x switch
+        {
+            Exchange.NewYork => TimeSpan.FromHours(NewYorkTime.IsDaylight(utc) ? -4 : -5),
+            Exchange.London => TimeSpan.FromHours(EuSummer(utc) ? 1 : 0),
+            Exchange.Frankfurt => TimeSpan.FromHours(EuSummer(utc) ? 2 : 1),
+            Exchange.Tokyo => TimeSpan.FromHours(9),
+            Exchange.HongKong => TimeSpan.FromHours(8),
+            Exchange.Sydney => TimeSpan.FromHours(SydneySummer(utc) ? 11 : 10),
+            _ => throw new ArgumentOutOfRangeException(nameof(x)),
+        };
+
+        public static DateTime FromUtc(Exchange x, DateTime utc) => DateTime.SpecifyKind(utc + Offset(x, utc), DateTimeKind.Unspecified);
+
+        /// <summary>UTC for an exchange wall time. Exact away from the changeover hour, which is all the engine asks for.</summary>
+        public static DateTime ToUtc(Exchange x, DateTime local)
+        {
+            foreach (var h in new[] { -5, -4, 0, 1, 2, 8, 9, 10, 11 })
+            {
+                var utc = DateTime.SpecifyKind(local - TimeSpan.FromHours(h), DateTimeKind.Utc);
+                if (Offset(x, utc) == TimeSpan.FromHours(h)) return utc;
+            }
+            return DateTime.SpecifyKind(local - Offset(x, DateTime.SpecifyKind(local, DateTimeKind.Utc)), DateTimeKind.Utc);
+        }
+
+        private static bool EuSummer(DateTime utc) => utc >= LastSunday(utc.Year, 3).AddHours(1) && utc < LastSunday(utc.Year, 10).AddHours(1);
+
+        private static bool SydneySummer(DateTime utc) =>
+            utc < FirstSunday(utc.Year, 4).AddHours(-8) || utc >= FirstSunday(utc.Year, 10).AddHours(-8);   // Saturday 16:00 UTC
+
+        private static DateTime LastSunday(int y, int m)
+        {
+            var last = new DateTime(y, m, DateTime.DaysInMonth(y, m), 0, 0, 0, DateTimeKind.Utc);
+            return last.AddDays(-(int)last.DayOfWeek);
+        }
+
+        private static DateTime FirstSunday(int y, int m)
+        {
+            var first = new DateTime(y, m, 1, 0, 0, 0, DateTimeKind.Utc);
+            return first.AddDays((7 - (int)first.DayOfWeek) % 7);
+        }
+    }
+
+    /// <summary>An index CFD's exchange, cash session (local wall time) and minimum hour bars for a full session.</summary>
+    public sealed record IndexVenue(Exchange Exchange, TimeSpan Start, TimeSpan Close, int MinBars);
+
+    /// <summary>
+    /// Which exchange an index CFD follows, from the names it is known by. The research tested the rule on each index's
+    /// own cash close (research/lab round 3: DJI, DAX, FTSE, N225, SX5E, CAC, HSI, ASX200 besides the S&amp;P 500 and Nasdaq 100).
+    /// Sessions start on the hour (H1 bars are hour-aligned); the decision uses the latest price before the close.
+    /// </summary>
+    public static class IndexVenues
+    {
+        public static readonly IndexVenue NewYork = new(Exchange.NewYork, TimeSpan.FromHours(9), TimeSpan.FromHours(16), 6);
+        public static readonly IndexVenue London = new(Exchange.London, TimeSpan.FromHours(8), new TimeSpan(16, 30, 0), 6);
+        public static readonly IndexVenue Frankfurt = new(Exchange.Frankfurt, TimeSpan.FromHours(9), new TimeSpan(17, 30, 0), 6);
+        public static readonly IndexVenue Tokyo = new(Exchange.Tokyo, TimeSpan.FromHours(9), new TimeSpan(15, 30, 0), 5);
+        public static readonly IndexVenue Sydney = new(Exchange.Sydney, TimeSpan.FromHours(10), TimeSpan.FromHours(16), 5);
+        public static readonly IndexVenue HongKong = new(Exchange.HongKong, TimeSpan.FromHours(9), TimeSpan.FromHours(16), 5);
+
+        public static IndexVenue For(IEnumerable<string> names)
+        {
+            var all = string.Join("|", names).ToUpperInvariant().Replace(" ", "");
+            if (Has(all, "GERMANY", "DE40", "DE30", "GER40", "GER30", "DAX", "EURO50", "EU50", "STOXX", "EUSTX", "FRANCE", "FR40", "FRA40", "CAC")) return Frankfurt;
+            if (Has(all, "UK100", "FTSE", "UK 100")) return London;
+            if (Has(all, "JAPAN", "JP225", "JPN225", "NIKKEI", "N225")) return Tokyo;
+            if (Has(all, "AUSTRALIA", "AUS200", "AU200", "ASX")) return Sydney;
+            if (Has(all, "HONGKONG", "HK50", "HSI")) return HongKong;
+            return NewYork;
+        }
+
+        private static bool Has(string s, params string[] keys) => keys.Any(k => s.Contains(k.Replace(" ", ""), StringComparison.Ordinal));
+    }
+
     /// <summary>One hour bar, open time in UTC. The last one may still be forming (its close is the latest price).</summary>
     public readonly record struct HourBar(DateTime OpenUtc, double O, double H, double L, double C);
 
@@ -53,9 +137,13 @@ namespace Zugrio.CBot.Core
     /// <param name="StopAtr">Protective stop below the entry, in session ATRs.</param>
     /// <param name="FarTargetAtr">Backstop take-profit (the instruction contract needs one). Research: never reached in 3,018 trades.</param>
     /// <param name="MinBarsPerSession">Sessions with fewer hour bars (holidays, half days) are left out, as in the research data.</param>
+    /// <param name="Exchange">Whose wall clock the session times are in.</param>
     public sealed record IndexRule(int LowerCloses = 3, int TrendSma = 200, int ExitSma = 5, int AtrPeriod = 14, double StopAtr = 3.0,
-        double FarTargetAtr = 10.0, TimeSpan SessionStart = default, TimeSpan SessionClose = default, int MinBarsPerSession = 6)
+        double FarTargetAtr = 10.0, TimeSpan SessionStart = default, TimeSpan SessionClose = default, int MinBarsPerSession = 6, Exchange Exchange = Exchange.NewYork)
     {
+        /// <summary>This rule on another exchange's session.</summary>
+        public IndexRule At(IndexVenue v) => this with { Exchange = v.Exchange, SessionStart = v.Start, SessionClose = v.Close, MinBarsPerSession = v.MinBars };
+
         public TimeSpan Start => SessionStart == default ? TimeSpan.FromHours(9) : SessionStart;
         public TimeSpan Close => SessionClose == default ? TimeSpan.FromHours(16) : SessionClose;
 
@@ -102,7 +190,7 @@ namespace Zugrio.CBot.Core
             var byDate = new SortedDictionary<DateTime, (double H, double L, double C, int N)>();
             foreach (var b in bars.OrderBy(x => x.OpenUtc))
             {
-                var local = NewYorkTime.FromUtc(b.OpenUtc);
+                var local = ExchangeTime.FromUtc(rule.Exchange, b.OpenUtc);
                 if (local.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday) continue;
                 if (local.TimeOfDay < rule.Start || local.TimeOfDay >= rule.Close) continue;
                 byDate[local.Date] = byDate.TryGetValue(local.Date, out var s) ? (Math.Max(s.H, b.H), Math.Min(s.L, b.L), b.C, s.N + 1) : (b.H, b.L, b.C, 1);
@@ -154,7 +242,7 @@ namespace Zugrio.CBot.Core
             return d with { Action = IndexAction.Enter, Reason = "LOWER_CLOSES_IN_UPTREND" };
         }
 
-        /// <summary>The decision time for a New York date: the session close minus the lead, in UTC.</summary>
-        public static DateTime DecisionUtc(DateTime todayNewYork, IndexRule rule, TimeSpan lead) => NewYorkTime.ToUtc(todayNewYork.Date + rule.Close - lead);
+        /// <summary>The decision time for an exchange date: the session close minus the lead, in UTC.</summary>
+        public static DateTime DecisionUtc(DateTime todayLocal, IndexRule rule, TimeSpan lead) => ExchangeTime.ToUtc(rule.Exchange, todayLocal.Date + rule.Close - lead);
     }
 }

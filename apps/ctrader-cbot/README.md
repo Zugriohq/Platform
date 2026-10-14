@@ -39,8 +39,21 @@ One instance covers every market. The chart it is attached to does not matter.
 - **Old setting replaced.** The old *Trading styles* parameter (`StylesText`) was replaced by *Decision-core styles* (`CoreStylesText`). An instance updated to this build therefore starts with the new default (off) instead of keeping `DAY,SCALP`.
 
 **The Zugrio Index engine.** Research, `UNVALIDATED_RESEARCH`; it is not decision-core.
-- **Markets:** the indices in *Index markets*. By default the US 500 and the US Tech 100. Each entry lists alternative broker names, and the first one the broker offers is used. If none matches, the log suggests similar broker symbols.
-- **When it decides:** once per New York trading day, at the US cash close minus *decide minutes before the close* (default 15:55 New York). Sessions are built from the CFD's H1 bars, 09:00–16:00 New York, with daylight saving computed. Days with fewer than 6 hour bars (holidays, half days) are left out.
+- **Markets:** the indices in *Index markets*. Each entry lists alternative broker names, and the first one the broker offers is used. If none matches, the market is skipped and the log suggests similar broker symbols.
+  - **From $0:** US 500 and US Tech 100, the development and test-in-time indices.
+  - **From a $250 balance (2026-10-14):** Wall Street 30, Germany 40, UK 100, Japan 225, Euro 50, France 40, Australia 200 and Hong Kong 50. These are the research's test-in-markets indices, where the edge was weaker.
+- **When it decides:** once per trading day per market, *decide minutes before the close* (default 5) before **its own exchange's cash close**. Sessions are built from the CFD's H1 bars in exchange time, with each exchange's daylight saving computed (`IndexVenues`, `ExchangeTime`):
+
+  | Exchange | Indices | Session |
+  |---|---|---|
+  | New York | US 500, US Tech 100, Wall Street 30 | 09:00–16:00 (the close is *US cash close*) |
+  | London | UK 100 | 08:00–16:30 |
+  | Frankfurt | Germany 40, Euro 50, France 40 | 09:00–17:30 |
+  | Tokyo | Japan 225 | 09:00–15:30 |
+  | Sydney | Australia 200 | 10:00–16:00 |
+  | Hong Kong | Hong Kong 50 | 09:00–16:00 |
+
+  Days with too few hour bars are left out: fewer than 6 in New York, London and Frankfurt, fewer than 5 in Tokyo, Sydney and Hong Kong (holidays, half days).
 - **Buy:** after **3 lower closes in a row** (today's close is the current price) while the close is **above its 200-session average**. Long only.
 - **Stop:** **3 × the 14-session ATR** below the entry.
 - **Backstop target:** 10 ATR. The instruction contract needs a target; in 3,018 historical trades none came within 10 ATR.
@@ -68,6 +81,22 @@ One instance covers every market. The chart it is attached to does not matter.
 - **Small accounts.** Two of your own risk rules can stop it trading:
   - The daily rules still apply. After a small winning day, *Never lose more in a day than the previous day made* can shrink or skip an index trade.
   - The affordability line shows the smallest balance each index can trade. If the broker's minimum volume risks more than 5% at a 3-ATR stop, the engine skips.
+
+**The Zugrio Gold trend engine (2026-10-14).** Research, `UNVALIDATED_RESEARCH`; it is not decision-core. On by default; *Gold trend engine on*.
+- **Rule** (research/lab round 4, rule A): once a month, hold gold in the direction of its **12-month return** (sign of the last month-end close against the one 12 months earlier).
+  - It decides on the month's first weekday from *decide … from (UTC hour)*, default 14:00 UTC, with the market open.
+  - It keeps, reverses or closes the position.
+- **Swap gate:** a side is held only while the broker's own swap for it costs at most *max swap cost*, default **1.5% a year**. That is the financing level at which the tested edge held: +0.15R a month, t = 2.5. At the registered 5% a year it failed.
+  - The engine reads `SwapLong`/`SwapShort` (pips, points or percent) and converts them to a yearly cost.
+  - The cost of each side is printed at start and at every decision. If the side the trend calls for is too costly, it stays flat.
+- **Stop:** 3 × monthly volatility (60-day daily volatility × √21). This is a crash guard; the research rule had no stop.
+- **Backstop target:** 10 × monthly volatility.
+- **What it skips:** no break-even or trailing.
+- **One entry per month and side:** a trade stopped out is not re-entered until next month.
+- **From balance:** *Gold: trade from balance*, default 120.
+- **Same safety path as every entry:** sizing, tier, spread filter, signed instruction, guards, journal and broker-record duplicate check. Exits are whole-position closes through the risk-reducing gate.
+- **Journal:** a `Zugrio Trend: …` line at start and at each monthly decision, with the 12-month return, volatility, swap costs and outcome.
+- **What it is worth:** about one decision a month on one market. A diversifier, not a growth engine.
 
 ### Decision-core styles (off by default)
 

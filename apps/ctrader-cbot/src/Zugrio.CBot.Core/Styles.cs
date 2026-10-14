@@ -56,6 +56,8 @@ namespace Zugrio.CBot.Core
         public const string Scalp = "SCALP";
         /// <summary>Trades of the index engine (not a decision-core style; it has its own switch and parameters).</summary>
         public const string Index = "INDEX";
+        /// <summary>Trades of the gold trend engine (its own switch and parameters, like the index engine).</summary>
+        public const string Trend = "TREND";
         private const string Tag = " st=";
 
         /// <summary>"DAY,SCALP" → the enabled decision-core style names, in order, without duplicates. Empty (or NONE) = both off.</summary>

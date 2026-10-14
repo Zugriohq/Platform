@@ -53,12 +53,23 @@ namespace Zugrio.CBot.EA
             "USDJPY|FX|0; AUDUSD|FX|0; EURUSD|FX|0; GBPUSD|FX|0; Volatility 50 Index|SYN|20; " +
             "Volatility 10 Index|SYN|35; Volatility 25 Index|SYN|35; Volatility 75 Index|SYN|50; " +
             "Volatility 10 (1s) Index|SYN|80; Step Index|SYN|80; Volatility 100 Index|SYN|80; XAUUSD|METAL|120";
-        // Index engine markets (ADR-0012): the two indices whose edge held out of sample. Brokers name index CFDs
-        // differently, so each entry lists alternatives; the first one the broker offers is used. A separate
-        // parameter, so an instance that kept an older watchlist still gets these.
+        // Index engine markets (ADR-0012). The US 500 and US Tech 100 are the development and test-in-time indices; the
+        // others are the research's test-in-markets indices (research/lab round 3: +0.22% a trade before the stop, PF 1.41;
+        // weaker than the US pair, so they unlock at a higher balance). Each trades on its own exchange's cash session
+        // (IndexVenues). Brokers name index CFDs differently, so each entry lists alternatives; the first one offered is
+        // used and a market the broker lacks is skipped. A separate parameter, so an instance that kept an older
+        // watchlist still gets these.
         public const string DefaultIndexMarkets =
             "US 500,US500,US SP 500,SPX500,SP500,US500Cash|INDEX|0; " +
-            "US Tech 100,USTEC,US100,NAS100,USTech100,NDX100,US100Cash|INDEX|0";
+            "US Tech 100,USTEC,US100,NAS100,USTech100,NDX100,US100Cash|INDEX|0; " +
+            "Wall Street 30,US 30,US30,DJ30,WS30,US30Cash|INDEX|250; " +
+            "Germany 40,DE 40,DE40,GER40,DAX40,Germany 30,GER30|INDEX|250; " +
+            "UK 100,UK100,FTSE100,FTSE 100|INDEX|250; " +
+            "Japan 225,JP 225,JP225,JPN225,Nikkei 225|INDEX|250; " +
+            "Euro 50,EU 50,EU50,EUSTX50,Euro Stoxx 50|INDEX|250; " +
+            "France 40,FR 40,FR40,FRA40,CAC 40|INDEX|250; " +
+            "Australia 200,AU 200,AUS200,AU200,ASX 200|INDEX|250; " +
+            "Hong Kong 50,HK 50,HK50,HSI 50|INDEX|250";
         public const string DefaultTiers = "0:1:5; 100:2:6; 250:3:8; 1000:4:8";
 
         [Parameter("Watchlist (Name|SYN/FX/METAL|unlock balance; ...)", DefaultValue = DefaultWatchlist, Group = "Markets and capital tiers (research)")] public string WatchlistText { get; set; } = DefaultWatchlist;
@@ -113,6 +124,15 @@ namespace Zugrio.CBot.EA
         [Parameter("Index: US cash close, New York time (HH:mm)", DefaultValue = "16:00", Group = "Zugrio Index engine (research)")] public string IndexCloseText { get; set; } = "16:00";
         [Parameter("Index: decide this many minutes before the close", DefaultValue = 5, MinValue = 1, MaxValue = 60, Group = "Zugrio Index engine (research)")] public int IndexLeadMinutes { get; set; } = 5;
 
+        // Gold trend engine (research/lab round 4, rule A). Trades a side only while the broker's swap for it costs at most
+        // the limit below per year: at 1.5%/yr the tested edge held (t = 2.5), at the registered 5%/yr it did not.
+        [Parameter("Gold trend engine on", DefaultValue = true, Group = "Zugrio Gold trend engine (research)")] public bool TrendEngineOn { get; set; } = true;
+        [Parameter("Gold symbol (name,alternative,...)", DefaultValue = "XAUUSD,XAUUSDmicro,Gold,GOLD,XAUUSD.m", Group = "Zugrio Gold trend engine (research)")] public string TrendSymbolText { get; set; } = "XAUUSD,XAUUSDmicro,Gold,GOLD,XAUUSD.m";
+        [Parameter("Gold: trade from balance", DefaultValue = 120, MinValue = 0, Group = "Zugrio Gold trend engine (research)")] public double TrendUnlockBalance { get; set; } = 120;
+        [Parameter("Gold: max swap cost (% a year)", DefaultValue = 1.5, MinValue = 0, Group = "Zugrio Gold trend engine (research)")] public double TrendMaxCostPct { get; set; } = 1.5;
+        [Parameter("Gold: stop (x monthly volatility)", DefaultValue = 3.0, MinValue = 0.5, Group = "Zugrio Gold trend engine (research)")] public double TrendStopSigma { get; set; } = 3.0;
+        [Parameter("Gold: decide once a month, on a weekday from (UTC hour)", DefaultValue = 14, MinValue = 0, MaxValue = 23, Group = "Zugrio Gold trend engine (research)")] public int TrendDecideHourUtc { get; set; } = 14;
+
         [Parameter("Risk per trade (% of balance)", DefaultValue = 1.0, MinValue = 0.05, MaxValue = 5, Group = "Risk (research)")] public double RiskPct { get; set; }
         [Parameter("Max risk at broker minimum volume (%)", DefaultValue = 5.0, MinValue = 0.1, MaxValue = 20, Group = "Risk (research)")] public double MaxRiskPctAtMinVolume { get; set; }
         [Parameter("Max units per order", DefaultValue = 1000000, MinValue = 1, Group = "Risk (research)")] public double MaxUnits { get; set; }
@@ -149,10 +169,12 @@ namespace Zugrio.CBot.EA
             public bool Has(TradingStyle s) => Bars.ContainsKey(s.LocationTf) && Bars.ContainsKey(s.EntryTf);
         }
 
-        /// <summary>One equity-index CFD for the index engine: its H1 bars and the New York date it last decided.</summary>
+        /// <summary>One equity-index CFD for the index engine: its H1 bars, its exchange's rule and the exchange date it last decided.</summary>
         private sealed class IndexMarket
         {
-            public IndexMarket(WatchItem item, Symbol symbol, Bars h1) { Item = item; Sym = symbol; H1 = h1; }
+            public IndexMarket(WatchItem item, Symbol symbol, Bars h1, IndexRule rule) { Item = item; Sym = symbol; H1 = h1; Rule = rule; }
+            public IndexRule Rule { get; }
+            public Exchange Exchange => Rule.Exchange;
             public WatchItem Item { get; }
             public Symbol Sym { get; }
             public string Name => Sym.Name;
@@ -177,6 +199,12 @@ namespace Zugrio.CBot.EA
         private IReadOnlyList<Tier> _tiers = Array.Empty<Tier>();
         private readonly List<Market> _markets = new();
         private readonly List<IndexMarket> _indexMarkets = new();
+        private Symbol? _trendSym;
+        private Bars? _trendD1;
+        private TrendRule _trendRule = null!;
+        private string _trendDecidedMonth = "";
+        private DateTime _trendRetryAt = DateTime.MinValue;
+        private DateTime _trendLastTick = DateTime.MinValue;
         private IndexRule _indexRule = null!;
         private TimeSpan _indexLead;
         /// <summary>How long after the decision time a decision may still be taken (a restart inside it decides again; duplicates are refused).</summary>
@@ -229,6 +257,7 @@ namespace Zugrio.CBot.EA
                 _indexRule = new IndexRule(IndexLowerCloses, IndexTrendSma, IndexExitSma, AtrPeriod: 14, IndexStopAtr, IndexFarTargetAtr,
                     SessionClose: IndexRule.ParseClock(IndexCloseText)).Validated();
                 _indexLead = TimeSpan.FromMinutes(IndexLeadMinutes);
+                _trendRule = new TrendRule(StopSigma: TrendStopSigma, MaxCostPctPerYear: TrendMaxCostPct).Validated();
             }
             catch (FormatException e) { Print("Zugrio EA: invalid watchlist, tiers, routes, styles or index settings: " + e.Message + ". Not trading."); Stop(); return; }
             _trail = new TrailSettings(BreakEvenAtR, BreakEvenLockAtr, TrailStartR, TrailAtr, MinStepAtr: 0.1, MinGapAtr: 0.2, KeepProfitFraction);
@@ -284,8 +313,9 @@ namespace Zugrio.CBot.EA
 
             ResolveMarkets(watch);
             AdoptOpenTrades(watch);
-            if (_markets.Count == 0 && _indexMarkets.Count == 0)
-            { Print("Zugrio EA: nothing to trade: no watchlist symbol at this broker is in an enabled style or the index engine. Not trading."); Stop(); return; }
+            if (TrendEngineOn) SetupTrendEngine();
+            if (_markets.Count == 0 && _indexMarkets.Count == 0 && _trendSym == null)
+            { Print("Zugrio EA: nothing to trade: no watchlist symbol at this broker is in an enabled style, the index engine or the gold trend engine. Not trading."); Stop(); return; }
             Positions.Closed += OnPositionClosed;
             Timer.Start(TimeSpan.FromSeconds(1));
 
@@ -298,10 +328,12 @@ namespace Zugrio.CBot.EA
             Print($"Zugrio EA started: {(_exec.IsLive ? "LIVE" : "demo")} account {_accountId}. " +
                   (_styles.Count == 0 ? "Decision-core styles off. " : string.Join(", ", _styles.Select(st => $"{st.Name} {st.ContextTf}/{st.LocationTf}/{st.EntryTf} on {_markets.Count(x => x.Styles.Contains(st))} markets")) + ". ") +
                   (_indexMarkets.Count == 0 ? "Index engine: no markets. " : $"Index engine on {string.Join(", ", _indexMarkets.Select(m => m.Name))}. ") +
+                  (_trendSym == null ? "Gold trend engine off. " : $"Gold trend engine on {_trendSym.Name}. ") +
                   $"Config {_configVersion[..12]}, engine {_engine.BundleSha256[..12]}.");
             ProtectUnprotectedOnStart();
             ReportAffordability(Server.TimeInUtc);
             foreach (var im in _indexMarkets) ReportIndexState(im, Server.TimeInUtc);
+            if (_trendSym != null) ReportTrendState(Server.TimeInUtc);
         }
 
         private void ResolveMarkets(IReadOnlyList<WatchItem> watch)
@@ -363,7 +395,9 @@ namespace Zugrio.CBot.EA
             var h1 = MarketData.GetBars(TimeFrame.Hour, sym.Name);
             var from = Server.TimeInUtc.AddDays(-(_indexRule.SessionsNeeded * 1.6 + 30));
             for (var k = 0; k < 200 && h1.Count > 0 && h1.OpenTimes[0] > from; k++) if (h1.LoadMoreHistory() == 0) break;
-            var im = new IndexMarket(item, sym, h1);
+            // The US close comes from the parameter (default 16:00); other exchanges use their own cash session.
+            var venue = IndexVenues.For(Watchlist.Alternatives(item.Symbol).Append(sym.Name));
+            var im = new IndexMarket(item, sym, h1, venue.Exchange == Exchange.NewYork ? _indexRule : _indexRule.At(venue));
             sym.Tick += _ => im.LastTickUtc = Server.TimeInUtc;
             _indexMarkets.Add(im);
         }
@@ -406,14 +440,15 @@ namespace Zugrio.CBot.EA
             ManageOpenProfit(now);
             ManageTimeStops(now);
             if (_indexMarkets.Count > 0) RunIndexEngine(now);
+            if (_trendSym != null) RunTrendEngine(now);
             var hour = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0, DateTimeKind.Utc);
             if (_activityHour == DateTime.MinValue) _activityHour = hour;
             else if (hour > _activityHour)
             {
                 Print(_styles.Count > 0
                     ? _activity.Summary(hour, Account.Balance, Account.Equity, Positions.Count(IsZugrio), tier, _killSwitch.Remaining(Account.Equity), _killSwitch.Floor)
-                    : $"Zugrio EA, hour to {hour:HH:mm} UTC: index engine only ({string.Join(", ", _indexMarkets.Select(x => x.Name))}); it decides once a day at " +
-                      $"{(_indexRule.Close - _indexLead):hh\\:mm} New York ({IndexEngine.DecisionUtc(NewYorkTime.FromUtc(now).Date, _indexRule, _indexLead):HH:mm} UTC today). " +
+                    : $"Zugrio EA, hour to {hour:HH:mm} UTC: index engine only ({string.Join(", ", _indexMarkets.Select(x => x.Name))}); each market decides once a day, " +
+                      $"{IndexLeadMinutes} minutes before its own cash close. " +
                       $"Balance {Account.Balance:F2}, equity {Account.Equity:F2}, {Positions.Count(IsZugrio)} open (max {tier.MaxPositions}). Loss still allowed today {_killSwitch.Remaining(Account.Equity):F2}.");
                 Print(Scoreboard.Format(ClosedTrades(now.AddDays(-ResultsDays)), ResultsDays));
                 _activity.NextHour();
@@ -645,7 +680,7 @@ namespace Zugrio.CBot.EA
             foreach (var kv in o.Extra) record[kv.Key] = kv.Value;
             _log.Write(now, "entry", record);
             _activity.Entered(o.Style == TradingStyles.Scalp);
-            var tag = o.Style == TradingStyles.Scalp ? " (scalp)" : o.Style == TradingStyles.Index ? " (index)" : "";
+            var tag = o.Style == TradingStyles.Scalp ? " (scalp)" : o.Style == TradingStyles.Index ? " (index)" : o.Style == TradingStyles.Trend ? " (gold trend)" : "";
             Print($"Zugrio EA: TRADE OPENED {o.Side.ToString().ToUpperInvariant()} {name}{tag} {r.Position.Quantity.ToString(System.Globalization.CultureInfo.InvariantCulture)} lots at {r.Position.EntryPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)}, " +
                   $"stop {r.Position.StopLoss?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "none"}, target {r.Position.TakeProfit?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "none"}, risk {o.Size.RiskMoney:F2} ({o.Size.RiskPctActual:F1}%).");
             ConfirmProtection(o.Sym, r.Position, o.FireEventId, o.Stop, o.Target);
@@ -680,6 +715,7 @@ namespace Zugrio.CBot.EA
             foreach (var pos in Positions.Where(p => IsZugrio(p) && p.StopLoss.HasValue).ToList())
             {
                 if (TradingStyles.FromComment(pos.Comment) == TradingStyles.Index) continue;   // the index rule exits on its own close rule, as tested
+                if (TradingStyles.FromComment(pos.Comment) == TradingStyles.Trend) continue;   // the trend rule holds for the month, as tested
                 if (_lastTrail.TryGetValue(pos.Id, out var last) && now - last < TrailInterval) continue;
                 _lastTrail[pos.Id] = now;
                 var m = _markets.FirstOrDefault(x => x.Name == pos.SymbolName);
@@ -801,17 +837,17 @@ namespace Zugrio.CBot.EA
         }
 
         /// <summary>
-        /// The index engine: once per New York trading day per market, at the cash close minus the lead time. In a
+        /// The index engine: once per trading day per market, at its exchange's cash close minus the lead time. In a
         /// position it may exit (risk reducing, through the gate); flat it may enter (through Submit, like every entry).
         /// </summary>
         private void RunIndexEngine(DateTime now)
         {
-            var today = NewYorkTime.FromUtc(now).Date;
-            if (today.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday) return;
-            var at = IndexEngine.DecisionUtc(today, _indexRule, _indexLead);
-            if (now < at || now >= at + IndexDecisionWindow) return;
-            foreach (var im in _indexMarkets.Where(x => x.DecidedDate != today && now >= x.RetryAt))
+            foreach (var im in _indexMarkets)
             {
+                var today = ExchangeTime.FromUtc(im.Exchange, now).Date;
+                if (today.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday) continue;
+                var at = IndexEngine.DecisionUtc(today, im.Rule, _indexLead);
+                if (now < at || now >= at + IndexDecisionWindow || im.DecidedDate == today || now < im.RetryAt) continue;
                 im.DecidedDate = today;
                 try { DecideIndex(im, now, today); }
                 catch (Exception e)
@@ -822,13 +858,13 @@ namespace Zugrio.CBot.EA
             }
         }
 
-        /// <summary>New York cash sessions from the market's H1 bars up to now (today's close is the latest price).</summary>
+        /// <summary>The market's exchange cash sessions from its H1 bars up to now (today's close is the latest price).</summary>
         private IReadOnlyList<SessionBar> IndexSessions(IndexMarket im, DateTime now)
         {
             var b = im.H1; var list = new List<HourBar>(b.Count);
             for (var i = 0; i < b.Count; i++)
                 if (b.OpenTimes[i] <= now) list.Add(new HourBar(DateTime.SpecifyKind(b.OpenTimes[i], DateTimeKind.Utc), b.OpenPrices[i], b.HighPrices[i], b.LowPrices[i], b.ClosePrices[i]));
-            return IndexEngine.Sessions(list, _indexRule);
+            return IndexEngine.Sessions(list, im.Rule);
         }
 
         private Position? IndexPosition(IndexMarket im) =>
@@ -845,10 +881,10 @@ namespace Zugrio.CBot.EA
             }
             var sessions = IndexSessions(im, now);
             var pos = IndexPosition(im);
-            var enteredToday = pos != null && NewYorkTime.FromUtc(pos.EntryTime).Date == today;
+            var enteredToday = pos != null && ExchangeTime.FromUtc(im.Exchange, pos.EntryTime).Date == today;
             var closedToday = History.Any(t => t.SymbolName == im.Name && (t.Label ?? "").StartsWith(RiskReducingGate.OwnershipTagPrefix, StringComparison.Ordinal)
-                && TradingStyles.FromComment(t.Comment) == TradingStyles.Index && NewYorkTime.FromUtc(t.ClosingTime).Date == today);
-            var d = IndexEngine.Decide(sessions, today, pos != null, enteredToday, closedToday, _indexRule);
+                && TradingStyles.FromComment(t.Comment) == TradingStyles.Index && ExchangeTime.FromUtc(im.Exchange, t.ClosingTime).Date == today);
+            var d = IndexEngine.Decide(sessions, today, pos != null, enteredToday, closedToday, im.Rule);
             _log.Write(now, "index_decision", new Dictionary<string, object?>
             {
                 ["symbol"] = im.Name, ["date"] = today.ToString("yyyy-MM-dd", ci), ["action"] = d.Action.ToString(), ["reason"] = d.Reason, ["sessions"] = d.Sessions,
@@ -889,15 +925,15 @@ namespace Zugrio.CBot.EA
         /// <summary>On start and once a day: the index engine's view of each market, so the owner can see it is ready and when it decides.</summary>
         private void ReportIndexState(IndexMarket im, DateTime now)
         {
-            var today = NewYorkTime.FromUtc(now).Date;
+            var today = ExchangeTime.FromUtc(im.Exchange, now).Date;
             var sessions = IndexSessions(im, now);
             var pos = IndexPosition(im);
             var lastDate = sessions.Count > 0 ? sessions[^1].Date : today;
-            var d = IndexEngine.Decide(sessions, lastDate, pos != null, false, false, _indexRule);
+            var d = IndexEngine.Decide(sessions, lastDate, pos != null, false, false, im.Rule);
             var next = today; DateTime at;
-            while ((at = IndexEngine.DecisionUtc(next, _indexRule, _indexLead)) + IndexDecisionWindow <= now || next.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday) next = next.AddDays(1);
-            Print($"Zugrio Index: {im.Name}: {IndexStateText(d)}{(sessions.Count > 0 ? $" (last session {lastDate:yyyy-MM-dd}{(lastDate == today && now < IndexEngine.DecisionUtc(today, _indexRule, TimeSpan.Zero) ? ", so far" : "")})" : "")}. " +
-                  $"{(pos != null ? "In a trade. " : "")}Next decision {next:ddd yyyy-MM-dd} {(_indexRule.Close - _indexLead):hh\\:mm} New York ({at:HH:mm} UTC).");
+            while ((at = IndexEngine.DecisionUtc(next, im.Rule, _indexLead)) + IndexDecisionWindow <= now || next.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday) next = next.AddDays(1);
+            Print($"Zugrio Index: {im.Name}: {IndexStateText(d)}{(sessions.Count > 0 ? $" (last session {lastDate:yyyy-MM-dd}{(lastDate == today && now < IndexEngine.DecisionUtc(today, im.Rule, TimeSpan.Zero) ? ", so far" : "")})" : "")}. " +
+                  $"{(pos != null ? "In a trade. " : "")}Next decision {next:ddd yyyy-MM-dd} {(im.Rule.Close - _indexLead):hh\\:mm} {im.Exchange} time ({at:HH:mm} UTC).");
         }
 
         private void EnterIndex(IndexMarket im, IndexDecision d, DateTime now, DateTime today)
@@ -913,8 +949,8 @@ namespace Zugrio.CBot.EA
             if (Account.Balance < im.Item.UnlockBalance)
             { Skip(now, im.Name, fireEventId, "LOCKED_UNTIL_BALANCE", new() { ["unlockBalance"] = im.Item.UnlockBalance, ["balance"] = Account.Balance }); return; }
             var price = im.Sym.Ask;
-            var stop = price - d.StopDistance(_indexRule);
-            var target = price + d.TargetDistance(_indexRule);
+            var stop = price - d.StopDistance(im.Rule);
+            var target = price + d.TargetDistance(im.Rule);
             var spread = im.Sym.Ask - im.Sym.Bid;
             if (spread > MaxSpreadShareOfStop * (price - stop))
             { Skip(now, im.Name, fireEventId, "SPREAD_TOO_WIDE_FOR_STOP", new() { ["spread"] = spread, ["stopDistance"] = price - stop }); return; }
@@ -944,6 +980,145 @@ namespace Zugrio.CBot.EA
         }
 
         private static void RetryIndex(IndexMarket im, DateTime now) { im.DecidedDate = DateTime.MinValue; im.RetryAt = now.AddSeconds(30); }
+
+        // ---- Gold trend engine (research/lab round 4, rule A; TrendEngine in Zugrio.CBot.Core) ----
+
+        /// <summary>Finds the gold symbol and loads about 15 months of daily bars (12 month ends plus volatility).</summary>
+        private void SetupTrendEngine()
+        {
+            var brokerNames = Enumerable.Range(0, Symbols.Count).Select(i => Symbols[i]).ToList();
+            var name = Watchlist.Resolve(TrendSymbolText, brokerNames);
+            var sym = name == null ? null : Symbols.GetSymbol(name);
+            if (sym == null) { Print($"Zugrio EA: gold trend engine: none of '{TrendSymbolText}' is offered by this broker; engine off."); return; }
+            var d1 = MarketData.GetBars(TimeFrame.Daily, sym.Name);
+            var from = Server.TimeInUtc.AddDays(-480);
+            for (var k = 0; k < 50 && d1.Count > 0 && d1.OpenTimes[0] > from; k++) if (d1.LoadMoreHistory() == 0) break;
+            sym.Tick += _ => _trendLastTick = Server.TimeInUtc;
+            _trendSym = sym; _trendD1 = d1;
+        }
+
+        /// <summary>
+        /// Closed daily bars. The last bar is always left out: it is still forming, and brokers whose day starts at 21:00 or
+        /// 22:00 UTC date it the day before, so a date test alone would let a forming bar in.
+        /// </summary>
+        private IReadOnlyList<DayClose> TrendDaily(DateTime now)
+        {
+            var b = _trendD1!; var list = new List<DayClose>(b.Count);
+            for (var i = 0; i < b.Count - 1; i++) if (b.OpenTimes[i] <= now) list.Add(new DayClose(b.OpenTimes[i].Date, b.ClosePrices[i]));
+            return list;
+        }
+
+        private (double Long, double Short) TrendCosts()
+        {
+            var s = _trendSym!; var price = (s.Bid + s.Ask) / 2;
+            var kind = s.SwapCalculationType switch { SymbolSwapCalculationType.Percentage => SwapKind.Percent, SymbolSwapCalculationType.Points => SwapKind.Points, _ => SwapKind.Pips };
+            return (TrendEngine.AnnualCostPct(s.SwapLong, kind, s.PipSize, s.TickSize, price), TrendEngine.AnnualCostPct(s.SwapShort, kind, s.PipSize, s.TickSize, price));
+        }
+
+        private Position? TrendPosition() =>
+            Positions.FirstOrDefault(p => IsZugrio(p) && p.SymbolName == _trendSym!.Name && TradingStyles.FromComment(p.Comment) == TradingStyles.Trend);
+
+        /// <summary>
+        /// Once a month: the first time in the month that it is a weekday after TrendDecideHourUtc and the market is open
+        /// (normally the month's first weekday; the month's first run after a restart decides again, which is harmless:
+        /// the signal uses last month's closes and a held position is kept).
+        /// </summary>
+        private void RunTrendEngine(DateTime now)
+        {
+            var month = now.ToString("yyyy-MM", System.Globalization.CultureInfo.InvariantCulture);
+            if (month == _trendDecidedMonth || now < _trendRetryAt || now.Hour < TrendDecideHourUtc || now.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday) return;
+            if (!_trendSym!.IsTradingEnabled || !_trendSym.MarketHours.IsOpened(now)) return;   // try again later the same day or the next
+            _trendDecidedMonth = month;
+            try { DecideTrend(now, month); }
+            catch (Exception e)
+            {
+                _log.Write(now, "trend_error", new Dictionary<string, object?> { ["symbol"] = _trendSym.Name, ["error"] = e.Message });
+                Print($"Zugrio Trend: {_trendSym.Name}: {e.Message}");
+            }
+        }
+
+        private void DecideTrend(DateTime now, string month)
+        {
+            var sym = _trendSym!;
+            var pos = TrendPosition();
+            var current = pos == null ? 0 : pos.TradeType == TradeType.Buy ? 1 : -1;
+            var (costLong, costShort) = TrendCosts();
+            var d = TrendEngine.Decide(TrendDaily(now), now.Date, current, costLong, costShort, _trendRule);
+            _log.Write(now, "trend_decision", new Dictionary<string, object?>
+            {
+                ["symbol"] = sym.Name, ["month"] = month, ["action"] = d.Action.ToString(), ["target"] = d.Target, ["signal"] = d.Signal, ["reason"] = d.Reason,
+                ["monthEnds"] = d.MonthEnds, ["lookbackReturn"] = d.LookbackReturn, ["monthSigma"] = d.MonthSigma, ["costLongPct"] = costLong, ["costShortPct"] = costShort,
+                ["swapLong"] = sym.SwapLong, ["swapShort"] = sym.SwapShort, ["swapType"] = sym.SwapCalculationType.ToString(), ["current"] = current,
+            });
+            Print($"Zugrio Trend: {sym.Name} {month}: {TrendStateText(d)} -> {d.Action switch { TrendAction.Enter => d.Target > 0 ? "BUY" : "SELL", TrendAction.Exit => "CLOSE", TrendAction.Reverse => "CLOSE and " + (d.Target > 0 ? "BUY" : "SELL"), TrendAction.Hold => "hold", _ => "stay flat" }}.");
+            if ((d.Action == TrendAction.Exit || d.Action == TrendAction.Reverse) && pos != null && !ExitTrend(pos, now)) return;
+            if (d.Action == TrendAction.Enter || d.Action == TrendAction.Reverse) EnterTrend(d, now, month);
+        }
+
+        private static string TrendStateText(TrendDecision d)
+        {
+            var ci = System.Globalization.CultureInfo.InvariantCulture;
+            var ret = double.IsNaN(d.LookbackReturn) ? "n/a" : (100 * d.LookbackReturn).ToString("+0.0;-0.0", ci) + "%";
+            return $"12-month return {ret} over {d.MonthEnds} month ends, monthly volatility {(100 * d.MonthSigma).ToString("F1", ci)}%, " +
+                   $"swap cost long {d.CostLongPct.ToString("+0.00;-0.00", ci)}%/yr, short {d.CostShortPct.ToString("+0.00;-0.00", ci)}%/yr ({d.Reason.ToLowerInvariant().Replace('_', ' ')})";
+        }
+
+        private void ReportTrendState(DateTime now)
+        {
+            var pos = TrendPosition();
+            var (costLong, costShort) = TrendCosts();
+            var d = TrendEngine.Decide(TrendDaily(now), now.Date, pos == null ? 0 : pos.TradeType == TradeType.Buy ? 1 : -1, costLong, costShort, _trendRule);
+            Print($"Zugrio Trend: {_trendSym!.Name}: {TrendStateText(d)}. {(pos != null ? $"In a {pos.TradeType.ToString().ToLowerInvariant()} trade. " : "")}" +
+                  $"Decides once a month, the first weekday from {TrendDecideHourUtc:00}:00 UTC; this month {(_trendDecidedMonth == now.ToString("yyyy-MM", System.Globalization.CultureInfo.InvariantCulture) ? "done" : "pending")}.");
+        }
+
+        private void EnterTrend(TrendDecision d, DateTime now, string month)
+        {
+            var sym = _trendSym!;
+            var side = d.Target > 0 ? Side.Buy : Side.Sell;
+            var fireEventId = "fire:" + Sha($"trend|{sym.Name}|{month}|{side}")[..32];
+            var opportunityId = $"trend:{sym.Name}:{month}:{side}";
+            if (_boundary.Get(_accountId, fireEventId) != null) return;
+            // One entry per market, month and side, even after a cloud restart: a trade stopped out this month is not re-entered.
+            var label = LabelFor(fireEventId);
+            if (Positions.Find(label) != null || History.FindLast(label) != null) return;
+            _activity.SetupFound(fireEventId);
+            if (Account.Balance < TrendUnlockBalance)
+            { Skip(now, sym.Name, fireEventId, "LOCKED_UNTIL_BALANCE", new() { ["unlockBalance"] = TrendUnlockBalance, ["balance"] = Account.Balance }); return; }
+            var price = side == Side.Buy ? sym.Ask : sym.Bid;
+            var dir = side == Side.Buy ? 1 : -1;
+            var stop = price - dir * d.StopDistance(_trendRule, price);
+            var target = price + dir * d.TargetDistance(_trendRule, price);
+            var spread = sym.Ask - sym.Bid;
+            if (spread > MaxSpreadShareOfStop * Math.Abs(price - stop))
+            { Skip(now, sym.Name, fireEventId, "SPREAD_TOO_WIDE_FOR_STOP", new() { ["spread"] = spread, ["stopDistance"] = Math.Abs(price - stop) }); return; }
+            var size = SizeFor(sym, price, stop);
+            if (!size.Trade) { Skip(now, sym.Name, fireEventId, size.Reason, new() { ["riskPctAtMinimum"] = size.RiskPctActual }); return; }
+            var tier = Watchlist.TierFor(_tiers, Account.Balance);
+            var candidate = new ReadyCandidate(sym.Name, AssetClass.Metal, new DateTimeOffset(DateTime.SpecifyKind(now, DateTimeKind.Utc)), opportunityId, size.RiskMoney, size.RiskPctActual);
+            var selection = PortfolioSelector.Select(new[] { candidate }, OpenExposures(), tier, Account.Balance, _killSwitch.Remaining(Account.Equity));
+            if (selection.Take.Count == 0)
+            { Skip(now, sym.Name, fireEventId, selection.Skipped[0].Reason, new() { ["tierMinBalance"] = tier.MinBalance, ["riskMoney"] = size.RiskMoney }); return; }
+            // Adverse price limit: a quarter of a day's typical move (monthly volatility / sqrt 21).
+            var limit = Math.Round(price + dir * 0.25 * d.MonthSigma / Math.Sqrt(21) * price, sym.Digits);
+            Submit(new EntryOrder(sym, AssetClass.Metal, _trendLastTick, TradingStyles.Trend, null, fireEventId, opportunityId, side, price, stop, target, limit, size, d.MonthSigma * price,
+                new Dictionary<string, object?> { ["lookbackReturn"] = d.LookbackReturn, ["monthSigma"] = d.MonthSigma, ["costLongPct"] = d.CostLongPct, ["costShortPct"] = d.CostShortPct, ["monthEnds"] = d.MonthEnds }), now);
+        }
+
+        /// <summary>The trend exit: a close of the whole position (risk reducing) through the gate. A failure retries in 30 s.</summary>
+        private bool ExitTrend(Position pos, DateTime now)
+        {
+            var view = View(pos);
+            var gate = RiskReducingGate.Check(view, new ClosePosition(view.PositionId), _accountId, _accountId, adapterIntegrityOk: true, brokerReachable: Server.IsConnected);
+            if (!gate.Allowed) { _log.Write(now, "trend_exit_blocked", new Dictionary<string, object?> { ["label"] = pos.Label, ["reasons"] = gate.AbortReasons }); RetryTrend(now); return false; }
+            var pl = pos.NetProfit;
+            var r = _exec.Close(pos);
+            _log.Write(now, "trend_exit", new Dictionary<string, object?> { ["symbol"] = pos.SymbolName, ["label"] = pos.Label, ["netProfit"] = pl, ["ok"] = r.IsSuccessful, ["error"] = r.Error?.ToString() });
+            if (!r.IsSuccessful) { RetryTrend(now); return false; }
+            return true;
+        }
+
+        private void RetryTrend(DateTime now) { _trendDecidedMonth = ""; _trendRetryAt = now.AddSeconds(30); }
 
         /// <summary>ATR on the style's location timeframe, from closed bars.</summary>
         private double StyleAtr(Market m, TradingStyle style)
@@ -989,12 +1164,18 @@ namespace Zugrio.CBot.EA
 
         private JsonObject Config() => new()
         {
-            ["schema"] = "zugrio.ea-config/v6", ["calibrationStatus"] = "UNVALIDATED_RESEARCH",
+            ["schema"] = "zugrio.ea-config/v7", ["calibrationStatus"] = "UNVALIDATED_RESEARCH",
             ["indexEngine"] = new JsonObject
             {
                 ["on"] = IndexEngineOn, ["lowerCloses"] = IndexLowerCloses, ["trendSma"] = IndexTrendSma, ["exitSma"] = IndexExitSma, ["atrPeriod"] = _indexRule.AtrPeriod,
-                ["stopAtr"] = (decimal)IndexStopAtr, ["farTargetAtr"] = (decimal)IndexFarTargetAtr, ["closeNewYork"] = IndexCloseText.Trim(), ["leadMinutes"] = IndexLeadMinutes,
+                ["stopAtr"] = (decimal)IndexStopAtr, ["farTargetAtr"] = (decimal)IndexFarTargetAtr, ["closeNewYork"] = IndexCloseText.Trim(), ["venues"] = "v1 US NY 09:00-16:00, London 08:00-16:30, Frankfurt 09:00-17:30, Tokyo 09:00-15:30, Sydney 10:00-16:00, Hong Kong 09:00-16:00", ["leadMinutes"] = IndexLeadMinutes,
                 ["sessionStartNewYork"] = _indexRule.Start.ToString(@"hh\:mm"), ["minBarsPerSession"] = _indexRule.MinBarsPerSession, ["chaseAtr"] = (decimal)IndexChaseAtr,
+            },
+            ["trendEngine"] = new JsonObject
+            {
+                ["on"] = TrendEngineOn, ["symbol"] = TrendSymbolText, ["rule"] = "tsmom12 monthly (research/lab round 4, rule A)", ["lookbackMonths"] = _trendRule.LookbackMonths,
+                ["volDays"] = _trendRule.VolDays, ["stopSigma"] = (decimal)TrendStopSigma, ["farTargetSigma"] = (decimal)_trendRule.FarTargetSigma,
+                ["maxCostPctPerYear"] = (decimal)TrendMaxCostPct, ["unlockBalance"] = (decimal)TrendUnlockBalance, ["decideHourUtc"] = TrendDecideHourUtc,
             },
             ["markets"] = new JsonObject { ["watchlist"] = WatchlistText, ["indexMarkets"] = IndexMarketsText, ["tiers"] = TiersText, ["maxSpreadShareOfStop"] = (decimal)MaxSpreadShareOfStop,
                 ["trendFilter"] = TrendFilterOn, ["trendFilterOnReclaims"] = TrendFilterOnReclaims, ["noCounterTrendReclaims"] = NoCounterTrendReclaims },

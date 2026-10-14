@@ -32,6 +32,64 @@ namespace Zugrio.CBot.Core.Tests
         }
 
         [Fact]
+        public void Exchange_clocks_follow_each_exchanges_daylight_rule()
+        {
+            // UK and EU: 2026 changes at 01:00 UTC on 29 March and 25 October.
+            Assert.Equal(TimeSpan.Zero, ExchangeTime.Offset(Exchange.London, U(2026, 3, 29, 0, 59)));
+            Assert.Equal(TimeSpan.FromHours(1), ExchangeTime.Offset(Exchange.London, U(2026, 3, 29, 1, 0)));
+            Assert.Equal(TimeSpan.FromHours(2), ExchangeTime.Offset(Exchange.Frankfurt, U(2026, 10, 25, 0, 59)));
+            Assert.Equal(TimeSpan.FromHours(1), ExchangeTime.Offset(Exchange.Frankfurt, U(2026, 10, 25, 1, 0)));
+            // Sydney: daylight until Sat 4 April 2026 16:00 UTC, again from Sat 3 October 2026 16:00 UTC.
+            Assert.Equal(TimeSpan.FromHours(11), ExchangeTime.Offset(Exchange.Sydney, U(2026, 4, 4, 15, 59)));
+            Assert.Equal(TimeSpan.FromHours(10), ExchangeTime.Offset(Exchange.Sydney, U(2026, 4, 4, 16, 0)));
+            Assert.Equal(TimeSpan.FromHours(10), ExchangeTime.Offset(Exchange.Sydney, U(2026, 10, 3, 15, 59)));
+            Assert.Equal(TimeSpan.FromHours(11), ExchangeTime.Offset(Exchange.Sydney, U(2026, 10, 3, 16, 0)));
+            Assert.Equal(TimeSpan.FromHours(9), ExchangeTime.Offset(Exchange.Tokyo, U(2026, 7, 1, 0)));
+            Assert.Equal(TimeSpan.FromHours(8), ExchangeTime.Offset(Exchange.HongKong, U(2026, 1, 1, 0)));
+            Assert.Equal(ExchangeTime.Offset(Exchange.NewYork, U(2026, 7, 1, 12)), TimeSpan.FromHours(-4));
+            // Round trips, and the decision instant for each venue's close.
+            foreach (var x in Enum.GetValues<Exchange>())
+                foreach (var t in new[] { U(2026, 1, 14, 12), U(2026, 7, 14, 12) })
+                    Assert.Equal(t, ExchangeTime.ToUtc(x, ExchangeTime.FromUtc(x, t)));
+            var rule = new IndexRule();
+            Assert.Equal(U(2026, 7, 14, 15, 25), IndexEngine.DecisionUtc(new DateTime(2026, 7, 14), rule.At(IndexVenues.Frankfurt), TimeSpan.FromMinutes(5)));   // 17:25 CEST
+            Assert.Equal(U(2026, 1, 14, 16, 25), IndexEngine.DecisionUtc(new DateTime(2026, 1, 14), rule.At(IndexVenues.London), TimeSpan.FromMinutes(5)));     // 16:25 GMT
+            Assert.Equal(U(2026, 7, 14, 6, 25), IndexEngine.DecisionUtc(new DateTime(2026, 7, 14), rule.At(IndexVenues.Tokyo), TimeSpan.FromMinutes(5)));       // 15:25 JST
+            Assert.Equal(U(2026, 1, 14, 4, 55), IndexEngine.DecisionUtc(new DateTime(2026, 1, 14), rule.At(IndexVenues.Sydney), TimeSpan.FromMinutes(5)));      // 15:55 AEDT
+        }
+
+        [Fact]
+        public void Index_names_map_to_their_exchange()
+        {
+            Assert.Equal(Exchange.NewYork, IndexVenues.For(new[] { "US 500", "US500" }).Exchange);
+            Assert.Equal(Exchange.NewYork, IndexVenues.For(new[] { "Wall Street 30", "US30" }).Exchange);
+            Assert.Equal(Exchange.NewYork, IndexVenues.For(new[] { "US Tech 100", "USTEC", "NAS100" }).Exchange);
+            Assert.Equal(Exchange.Frankfurt, IndexVenues.For(new[] { "Germany 40", "DE40" }).Exchange);
+            Assert.Equal(Exchange.Frankfurt, IndexVenues.For(new[] { "Euro 50" }).Exchange);
+            Assert.Equal(Exchange.Frankfurt, IndexVenues.For(new[] { "France 40" }).Exchange);
+            Assert.Equal(Exchange.London, IndexVenues.For(new[] { "UK 100" }).Exchange);
+            Assert.Equal(Exchange.Tokyo, IndexVenues.For(new[] { "Japan 225" }).Exchange);
+            Assert.Equal(Exchange.Sydney, IndexVenues.For(new[] { "Australia 200", "AUS200" }).Exchange);
+            Assert.Equal(Exchange.HongKong, IndexVenues.For(new[] { "Hong Kong 50" }).Exchange);
+        }
+
+        [Fact]
+        public void A_frankfurt_session_is_built_from_frankfurt_hours()
+        {
+            // 14 July 2026 (CEST, UTC+2): 09:00-17:30 local = bars opening 07:00-15:00 UTC; 16:00 UTC (18:00 local) is outside.
+            var rule = new IndexRule().At(IndexVenues.Frankfurt);
+            var bars = new List<HourBar>();
+            for (var h = 5; h <= 17; h++) bars.Add(new HourBar(U(2026, 7, 14, h), 100, 100 + h, 100 - h, 100 + h / 10.0));
+            var s = IndexEngine.Sessions(bars, rule);
+            Assert.Single(s);
+            Assert.Equal(new DateTime(2026, 7, 14), s[0].Date);
+            Assert.Equal(9, s[0].Bars);                        // 07:00..15:00 UTC
+            Assert.Equal(100 + 15 / 10.0, s[0].C);              // close of the 15:00 UTC (17:00 local) bar
+            Assert.Equal(115, s[0].H);
+            Assert.Equal(85, s[0].L);
+        }
+
+        [Fact]
         public void Sessions_are_the_new_york_cash_hours_and_holidays_are_left_out()
         {
             var bars = new List<HourBar>();
@@ -225,6 +283,36 @@ namespace Zugrio.CBot.Core.Tests
             Assert.Contains("_markets.Add(m)", adopt);
             Assert.DoesNotContain("BarOpened", adopt);                                   // management only: no scan, no entry
             Assert.True(src.IndexOf("AdoptOpenTrades(watch);", StringComparison.Ordinal) > src.IndexOf("ResolveMarkets(watch);", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Gold_trend_entries_and_exits_use_the_same_boundary_as_every_other_trade()
+        {
+            var src = Ea();
+            var enter = Method(src, "private void EnterTrend(");
+            var submit = enter.IndexOf("Submit(new EntryOrder(", StringComparison.Ordinal);
+            Assert.True(submit > 0);
+            foreach (var must in new[] { "if (Positions.Find(label) != null || History.FindLast(label) != null) return;", "SizeFor(sym, price, stop)", "PortfolioSelector.Select(", "_killSwitch.Remaining(Account.Equity)" })
+            {
+                var at = enter.IndexOf(must, StringComparison.Ordinal);
+                Assert.True(at > 0 && at < submit, must + " must come before Submit");
+            }
+            var exit = Method(src, "private bool ExitTrend(");
+            Assert.True(exit.IndexOf("RiskReducingGate.Check(", StringComparison.Ordinal) < exit.IndexOf("_exec.Close(pos)", StringComparison.Ordinal));
+            Assert.Contains("if (TradingStyles.FromComment(pos.Comment) == TradingStyles.Trend) continue;", Method(src, "private void ManageOpenProfit(DateTime now)"));
+            Assert.Single(System.Text.RegularExpressions.Regex.Matches(src, @"_exec\.MarketOrder\("));
+        }
+
+        [Fact]
+        public void Every_index_market_decides_on_its_own_exchange_clock()
+        {
+            var src = Ea();
+            var run = Method(src, "private void RunIndexEngine(DateTime now)");
+            Assert.Contains("ExchangeTime.FromUtc(im.Exchange, now)", run);
+            Assert.Contains("IndexEngine.DecisionUtc(today, im.Rule, _indexLead)", run);
+            foreach (var m in new[] { "private void RunIndexEngine(DateTime now)", "private void DecideIndex(", "private void ReportIndexState(", "private IReadOnlyList<SessionBar> IndexSessions(" })
+                Assert.DoesNotContain("NewYorkTime.", Method(src, m));
+            Assert.Contains("IndexVenues.For(", Method(src, "private void AddIndexMarket("));
         }
 
         [Fact]

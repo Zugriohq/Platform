@@ -86,10 +86,15 @@ namespace Zugrio.CBot.Core.Tests
             Assert.Contains(w, x => x.Symbol == "XAUUSD" && x.UnlockBalance > 0);           // gold unlocks later
             Assert.DoesNotContain(w, x => x.Symbol.Contains("Boom") || x.Symbol.Contains("Crash") || x.Symbol.Contains("Jump")); // spike indices gap through stops
             Assert.Equal(1, Watchlist.TierFor(t, 20).MaxPositions);                           // a $20 account: one trade at a time
-            // The index engine's markets (ADR-0012): only the two indices whose edge held out of sample.
+            // The index engine's markets (ADR-0012): the US pair (development and test-in-time) from $0; the research's
+            // test-in-markets indices, each on its own exchange, only from a larger balance (their edge is weaker).
             var idx = Watchlist.Parse(Constant("DefaultIndexMarkets"));
             Assert.All(idx, x => Assert.Equal(AssetClass.Index, x.Class));
-            Assert.Equal(new[] { "US 500", "US Tech 100" }, idx.Select(x => Watchlist.Alternatives(x.Symbol)[0]));
+            Assert.Equal(new[] { "US 500", "US Tech 100" }, idx.Where(x => x.UnlockBalance == 0).Select(x => Watchlist.Alternatives(x.Symbol)[0]));
+            Assert.Equal(new[] { "Wall Street 30", "Germany 40", "UK 100", "Japan 225", "Euro 50", "France 40", "Australia 200", "Hong Kong 50" },
+                idx.Where(x => x.UnlockBalance > 0).Select(x => Watchlist.Alternatives(x.Symbol)[0]));
+            Assert.Equal(new[] { Exchange.NewYork, Exchange.Frankfurt, Exchange.London, Exchange.Tokyo, Exchange.Frankfurt, Exchange.Frankfurt, Exchange.Sydney, Exchange.HongKong },
+                idx.Where(x => x.UnlockBalance > 0).Select(x => IndexVenues.For(Watchlist.Alternatives(x.Symbol)).Exchange));
             Assert.DoesNotContain(w, x => x.Class == AssetClass.Index);
         }
     }
