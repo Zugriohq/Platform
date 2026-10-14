@@ -136,7 +136,7 @@ Same data and pass rule as before; results are in `v43a_results.txt` and `v43b_r
 - **F4 (variant b only):** trade only with the higher-timeframe trend.
 
 **What the fixes changed:**
-- **Most signals were chasing.** With F2, 85% of TTI's signals (1,581 of 1,938 in variant a) fired with the price already outside the setup's own entry zone, and are dropped.
+- **Most signals were chasing.** With F2, 85% of TTI's signals (2,031 of 2,388 in variant a) fired with the price already outside the setup's own entry zone, and are dropped.
 - **F1 fills the empty setups.** Setups that never fired before (sweep, BOS retest) now can.
 
 | | Signals | Plan A (TTI's levels) | Best exit | 2025 | 2026 |
