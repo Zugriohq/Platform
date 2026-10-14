@@ -1,0 +1,22 @@
+{
+  "id": "model_pro_trader_v1",
+  "registered": "2026-10-14, before the playbook was coded or run on any market",
+  "question": "The owner: think of a model professional trader and simulate how it would trade synthetics, forex and gold across all the records. This freezes one such trader as rules (a playbook a discretionary pro would recognise), runs it unchanged on every market, and compares it with a trader that enters at random with the same management.",
+  "playbook": {
+    "context": "top-down. Trend timeframe: D1 for forex and gold, H4 for synthetics (only about 90 days of synthetic history). Trend up when EMA20 > EMA50 and close > EMA50 on that timeframe; down when the reverse; otherwise none. Regime on H1: ADX14 > 22 trending, ADX14 < 18 ranging, between = no new trade.",
+    "A_trend_pullback": "trend up and H1 trending: an M15 bar trades down to the H1 EMA20 and closes above the previous M15 bar's high -> long at the next M15 open (mirror for down). Stop 1.5 x ATR14(H1). Half off at 1R and the stop to breakeven; the rest at 3R.",
+    "B_range_fade": "no trend and H1 ranging: the last closed H1 bar closed outside its Bollinger band (20, 2) with RSI14(H1) beyond 30/70, and the M15 bar closes back towards the mean (bullish close for a long) -> fade at the next M15 open. Stop 1 x ATR14(H1). Target the H1 20-period mean at entry (all out), or the stop.",
+    "C_london_breakout": "forex and gold only: Asian range = high and low 00:00-07:00 UTC; the first M15 close outside it between 07:00 and 10:00 UTC, in the D1 trend's direction -> enter at the next M15 open. Stop at the far side of the range or 1.5 x ATR14(H1), whichever is nearer. Target 2R. Closed at 16:00 UTC.",
+    "management": "one position per instrument at a time; time stop 72 hours (24 hours on synthetics) for A and B; stop first when one M1 bar touches both stop and target; gaps fill at the open. All evaluated on M1 bars.",
+    "filters": "forex and gold: entries only 07:00-17:00 UTC; no entries on FOMC days after 17:00 (statement 18:00/19:00 UTC) and no entries 12:00-15:00 UTC on NFP or CPI days (news_prereg.json dates: FOMC list; NFP and CPI reconstructed). Synthetics: 24 hours, no news.",
+    "risk": "results in R (1R = the initial stop distance), as a pro sizes 1% per trade; the partial counts as 0.5 of the position"
+  },
+  "control": "for every playbook trade, a trade at the same time with a random direction (fixed seed) and the same stop distance and management; the playbook adds value only if it beats this",
+  "markets": {
+    "synthetics": "every Deriv family on the public feed with a published spread, about 90 days of M1 (syn/m1): Volatility, Volatility (1s), Jump, Boom, Crash, Step, Range Break, Drift Switch, DEX; spread = max(min spread, target % x price) and, as a stress, 3 x that (the demo journal showed Drift Switch at about 4.0 against 0.2-0.4 published)",
+    "forex": "EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, USDCHF, NZDUSD, EURJPY, GBPJPY, EURGBP, HistData M1 2010-2026; spread per round trip as before (0.0001; 0.00015 GBPUSD, EURGBP; 0.012 USDJPY, EURJPY; 0.02 GBPJPY) plus 0.5 pip slippage",
+    "gold": "XAUUSD, HistData M1 2010-2026; spread 0.35 plus 0.10 slippage"
+  },
+  "halves": "forex and gold 2010-2017 / 2018-2026; synthetics the first and second half of each file",
+  "pass": "per market group: net expectancy per trade > 0 with t >= 2 in both halves, AND above the random-entry control in both halves. Reported per setup (A, B, C) and in total, with profit factor, win rate, R a year and the deepest drawdown in R."
+}

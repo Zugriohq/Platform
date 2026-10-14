@@ -398,3 +398,34 @@ Each rule names the party that pays the edge (METHODOLOGY.md step 2).
 - **Relative value:** AUDNZD, EURGBP.
 
 None of these pays after a retail round trip and swap. The two real effects found are the interest differential (carry) and the EUR European-hours drift. Each is about the size of the costs.
+
+## Round 12, 2026-10-14: a model pro trader on synthetics, forex and gold (`pro_trader_prereg.json`, `pro_trader.mjs`, `pro_trader_results.txt`)
+
+**The trader.** One frozen playbook, registered before it was coded, of the kind a discretionary professional would recognise:
+- **Context:** top-down trend on D1 (H4 on synthetics), and the H1 regime by ADX.
+- **Setups:**
+  - A, a trend pullback to the H1 EMA20 with an M15 rejection;
+  - B, a range fade at the Bollinger band with RSI;
+  - C, the London breakout of the Asian range, in the trend's direction.
+- **Management:** half off at 1R, the stop moved to breakeven, the rest at 3R, and time stops.
+- **Filters:** sessions, and no new trades around FOMC, NFP and CPI.
+
+Every trade is paired with a **random-direction** trade at the same moment with identical management.
+
+| Market | Trades | Net per trade | Before costs | Random direction, net | Playbook minus random | Verdict |
+|---|---|---|---|---|---|---|
+| Synthetics, 49 indices, 90 days | 2,807 | −0.013R (t −0.6) | +0.012R | −0.009R | −0.004R (t −0.1) | fail |
+| Forex, 10 pairs, 2010–2026 | 35,280 | −0.092R (t −14.9) | −0.011R | −0.091R | −0.001R (t −0.1) | fail |
+| Gold, 2010–2026 | 3,549 | −0.042R (t −2.1) | +0.043R (t 2.2) | −0.104R | **+0.062R (t 2.4)** | fail |
+
+**Per setup.**
+- On forex, the London breakout (C) is +0.039R before costs (t 3.1) and −0.052R net.
+- Synthetics are flat in every family. The best, Range Break +0.18R and Drift Switch +0.11R, have t < 2, and Volatility is −0.16R.
+- At 3× the published synthetic spread, the result is −0.064R (t −3.0).
+
+**What it shows.**
+- **On synthetics and forex the playbook's entries carry no information.** Each trade does exactly as well as a coin flip with the same management (difference ≈0R over 38,000 trades). Management (partials, breakeven, time stops) changes the shape of the results, not their average.
+- **Forex loses about 0.08–0.09R a trade to costs,** because stops of 1.5 H1 ATRs are only a few times the spread.
+- **Gold is the exception.** The playbook beats random direction by +0.06R (t 2.4, positive in both halves). That is the trend context working, consistent with the gold trend premium found in round 4. But the costs, about 0.08R a trade at 1.5 H1 ATRs, are larger than the edge, so it loses net.
+  - The same trend on monthly holds is what the EA's gold engine trades.
+  - A gold version with wider stops and longer holds, so costs are a smaller share of R, would be a new registered test, not a change to this one.
