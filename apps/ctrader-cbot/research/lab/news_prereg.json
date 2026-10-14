@@ -1,0 +1,22 @@
+{
+  "id": "news_context_veto_and_pre_fomc",
+  "registered": "2026-10-14, before any news-event test was run (only the FOMC date list had been built)",
+  "question": "Plan step (b), EVIDENCE_VS_DIRECTION.md: does scheduled-news context improve the evidenced engines, and does it give a strategy of its own?",
+  "events": {
+    "FOMC": "scheduled FOMC statement days 2010-2027 from federalreserve.gov (fomccalendars.htm, fomchistoricalYYYY.htm), last day of each scheduled meeting; unscheduled meetings, conference calls and notation votes excluded (fomc_announcements.json). Statement at 14:00 New York time.",
+    "NFP": "US employment report, 08:30 New York time: per month, the Friday on days 1-10 whose 08:30 minute has the largest EURUSD M1 range (reconstructed from prices; BLS and FRED are not reachable from this container)",
+    "CPI": "US CPI, 08:30 New York time: per month, the weekday on days 9-16, other than the NFP day, whose 08:30 minute has the largest EURUSD M1 range (reconstructed the same way)",
+    "note": "NFP and CPI days are identified from the price reaction at their fixed release minute, which selects the right day but uses price data; this is stated as a limitation"
+  },
+  "B1_index_veto": {
+    "rule": "the index dip-buying signal (apa_timing_prereg.json INDEX base rule, SPXUSD and NSXUSD) is vetoed when a FOMC, NFP or CPI release falls on the next trading day after the signal close",
+    "pass": "the vetoed signals' net mean R < 0 in both halves (2010-2017, 2018-2026), so the veto raises both R per trade and total R a year. Otherwise the veto is not adopted for this engine."
+  },
+  "B2_pre_fomc_drift": {
+    "rule": "long SPXUSD and NSXUSD from the 14:00 New York close of the day before a scheduled FOMC statement to 13:55 New York time on the statement day (Lucca and Moench 2015), one trade per index per meeting",
+    "costs": "0.02% of price per round trip plus 5%/yr for one night",
+    "unit": "% of price, and R against 3 x the daily ATR14 (the index engine's stop)",
+    "pass": "pooled over both indices, clustered by meeting: net mean > 0 in both halves (2010-2017, 2018-2026) and pooled t >= 2"
+  },
+  "other_engines": "The crypto (weekly), gold and FX (monthly) holds span every release, and their entries (Monday 01:00 UTC, month start) are not at release times, so an entry veto cannot change them; they are not tested."
+}

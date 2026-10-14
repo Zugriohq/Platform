@@ -62,6 +62,8 @@ namespace Zugrio.CBot.Core
         public const string Drift = "DRIFT";
         /// <summary>Trades of the crypto trend engine (CryptoEngine; its own switch and parameters).</summary>
         public const string Crypto = "CRYPTO";
+        /// <summary>Trades of the pre-FOMC engine (FomcEngine; its own switch and parameters).</summary>
+        public const string Fomc = "FOMC";
         private const string Tag = " st=";
 
         /// <summary>"DAY,SCALP" → the enabled decision-core style names, in order, without duplicates. Empty (or NONE) = both off.</summary>

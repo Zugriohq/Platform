@@ -335,6 +335,30 @@ namespace Zugrio.CBot.Core.Tests
         }
 
         [Fact]
+        public void Fomc_entries_check_records_demo_symbol_owner_spread_size_and_tiers_before_submitting_and_exit_through_the_gate()
+        {
+            var src = Ea();
+            var body = Method(src, "private void EnterFomc(");
+            var submit = body.IndexOf("Submit(new EntryOrder(", StringComparison.Ordinal);
+            Assert.True(submit > 0);
+            foreach (var must in new[] { "if (Positions.Find(label) != null || History.FindLast(label) != null) return;", "if (FomcDemoOnly && _exec.IsLive)",
+                         "if (Positions.Any(p => IsZugrio(p) && p.SymbolName == sym.Name))", "MaxSpreadShareOfStop", "SizeFor(sym, price, stop)",
+                         "PortfolioSelector.Select(", "SlotsFor(tier, drift: false)", "_killSwitch.Remaining(Account.Equity)" })
+            {
+                var at = body.IndexOf(must, StringComparison.Ordinal);
+                Assert.True(at > 0 && at < submit, must + " must come before Submit");
+            }
+            Assert.Contains("TradingStyles.Fomc", body);
+            var exit = Method(src, "private void ExitFomc(");
+            Assert.True(exit.IndexOf("RiskReducingGate.Check(", StringComparison.Ordinal) < exit.IndexOf("_exec.Close(pos)", StringComparison.Ordinal));
+            Assert.Contains("RunFomcEngine(now);", Method(src, "protected override void OnTimer()"));
+            Assert.Contains("TradingStyles.Fomc) continue;", Method(src, "private void ManageOpenProfit("));
+            // the index engine yields a symbol another engine holds (ZR-STR-025)
+            var index = Method(src, "private void EnterIndex(");
+            Assert.True(index.IndexOf("SYMBOL_OWNED_BY_OTHER_ENGINE", StringComparison.Ordinal) < index.IndexOf("Submit(new EntryOrder(", StringComparison.Ordinal));
+        }
+
+        [Fact]
         public void Index_entries_check_broker_records_tiers_and_the_daily_allowance_before_submitting()
         {
             var body = Method(Ea(), "private void EnterIndex(");

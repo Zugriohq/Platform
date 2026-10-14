@@ -219,6 +219,30 @@ cTrader Mobile does not run cBots on the phone. It starts and stops **cloud inst
 3. **Then the cloud.** In cTrader Mobile, open the cBot, pick the account and any symbol (the chart does not matter, the watchlist does), and start it as a cloud instance. One instance covers every market, so the usual limits are enough: one cloud instance on a demo account (it stops after 7 days, restart it), up to ten on a live account, running 24/7. Run **one** instance per account: two would each apply the tier limits on their own.
 4. **Live comes after the demo record.** Owner, 2026-10-14: the EA is not called validated until its demo record supports it. Live is considered only then (below). When it is, start an instance on the live account the same way: it trades that account until you stop it. Start with an amount you can afford to lose entirely, and keep the demo instance running alongside for comparison.
 
+### Pre-FOMC engine (2026-10-14, demo only by default)
+
+**What it trades.** US 500 and US Tech 100 (*FOMC markets*), long only.
+
+**The rule (`FomcEngine`).**
+- **Entry:** buy at 14:00 New York time on the trading day before a scheduled FOMC statement.
+- **Exit:** close at 13:55 on the statement day, before the 14:00 release.
+- **Stop:** a protective stop at 3 session ATRs. It is a crash guard; the rule exits on time.
+
+**The dates.**
+- *FOMC statement dates* holds the Federal Reserve's published schedule for 2026–2027 (federalreserve.gov, read 2026-10-14).
+- The EA cannot fetch a calendar, because it runs as a cloud cBot with no network access. The list must be extended when the Fed publishes 2028.
+- Unscheduled meetings are not traded.
+
+**The evidence.** Pre-registered (`research/lab/news_prereg.json`, B2; Lucca and Moench 2015). On S&P 500 and Nasdaq 100, 126 meetings from 2010-12 to 2026-09 (HistData M1):
+- **+0.18% per meeting net of costs, t 2.8.**
+- **Positive in both halves:** +0.04% in 2010–17 and +0.30% in 2018–26. The first half is weak.
+- **The data's clock was checked.** The statement's jump sits on the 14:00 New York minute, after the 13:55 exit.
+- **In R it is small:** about +0.02 to +0.05R per trade against the 3-ATR stop. That is about 0.6R a year on two indices.
+
+**One engine per symbol** (ZR-STR-025). The pre-FOMC engine skips a symbol that another Zugrio engine holds, and the index engine now skips a symbol held by another engine. Both refusals show as `SYMBOL_OWNED_BY_OTHER_ENGINE`.
+
+**In the record.** Trades show as style `FOMC`. Each change of state is logged as `fomc_decision`, and exits as `fomc_exit`.
+
 ### Crypto trend engine (2026-10-14, demo only by default)
 
 **What it trades.** BTC and ETH CFDs (*Crypto markets*; names and aliases per entry).

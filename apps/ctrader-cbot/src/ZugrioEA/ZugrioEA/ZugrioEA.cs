@@ -156,6 +156,14 @@ namespace Zugrio.CBot.EA
         [Parameter("Crypto markets (name,alternative,...; ...)", DefaultValue = DefaultCryptoMarkets, Group = "Zugrio Crypto trend engine (research)")] public string CryptoMarketsText { get; set; } = DefaultCryptoMarkets;
         [Parameter("Crypto: max swap cost (% a year)", DefaultValue = 20.0, MinValue = 0, Group = "Zugrio Crypto trend engine (research)")] public double CryptoMaxCostPct { get; set; } = 20.0;
         [Parameter("Crypto: decide each Monday from (UTC hour)", DefaultValue = 1, MinValue = 0, MaxValue = 23, Group = "Zugrio Crypto trend engine (research)")] public int CryptoDecideHourUtc { get; set; } = 1;
+        // Pre-FOMC engine (research/lab/news_prereg.json B2; FomcEngine in Zugrio.CBot.Core): long the US index from 14:00
+        // New York the day before a scheduled FOMC statement to 13:55 on the day. The dates are a parameter: the EA cannot
+        // fetch a calendar (AccessRights.None), so they come from the Federal Reserve's published schedule.
+        public const string DefaultFomcMarkets = "US 500,US500,US SP 500,SPX500,SP500,US500Cash; US Tech 100,USTEC,US100,NAS100,USTech100,NDX100,US100Cash";
+        [Parameter("Pre-FOMC engine on", DefaultValue = true, Group = "Zugrio pre-FOMC engine (research)")] public bool FomcEngineOn { get; set; } = true;
+        [Parameter("FOMC markets (name,alternative,...; ...)", DefaultValue = DefaultFomcMarkets, Group = "Zugrio pre-FOMC engine (research)")] public string FomcMarketsText { get; set; } = DefaultFomcMarkets;
+        [Parameter("FOMC statement dates (yyyy-MM-dd; ...)", DefaultValue = FomcEngine.DefaultDates, Group = "Zugrio pre-FOMC engine (research)")] public string FomcDatesText { get; set; } = FomcEngine.DefaultDates;
+        [Parameter("FOMC: demo accounts only", DefaultValue = true, Group = "Zugrio pre-FOMC engine (research)")] public bool FomcDemoOnly { get; set; } = true;
         [Parameter("Crypto: demo accounts only", DefaultValue = true, Group = "Zugrio Crypto trend engine (research)")] public bool CryptoDemoOnly { get; set; } = true;
 
         [Parameter("Risk per trade (% of balance)", DefaultValue = 1.0, MinValue = 0.05, MaxValue = 5, Group = "Risk (research)")] public double RiskPct { get; set; }
@@ -196,6 +204,18 @@ namespace Zugrio.CBot.EA
             public IReadOnlyList<TradingStyle> Styles { get; }
             public DateTime LastTickUtc { get; set; } = DateTime.MinValue;
             public bool Has(TradingStyle s) => Bars.ContainsKey(s.LocationTf) && Bars.ContainsKey(s.EntryTf);
+        }
+
+        /// <summary>One US index CFD for the pre-FOMC engine: its H1 bars (for the session ATR of the stop).</summary>
+        private sealed class FomcMarket
+        {
+            public FomcMarket(Symbol symbol, Bars h1) { Sym = symbol; H1 = h1; }
+            public Symbol Sym { get; }
+            public string Name => Sym.Name;
+            public Bars H1 { get; }
+            public DateTime RetryAt { get; set; } = DateTime.MinValue;
+            public DateTime LastTickUtc { get; set; } = DateTime.MinValue;
+            public string LastReason { get; set; } = "";
         }
 
         /// <summary>One crypto CFD for the crypto trend engine: its daily bars and the week it last decided.</summary>
@@ -255,6 +275,9 @@ namespace Zugrio.CBot.EA
         private Symbol? _trendSym;
         private readonly List<DriftMarket> _driftMarkets = new();
         private readonly List<CryptoMarket> _cryptoMarkets = new();
+        private readonly List<FomcMarket> _fomcMarkets = new();
+        private IReadOnlyList<DateTime> _fomcDates = Array.Empty<DateTime>();
+        private readonly FomcRule _fomcRule = new();
         private CryptoRule _cryptoRule = new();
         private readonly Dictionary<long, DateTime> _driftExitTried = new();
         private Bars? _trendD1;
@@ -376,7 +399,8 @@ namespace Zugrio.CBot.EA
             if (TrendEngineOn) SetupTrendEngine();
             if (DriftEngineOn) SetupDriftEngine();
             if (CryptoEngineOn) SetupCryptoEngine();
-            if (_markets.Count == 0 && _indexMarkets.Count == 0 && _trendSym == null && _driftMarkets.Count == 0 && _cryptoMarkets.Count == 0)
+            if (FomcEngineOn) SetupFomcEngine();
+            if (_markets.Count == 0 && _indexMarkets.Count == 0 && _trendSym == null && _driftMarkets.Count == 0 && _cryptoMarkets.Count == 0 && _fomcMarkets.Count == 0)
             { Print("Zugrio EA: nothing to trade: no watchlist symbol at this broker is in an enabled style, the index engine, the gold trend engine or the drift engine. Not trading."); Stop(); return; }
             Positions.Closed += OnPositionClosed;
             Timer.Start(TimeSpan.FromSeconds(1));
@@ -392,6 +416,7 @@ namespace Zugrio.CBot.EA
                   (_indexMarkets.Count == 0 ? "Index engine: no markets. " : $"Index engine on {string.Join(", ", _indexMarkets.Select(m => m.Name))}. ") +
                   (_trendSym == null ? "Gold trend engine off. " : $"Gold trend engine on {_trendSym.Name}. ") +
                   (_cryptoMarkets.Count == 0 ? "Crypto trend engine off. " : $"Crypto trend engine on {string.Join(", ", _cryptoMarkets.Select(m => m.Name))}{(CryptoDemoOnly && _exec.IsLive ? " - NOT trading: live account and 'demo accounts only' is on" : "")}. ") +
+                  (_fomcMarkets.Count == 0 ? "Pre-FOMC engine off. " : $"Pre-FOMC engine on {string.Join(", ", _fomcMarkets.Select(m => m.Name))}, next statement {NextFomcText(Server.TimeInUtc)}{(FomcDemoOnly && _exec.IsLive ? " - NOT trading: live account and 'demo accounts only' is on" : "")}. ") +
                   (_driftMarkets.Count == 0 ? "Drift engine off. " : $"Drift engine on {string.Join(", ", _driftMarkets.Select(m => $"{m.Name} (look back {m.Rule.Lookback}, hold {m.Rule.Hold} min, max spread {DriftMaxSpreadAtr.ToString(System.Globalization.CultureInfo.InvariantCulture)} x ATR{(m.MaxSpread > 0 ? $" and {m.MaxSpread.ToString(System.Globalization.CultureInfo.InvariantCulture)}" : "")})"))}{(DriftDemoOnly && _exec.IsLive ? " - NOT trading: live account and 'demo accounts only' is on" : "")}. ") +
                   $"Config {_configVersion[..12]}, engine {_engine.BundleSha256[..12]}.");
             ProtectUnprotectedOnStart();
@@ -508,6 +533,7 @@ namespace Zugrio.CBot.EA
             if (_trendSym != null) RunTrendEngine(now);
             RunDriftExits(now);
             RunCryptoEngine(now);
+            RunFomcEngine(now);
             var hour = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0, DateTimeKind.Utc);
             if (_activityHour == DateTime.MinValue) _activityHour = hour;
             else if (hour > _activityHour)
@@ -759,7 +785,7 @@ namespace Zugrio.CBot.EA
             foreach (var kv in o.Extra) record[kv.Key] = kv.Value;
             _log.Write(now, "entry", record);
             _activity.Entered(o.Style == TradingStyles.Scalp);
-            var tag = o.Style == TradingStyles.Scalp ? " (scalp)" : o.Style == TradingStyles.Index ? " (index)" : o.Style == TradingStyles.Trend ? " (gold trend)" : o.Style == TradingStyles.Drift ? " (drift switch)" : o.Style == TradingStyles.Crypto ? " (crypto trend)" : "";
+            var tag = o.Style == TradingStyles.Scalp ? " (scalp)" : o.Style == TradingStyles.Index ? " (index)" : o.Style == TradingStyles.Trend ? " (gold trend)" : o.Style == TradingStyles.Drift ? " (drift switch)" : o.Style == TradingStyles.Crypto ? " (crypto trend)" : o.Style == TradingStyles.Fomc ? " (pre-FOMC)" : "";
             Print($"Zugrio EA: TRADE OPENED {o.Side.ToString().ToUpperInvariant()} {name}{tag} {r.Position.Quantity.ToString(System.Globalization.CultureInfo.InvariantCulture)} lots at {r.Position.EntryPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)}, " +
                   $"stop {r.Position.StopLoss?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "none"}, target {r.Position.TakeProfit?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "none"}, risk {o.Size.RiskMoney:F2} ({o.Size.RiskPctActual:F1}%).");
             ConfirmProtection(o.Sym, r.Position, o.FireEventId, o.Stop, o.Target);
@@ -797,6 +823,7 @@ namespace Zugrio.CBot.EA
                 if (TradingStyles.FromComment(pos.Comment) == TradingStyles.Trend) continue;   // the trend rule holds for the month, as tested
                 if (TradingStyles.FromComment(pos.Comment) == TradingStyles.Drift) continue;   // the drift rule exits on time, as tested
                 if (TradingStyles.FromComment(pos.Comment) == TradingStyles.Crypto) continue;  // the crypto rule holds for the week, as tested
+                if (TradingStyles.FromComment(pos.Comment) == TradingStyles.Fomc) continue;    // the pre-FOMC rule exits on time, as tested
                 if (_lastTrail.TryGetValue(pos.Id, out var last) && now - last < TrailInterval) continue;
                 _lastTrail[pos.Id] = now;
                 var m = _markets.FirstOrDefault(x => x.Name == pos.SymbolName);
@@ -1039,6 +1066,9 @@ namespace Zugrio.CBot.EA
             var label = LabelFor(fireEventId);
             if (Positions.Find(label) != null || History.FindLast(label) != null) return;
             _activity.SetupFound(fireEventId);
+            // One Zugrio engine owns a symbol at a time (ZR-STR-025): another engine's open trade here blocks this entry.
+            if (Positions.Any(p => IsZugrio(p) && p.SymbolName == im.Name && TradingStyles.FromComment(p.Comment) != TradingStyles.Index))
+            { Skip(now, im.Name, fireEventId, "SYMBOL_OWNED_BY_OTHER_ENGINE"); return; }
             if (Account.Balance < im.Item.UnlockBalance)
             { Skip(now, im.Name, fireEventId, "LOCKED_UNTIL_BALANCE", new() { ["unlockBalance"] = im.Item.UnlockBalance, ["balance"] = Account.Balance }); return; }
             var price = im.Sym.Ask;
@@ -1194,6 +1224,115 @@ namespace Zugrio.CBot.EA
             _log.Write(now, "crypto_exit", new Dictionary<string, object?> { ["symbol"] = pos.SymbolName, ["label"] = pos.Label, ["netProfit"] = pl, ["ok"] = r.IsSuccessful, ["error"] = r.Error?.ToString() });
             if (!r.IsSuccessful) { cm.DecidedWeek = ""; cm.RetryAt = now.AddSeconds(30); return false; }
             return true;
+        }
+
+        // ---- Pre-FOMC engine (research/lab/news_prereg.json B2; FomcEngine in Zugrio.CBot.Core) ----
+
+        private void SetupFomcEngine()
+        {
+            try { _fomcDates = FomcEngine.ParseDates(FomcDatesText); }
+            catch (FormatException e) { Print($"Zugrio EA: pre-FOMC engine off: {e.Message}."); return; }
+            if (!_fomcDates.Any(d => d >= Server.TimeInUtc.Date)) Print("Zugrio EA: pre-FOMC engine: no FOMC statement date ahead in 'FOMC statement dates'; add the Federal Reserve's next schedule.");
+            var brokerNames = Enumerable.Range(0, Symbols.Count).Select(i => Symbols[i]).ToList();
+            foreach (var entry in (FomcMarketsText ?? "").Split(';').Select(x => x.Trim()).Where(x => x.Length > 0))
+            {
+                var name = Watchlist.Resolve(entry, brokerNames);
+                var sym = name == null ? null : Symbols.GetSymbol(name);
+                if (sym == null) { Print($"Zugrio EA: pre-FOMC engine: none of '{entry}' is offered by this broker; skipped."); continue; }
+                if (_fomcMarkets.Any(m => m.Name == sym.Name)) continue;
+                var h1 = MarketData.GetBars(TimeFrame.Hour, sym.Name);
+                var from = Server.TimeInUtc.AddDays(-40);   // 14 New York sessions for the ATR, with margin
+                for (var k = 0; k < 50 && h1.Count > 0 && h1.OpenTimes[0] > from; k++) if (h1.LoadMoreHistory() == 0) break;
+                var fm = new FomcMarket(sym, h1);
+                sym.Tick += _ => fm.LastTickUtc = Server.TimeInUtc;
+                _fomcMarkets.Add(fm);
+            }
+        }
+
+        private string NextFomcText(DateTime now)
+        {
+            var d = FomcEngine.Decide(now, _fomcDates, null, _fomcRule);
+            return d.Statement is DateTime s ? $"{s:yyyy-MM-dd} (entry {d.EntryUtc:yyyy-MM-dd HH:mm} UTC, exit {d.ExitUtc:yyyy-MM-dd HH:mm} UTC)" : "none listed";
+        }
+
+        private Position? FomcPosition(FomcMarket fm) =>
+            Positions.FirstOrDefault(p => IsZugrio(p) && p.SymbolName == fm.Name && TradingStyles.FromComment(p.Comment) == TradingStyles.Fomc);
+
+        private void RunFomcEngine(DateTime now)
+        {
+            foreach (var fm in _fomcMarkets)
+            {
+                if (now < fm.RetryAt) continue;
+                try
+                {
+                    var pos = FomcPosition(fm);
+                    var d = FomcEngine.Decide(now, _fomcDates, pos == null ? null : DateTime.SpecifyKind(pos.EntryTime, DateTimeKind.Utc), _fomcRule);
+                    if (d.Reason != fm.LastReason)
+                    {
+                        fm.LastReason = d.Reason;
+                        _log.Write(now, "fomc_decision", new Dictionary<string, object?> { ["symbol"] = fm.Name, ["action"] = d.Action.ToString(), ["reason"] = d.Reason,
+                            ["statement"] = d.Statement?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture), ["entryUtc"] = d.EntryUtc, ["exitUtc"] = d.ExitUtc, ["inPosition"] = pos != null });
+                    }
+                    if (d.Action == FomcAction.Exit && pos != null) ExitFomc(fm, pos, now);
+                    else if (d.Action == FomcAction.Enter && d.Statement is DateTime s) EnterFomc(fm, s, now);
+                }
+                catch (Exception e)
+                {
+                    _log.Write(now, "fomc_error", new Dictionary<string, object?> { ["symbol"] = fm.Name, ["error"] = e.Message });
+                    Print($"Zugrio FOMC: {fm.Name}: {e.Message}");
+                    fm.RetryAt = now.AddMinutes(1);
+                }
+            }
+        }
+
+        private void EnterFomc(FomcMarket fm, DateTime statement, DateTime now)
+        {
+            var ci = System.Globalization.CultureInfo.InvariantCulture;
+            var sym = fm.Sym;
+            var fireEventId = "fire:" + Sha($"fomc|{sym.Name}|{statement.ToString("yyyy-MM-dd", ci)}")[..32];
+            var opportunityId = $"fomc:{sym.Name}:{statement.ToString("yyyy-MM-dd", ci)}";
+            if (_boundary.Get(_accountId, fireEventId) != null) return;
+            // One entry per market and meeting, even after a cloud restart.
+            var label = LabelFor(fireEventId);
+            if (Positions.Find(label) != null || History.FindLast(label) != null) return;
+            if (!sym.IsTradingEnabled || !sym.MarketHours.IsOpened(now)) { fm.RetryAt = now.AddMinutes(1); return; }
+            _activity.SetupFound(fireEventId);
+            if (FomcDemoOnly && _exec.IsLive) { Skip(now, sym.Name, fireEventId, "FOMC_DEMO_ONLY"); return; }
+            // One Zugrio engine owns a symbol at a time (ZR-STR-025): the index engine's open trade here blocks this entry.
+            if (Positions.Any(p => IsZugrio(p) && p.SymbolName == sym.Name))
+            { Skip(now, sym.Name, fireEventId, "SYMBOL_OWNED_BY_OTHER_ENGINE"); return; }
+            var list = new List<HourBar>(fm.H1.Count);
+            for (var i = 0; i < fm.H1.Count; i++)
+                if (fm.H1.OpenTimes[i] <= now) list.Add(new HourBar(DateTime.SpecifyKind(fm.H1.OpenTimes[i], DateTimeKind.Utc), fm.H1.OpenPrices[i], fm.H1.HighPrices[i], fm.H1.LowPrices[i], fm.H1.ClosePrices[i]));
+            var atr = IndexEngine.SessionAtr(IndexEngine.Sessions(list, _indexRule), 14);
+            if (!(atr > 0)) { Skip(now, sym.Name, fireEventId, "ATR_UNAVAILABLE"); return; }
+            var price = sym.Ask;
+            var stop = price - _fomcRule.StopAtr * atr;
+            var target = price + _fomcRule.FarTargetAtr * atr;
+            var spread = sym.Ask - sym.Bid;
+            if (spread > MaxSpreadShareOfStop * (price - stop))
+            { Skip(now, sym.Name, fireEventId, "SPREAD_TOO_WIDE_FOR_STOP", new() { ["spread"] = spread, ["stopDistance"] = price - stop }); return; }
+            var size = SizeFor(sym, price, stop);
+            if (!size.Trade) { Skip(now, sym.Name, fireEventId, size.Reason, new() { ["riskPctAtMinimum"] = size.RiskPctActual }); return; }
+            var tier = Watchlist.TierFor(_tiers, Account.Balance);
+            var candidate = new ReadyCandidate(sym.Name, AssetClass.Index, new DateTimeOffset(DateTime.SpecifyKind(now, DateTimeKind.Utc)), opportunityId, size.RiskMoney, size.RiskPctActual);
+            var selection = PortfolioSelector.Select(new[] { candidate }, OpenExposures(), SlotsFor(tier, drift: false), Account.Balance, _killSwitch.Remaining(Account.Equity));
+            if (selection.Take.Count == 0)
+            { Skip(now, sym.Name, fireEventId, selection.Skipped[0].Reason, new() { ["tierMinBalance"] = tier.MinBalance, ["riskMoney"] = size.RiskMoney }); return; }
+            var limit = Math.Round(price + IndexChaseAtr * atr, sym.Digits);
+            Submit(new EntryOrder(sym, AssetClass.Index, fm.LastTickUtc, TradingStyles.Fomc, null, fireEventId, opportunityId, Side.Buy, price, stop, target, limit, size, atr,
+                new Dictionary<string, object?> { ["statement"] = statement.ToString("yyyy-MM-dd", ci), ["sessionAtr"] = atr }), now);
+        }
+
+        private void ExitFomc(FomcMarket fm, Position pos, DateTime now)
+        {
+            var view = View(pos);
+            var gate = RiskReducingGate.Check(view, new ClosePosition(view.PositionId), _accountId, _accountId, adapterIntegrityOk: true, brokerReachable: Server.IsConnected);
+            if (!gate.Allowed) { _log.Write(now, "fomc_exit_blocked", new Dictionary<string, object?> { ["label"] = pos.Label, ["reasons"] = gate.AbortReasons }); fm.RetryAt = now.AddSeconds(30); return; }
+            var pl = pos.NetProfit;
+            var r = _exec.Close(pos);
+            _log.Write(now, "fomc_exit", new Dictionary<string, object?> { ["symbol"] = pos.SymbolName, ["label"] = pos.Label, ["netProfit"] = pl, ["ok"] = r.IsSuccessful, ["error"] = r.Error?.ToString() });
+            if (!r.IsSuccessful) fm.RetryAt = now.AddSeconds(30);
         }
 
         // ---- Drift Switch engine (research/deriv/FAMILIES.md; DriftEngine in Zugrio.CBot.Core) ----
@@ -1508,6 +1647,11 @@ namespace Zugrio.CBot.EA
                 ["on"] = IndexEngineOn, ["lowerCloses"] = IndexLowerCloses, ["trendSma"] = IndexTrendSma, ["exitSma"] = IndexExitSma, ["atrPeriod"] = _indexRule.AtrPeriod,
                 ["stopAtr"] = (decimal)IndexStopAtr, ["farTargetAtr"] = (decimal)IndexFarTargetAtr, ["closeNewYork"] = IndexCloseText.Trim(), ["venues"] = "v1 US NY 09:00-16:00, London 08:00-16:30, Frankfurt 09:00-17:30, Tokyo 09:00-15:30, Sydney 10:00-16:00, Hong Kong 09:00-16:00", ["leadMinutes"] = IndexLeadMinutes,
                 ["sessionStartNewYork"] = _indexRule.Start.ToString(@"hh\:mm"), ["minBarsPerSession"] = _indexRule.MinBarsPerSession, ["chaseAtr"] = (decimal)IndexChaseAtr,
+            },
+            ["fomcEngine"] = new JsonObject
+            {
+                ["on"] = FomcEngineOn, ["markets"] = FomcMarketsText.Trim(), ["dates"] = FomcDatesText.Trim(), ["demoOnly"] = FomcDemoOnly,
+                ["rule"] = "long 14:00 New York the day before a scheduled FOMC statement to 13:55 on the day, stop 3 session ATRs (research/lab/news_prereg.json B2)",
             },
             ["cryptoEngine"] = new JsonObject
             {

@@ -1,0 +1,4 @@
+B2 pre-FOMC drift (126 meetings, 2010-12-14 to 2026-09-16; mean over the indices per meeting):
+  gross +0.215% (t 3.27, n 126); net 2010-17 +0.035% (t 0.45, n 57), 2018-26 +0.301% (t 3.03, n 69), pooled +0.181% (t 2.76, n 126)
+  in R (3 x daily ATR): 2010-17 +0.016R (t 0.77, n 57), 2018-26 +0.053R (t 2.83, n 69); per index: SPXUSD +0.132% (t 2.30, n 125); NSXUSD +0.228% (t 2.84, n 123)
+  -> PASS

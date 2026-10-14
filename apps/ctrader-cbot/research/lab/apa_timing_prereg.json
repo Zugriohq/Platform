@@ -1,0 +1,25 @@
+{
+  "id": "APA_entry_timing_on_evidenced_signals",
+  "registered": "2026-10-14, before any intraday data for this test was downloaded or run",
+  "question": "Inside a base signal that has evidence, does entering on a TTI 5.16 APA trigger (structure: BOS, displacement, FVG/OB zone, retest, rejection) beat entering at the signal's own time? (EVIDENCE_VS_DIRECTION.md, plan step (a).)",
+  "apa": "TTI 5.16.0's own analyseAPA and buildPlan, extracted verbatim (research/tti/apa_lib.mjs), on the last 300 closed bars of the timing timeframe, no HTF bias. TP1 and its 1R floor are not used: the base rule's exit is kept.",
+  "base_signals": {
+    "INDEX": "SPXUSD, NSXUSD (HistData M1, daily closes at a 21:00 UTC cut): close above SMA200 and 3 lower closes -> long at the close; exit at the first close above SMA5; stop 3 x ATR14 (daily). Costs 0.02% per round trip + 5%/yr per night held.",
+    "GOLD": "XAUUSD (HistData M1, month-end closes): 12-month sign, long or short, held to the next month end; stop 3 monthly sigma (60 daily returns x sqrt 21). Costs 0.03% per change + 1.5%/yr.",
+    "FX": "EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, USDCHF, NZDUSD, EURJPY, GBPJPY, EURGBP: the same 12-month rule as GOLD. Costs 0.01% per change + 1.5%/yr. Note: this base rule has no edge on FX (lab round 4); FX tests whether APA timing creates one.",
+    "CRYPTO": "BTCUSDT, ETHUSDT (Binance 15m klines): 4-week sign at Monday 00:00 UTC, long or short, held to the next Monday; stop 3 weekly sigma (60 daily returns x sqrt 7). Costs 0.2% per change + 10%/yr."
+  },
+  "timing": {
+    "INDEX": "M15 bars (APA timeframe M15), from the signal close for 24 hours",
+    "GOLD_FX": "H1 bars (APA timeframe H1), the first 120 hours after the month-end close",
+    "CRYPTO": "H1 bars (APA timeframe H1), the first 48 hours of the week"
+  },
+  "apa_entry": "the first fresh APA trigger (stage TRIGGERED, triggerAt = the bar just closed) in the signal's direction with a non-null plan, inside the timing window: enter at the next bar's open, paying the same costs. No trigger in the window, or an entry already beyond the stop: no trade for that signal.",
+  "variants": {
+    "T1_BASE_STOP": "APA entry; the base rule's stop level and exit. Outcome = P/L / the base rule's risk distance (the base signal's R), so it is directly comparable to the base entry.",
+    "T2_APA_STOP": "APA entry; stop = plan.stop (APA's structural stop); exit = the base exit or that stop. Outcome in its own R (P/L / |entry - plan.stop|), as the EA would size it."
+  },
+  "baseline": "the base rule's own entry on every signal, in its own R; also reported on the subset where APA triggered and the subset where it did not (selection versus timing)",
+  "halves": "INDEX, GOLD, FX: 2010-2017 and 2018-2026; CRYPTO: 2017-08..2021-12 and 2022-01..2026-09 (as C_crypto_trend)",
+  "pass": "per group (INDEX, GOLD, FX, CRYPTO) and variant: (1) APA minus base on the same signals > 0 in both halves with pooled t >= 2; (2) the APA-timed trades' net mean > 0 in both halves; (3) APA-timed total R per year >= the base rule's total R per year (skipped signals count as zero). All three, or fail."
+}
