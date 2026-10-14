@@ -1,0 +1,10 @@
+rule | gross | net at 0% fin | net at 10%/yr (registered) | net at 20%/yr | first half (10%) | second half (10%) | verdict
+12-month trend, monthly, long/short | +0.096R t 1.1 (n 194) | +0.094R t 1.1 (n 194) | +0.046R t 0.5 (n 194) | -0.002R t -0.0 (n 194) | +0.035R t 0.2 (n 82) | +0.054R t 0.5 (n 112) | fail
+   BTCUSDT at 10%: +0.097R t 0.7 (n 97), first +0.034R t 0.2 (n 41), second +0.143R t 0.9 (n 56)
+   ETHUSDT at 10%: -0.005R t -0.0 (n 97), first +0.036R t 0.2 (n 41), second -0.035R t -0.2 (n 56)
+4-week trend, weekly, long/short | +0.170R t 4.6 (n 942) | +0.160R t 4.3 (n 942) | +0.137R t 3.7 (n 942) | +0.115R t 3.1 (n 942) | +0.169R t 3.0 (n 448) | +0.109R t 2.2 (n 494) | PASS
+   BTCUSDT at 10%: +0.127R t 2.4 (n 471), first +0.172R t 2.2 (n 224), second +0.086R t 1.2 (n 247)
+   ETHUSDT at 10%: +0.148R t 2.8 (n 471), first +0.166R t 2.1 (n 224), second +0.132R t 1.9 (n 247)
+above 20-week average, weekly, long only | +0.099R t 3.7 (n 910) | +0.097R t 3.6 (n 910) | +0.085R t 3.2 (n 910) | +0.073R t 2.7 (n 910) | +0.144R t 3.4 (n 416) | +0.035R t 1.0 (n 494) | PASS
+   BTCUSDT at 10%: +0.084R t 2.2 (n 455), first +0.125R t 2.1 (n 208), second +0.050R t 1.0 (n 247)
+   ETHUSDT at 10%: +0.086R t 2.3 (n 455), first +0.163R t 2.6 (n 208), second +0.020R t 0.5 (n 247)
