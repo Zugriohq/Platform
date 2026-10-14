@@ -270,6 +270,27 @@ namespace Zugrio.CBot.Core.Tests
             Assert.Contains("Submit(new EntryOrder(", Method(src, "private void Enter(Pending p, DateTime now)"));
             Assert.Contains("Submit(new EntryOrder(", Method(src, "private void EnterIndex("));
             Assert.Contains("Submit(new EntryOrder(", Method(src, "private void EnterDrift("));
+            Assert.Contains("Submit(new EntryOrder(", Method(src, "private void EnterCrypto("));
+        }
+
+        [Fact]
+        public void Crypto_entries_check_demo_records_spread_size_and_tiers_before_submitting_and_exit_through_the_gate()
+        {
+            var src = Ea();
+            var body = Method(src, "private void EnterCrypto(");
+            var submit = body.IndexOf("Submit(new EntryOrder(", StringComparison.Ordinal);
+            Assert.True(submit > 0);
+            foreach (var must in new[] { "if (Positions.Find(label) != null || History.FindLast(label) != null) return;", "if (CryptoDemoOnly && _exec.IsLive)",
+                         "MaxSpreadShareOfStop", "SizeFor(sym, price, stop)", "PortfolioSelector.Select(", "_killSwitch.Remaining(Account.Equity)" })
+            {
+                var at = body.IndexOf(must, StringComparison.Ordinal);
+                Assert.True(at > 0 && at < submit, must + " must come before Submit");
+            }
+            var exit = Method(src, "private bool ExitCrypto(");
+            Assert.True(exit.IndexOf("RiskReducingGate.Check(", StringComparison.Ordinal) < exit.IndexOf("_exec.Close(pos)", StringComparison.Ordinal));
+            Assert.Contains("TradingStyles.Crypto) continue;", Method(src, "private void ManageOpenProfit("));
+            Assert.Contains("RunCryptoEngine(now);", Method(src, "protected override void OnTimer()"));
+            Assert.Contains("for (var i = 0; i < b.Count - 1; i++)", Method(src, "private static IReadOnlyList<DayClose> CryptoDaily("));
         }
 
         [Fact]

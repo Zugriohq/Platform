@@ -219,6 +219,17 @@ cTrader Mobile does not run cBots on the phone. It starts and stops **cloud inst
 3. **Then the cloud.** In cTrader Mobile, open the cBot, pick the account and any symbol (the chart does not matter, the watchlist does), and start it as a cloud instance. One instance covers every market, so the usual limits are enough: one cloud instance on a demo account (it stops after 7 days, restart it), up to ten on a live account, running 24/7. Run **one** instance per account: two would each apply the tier limits on their own.
 4. **Live comes after the demo record.** Owner, 2026-10-14: the EA is not called validated until its demo record supports it. Live is considered only then (below). When it is, start an instance on the live account the same way: it trades that account until you stop it. Start with an amount you can afford to lose entirely, and keep the demo instance running alongside for comparison.
 
+### Crypto trend engine (2026-10-14, demo only by default)
+
+**What it trades.** BTC and ETH CFDs (*Crypto markets*; names and aliases per entry).
+
+**The rule (`CryptoEngine`).** Each Monday from 01:00 UTC:
+- the position is the sign of the 4-week return over Sunday closes, long or short, held for the week;
+- the protective stop is 3 weekly standard deviations;
+- a side is held only while the broker's swap for it costs at most *Crypto: max swap cost* a year (default 20%). An unknown swap means no trade.
+
+**The evidence.** Pre-registered (`research/lab/realmarkets_prereg.json`, rule C2). On BTC and ETH, 2017–2026, at 10% a year financing: +0.137R per week (t 3.7), +0.169R in the first half and +0.109R in the second, and unchanged with the stop. Trades show as style `CRYPTO`.
+
 ### Drift Switch engine (2026-10-14, demo only by default)
 
 **What it trades.** Drift Switch Index 10 / 20 / 30. These indices switch between bull, bear and sideways trends lasting 10 / 20 / 30 minutes on average.

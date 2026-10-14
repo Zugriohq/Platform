@@ -71,6 +71,17 @@ Evidence comes from `research/lab/README.md` (rounds 1–3) and Market Lab (on t
 
 What is recorded, and how it is read, is in `README.md` under "Demo validation record". The EA is not called validated until that record supports it.
 
+## Crypto (built 2026-10-14, `CryptoEngine`, `UNVALIDATED_RESEARCH`)
+
+**Mechanism.** Short-horizon time-series momentum in crypto: trends persist over weeks (Liu-Tsyvinski 2021).
+
+**Evidence.** Pre-registered on Binance BTC and ETH daily closes, 2017–2026 (`research/lab/crypto_trend_results.txt`).
+- **Passes:** the sign of the 4-week return, weekly, long or short. +0.137R per week (t 3.7) at 10%/yr financing, positive in both halves; t 3.1 at 20%/yr.
+- **Passes, but weak since 2022:** long-only above the 20-week average.
+- **Fails:** 12-month monthly.
+
+**The broker decides the net.** The CFD swap on BTC and ETH must be known and at most 20%/yr. The engine logs the swap at every decision.
+
 ## Forex
 
 **Mechanism.** Currencies are the most efficient market retail can trade. Known premia are carry (interest differential, paid as swap) and slow cross-sectional momentum. Price structure alone has none that survives costs.

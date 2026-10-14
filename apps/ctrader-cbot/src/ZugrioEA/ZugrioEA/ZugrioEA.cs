@@ -141,6 +141,15 @@ namespace Zugrio.CBot.EA
         [Parameter("Drift markets (name,alternative,...|max spread; ...)", DefaultValue = DefaultDriftMarkets, Group = "Zugrio Drift Switch engine (research)")] public string DriftMarketsText { get; set; } = DefaultDriftMarkets;
         [Parameter("Drift: demo accounts only", DefaultValue = true, Group = "Zugrio Drift Switch engine (research)")] public bool DriftDemoOnly { get; set; } = true;
 
+        // Crypto trend engine (research/lab/realmarkets_prereg.json rule C2; CryptoEngine in Zugrio.CBot.Core): weekly, the sign
+        // of the 4-week return, long or short, a side held only while its swap costs at most the limit per year.
+        public const string DefaultCryptoMarkets = "BTCUSD,BTCUSDT,Bitcoin,BTCUSD.m,BTC/USD; ETHUSD,ETHUSDT,Ethereum,ETHUSD.m,ETH/USD";
+        [Parameter("Crypto trend engine on", DefaultValue = true, Group = "Zugrio Crypto trend engine (research)")] public bool CryptoEngineOn { get; set; } = true;
+        [Parameter("Crypto markets (name,alternative,...; ...)", DefaultValue = DefaultCryptoMarkets, Group = "Zugrio Crypto trend engine (research)")] public string CryptoMarketsText { get; set; } = DefaultCryptoMarkets;
+        [Parameter("Crypto: max swap cost (% a year)", DefaultValue = 20.0, MinValue = 0, Group = "Zugrio Crypto trend engine (research)")] public double CryptoMaxCostPct { get; set; } = 20.0;
+        [Parameter("Crypto: decide each Monday from (UTC hour)", DefaultValue = 1, MinValue = 0, MaxValue = 23, Group = "Zugrio Crypto trend engine (research)")] public int CryptoDecideHourUtc { get; set; } = 1;
+        [Parameter("Crypto: demo accounts only", DefaultValue = true, Group = "Zugrio Crypto trend engine (research)")] public bool CryptoDemoOnly { get; set; } = true;
+
         [Parameter("Risk per trade (% of balance)", DefaultValue = 1.0, MinValue = 0.05, MaxValue = 5, Group = "Risk (research)")] public double RiskPct { get; set; }
         [Parameter("Max risk at broker minimum volume (%)", DefaultValue = 5.0, MinValue = 0.1, MaxValue = 20, Group = "Risk (research)")] public double MaxRiskPctAtMinVolume { get; set; }
         [Parameter("Max units per order", DefaultValue = 1000000, MinValue = 1, Group = "Risk (research)")] public double MaxUnits { get; set; }
@@ -175,6 +184,18 @@ namespace Zugrio.CBot.EA
             public IReadOnlyList<TradingStyle> Styles { get; }
             public DateTime LastTickUtc { get; set; } = DateTime.MinValue;
             public bool Has(TradingStyle s) => Bars.ContainsKey(s.LocationTf) && Bars.ContainsKey(s.EntryTf);
+        }
+
+        /// <summary>One crypto CFD for the crypto trend engine: its daily bars and the week it last decided.</summary>
+        private sealed class CryptoMarket
+        {
+            public CryptoMarket(Symbol symbol, Bars d1) { Sym = symbol; D1 = d1; }
+            public Symbol Sym { get; }
+            public string Name => Sym.Name;
+            public Bars D1 { get; }
+            public string DecidedWeek { get; set; } = "";
+            public DateTime RetryAt { get; set; } = DateTime.MinValue;
+            public DateTime LastTickUtc { get; set; } = DateTime.MinValue;
         }
 
         /// <summary>One Drift Switch index for the drift engine: its M1 bars, its rule (from the declared regime) and its spread limit.</summary>
@@ -221,6 +242,8 @@ namespace Zugrio.CBot.EA
         private readonly List<IndexMarket> _indexMarkets = new();
         private Symbol? _trendSym;
         private readonly List<DriftMarket> _driftMarkets = new();
+        private readonly List<CryptoMarket> _cryptoMarkets = new();
+        private CryptoRule _cryptoRule = new();
         private readonly Dictionary<long, DateTime> _driftExitTried = new();
         private Bars? _trendD1;
         private TrendRule _trendRule = null!;
@@ -338,7 +361,8 @@ namespace Zugrio.CBot.EA
             AdoptOpenTrades(watch);
             if (TrendEngineOn) SetupTrendEngine();
             if (DriftEngineOn) SetupDriftEngine();
-            if (_markets.Count == 0 && _indexMarkets.Count == 0 && _trendSym == null && _driftMarkets.Count == 0)
+            if (CryptoEngineOn) SetupCryptoEngine();
+            if (_markets.Count == 0 && _indexMarkets.Count == 0 && _trendSym == null && _driftMarkets.Count == 0 && _cryptoMarkets.Count == 0)
             { Print("Zugrio EA: nothing to trade: no watchlist symbol at this broker is in an enabled style, the index engine, the gold trend engine or the drift engine. Not trading."); Stop(); return; }
             Positions.Closed += OnPositionClosed;
             Timer.Start(TimeSpan.FromSeconds(1));
@@ -353,6 +377,7 @@ namespace Zugrio.CBot.EA
                   (_styles.Count == 0 ? "Decision-core styles off. " : string.Join(", ", _styles.Select(st => $"{st.Name} {st.ContextTf}/{st.LocationTf}/{st.EntryTf} on {_markets.Count(x => x.Styles.Contains(st))} markets")) + ". ") +
                   (_indexMarkets.Count == 0 ? "Index engine: no markets. " : $"Index engine on {string.Join(", ", _indexMarkets.Select(m => m.Name))}. ") +
                   (_trendSym == null ? "Gold trend engine off. " : $"Gold trend engine on {_trendSym.Name}. ") +
+                  (_cryptoMarkets.Count == 0 ? "Crypto trend engine off. " : $"Crypto trend engine on {string.Join(", ", _cryptoMarkets.Select(m => m.Name))}{(CryptoDemoOnly && _exec.IsLive ? " - NOT trading: live account and 'demo accounts only' is on" : "")}. ") +
                   (_driftMarkets.Count == 0 ? "Drift engine off. " : $"Drift engine on {string.Join(", ", _driftMarkets.Select(m => $"{m.Name} (look back {m.Rule.Lookback}, hold {m.Rule.Hold} min, max spread {m.MaxSpread.ToString(System.Globalization.CultureInfo.InvariantCulture)})"))}{(DriftDemoOnly && _exec.IsLive ? " - NOT trading: live account and 'demo accounts only' is on" : "")}. ") +
                   $"Config {_configVersion[..12]}, engine {_engine.BundleSha256[..12]}.");
             ProtectUnprotectedOnStart();
@@ -468,6 +493,7 @@ namespace Zugrio.CBot.EA
             if (_indexMarkets.Count > 0) RunIndexEngine(now);
             if (_trendSym != null) RunTrendEngine(now);
             RunDriftExits(now);
+            RunCryptoEngine(now);
             var hour = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0, DateTimeKind.Utc);
             if (_activityHour == DateTime.MinValue) _activityHour = hour;
             else if (hour > _activityHour)
@@ -712,7 +738,7 @@ namespace Zugrio.CBot.EA
             foreach (var kv in o.Extra) record[kv.Key] = kv.Value;
             _log.Write(now, "entry", record);
             _activity.Entered(o.Style == TradingStyles.Scalp);
-            var tag = o.Style == TradingStyles.Scalp ? " (scalp)" : o.Style == TradingStyles.Index ? " (index)" : o.Style == TradingStyles.Trend ? " (gold trend)" : o.Style == TradingStyles.Drift ? " (drift switch)" : "";
+            var tag = o.Style == TradingStyles.Scalp ? " (scalp)" : o.Style == TradingStyles.Index ? " (index)" : o.Style == TradingStyles.Trend ? " (gold trend)" : o.Style == TradingStyles.Drift ? " (drift switch)" : o.Style == TradingStyles.Crypto ? " (crypto trend)" : "";
             Print($"Zugrio EA: TRADE OPENED {o.Side.ToString().ToUpperInvariant()} {name}{tag} {r.Position.Quantity.ToString(System.Globalization.CultureInfo.InvariantCulture)} lots at {r.Position.EntryPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)}, " +
                   $"stop {r.Position.StopLoss?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "none"}, target {r.Position.TakeProfit?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "none"}, risk {o.Size.RiskMoney:F2} ({o.Size.RiskPctActual:F1}%).");
             ConfirmProtection(o.Sym, r.Position, o.FireEventId, o.Stop, o.Target);
@@ -749,6 +775,7 @@ namespace Zugrio.CBot.EA
                 if (TradingStyles.FromComment(pos.Comment) == TradingStyles.Index) continue;   // the index rule exits on its own close rule, as tested
                 if (TradingStyles.FromComment(pos.Comment) == TradingStyles.Trend) continue;   // the trend rule holds for the month, as tested
                 if (TradingStyles.FromComment(pos.Comment) == TradingStyles.Drift) continue;   // the drift rule exits on time, as tested
+                if (TradingStyles.FromComment(pos.Comment) == TradingStyles.Crypto) continue;  // the crypto rule holds for the week, as tested
                 if (_lastTrail.TryGetValue(pos.Id, out var last) && now - last < TrailInterval) continue;
                 _lastTrail[pos.Id] = now;
                 var m = _markets.FirstOrDefault(x => x.Name == pos.SymbolName);
@@ -1013,6 +1040,128 @@ namespace Zugrio.CBot.EA
         }
 
         private static void RetryIndex(IndexMarket im, DateTime now) { im.DecidedDate = DateTime.MinValue; im.RetryAt = now.AddSeconds(30); }
+
+        // ---- Crypto trend engine (research/lab/realmarkets_prereg.json rule C2; CryptoEngine in Zugrio.CBot.Core) ----
+
+        private void SetupCryptoEngine()
+        {
+            _cryptoRule = new CryptoRule(MaxCostPctPerYear: CryptoMaxCostPct);
+            var brokerNames = Enumerable.Range(0, Symbols.Count).Select(i => Symbols[i]).ToList();
+            foreach (var entry in (CryptoMarketsText ?? "").Split(';').Select(x => x.Trim()).Where(x => x.Length > 0))
+            {
+                var name = Watchlist.Resolve(entry, brokerNames);
+                var sym = name == null ? null : Symbols.GetSymbol(name);
+                if (sym == null) { Print($"Zugrio EA: crypto engine: none of '{entry}' is offered by this broker; skipped."); continue; }
+                if (_cryptoMarkets.Any(m => m.Name == sym.Name)) continue;
+                var d1 = MarketData.GetBars(TimeFrame.Daily, sym.Name);
+                var from = Server.TimeInUtc.AddDays(-150);
+                for (var k = 0; k < 30 && d1.Count > 0 && d1.OpenTimes[0] > from; k++) if (d1.LoadMoreHistory() == 0) break;
+                var cm = new CryptoMarket(sym, d1);
+                sym.Tick += _ => cm.LastTickUtc = Server.TimeInUtc;
+                _cryptoMarkets.Add(cm);
+            }
+        }
+
+        /// <summary>Closed daily bars (the forming bar is left out, as for gold).</summary>
+        private static IReadOnlyList<DayClose> CryptoDaily(CryptoMarket cm, DateTime now)
+        {
+            var b = cm.D1; var list = new List<DayClose>(b.Count);
+            for (var i = 0; i < b.Count - 1; i++) if (b.OpenTimes[i] <= now) list.Add(new DayClose(b.OpenTimes[i].Date, b.ClosePrices[i]));
+            return list;
+        }
+
+        private static (double Long, double Short) SwapCosts(Symbol s)
+        {
+            var price = (s.Bid + s.Ask) / 2;
+            var kind = s.SwapCalculationType switch { SymbolSwapCalculationType.Percentage => SwapKind.Percent, SymbolSwapCalculationType.Points => SwapKind.Points, _ => SwapKind.Pips };
+            return (TrendEngine.AnnualCostPct(s.SwapLong, kind, s.PipSize, s.TickSize, price), TrendEngine.AnnualCostPct(s.SwapShort, kind, s.PipSize, s.TickSize, price));
+        }
+
+        private Position? CryptoPosition(CryptoMarket cm) =>
+            Positions.FirstOrDefault(p => IsZugrio(p) && p.SymbolName == cm.Name && TradingStyles.FromComment(p.Comment) == TradingStyles.Crypto);
+
+        /// <summary>Once a week: the first time on Monday (or later in the week after a restart) from CryptoDecideHourUtc that the market is open.</summary>
+        private void RunCryptoEngine(DateTime now)
+        {
+            foreach (var cm in _cryptoMarkets)
+            {
+                var week = CryptoEngine.WeekStart(now).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+                if (week == cm.DecidedWeek || now < cm.RetryAt || (now - CryptoEngine.WeekStart(now)).TotalHours < CryptoDecideHourUtc) continue;
+                if (!cm.Sym.IsTradingEnabled || !cm.Sym.MarketHours.IsOpened(now)) continue;
+                cm.DecidedWeek = week;
+                try { DecideCrypto(cm, now, week); }
+                catch (Exception e)
+                {
+                    _log.Write(now, "crypto_error", new Dictionary<string, object?> { ["symbol"] = cm.Name, ["error"] = e.Message });
+                    Print($"Zugrio Crypto: {cm.Name}: {e.Message}");
+                }
+            }
+        }
+
+        private void DecideCrypto(CryptoMarket cm, DateTime now, string week)
+        {
+            var pos = CryptoPosition(cm);
+            var current = pos == null ? 0 : pos.TradeType == TradeType.Buy ? 1 : -1;
+            var (costLong, costShort) = SwapCosts(cm.Sym);
+            var d = CryptoEngine.Decide(CryptoDaily(cm, now), now.Date, current, costLong, costShort, _cryptoRule);
+            _log.Write(now, "crypto_decision", new Dictionary<string, object?>
+            {
+                ["symbol"] = cm.Name, ["week"] = week, ["action"] = d.Action.ToString(), ["target"] = d.Target, ["signal"] = d.Signal, ["reason"] = d.Reason,
+                ["weekEnds"] = d.WeekEnds, ["lookbackReturn"] = d.LookbackReturn, ["weekSigma"] = d.WeekSigma, ["costLongPct"] = costLong, ["costShortPct"] = costShort,
+                ["swapLong"] = cm.Sym.SwapLong, ["swapShort"] = cm.Sym.SwapShort, ["swapType"] = cm.Sym.SwapCalculationType.ToString(), ["current"] = current,
+            });
+            var ci = System.Globalization.CultureInfo.InvariantCulture;
+            Print($"Zugrio Crypto: {cm.Name} week of {week}: 4-week return {(double.IsNaN(d.LookbackReturn) ? "n/a" : (100 * d.LookbackReturn).ToString("+0.0;-0.0", ci) + "%")}, " +
+                  $"weekly volatility {(100 * d.WeekSigma).ToString("F1", ci)}%, swap cost long {costLong.ToString("+0.0;-0.0", ci)}%/yr, short {costShort.ToString("+0.0;-0.0", ci)}%/yr ({d.Reason.ToLowerInvariant().Replace('_', ' ')}) -> " +
+                  $"{d.Action switch { TrendAction.Enter => d.Target > 0 ? "BUY" : "SELL", TrendAction.Exit => "CLOSE", TrendAction.Reverse => "CLOSE and " + (d.Target > 0 ? "BUY" : "SELL"), TrendAction.Hold => "hold", _ => "stay flat" }}.");
+            if ((d.Action == TrendAction.Exit || d.Action == TrendAction.Reverse) && pos != null && !ExitCrypto(cm, pos, now)) return;
+            if (d.Action == TrendAction.Enter || d.Action == TrendAction.Reverse) EnterCrypto(cm, d, now, week);
+        }
+
+        private void EnterCrypto(CryptoMarket cm, CryptoDecision d, DateTime now, string week)
+        {
+            var sym = cm.Sym;
+            var side = d.Target > 0 ? Side.Buy : Side.Sell;
+            var fireEventId = "fire:" + Sha($"crypto|{sym.Name}|{week}|{side}")[..32];
+            var opportunityId = $"crypto:{sym.Name}:{week}:{side}";
+            if (_boundary.Get(_accountId, fireEventId) != null) return;
+            // One entry per market, week and side, even after a cloud restart: a trade stopped out this week is not re-entered.
+            var label = LabelFor(fireEventId);
+            if (Positions.Find(label) != null || History.FindLast(label) != null) return;
+            _activity.SetupFound(fireEventId);
+            if (CryptoDemoOnly && _exec.IsLive) { Skip(now, sym.Name, fireEventId, "CRYPTO_DEMO_ONLY"); return; }
+            var price = side == Side.Buy ? sym.Ask : sym.Bid;
+            var dir = side == Side.Buy ? 1 : -1;
+            var stop = price - dir * d.StopDistance(_cryptoRule, price);
+            var target = price + dir * d.TargetDistance(_cryptoRule, price);
+            var spread = sym.Ask - sym.Bid;
+            if (spread > MaxSpreadShareOfStop * Math.Abs(price - stop))
+            { Skip(now, sym.Name, fireEventId, "SPREAD_TOO_WIDE_FOR_STOP", new() { ["spread"] = spread, ["stopDistance"] = Math.Abs(price - stop) }); return; }
+            var size = SizeFor(sym, price, stop);
+            if (!size.Trade) { Skip(now, sym.Name, fireEventId, size.Reason, new() { ["riskPctAtMinimum"] = size.RiskPctActual }); return; }
+            var tier = Watchlist.TierFor(_tiers, Account.Balance);
+            // Crypto has no currency-pair exposure here (Synthetic class): BTC and ETH are sized and counted separately.
+            var candidate = new ReadyCandidate(sym.Name, AssetClass.Synthetic, new DateTimeOffset(DateTime.SpecifyKind(now, DateTimeKind.Utc)), opportunityId, size.RiskMoney, size.RiskPctActual);
+            var selection = PortfolioSelector.Select(new[] { candidate }, OpenExposures(), tier, Account.Balance, _killSwitch.Remaining(Account.Equity));
+            if (selection.Take.Count == 0)
+            { Skip(now, sym.Name, fireEventId, selection.Skipped[0].Reason, new() { ["tierMinBalance"] = tier.MinBalance, ["riskMoney"] = size.RiskMoney }); return; }
+            // Adverse price limit: a quarter of a day's typical move (weekly volatility / sqrt 7).
+            var limit = Math.Round(price + dir * 0.25 * d.WeekSigma / Math.Sqrt(7) * price, sym.Digits);
+            Submit(new EntryOrder(sym, AssetClass.Synthetic, cm.LastTickUtc, TradingStyles.Crypto, null, fireEventId, opportunityId, side, price, stop, target, limit, size, d.WeekSigma * price,
+                new Dictionary<string, object?> { ["lookbackReturn"] = d.LookbackReturn, ["weekSigma"] = d.WeekSigma, ["costLongPct"] = d.CostLongPct, ["costShortPct"] = d.CostShortPct, ["weekEnds"] = d.WeekEnds }), now);
+        }
+
+        private bool ExitCrypto(CryptoMarket cm, Position pos, DateTime now)
+        {
+            var view = View(pos);
+            var gate = RiskReducingGate.Check(view, new ClosePosition(view.PositionId), _accountId, _accountId, adapterIntegrityOk: true, brokerReachable: Server.IsConnected);
+            if (!gate.Allowed) { _log.Write(now, "crypto_exit_blocked", new Dictionary<string, object?> { ["label"] = pos.Label, ["reasons"] = gate.AbortReasons }); cm.DecidedWeek = ""; cm.RetryAt = now.AddSeconds(30); return false; }
+            var pl = pos.NetProfit;
+            var r = _exec.Close(pos);
+            _log.Write(now, "crypto_exit", new Dictionary<string, object?> { ["symbol"] = pos.SymbolName, ["label"] = pos.Label, ["netProfit"] = pl, ["ok"] = r.IsSuccessful, ["error"] = r.Error?.ToString() });
+            if (!r.IsSuccessful) { cm.DecidedWeek = ""; cm.RetryAt = now.AddSeconds(30); return false; }
+            return true;
+        }
 
         // ---- Drift Switch engine (research/deriv/FAMILIES.md; DriftEngine in Zugrio.CBot.Core) ----
 
@@ -1319,6 +1468,11 @@ namespace Zugrio.CBot.EA
                 ["on"] = IndexEngineOn, ["lowerCloses"] = IndexLowerCloses, ["trendSma"] = IndexTrendSma, ["exitSma"] = IndexExitSma, ["atrPeriod"] = _indexRule.AtrPeriod,
                 ["stopAtr"] = (decimal)IndexStopAtr, ["farTargetAtr"] = (decimal)IndexFarTargetAtr, ["closeNewYork"] = IndexCloseText.Trim(), ["venues"] = "v1 US NY 09:00-16:00, London 08:00-16:30, Frankfurt 09:00-17:30, Tokyo 09:00-15:30, Sydney 10:00-16:00, Hong Kong 09:00-16:00", ["leadMinutes"] = IndexLeadMinutes,
                 ["sessionStartNewYork"] = _indexRule.Start.ToString(@"hh\:mm"), ["minBarsPerSession"] = _indexRule.MinBarsPerSession, ["chaseAtr"] = (decimal)IndexChaseAtr,
+            },
+            ["cryptoEngine"] = new JsonObject
+            {
+                ["on"] = CryptoEngineOn, ["markets"] = CryptoMarketsText.Trim(), ["maxCostPctPerYear"] = (decimal)CryptoMaxCostPct, ["decideHourUtc"] = CryptoDecideHourUtc, ["demoOnly"] = CryptoDemoOnly,
+                ["rule"] = "sign of the 4-week return, weekly, long/short, stop 3 weekly sigmas (research/lab/realmarkets_prereg.json C2)",
             },
             ["driftEngine"] = new JsonObject
             {
