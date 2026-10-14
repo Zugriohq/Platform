@@ -353,3 +353,18 @@ Each rule names the party that pays the edge (METHODOLOGY.md step 2).
   - fix reversals;
   - minute rules;
   - APA at M1 to D1.
+
+## Round 10, 2026-10-14: forex-specific effects (`fx_structure_prereg.json`, `fx_structure.mjs`)
+
+**Design.** Four effects that come from how the currency market works, rather than ideas borrowed from other markets. They were registered together, with the bar at t ≥ 2.5 pooled and positive in both halves.
+
+**Result: all four fail** (`fx_structure_results.txt`).
+
+| Test | What the data shows | Net | Verdict |
+|---|---|---|---|
+| F1 Currencies weaken in their home hours (Breedon–Ranaldo) | Partly real: EUR falls 1.45bp a day in European hours (t −3.6). JPY goes the other way (+1.0bp in Tokyo hours, t 2.3) | −1.8bp a day: two spreads a day exceed the drift | fail |
+| F2 Month-end equity-hedge rebalancing (Melvin–Prins) | −2.3bp per trade before costs, wrong sign | −3.3bp | fail |
+| F3 AUDNZD and EURGBP z > 2 reversion | AUDNZD −0.08R, EURGBP +0.15R (t 1.5) | +0.07R, t 0.85 | fail |
+| F4 Carry, top 3 against bottom 3 of 8 policy rates (BIS) | The interest earned is real: +0.09% a month per position. Spot moves give back −0.03% | −0.03%: a 1%/yr swap markup takes the rest | fail |
+
+**What it means.** Forex has real structure: home-hours drift, interest differentials. But every effect found is a fraction of a basis point a day, or about 1% a year, and a retail CFD's spread or swap markup is about as large. The one lead, short EUR in European hours, was found in this run, not registered before it. It would need its own registration and a forward test before it counts.

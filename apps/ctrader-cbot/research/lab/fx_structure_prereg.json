@@ -1,0 +1,32 @@
+{
+  "id": "fx_structure_2026_10_14",
+  "registered": "2026-10-14, before any of these four tests was run and before the BIS policy-rate data was downloaded (only its URL was checked)",
+  "why": "Every forex test so far borrowed an idea from other markets (trend, momentum, price action, fix reversal) and failed. These four are effects specific to how the currency market works, each with published evidence, not yet tested here. Four at once, so the bar is t >= 2.5 pooled and positive in both halves (2010-2017, 2018-2026).",
+  "data": "HistData M1, 2010-01 to 2026-09 (EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, USDCHF, NZDUSD, EURGBP); Yahoo daily equity indices (lab/ibars); BIS central-bank policy rates, monthly (WS_CBPOL: US, XM, GB, JP, AU, CA, CH, NZ)",
+  "F1_home_hours_depreciation": {
+    "source": "Breedon and Ranaldo (2013), Intraday patterns in FX returns and order flow: currencies tend to depreciate during their own market's trading hours",
+    "rule": "per currency against USD, each weekday: short the currency during its home hours and long it during US hours. Home hours (UTC): EUR, GBP, CHF 07:00-12:00; JPY, AUD, NZD 00:00-06:00. US hours: 13:00-20:00 UTC. CAD is excluded (its home hours are US hours).",
+    "costs": "the pair's spread on each of the two trades a day: 0.0001 (0.00015 GBPUSD, 0.012 USDJPY)",
+    "pass": "mean over the 6 currencies per day, net: > 0 in both halves, pooled t >= 2.5"
+  },
+  "F2_month_end_hedge_rebalancing": {
+    "source": "Melvin and Prins (2015), Equity hedging and exchange rates at the London 4 p.m. fix: when foreign equities outperform US equities over a month, hedged US investors sell foreign currency at month end, which depreciates",
+    "rule": "on the 3rd-last trading day of each month, at 16:00 London: for EUR (DAX), GBP (FTSE), JPY (N225), AUD (ASX200), compare the foreign index's month-to-date return with the S&P 500's (closes through the previous day); short the currency against USD if the foreign index did better, long if it did worse; close at 16:00 London on the last trading day",
+    "costs": "one spread per trade; financing ignored (2-3 days)",
+    "pass": "mean over the 4 currencies per month, net: > 0 in both halves, pooled t >= 2.5"
+  },
+  "F3_relative_value_reversion": {
+    "source": "relative-value pairs of closely linked economies (AUD/NZD, EUR/GBP) are the classic FX mean-reversion trade",
+    "rule": "daily closes (21:00 UTC); z = (close - 20-day mean) / 20-day sd; at a close with |z| > 2, fade it; exit at the first close where z has crossed 0, or after 20 days. AUDNZD = AUDUSD / NZDUSD.",
+    "costs": "0.03% per round trip (AUDNZD), 0.015% (EURGBP), plus 1.5%/yr",
+    "unit": "R = P/L / (2 x the 20-day sd at entry), the distance to the mean",
+    "pass": "pooled over both pairs: net mean > 0 in both halves, pooled t >= 2.5"
+  },
+  "F4_carry": {
+    "source": "Lustig, Roussanov and Verdelhan (2011); Menkhoff et al. (2012): high-interest currencies earn a premium over low-interest ones",
+    "rule": "at each month end, rank USD, EUR, GBP, JPY, AUD, CAD, CHF, NZD by their policy rate (BIS, that month's value); long the 3 highest, short the 3 lowest (USD's return against itself is 0), held to the next month end. Return of each position = spot return against USD + rate differential / 12.",
+    "costs": "0.01% per change plus a 1%/yr swap markup per position",
+    "pass": "net monthly mean > 0 in both halves, pooled t >= 2.5; the spot part and the interest part are reported separately"
+  },
+  "after": "A pass goes to a forward demo record as its own engine. A fail is recorded and not retuned."
+}
