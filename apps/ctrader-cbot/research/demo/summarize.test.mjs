@@ -34,3 +34,14 @@ test("flags a record that spans changed engines or parameters", () => {
   const s = summarize(records(log + '\nZUGRIO {"t":"2026-10-18T00:00:00Z","kind":"start","cfg":"ccc","eng":"bbb"}'));
   assert.match(format(s), /MORE THAN ONE/);
 });
+
+test("summarises the EUR hours shadow record (no orders)", () => {
+  const s = summarize(records(log + "\n" + [
+    'ZUGRIO {"t":"2026-10-19T12:00:00Z","kind":"eur_shadow","netBp":1.5,"grossBp":2.0,"spreadOpenPips":0.5,"spreadClosePips":0.7}',
+    'ZUGRIO {"t":"2026-10-20T12:00:00Z","kind":"eur_shadow","netBp":-0.5,"grossBp":0.0,"spreadOpenPips":0.4,"spreadClosePips":0.6}',
+  ].join("\n")));
+  assert.equal(s.eurShadow.days, 2);
+  assert.ok(Math.abs(s.eurShadow.netBp.mean - 0.5) < 1e-9);
+  assert.ok(Math.abs(s.eurShadow.spreadPips.mean - 0.55) < 1e-9);
+  assert.match(format(s), /EUR hours shadow \(no orders\): 2 days/);
+});

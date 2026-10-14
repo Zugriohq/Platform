@@ -59,6 +59,10 @@ export function summarize(recs) {
     configs: [...new Set(recs.map((r) => r.cfg).filter(Boolean))], engines: [...new Set(recs.map((r) => r.eng).filter(Boolean))],
     from: recs.find((r) => r.t)?.t, to: [...recs].reverse().find((r) => r.t)?.t,
   };
+  // the EUR European-hours shadow record (no orders): what a short 07:00-12:00 UTC made on the account's bid and ask
+  const eur = recs.filter((r) => r.kind === "eur_shadow");
+  result.eurShadow = { days: eur.length, netBp: ci(eur.map((r) => num(r.netBp)).filter((x) => x !== null)), grossBp: ci(eur.map((r) => num(r.grossBp)).filter((x) => x !== null)),
+    spreadPips: ci(eur.map((r) => (num(r.spreadOpenPips) ?? NaN) / 2 + (num(r.spreadClosePips) ?? NaN) / 2).filter((x) => Number.isFinite(x))) };
   return result;
 }
 
@@ -76,6 +80,7 @@ export function format(s) {
       `  exits ${Object.entries(x.exits).map(([k, v]) => `${k} ${v}`).join(", ") || "none"}; gross ${x.grossProfit.toFixed(2)}, costs ${x.costs.toFixed(2)}, net ${x.netProfit.toFixed(2)}`,
       `  net expectancy per trade ${c(x.netR)} R` + (x.unmatchedCloses ? `; ${x.unmatchedCloses} closes without their entry in these logs` : ""));
   }
+  if (s.eurShadow && s.eurShadow.days) lines.push(`EUR hours shadow (no orders): ${s.eurShadow.days} days; net per day, bp ${c(s.eurShadow.netBp)}; before the spread ${c(s.eurShadow.grossBp)}; spread, pips ${c(s.eurShadow.spreadPips)}`);
   return lines.join("\n");
 }
 

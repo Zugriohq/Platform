@@ -219,6 +219,26 @@ cTrader Mobile does not run cBots on the phone. It starts and stops **cloud inst
 3. **Then the cloud.** In cTrader Mobile, open the cBot, pick the account and any symbol (the chart does not matter, the watchlist does), and start it as a cloud instance. One instance covers every market, so the usual limits are enough: one cloud instance on a demo account (it stops after 7 days, restart it), up to ten on a live account, running 24/7. Run **one** instance per account: two would each apply the tier limits on their own.
 4. **Live comes after the demo record.** Owner, 2026-10-14: the EA is not called validated until its demo record supports it. Live is considered only then (below). When it is, start an instance on the live account the same way: it trades that account until you stop it. Start with an amount you can afford to lose entirely, and keep the demo instance running alongside for comparison.
 
+### EUR hours shadow record (2026-10-14; no orders)
+
+**What it records.** Each weekday, a short EURUSD from 07:00 to 12:00 UTC, priced on this account's own quotes:
+- it sells at the 07:00 bid and buys back at the 12:00 ask;
+- it records the spread at both times.
+
+It places **no orders**.
+
+**Why.** The euro tends to fall against the dollar during European hours (`research/lab/eur_hours_prereg.json`):
+- **2001–2009, out of sample:** +1.99bp a day before costs (t 2.83), positive in all 9 years.
+- **2010–2026:** +1.45bp a day before costs.
+- **Net at a 1-pip round trip:** t 1.65, a registered fail.
+
+Whether it is worth trading depends on this account's real spread at 07:00 and 12:00, which only the account can show.
+
+**In the record.**
+- Each day is logged as `eur_shadow`, with gross and net basis points and both spreads. The journal prints a running mean.
+- `research/demo/summarize.mjs` adds an *EUR hours shadow* line: days, mean net with a 95% interval, mean gross and mean spread.
+- *EUR hours shadow record on* turns it off.
+
 ### Pre-FOMC engine (2026-10-14, demo only by default)
 
 **What it trades.** US 500 and US Tech 100 (*FOMC markets*), long only.

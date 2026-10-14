@@ -164,6 +164,12 @@ namespace Zugrio.CBot.EA
         [Parameter("FOMC markets (name,alternative,...; ...)", DefaultValue = DefaultFomcMarkets, Group = "Zugrio pre-FOMC engine (research)")] public string FomcMarketsText { get; set; } = DefaultFomcMarkets;
         [Parameter("FOMC statement dates (yyyy-MM-dd; ...)", DefaultValue = FomcEngine.DefaultDates, Group = "Zugrio pre-FOMC engine (research)")] public string FomcDatesText { get; set; } = FomcEngine.DefaultDates;
         [Parameter("FOMC: demo accounts only", DefaultValue = true, Group = "Zugrio pre-FOMC engine (research)")] public bool FomcDemoOnly { get; set; } = true;
+
+        // EUR European-hours shadow (research/lab/eur_hours_prereg.json; EurHoursShadow in Zugrio.CBot.Core): records what a
+        // short EURUSD from 07:00 to 12:00 UTC would make on this account's own bid and ask. It places NO orders.
+        public const string DefaultEurShadowSymbols = "EURUSD,EUR/USD,EURUSD.m,EURUSD.a,EURUSDm";
+        [Parameter("EUR hours shadow record on (no orders)", DefaultValue = true, Group = "Zugrio EUR hours shadow (research, no orders)")] public bool EurShadowOn { get; set; } = true;
+        [Parameter("EUR shadow symbol (name,alternative,...)", DefaultValue = DefaultEurShadowSymbols, Group = "Zugrio EUR hours shadow (research, no orders)")] public string EurShadowSymbolsText { get; set; } = DefaultEurShadowSymbols;
         [Parameter("Crypto: demo accounts only", DefaultValue = true, Group = "Zugrio Crypto trend engine (research)")] public bool CryptoDemoOnly { get; set; } = true;
 
         [Parameter("Risk per trade (% of balance)", DefaultValue = 1.0, MinValue = 0.05, MaxValue = 5, Group = "Risk (research)")] public double RiskPct { get; set; }
@@ -278,6 +284,9 @@ namespace Zugrio.CBot.EA
         private readonly List<FomcMarket> _fomcMarkets = new();
         private IReadOnlyList<DateTime> _fomcDates = Array.Empty<DateTime>();
         private readonly FomcRule _fomcRule = new();
+        private Symbol? _eurSym;
+        private ShadowQuote? _eurOpen;
+        private readonly List<ShadowDay> _eurDays = new();
         private CryptoRule _cryptoRule = new();
         private readonly Dictionary<long, DateTime> _driftExitTried = new();
         private Bars? _trendD1;
@@ -400,6 +409,7 @@ namespace Zugrio.CBot.EA
             if (DriftEngineOn) SetupDriftEngine();
             if (CryptoEngineOn) SetupCryptoEngine();
             if (FomcEngineOn) SetupFomcEngine();
+            if (EurShadowOn) SetupEurShadow();
             if (_markets.Count == 0 && _indexMarkets.Count == 0 && _trendSym == null && _driftMarkets.Count == 0 && _cryptoMarkets.Count == 0 && _fomcMarkets.Count == 0)
             { Print("Zugrio EA: nothing to trade: no watchlist symbol at this broker is in an enabled style, the index engine, the gold trend engine or the drift engine. Not trading."); Stop(); return; }
             Positions.Closed += OnPositionClosed;
@@ -534,6 +544,7 @@ namespace Zugrio.CBot.EA
             RunDriftExits(now);
             RunCryptoEngine(now);
             RunFomcEngine(now);
+            if (_eurSym != null) RunEurShadow(now);
             var hour = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0, DateTimeKind.Utc);
             if (_activityHour == DateTime.MinValue) _activityHour = hour;
             else if (hour > _activityHour)
@@ -1335,6 +1346,41 @@ namespace Zugrio.CBot.EA
             if (!r.IsSuccessful) fm.RetryAt = now.AddSeconds(30);
         }
 
+        // ---- EUR European-hours shadow record (research/lab/eur_hours_prereg.json; EurHoursShadow in Zugrio.CBot.Core) ----
+
+        private void SetupEurShadow()
+        {
+            var brokerNames = Enumerable.Range(0, Symbols.Count).Select(i => Symbols[i]).ToList();
+            var name = Watchlist.Resolve(EurShadowSymbolsText ?? "", brokerNames);
+            _eurSym = name == null ? null : Symbols.GetSymbol(name);
+            Print(_eurSym == null ? "Zugrio EA: EUR hours shadow: no EURUSD at this broker; off."
+                : $"Zugrio EA: EUR hours shadow on {_eurSym.Name}: records a short from 07:00 to 12:00 UTC each weekday on this account's bid and ask. No orders.");
+        }
+
+        /// <summary>Takes the 07:00 and 12:00 UTC quotes (within five minutes) and logs the day's shadow short. No orders.</summary>
+        private void RunEurShadow(DateTime now)
+        {
+            var sym = _eurSym!;
+            if (!sym.MarketHours.IsOpened(now) || !(sym.Bid > 0)) return;
+            if (EurHoursShadow.IsOpenTime(now) && (_eurOpen == null || _eurOpen.Utc.Date != now.Date))
+            { _eurOpen = new ShadowQuote(now, sym.Bid, sym.Ask); return; }
+            if (!EurHoursShadow.IsCloseTime(now) || _eurOpen == null || _eurOpen.Utc.Date != now.Date) return;
+            var d = EurHoursShadow.Result(_eurOpen, new ShadowQuote(now, sym.Bid, sym.Ask), sym.PipSize);
+            _eurOpen = null;
+            if (d == null) return;
+            _eurDays.Add(d);
+            _log.Write(now, "eur_shadow", new Dictionary<string, object?>
+            {
+                ["symbol"] = sym.Name, ["date"] = d.Date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+                ["openUtc"] = d.Open.Utc, ["openBid"] = d.Open.Bid, ["openAsk"] = d.Open.Ask, ["closeUtc"] = d.Close.Utc, ["closeBid"] = d.Close.Bid, ["closeAsk"] = d.Close.Ask,
+                ["grossBp"] = Math.Round(d.GrossBp, 3), ["netBp"] = Math.Round(d.NetBp, 3), ["spreadOpenPips"] = Math.Round(d.SpreadOpenPips, 2), ["spreadClosePips"] = Math.Round(d.SpreadClosePips, 2),
+            });
+            var ci = System.Globalization.CultureInfo.InvariantCulture;
+            Print($"Zugrio EUR shadow {d.Date:yyyy-MM-dd}: short 07:00-12:00 UTC would have made {d.NetBp.ToString("+0.00;-0.00", ci)}bp net ({d.GrossBp.ToString("+0.00;-0.00", ci)}bp before the spread; " +
+                  $"spread {d.SpreadOpenPips.ToString("F2", ci)} / {d.SpreadClosePips.ToString("F2", ci)} pips). Since start: {_eurDays.Count} days, mean net {_eurDays.Average(x => x.NetBp).ToString("+0.00;-0.00", ci)}bp, " +
+                  $"mean spread {_eurDays.Average(x => (x.SpreadOpenPips + x.SpreadClosePips) / 2).ToString("F2", ci)} pips. No order was placed.");
+        }
+
         // ---- Drift Switch engine (research/deriv/FAMILIES.md; DriftEngine in Zugrio.CBot.Core) ----
 
         /// <summary>Resolves each Drift Switch index, loads about a day and a half of M1 bars and decides at every closed M1 bar.</summary>
@@ -1648,6 +1694,7 @@ namespace Zugrio.CBot.EA
                 ["stopAtr"] = (decimal)IndexStopAtr, ["farTargetAtr"] = (decimal)IndexFarTargetAtr, ["closeNewYork"] = IndexCloseText.Trim(), ["venues"] = "v1 US NY 09:00-16:00, London 08:00-16:30, Frankfurt 09:00-17:30, Tokyo 09:00-15:30, Sydney 10:00-16:00, Hong Kong 09:00-16:00", ["leadMinutes"] = IndexLeadMinutes,
                 ["sessionStartNewYork"] = _indexRule.Start.ToString(@"hh\:mm"), ["minBarsPerSession"] = _indexRule.MinBarsPerSession, ["chaseAtr"] = (decimal)IndexChaseAtr,
             },
+            ["eurShadow"] = new JsonObject { ["on"] = EurShadowOn, ["symbols"] = EurShadowSymbolsText.Trim(), ["window"] = "short 07:00-12:00 UTC, no orders (research/lab/eur_hours_prereg.json)" },
             ["fomcEngine"] = new JsonObject
             {
                 ["on"] = FomcEngineOn, ["markets"] = FomcMarketsText.Trim(), ["dates"] = FomcDatesText.Trim(), ["demoOnly"] = FomcDemoOnly,

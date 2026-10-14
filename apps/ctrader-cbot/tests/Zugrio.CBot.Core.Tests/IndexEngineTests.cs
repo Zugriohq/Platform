@@ -359,6 +359,16 @@ namespace Zugrio.CBot.Core.Tests
         }
 
         [Fact]
+        public void Eur_hours_shadow_only_records_and_never_trades()
+        {
+            var src = Ea();
+            var body = Method(src, "private void RunEurShadow(");
+            foreach (var never in new[] { "Submit(", "_exec.", "MarketOrder", "ClosePosition" }) Assert.DoesNotContain(never, body);
+            Assert.Contains("\"eur_shadow\"", body);
+            Assert.Contains("if (_eurSym != null) RunEurShadow(now);", Method(src, "protected override void OnTimer()"));
+        }
+
+        [Fact]
         public void Index_entries_check_broker_records_tiers_and_the_daily_allowance_before_submitting()
         {
             var body = Method(Ea(), "private void EnterIndex(");
