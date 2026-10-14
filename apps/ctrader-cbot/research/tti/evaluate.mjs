@@ -7,7 +7,10 @@
 // favourable extreme (break-even, trail) only fills in that bar if the bar closed beyond it. Horizon 2 hours.
 import fs from "fs";
 
-const SPREAD = { EURUSD: 0.00015, GBPUSD: 0.0002, USDJPY: 0.015, XAUUSD: 0.3 };
+// Jump indices (jump_prereg.json): TTI's own SPECS.defSpread for JD10-JD100.
+const SPREAD = { EURUSD: 0.00015, GBPUSD: 0.0002, USDJPY: 0.015, XAUUSD: 0.3, J10: 0.001, J25: 0.003, J50: 0.006, J75: 0.009, J100: 0.012 };
+// SPLIT=<epoch seconds>: report the two halves of the period instead of the calendar years 2025 and 2026.
+const SPLIT = process.env.SPLIT ? +process.env.SPLIT : null;
 const PLANS = [
   ["A", "as now: app target", { }],
   ["B", "fixed target 0.8R", { tp: 0.8 }],
@@ -50,11 +53,13 @@ const f2 = (x) => (x >= 0 ? "+" : "") + x.toFixed(3);
 
 const args = process.argv.slice(2), all = [];
 for (let a = 0; a < args.length; a += 2) {
-  const B = loadBars(args[a]), J = JSON.parse(fs.readFileSync(args[a + 1], "utf8")), sp = SPREAD[J.key];
+  // SPREAD_<KEY>=<price>: the broker's measured spread instead of TTI's (e.g. SPREAD_J25 from Market Lab's LAB MEASURED line).
+  const B = loadBars(args[a]), J = JSON.parse(fs.readFileSync(args[a + 1], "utf8")), sp = process.env["SPREAD_" + J.key] ? +process.env["SPREAD_" + J.key] : SPREAD[J.key];
+  if (!(sp > 0)) throw new Error("no spread for " + J.key);
   for (const s of J.signals) {
     const d = s.dir === "BUY" ? 1 : -1, i0 = firstAt(B, s.firedAt / 1000); if (i0 >= B.n) continue;
     const E = s.price, risk = d * (E - s.stop), tA = d * (s.target - E) / risk;
-    const row = { key: J.key, walk: J.walk, year: new Date(s.firedAt).getUTCFullYear(), hour: new Date(s.firedAt).getUTCHours(), dir: s.dir, setup: s.setup, regime: s.regime, pWin: s.pWin, appOutcome: s.appOutcome, tA, risk, costR: sp / risk };
+    const row = { key: J.key, walk: J.walk, year: SPLIT !== null ? (s.firedAt / 1000 < SPLIT ? "first half" : "second half") : new Date(s.firedAt).getUTCFullYear(), hour: new Date(s.firedAt).getUTCHours(), dir: s.dir, setup: s.setup, regime: s.regime, pWin: s.pWin, appOutcome: s.appOutcome, tA, risk, costR: sp / risk };
     if (!(risk > 0)) { row.bad = "stop on the wrong side"; all.push(row); continue; }
     if (!(tA > 0)) { row.bad = "target already passed at the signal"; all.push(row); continue; }
     // best excursion before the stop, within 2 hours
@@ -89,7 +94,7 @@ const real = all.filter((r) => r.walk === null), walk = all.filter((r) => r.walk
 const lines = [];
 lines.push(...block("REAL DATA, all markets", real));
 for (const k of [...new Set(real.map((r) => r.key))]) lines.push(...block(`REAL ${k}`, real.filter((r) => r.key === k)));
-for (const y of [2025, 2026]) lines.push(...block(`REAL, ${y}`, real.filter((r) => r.year === y)));
+for (const y of SPLIT !== null ? ["first half", "second half"] : [2025, 2026]) lines.push(...block(`REAL, ${y}`, real.filter((r) => r.year === y)));
 for (const s of [...new Set(real.map((r) => r.setup))]) lines.push(...block(`REAL, setup ${s}`, real.filter((r) => r.setup === s)));
 lines.push(...calibration(real));
 if (walk.length) lines.push(...block("RANDOM WALK CONTROL (no edge by construction)", walk));

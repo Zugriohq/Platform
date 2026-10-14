@@ -277,3 +277,38 @@ At a 1-ATR stop, the round-trip spread is 0.26R on M5 and about 0.06R on H1.
   | H1 test | 45 | +0.167R | [−0.248, +0.582] | | |
 
 - It fails the registered test (gross t ≥ 2 in both periods), and it is negative after the assumed costs.
+
+## Jump indices: what TTI does with them, and why it is not yet tested (2026-10-14)
+
+**The owner's observation.** TTI's Jump signals have been somewhat profitable. Has that been factored in?
+
+**It has not.** The evidence so far does not cover Jump:
+- every TTI replay above used EURUSD, GBPUSD, USDJPY and XAUUSD (HistData), and so did the event study;
+- Market Lab's first battery covered Boom and Crash Boom Flip only.
+
+Deriv's feed cannot be reached from the research container (HTTP 520 on every Deriv websocket host). So the owner downloads the history.
+
+**TTI's Jump-specific code.** It goes beyond the generic engine in six places:
+
+| Where | What it does for Jump |
+|---|---|
+| `assetIntel` | "Jump recent": +0.25 to the score when any of the last five M5 bars spans more than 3 ATR |
+| `bosThr` | a break of structure must clear 0.15% of price (0.10% on other synthetics), so Jump needs a bigger break |
+| signal throttle | at most one Jump signal per 12 minutes per index |
+| `tradeStyle` | Jump trades as a day trade (WATCH 2 h, READY 1 h, FIRE 1 h), not a scalp, so it holds longer than Boom/Crash/Step |
+| entry-zone tolerance | 0.2 × ATR, shared with Boom/Crash |
+| spreads | JD10 0.001 to JD100 0.012. That is about 0.00R per trade, almost certainly below Deriv's real Jump spreads |
+
+**What Deriv says Jump is.** A volatility index that "leaps every 20 minutes (on average), with an equal chance of soaring or plunging around 30x the normal volatility". On that description, a jump carries no direction. Any edge would have to come from TTI's entry and exit on the moves between jumps, with the jumps being risk.
+
+TTI's longer day-trade horizon and stricter break threshold on Jump could plausibly make its Jump results differ from its forex results. That is a question for data, not a reason to believe it.
+
+**The test, pre-registered before any Jump data** (`jump_prereg.json`):
+1. The owner runs `jump-history.html` in a browser. It downloads 90 days of M1 for Jump 10–100 from the same Deriv feed TTI uses.
+2. `deriv2m1.mjs` converts the file. `replay.mjs` then runs TTI's own code on each index in three forms: as shipped, with the defects fixed, and on a random-walk control.
+3. `evaluate.mjs` resolves each signal from the signal price, at TTI's spread and at the broker's spread. It reports the two halves of the period.
+4. **Pass:** net average R positive with t ≥ 2 in both halves, pooled over the five indices. The control must not pass.
+
+The pipeline was checked end to end on a simulated Jump series. TTI fires on it, and its "target already passed" defect appears there too.
+
+**Also wanted.** The owner's own TTI Track Record export (Track Record → export, `tti-track-record-*.csv`). `trackrecord.mjs` summarises it by instrument: as TTI recorded it, and recomputed from entry, stop and exit. It is descriptive only, as it covers at most the last 100 signals.
