@@ -239,7 +239,7 @@ namespace Zugrio.CBot.Core
         /// touches both, a stop overshot by more than half an ATR filled at the bar's extreme, else closed after
         /// maxBars. Returns R (stop distance = 1R) after the spread, and the exit bar.
         /// </summary>
-        private static (double R, int Exit) Trade(IReadOnlyList<LabBar> b, int i, int dir, double tpDist, double slDist, double atr, int maxBars, double spread)
+        internal static (double R, int Exit) Trade(IReadOnlyList<LabBar> b, int i, int dir, double tpDist, double slDist, double atr, int maxBars, double spread)
         {
             double e = b[i].C, stop = e - dir * slDist, tp = e + dir * tpDist;
             var k = i + 1;

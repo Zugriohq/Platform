@@ -34,11 +34,27 @@ namespace Zugrio.CBot.Lab
         // A fixed rule to replay tick by tick on the broker's own ticks (empty = skip). Default: the owner's friend's Crash 150 bot.
         // Several rules separated by ';', each printed as soon as it is done. Defaults: the owner's friend's bots as seen on
         // 2026-10-13 (Boom 150 sell 2/2 at 0.5 lots, Boom 50 sell 10/10 at 0.1 lots) and the Crash 150 buy 2/2 measured first.
-        public const string DefaultReplayRules = "Boom 150 Index|SELL|2|2|0.5; Boom 50 Index|SELL|10|10|0.1; Crash 150 Index|BUY|2|2|0.5";
-        [Parameter("Replay rules (symbol|BUY/SELL|TP points|SL points|lots; ...)", DefaultValue = DefaultReplayRules)] public string ReplayRules { get; set; } = DefaultReplayRules;
+        // Off by default since the family behaviour study (2026-10-14): the friend's rules were measured (FAMILY_ENGINES.md).
+        // Example: "Boom 150 Index|SELL|2|2|0.5; Crash 150 Index|BUY|2|2|0.5".
+        public const string DefaultReplayRules = "";
+        [Parameter("Tick replay rules (symbol|BUY/SELL|TP points|SL points|lots; ...), empty = none", DefaultValue = DefaultReplayRules)] public string ReplayRules { get; set; } = DefaultReplayRules;
         // Names differ from the previous build so a saved instance picks up the new defaults (7 days; battery off).
         [Parameter("Replay: days of ticks", DefaultValue = 7, MinValue = 1, MaxValue = 14)] public int ReplayDays { get; set; } = 7;
         [Parameter("Also run the bar battery on the keyword symbols", DefaultValue = false)] public bool RunBattery { get; set; }
+
+        // The family behaviour study (Behaviour, research/deriv/FAMILIES.md, behaviour_prereg.json): each symbol is read as
+        // the Deriv product its name says, measured against what Deriv says that family does, and tested only with the
+        // rules that family's mechanism implies. Mechanism families first; Volatility indices last, as controls.
+        public const string StudyKeywords = "Drift,Range Break,DEX,Trek,Skew,Multi,Step,Bull,Bear,Daily,Switch,Vol over,Hybrid,Jump,Boom,Crash,Volatility";
+        [Parameter("Family behaviour study", DefaultValue = true)] public bool RunStudy { get; set; } = true;
+        [Parameter("Study: symbol keywords, in priority order", DefaultValue = StudyKeywords)] public string StudyKeywordText { get; set; } = StudyKeywords;
+        [Parameter("Study: days of M1 history", DefaultValue = 21, MinValue = 3, MaxValue = 30)] public int StudyDays { get; set; } = 21;
+        [Parameter("Study: symbols per run (memory)", DefaultValue = 15, MinValue = 1, MaxValue = 40)] public int StudyPerRun { get; set; } = 15;
+        [Parameter("Study: start at symbol number", DefaultValue = 1, MinValue = 1, MaxValue = 500)] public int StudyFirst { get; set; } = 1;
+        private Queue<string>? _study;
+        private int _studyTotal, _studyLast;
+        private string? _studyNext;
+        private readonly List<string> _studyVerdicts = new();
 
         // The work runs in steps on a 1-second timer, not inside OnStart. cTrader shows what OnStart prints only once
         // OnStart returns (all lines of a run carried one timestamp, 2026-10-12), so a slow or stuck step showed nothing.
@@ -61,7 +77,7 @@ namespace Zugrio.CBot.Lab
         protected override void OnStart()
         {
             foreach (var rule in (ReplayRules ?? "").Split(';').Select(x => x.Trim()).Where(x => x.Length > 0)) _rules.Enqueue(rule);
-            Print($"Zugrio Market Lab: {_rules.Count} replay rule(s), {ReplayDays} days of ticks each; bar battery {(RunBattery ? "on" : "off")}. No orders are placed.");
+            Print($"Zugrio Market Lab: {_rules.Count} replay rule(s), {ReplayDays} days of ticks each; family behaviour study {(RunStudy ? $"on ({StudyDays} days of M1)" : "off")}; bar battery {(RunBattery ? "on" : "off")}. No orders are placed.");
             Timer.Start(TimeSpan.FromSeconds(1));
         }
 
@@ -76,6 +92,7 @@ namespace Zugrio.CBot.Lab
         {
             if (_job == null)
             {
+                if (_rules.Count == 0 && RunStudy && StudyStep(ci)) return;
                 if (_rules.Count == 0) { Timer.Stop(); Finish(ci); return; }
                 _job = BeginJob(_rules.Dequeue(), ci);
                 return;
@@ -116,6 +133,66 @@ namespace Zugrio.CBot.Lab
             var job = new ReplayJob { Parts = parts, Sym = sym, From = Server.TimeInUtc.AddDays(-ReplayDays) };
             job.Clock.Start();
             return job;
+        }
+
+        /// <summary>One symbol of the family behaviour study per timer step; false when the study is finished.</summary>
+        private bool StudyStep(CultureInfo ci)
+        {
+            if (_study == null)
+            {
+                var (names, total) = MarketLab.SelectSymbols(Enumerable.Range(0, Symbols.Count).Select(i => Symbols[i]), StudyKeywordText, StudyFirst, StudyPerRun);
+                _study = new Queue<string>(names); _studyTotal = total; _studyLast = StudyFirst + names.Count - 1;
+                Print($"LAB STUDY: symbols {StudyFirst}-{_studyLast} of {total} matching, {StudyDays} days of M1 each: {string.Join(", ", names)}.");
+                return true;
+            }
+            if (_study.Count == 0)
+            {
+                if (_studyVerdicts.Count > 0) Print($"LAB STUDY SUMMARY (symbols {StudyFirst}-{_studyLast} of {_studyTotal}): " + string.Join(" | ", _studyVerdicts));
+                if (_studyLast < _studyTotal) Print($"LAB STUDY: {_studyTotal - _studyLast} more symbols. Next batch: start a new run with 'Study: start at symbol number' = {_studyLast + 1}.");
+                Print($"LAB STUDY: done. A candidate needs t >= {MarketLab.CandidateT.ToString(ci)}, at least 50 trades and a positive average in both halves, after the spread; then a fresh forward period.");
+                _studyVerdicts.Clear(); _studyLast = _studyTotal;
+                RunStudy = false;
+                return false;
+            }
+            // The loading line gets its own step, so a symbol whose history never loads shows where the run stopped.
+            if (_studyNext == null) { _studyNext = _study.Peek(); Print($"LAB STUDY {_studyNext}: loading {StudyDays} days of M1..."); return true; }
+            var name = _study.Dequeue(); _studyNext = null;
+            try { StudySymbol(name, ci); }
+            catch (Exception e) { Print($"LAB STUDY {name}: {e.GetType().Name}: {e.Message}"); }
+            GC.Collect();
+            return true;
+        }
+
+        private void StudySymbol(string name, CultureInfo ci)
+        {
+            var bars = MarketData.GetBars(TimeFrame.Minute, name);
+            var from = Server.TimeInUtc.AddDays(-StudyDays);
+            for (var k = 0; k < 400 && bars.Count > 0 && bars.OpenTimes[0] > from; k++) if (bars.LoadMoreHistory() == 0) break;
+            var list = new List<LabBar>();
+            for (var i = 0; i < bars.Count - 1; i++)
+                if (bars.OpenTimes[i] >= from) list.Add(new LabBar(bars.OpenPrices[i], bars.HighPrices[i], bars.LowPrices[i], bars.ClosePrices[i]));
+            if (list.Count < 2000) { Print($"LAB STUDY {name}: only {list.Count} M1 bars, skipped."); return; }
+            var sym = Symbols.GetSymbol(name);
+            var spread = sym == null ? 0 : sym.Ask - sym.Bid;
+            var p = Behaviour.Classify(name);
+            var f = Behaviour.Profile(p, list, spread);
+            string F(double x, string fmt) => double.IsNaN(x) ? "-" : double.IsPositiveInfinity(x) ? "inf" : x.ToString(fmt, ci);
+            Print($"LAB FAMILY {name}: {p.Family}{(double.IsNaN(p.Number) ? "" : " " + p.Number.ToString(ci))}{(p.Direction != 0 ? (p.Direction > 0 ? " up" : " down") : "")}. Deriv: {p.Declared}.");
+            Print($"LAB MEASURED {name}: {f.Bars} bars; spread {F(spread, "G5")} = {F(f.SpreadSigmas, "F2")} x the typical 1-min move; " +
+                  $"jumps {F(f.JumpsPerHour, "F2")}/h ({F(100 * f.UpJumpShare, "F0")}% up, avg {F(f.MeanJumpPrice, "G4")}); jump due? late/early rate {F(f.LateEarlyHazard, "F2")} (z {F(f.HazardZ, "F1")}); " +
+                  $"VR5 {F(f.Vr5, "F2")} VR15 {F(f.Vr15, "F2")} VR60 {F(f.Vr60, "F2")} VR240 {F(f.Vr240, "F2")}; AC1 {F(f.Autocorr1, "F3")}; vol memory {F(f.VolPersistence60, "F2")}; " +
+                  $"drift between jumps {F(f.DriftPerHourPrice, "G4")}/h, net {F(f.NetPerHourPrice, "G4")}/h (z {F(f.NetPerHourZ, "F1")}).");
+            var ranked = Behaviour.Candidates(p, list, spread);
+            foreach (var c in ranked)
+            {
+                var t = c.Test;
+                Print($"LAB RULE {name}: {t.Name}: {t.Trades} trades, avg {t.AvgR.ToString("+0.000;-0.000", ci)}R t={t.T.ToString("F1", ci)}, win {(100 * t.WinRate).ToString("F0", ci)}%, halves {c.FirstHalfAvgR.ToString("+0.000;-0.000", ci)} / {c.SecondHalfAvgR.ToString("+0.000;-0.000", ci)}R");
+            }
+            var best = ranked.FirstOrDefault(c => c.IsEdgeCandidate);
+            var top = ranked.FirstOrDefault();
+            var verdict = $"{name}: {p.Family}, " + (best != null ? $"CANDIDATE {best.Test.Name} t={best.Test.T.ToString("F1", ci)}" : $"no edge after spread{(top != null ? $" (best {top.Test.Name} t={top.Test.T.ToString("F1", ci)})" : "")}");
+            Print("LAB STUDY VERDICT " + verdict);
+            _studyVerdicts.Add(verdict);
         }
 
         private void Finish(CultureInfo ci)

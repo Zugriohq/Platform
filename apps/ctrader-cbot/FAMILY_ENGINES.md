@@ -169,6 +169,11 @@ Each synthetic is a published random process. A rule can only have an edge where
   - **His Boom 150 "Scan Profit" panel:** 799 setups, 443 targets hit and 356 stops hit (55.4%), +$87.
   - **What the panel assumes:** $87 = 443 × $1 − 356 × $1.00, so it books every stop at exactly −$1. On these indices a spike gaps through the stop. The Crash 150 losses averaged 2.59 points against a 2-point stop, about 30% more. At that size the same counts give 443 − 356 × 1.30 ≈ −$20, before the spread.
 
+**Family behaviour study (2026-10-14).** There is now one study per family, from Deriv's own descriptions, covering all 13 families and TTI's family signals: `research/deriv/FAMILIES.md`, registered in `behaviour_prereg.json` before any result.
+- Range Break and Drift Switch carry the most plausible mechanisms.
+- Trek and Daily Reset declare a direction.
+- Market Lab runs the study by default.
+
 Why the EA does not "just scalp" synthetics: scalping multiplies expectancy, it does not create it. On a random walk every rule's expectancy is minus the spread, so more trades lose faster. A synthetic gets an engine only where Market Lab finds structure that pays after the spread.
 
 ## Expansion families (not on the EA yet)

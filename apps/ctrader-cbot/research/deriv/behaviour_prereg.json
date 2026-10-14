@@ -1,0 +1,19 @@
+{
+  "registered": "2026-10-14, before any result of this study was seen (Market Lab has not yet run it on any symbol)",
+  "why": "Owner (2026-10-14): each Deriv family behaves differently, as Deriv's own descriptions say; TTI partly categorised them. Test, family by family, whether the behaviour each family is declared to have shows in the broker's own history and whether the rule that behaviour implies pays after the spread.",
+  "data": "The owner's Deriv cTrader account, closed M1 bars, the last 21 days (Market Lab 'Study: days of M1 history'), every symbol matched by the study keywords; spread = the symbol's ask - bid when measured",
+  "families_and_rules": {
+    "DriftSwitch N (N = declared average regime minutes)": "momentum follow: lookback L in {N/4, N/2} bars, enter when |L-bar move| >= 1.0 x sigma x sqrt(L), hold H in {N/4, N/2} bars (4 rules)",
+    "RangeBreak": "range = last w bars' high/low, w in {30, 120}. Fade: close in the top/bottom 10% -> sell/buy, target the middle, stop 0.25 width beyond the edge, max w bars. Break: close beyond the range by 0.1 width -> follow, target 1 width, stop 0.25 width back inside (4 rules)",
+    "Boom, Crash, Hybrid, DEX": "spike direction from the name (else from the jumps, if 80% one way). TTI's overdue rule: enter in the spike direction once the wait since the last spike exceeds k x the average gap so far, k in {0.7, 1.0}; exit at the first spike or after one average gap. Drift follow against the spikes: tp 1 / sl 2 ATR and tp 0.5 / sl 3 ATR, max 60 bars (4 rules)",
+    "Jump": "TTI's 'jump recent': after a jump bar, follow or fade for 5 or 30 bars (4 rules)",
+    "Step, MultiStep": "TTI's 'streak': after k in {5, 7} bars closing the same way, follow or fade for 5 bars (4 rules)",
+    "SkewStep, Trek, DailyReset": "hold in the direction the name declares (Up/Bull long, Down/Bear short; both directions if undeclared) for 60 or 240 bars, back to back (2 or 4 rules)",
+    "Volatility, VolatilitySwitch, Unknown": "controls: momentum follow and fade, lookback 15, z 1.5, hold 15 (2 rules)"
+  },
+  "measurements": "per symbol: spread in units of the typical 1-minute move; jumps per hour and up share; 'is a jump due?' = jump rate when the wait since the last jump is above half the median gap over the rate below it (memoryless = about 1); variance ratios at 5/15/60/240 minutes; lag-1 autocorrelation; volatility memory (autocorrelation of |moves| at 60 minutes); drift per hour between jumps and net, with z",
+  "pass": "CANDIDATE: t >= 3.5 on the whole history, at least 50 trades, AND a positive average in both halves, after the spread (MarketLab.CandidateT). A candidate then needs a fresh forward period on later data, the same rule unchanged, before any engine is considered (ADR-0011).",
+  "declared_behaviour_checks": "recorded, not pass/fail: Drift Switch VR at its regime length above 1; Range Break VR60 below 1; Jump about 3 jumps an hour, half up; Boom/Crash/DEX jumps one way and late/early about 1; net drift z within +-2 for every family except Trek and Daily Reset, whose names declare a direction",
+  "validated_by": "tests/Zugrio.CBot.Core.Tests/BehaviourTests.cs: the rules find the structure on generated paths that have it (drift regimes, a bouncing range, a 'due' spike, a sticky step, a declared drift) and none on paths that do not (random walk, memoryless spikes, fair steps, symmetric jumps)",
+  "unchanged_after_registration": "Behaviour.cs rules and the pass rule. Any later rule is a new registration, tested on later data."
+}
