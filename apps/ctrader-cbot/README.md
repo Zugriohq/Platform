@@ -259,7 +259,7 @@ Position slots:
 Daily rules:
 - **What still blocks trades:** the remaining refusals all come from two daily rules, *Never lose more in a day than the previous day made* and the 50% *Daily profit lock*. On the 90-day replay they refuse about half the drift trades and stop trading early on 23 of 90 days.
 - **With both off,** keeping the 5% daily loss limit, 32,584 of 32,599 trades go through.
-- **That is the owner's risk decision,** not changed here.
+- **That is the owner's risk decision.** The owner (2026-10-14) chose: off on demo, so the demo measures the engines. The two daily profit rules now apply on demo only when *Apply the two daily profit rules on demo accounts too* is on. On a live account they always apply as set, and the daily loss limit always applies.
 
 **In the record.** Trades show as style `DRIFT`. Signals refused for spread show as `DRIFT_SPREAD_ABOVE_LIMIT`, with the spread at the time.
 

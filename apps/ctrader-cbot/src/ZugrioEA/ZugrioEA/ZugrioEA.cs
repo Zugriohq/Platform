@@ -160,6 +160,10 @@ namespace Zugrio.CBot.EA
         [Parameter("Daily loss limit (% of day-start equity)", DefaultValue = 5.0, MinValue = 0.5, MaxValue = 50, Group = "Risk (research)")] public double MaxDailyLossPct { get; set; }
         [Parameter("Never lose more in a day than the previous day made", DefaultValue = true, Group = "Risk (research)")] public bool ProtectPreviousDayProfit { get; set; } = true;
         [Parameter("Daily profit lock (share of the day's peak gain kept)", DefaultValue = 0.5, MinValue = 0, MaxValue = 0.95, Group = "Risk (research)")] public double ProfitLockFraction { get; set; }
+        // Owner, 2026-10-14: on demo the two daily profit rules are off, so the demo measures the engines themselves (on the
+        // 90-day replay they refused about half the Drift Switch trades). The daily loss limit always applies; on a live
+        // account both rules apply as set above.
+        [Parameter("Apply the two daily profit rules on demo accounts too", DefaultValue = false, Group = "Risk (research)")] public bool DailyProfitRulesOnDemo { get; set; }
 
         [Parameter("Move stop to break-even at (x R profit)", DefaultValue = 1.0, MinValue = 0.1, Group = "Protect open profit (research)")] public double BreakEvenAtR { get; set; }
         [Parameter("Break-even lock past entry (x ATR)", DefaultValue = 0.05, MinValue = 0, Group = "Protect open profit (research)")] public double BreakEvenLockAtr { get; set; }
@@ -353,7 +357,9 @@ namespace Zugrio.CBot.EA
                 MaxClockSkew: TimeSpan.FromSeconds(MaxClockSkewSeconds), PinnedBrokerExecutionPolicyHash: _configVersion,
                 PinnedExecutionAuthorityManifestHash: _engine.BundleSha256, ClientOrderIdLength: CoidLength));
 
-            _killSwitch = new DailyLossKillSwitch(MaxDailyLossPct, ProtectPreviousDayProfit, ProfitLockFraction);
+            var profitRules = Account.IsLive || DailyProfitRulesOnDemo;
+            _killSwitch = new DailyLossKillSwitch(MaxDailyLossPct, ProtectPreviousDayProfit && profitRules, profitRules ? ProfitLockFraction : 0);
+            if (!profitRules) Print($"Zugrio EA: demo account: daily loss limit {MaxDailyLossPct}% applies; 'never lose more than yesterday made' and the daily profit lock are off on demo ('Apply the two daily profit rules on demo accounts too' to turn them on).");
             // Restarts (every cloud restart) must not reset today's loss baseline: rebuild it from
             // the broker's record of trades closed today.
             var today = Server.TimeInUtc.Date;
@@ -1525,7 +1531,7 @@ namespace Zugrio.CBot.EA
             ["risk"] = new JsonObject
             {
                 ["riskPct"] = (decimal)RiskPct, ["maxRiskPctAtMinVolume"] = (decimal)MaxRiskPctAtMinVolume, ["maxUnits"] = (decimal)MaxUnits, ["maxDailyLossPct"] = (decimal)MaxDailyLossPct, ["protectPreviousDayProfit"] = ProtectPreviousDayProfit,
-                ["profitLockFraction"] = (decimal)ProfitLockFraction, ["breakEvenAtR"] = (decimal)BreakEvenAtR, ["breakEvenLockAtr"] = (decimal)BreakEvenLockAtr,
+                ["profitLockFraction"] = (decimal)ProfitLockFraction, ["dailyProfitRulesOnDemo"] = DailyProfitRulesOnDemo, ["breakEvenAtR"] = (decimal)BreakEvenAtR, ["breakEvenLockAtr"] = (decimal)BreakEvenLockAtr,
                 ["trailStartR"] = (decimal)TrailStartR, ["trailAtr"] = (decimal)TrailAtr, ["keepProfitFraction"] = (decimal)KeepProfitFraction,
             },
             ["execution"] = new JsonObject { ["maxQuoteAgeSeconds"] = MaxQuoteAgeSeconds, ["maxClockSkewSeconds"] = MaxClockSkewSeconds, ["protectionDeadlineSeconds"] = ProtectionDeadlineSeconds },

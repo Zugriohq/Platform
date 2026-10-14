@@ -274,6 +274,14 @@ namespace Zugrio.CBot.Core.Tests
         }
 
         [Fact]
+        public void The_daily_profit_rules_are_off_on_demo_unless_asked_and_always_on_live_and_the_loss_limit_always_applies()
+        {
+            var start = Method(Ea(), "protected override void OnStart()");
+            Assert.Contains("var profitRules = Account.IsLive || DailyProfitRulesOnDemo;", start);
+            Assert.Contains("new DailyLossKillSwitch(MaxDailyLossPct, ProtectPreviousDayProfit && profitRules, profitRules ? ProfitLockFraction : 0)", start);
+        }
+
+        [Fact]
         public void Crypto_entries_check_demo_records_spread_size_and_tiers_before_submitting_and_exit_through_the_gate()
         {
             var src = Ea();
