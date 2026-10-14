@@ -245,6 +245,22 @@ cTrader Mobile does not run cBots on the phone. It starts and stops **cloud inst
 
 Exits close through the risk-reducing gate.
 
+**Review, 2026-10-14** (`research/deriv/dsi_spread_curve.mjs`, `dsi_riskrules.mjs`).
+
+The spread limit:
+- **The change:** the limit is now *Drift: max spread*, default 1.5 × ATR14 (M1), about 1.0 / 1.0 / 2.3 in price. The rule breaks even near 1.48 / 1.72 / 3.31.
+- **Why:** the EA's generic "spread ≤ 0.25 × stop" rule would have refused profitable trades above about 0.5 / 0.5 / 1.2.
+
+Position slots:
+- **The change:** drift trades have one slot per drift market on top of the tier, and the slower engines no longer count open drift trades.
+- **Why:** a five-minute drift trade could make a weekly or monthly decision miss its turn. With crypto holding one of two slots on a small account, drift would have taken only 4,331 of 32,599 trades over 90 days; with its own slots, 16,624.
+- **What still applies:** the tier's total-risk budget and the daily loss allowance still cover every position.
+
+Daily rules:
+- **What still blocks trades:** the remaining refusals all come from two daily rules, *Never lose more in a day than the previous day made* and the 50% *Daily profit lock*. On the 90-day replay they refuse about half the drift trades and stop trading early on 23 of 90 days.
+- **With both off,** keeping the 5% daily loss limit, 32,584 of 32,599 trades go through.
+- **That is the owner's risk decision,** not changed here.
+
 **In the record.** Trades show as style `DRIFT`. Signals refused for spread show as `DRIFT_SPREAD_ABOVE_LIMIT`, with the spread at the time.
 
 ### Demo validation record

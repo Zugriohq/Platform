@@ -301,7 +301,7 @@ namespace Zugrio.CBot.Core.Tests
             var submit = body.IndexOf("Submit(new EntryOrder(", StringComparison.Ordinal);
             Assert.True(submit > 0);
             foreach (var must in new[] { "if (Positions.Find(label) != null || History.FindLast(label) != null) return;", "if (DriftDemoOnly && _exec.IsLive)",
-                         "spread > dm.MaxSpread", "SizeFor(dm.Sym, price, stop)", "PortfolioSelector.Select(", "_killSwitch.Remaining(Account.Equity)" })
+                         "if (spread > maxSpread)", "SizeFor(dm.Sym, price, stop)", "PortfolioSelector.Select(", "_killSwitch.Remaining(Account.Equity)" })
             {
                 var at = body.IndexOf(must, StringComparison.Ordinal);
                 Assert.True(at > 0 && at < submit, must + " must come before Submit");
@@ -310,8 +310,17 @@ namespace Zugrio.CBot.Core.Tests
             Assert.True(exits.IndexOf("RiskReducingGate.Check(", StringComparison.Ordinal) < exits.IndexOf("_exec.Close(pos)", StringComparison.Ordinal));
             Assert.Contains("TradingStyles.Drift) continue;", Method(src, "private void ManageOpenProfit("));
             Assert.Contains("RunDriftExits(now);", Method(src, "protected override void OnTimer()"));
-            // a closed bar only: the bar that just opened is left out
-            Assert.Contains("var n = b.Count - 1;", Method(src, "private void OnDriftBar("));
+            // a closed bar only: the bar that just opened is left out; a due trade is closed before deciding
+            var bar = Method(src, "private void OnDriftBar(");
+            Assert.Contains("var n = b.Count - 1;", bar);
+            Assert.True(bar.IndexOf("RunDriftExits(now, dm.Name", StringComparison.Ordinal) < bar.IndexOf("Positions.Any(", StringComparison.Ordinal));
+            // the drift spread limit is its own (ATR based), not the generic share of the stop
+            Assert.DoesNotContain("MaxSpreadShareOfStop", body);
+            Assert.Contains("DriftMaxSpreadAtr * s.Atr", body);
+            // drift has its own slots; every other engine ignores open drift trades in the position count
+            Assert.Contains("SlotsFor(tier, drift: true)", body);
+            foreach (var m in new[] { "private void EnterIndex(", "private void EnterTrend(", "private void EnterCrypto(", "private void ProcessPending(" })
+                Assert.Contains("SlotsFor(tier, drift: false)", Method(src, m));
         }
 
         [Fact]

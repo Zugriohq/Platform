@@ -136,10 +136,14 @@ namespace Zugrio.CBot.EA
         // Drift Switch engine (research/deriv/FAMILIES.md, family study 2026-10-14; DriftEngine in Zugrio.CBot.Core). Each entry:
         // names or aliases | max spread in price (about half the break-even spread measured on Deriv's feed). Demo only by
         // default: the rule is validated on Deriv's feed, not yet on this account's fills and spreads.
-        public const string DefaultDriftMarkets = "Drift Switch Index 10,DSI10|0.7; Drift Switch Index 20,DSI20|0.8; Drift Switch Index 30,DSI30|1.5";
+        // An optional "|max spread in price" after a market caps its spread further; by default the limit is DriftMaxSpreadAtr.
+        public const string DefaultDriftMarkets = "Drift Switch Index 10,DSI10; Drift Switch Index 20,DSI20; Drift Switch Index 30,DSI30";
         [Parameter("Drift Switch engine on", DefaultValue = true, Group = "Zugrio Drift Switch engine (research)")] public bool DriftEngineOn { get; set; } = true;
         [Parameter("Drift markets (name,alternative,...|max spread; ...)", DefaultValue = DefaultDriftMarkets, Group = "Zugrio Drift Switch engine (research)")] public string DriftMarketsText { get; set; } = DefaultDriftMarkets;
         [Parameter("Drift: demo accounts only", DefaultValue = true, Group = "Zugrio Drift Switch engine (research)")] public bool DriftDemoOnly { get; set; } = true;
+        // Max spread as a multiple of ATR14 (M1). On Deriv's feed the rule breaks even at a spread of about 2.2 / 2.6 / 2.1 x ATR
+        // (DSI 10 / 20 / 30); at 1.5 x ATR it still nets about +0.2 / +0.37 / +0.3 per unit risked (research/deriv/dsi_spread_curve.mjs).
+        [Parameter("Drift: max spread (x ATR14 M1)", DefaultValue = 1.5, MinValue = 0.1, MaxValue = 5, Group = "Zugrio Drift Switch engine (research)")] public double DriftMaxSpreadAtr { get; set; } = 1.5;
 
         // Crypto trend engine (research/lab/realmarkets_prereg.json rule C2; CryptoEngine in Zugrio.CBot.Core): weekly, the sign
         // of the 4-week return, long or short, a side held only while its swap costs at most the limit per year.
@@ -378,7 +382,7 @@ namespace Zugrio.CBot.EA
                   (_indexMarkets.Count == 0 ? "Index engine: no markets. " : $"Index engine on {string.Join(", ", _indexMarkets.Select(m => m.Name))}. ") +
                   (_trendSym == null ? "Gold trend engine off. " : $"Gold trend engine on {_trendSym.Name}. ") +
                   (_cryptoMarkets.Count == 0 ? "Crypto trend engine off. " : $"Crypto trend engine on {string.Join(", ", _cryptoMarkets.Select(m => m.Name))}{(CryptoDemoOnly && _exec.IsLive ? " - NOT trading: live account and 'demo accounts only' is on" : "")}. ") +
-                  (_driftMarkets.Count == 0 ? "Drift engine off. " : $"Drift engine on {string.Join(", ", _driftMarkets.Select(m => $"{m.Name} (look back {m.Rule.Lookback}, hold {m.Rule.Hold} min, max spread {m.MaxSpread.ToString(System.Globalization.CultureInfo.InvariantCulture)})"))}{(DriftDemoOnly && _exec.IsLive ? " - NOT trading: live account and 'demo accounts only' is on" : "")}. ") +
+                  (_driftMarkets.Count == 0 ? "Drift engine off. " : $"Drift engine on {string.Join(", ", _driftMarkets.Select(m => $"{m.Name} (look back {m.Rule.Lookback}, hold {m.Rule.Hold} min, max spread {DriftMaxSpreadAtr.ToString(System.Globalization.CultureInfo.InvariantCulture)} x ATR{(m.MaxSpread > 0 ? $" and {m.MaxSpread.ToString(System.Globalization.CultureInfo.InvariantCulture)}" : "")})"))}{(DriftDemoOnly && _exec.IsLive ? " - NOT trading: live account and 'demo accounts only' is on" : "")}. ") +
                   $"Config {_configVersion[..12]}, engine {_engine.BundleSha256[..12]}.");
             ProtectUnprotectedOnStart();
             ReportAffordability(Server.TimeInUtc);
@@ -628,7 +632,7 @@ namespace Zugrio.CBot.EA
             var batch = _pending.ToList();
             _pending.Clear();
             var tier = Watchlist.TierFor(_tiers, Account.Balance);
-            var selection = PortfolioSelector.Select(batch.Select(p => p.Candidate), OpenExposures(), tier, Account.Balance, _killSwitch.Remaining(Account.Equity));
+            var selection = PortfolioSelector.Select(batch.Select(p => p.Candidate), OpenExposures(), SlotsFor(tier, drift: false), Account.Balance, _killSwitch.Remaining(Account.Equity));
             foreach (var (c, reason) in selection.Skipped)
             {
                 var p = batch.First(x => ReferenceEquals(x.Candidate, c));
@@ -855,6 +859,18 @@ namespace Zugrio.CBot.EA
                 sym.VolumeInUnitsMin, sym.VolumeInUnitsStep, sym.VolumeInUnitsMax, MaxUnits,
                 RiskMoneyCap: _killSwitch.Remaining(Account.Equity) - OpenExposures().Sum(e => e.RiskMoney)));
 
+        /// <summary>
+        /// The tier's position cap as each engine sees it. Drift Switch trades last 5-15 minutes and come hundreds of times a
+        /// day: they get one slot per drift market on top of the tier, and the slower engines (decided once a day, week or
+        /// month) do not count open drift trades, so a five-minute trade never makes them miss their decision. The total risk
+        /// budget of the tier and the daily loss allowance still cover every position.
+        /// </summary>
+        private Tier SlotsFor(Tier tier, bool drift)
+        {
+            var openDrift = Positions.Count(p => IsZugrio(p) && TradingStyles.FromComment(p.Comment) == TradingStyles.Drift);
+            return tier with { MaxPositions = tier.MaxPositions + (drift ? _driftMarkets.Count : openDrift) };
+        }
+
         /// <summary>Open Zugrio positions and the money each can still lose from here to its stop (unbounded without a stop).</summary>
         private IReadOnlyList<OpenExposure> OpenExposures() =>
             Positions.Where(IsZugrio).Select(p =>
@@ -1018,7 +1034,7 @@ namespace Zugrio.CBot.EA
             if (!size.Trade) { Skip(now, im.Name, fireEventId, size.Reason, new() { ["riskPctAtMinimum"] = size.RiskPctActual }); return; }
             var tier = Watchlist.TierFor(_tiers, Account.Balance);
             var candidate = new ReadyCandidate(im.Name, AssetClass.Index, new DateTimeOffset(DateTime.SpecifyKind(now, DateTimeKind.Utc)), opportunityId, size.RiskMoney, size.RiskPctActual);
-            var selection = PortfolioSelector.Select(new[] { candidate }, OpenExposures(), tier, Account.Balance, _killSwitch.Remaining(Account.Equity));
+            var selection = PortfolioSelector.Select(new[] { candidate }, OpenExposures(), SlotsFor(tier, drift: false), Account.Balance, _killSwitch.Remaining(Account.Equity));
             if (selection.Take.Count == 0)
             { Skip(now, im.Name, fireEventId, selection.Skipped[0].Reason, new() { ["tierMinBalance"] = tier.MinBalance, ["riskMoney"] = size.RiskMoney }); return; }
             // Adverse price limit: the ask may move a quarter of a session ATR before the order (research value).
@@ -1142,7 +1158,7 @@ namespace Zugrio.CBot.EA
             var tier = Watchlist.TierFor(_tiers, Account.Balance);
             // Crypto has no currency-pair exposure here (Synthetic class): BTC and ETH are sized and counted separately.
             var candidate = new ReadyCandidate(sym.Name, AssetClass.Synthetic, new DateTimeOffset(DateTime.SpecifyKind(now, DateTimeKind.Utc)), opportunityId, size.RiskMoney, size.RiskPctActual);
-            var selection = PortfolioSelector.Select(new[] { candidate }, OpenExposures(), tier, Account.Balance, _killSwitch.Remaining(Account.Equity));
+            var selection = PortfolioSelector.Select(new[] { candidate }, OpenExposures(), SlotsFor(tier, drift: false), Account.Balance, _killSwitch.Remaining(Account.Equity));
             if (selection.Take.Count == 0)
             { Skip(now, sym.Name, fireEventId, selection.Skipped[0].Reason, new() { ["tierMinBalance"] = tier.MinBalance, ["riskMoney"] = size.RiskMoney }); return; }
             // Adverse price limit: a quarter of a day's typical move (weekly volatility / sqrt 7).
@@ -1202,6 +1218,9 @@ namespace Zugrio.CBot.EA
                 for (var i = Math.Max(0, n - dm.Rule.SigmaBars - 30); i < n; i++) closed.Add(new LabBar(b.OpenPrices[i], b.HighPrices[i], b.LowPrices[i], b.ClosePrices[i]));
                 var s = DriftEngine.Decide(closed, dm.Rule);
                 if (s.Direction == 0) return;
+                // The rule's next entry can come on the bar its last trade ends: close a trade that is due (within 2 s) first,
+                // instead of waiting for the 1-second timer and missing the bar.
+                RunDriftExits(now, dm.Name, TimeSpan.FromSeconds(2));
                 if (Positions.Any(p => IsZugrio(p) && p.SymbolName == dm.Name && TradingStyles.FromComment(p.Comment) == TradingStyles.Drift)) return;
                 EnterDrift(dm, s, b.OpenTimes[n - 1], now);
             }
@@ -1226,17 +1245,19 @@ namespace Zugrio.CBot.EA
             var buy = s.Direction > 0;
             var price = buy ? dm.Sym.Ask : dm.Sym.Bid;
             var spread = dm.Sym.Ask - dm.Sym.Bid;
-            if (dm.MaxSpread > 0 && spread > dm.MaxSpread)
-            { Skip(now, dm.Name, fireEventId, "DRIFT_SPREAD_ABOVE_LIMIT", new() { ["spread"] = spread, ["maxSpread"] = dm.MaxSpread }); return; }
+            // The drift engine's own spread limit, from its measured break-even (the generic share-of-stop rule would refuse
+            // spreads above 0.75 x ATR, where the rule still pays well: research/deriv/dsi_spread_curve.mjs).
+            var maxSpread = DriftMaxSpreadAtr * s.Atr;
+            if (dm.MaxSpread > 0) maxSpread = Math.Min(maxSpread, dm.MaxSpread);
+            if (spread > maxSpread)
+            { Skip(now, dm.Name, fireEventId, "DRIFT_SPREAD_ABOVE_LIMIT", new() { ["spread"] = spread, ["maxSpread"] = maxSpread, ["atr"] = s.Atr }); return; }
             var stop = price - s.Direction * dm.Rule.StopAtr * s.Atr;
             var target = price + s.Direction * dm.Rule.FarTargetAtr * s.Atr;   // a backstop: the rule exits on time
-            if (spread > MaxSpreadShareOfStop * Math.Abs(price - stop))
-            { Skip(now, dm.Name, fireEventId, "SPREAD_TOO_WIDE_FOR_STOP", new() { ["spread"] = spread, ["stopDistance"] = Math.Abs(price - stop) }); return; }
             var size = SizeFor(dm.Sym, price, stop);
             if (!size.Trade) { Skip(now, dm.Name, fireEventId, size.Reason, new() { ["riskPctAtMinimum"] = size.RiskPctActual }); return; }
             var tier = Watchlist.TierFor(_tiers, Account.Balance);
             var candidate = new ReadyCandidate(dm.Name, AssetClass.Synthetic, new DateTimeOffset(DateTime.SpecifyKind(now, DateTimeKind.Utc)), opportunityId, size.RiskMoney, size.RiskPctActual);
-            var selection = PortfolioSelector.Select(new[] { candidate }, OpenExposures(), tier, Account.Balance, _killSwitch.Remaining(Account.Equity));
+            var selection = PortfolioSelector.Select(new[] { candidate }, OpenExposures(), SlotsFor(tier, drift: true), Account.Balance, _killSwitch.Remaining(Account.Equity));
             if (selection.Take.Count == 0)
             { Skip(now, dm.Name, fireEventId, selection.Skipped[0].Reason, new() { ["tierMinBalance"] = tier.MinBalance, ["riskMoney"] = size.RiskMoney }); return; }
             // Adverse price limit: half an ATR beyond the decision price (research value).
@@ -1246,14 +1267,16 @@ namespace Zugrio.CBot.EA
         }
 
         /// <summary>The drift exit: close each drift position Hold minutes after its entry, through the risk-reducing gate (retried every 30 s).</summary>
-        private void RunDriftExits(DateTime now)
+        private void RunDriftExits(DateTime now) => RunDriftExits(now, null, TimeSpan.Zero);
+
+        private void RunDriftExits(DateTime now, string? onlySymbol, TimeSpan early)
         {
-            foreach (var pos in Positions.Where(p => IsZugrio(p) && TradingStyles.FromComment(p.Comment) == TradingStyles.Drift).ToList())
+            foreach (var pos in Positions.Where(p => IsZugrio(p) && TradingStyles.FromComment(p.Comment) == TradingStyles.Drift && (onlySymbol == null || p.SymbolName == onlySymbol)).ToList())
             {
                 var dm = _driftMarkets.FirstOrDefault(m => m.Name == pos.SymbolName);
                 var regime = DriftEngine.RegimeMinutes(pos.SymbolName);
                 var hold = dm?.Rule.Hold ?? (double.IsNaN(regime) ? 10 : DriftRule.ForRegimeMinutes(regime).Hold);
-                if ((now - pos.EntryTime).TotalMinutes < hold) continue;
+                if ((now - pos.EntryTime + early).TotalMinutes < hold) continue;
                 if (_driftExitTried.TryGetValue(pos.Id, out var tried) && now - tried < TimeSpan.FromSeconds(30)) continue;
                 _driftExitTried[pos.Id] = now;
                 var view = View(pos);
@@ -1380,7 +1403,7 @@ namespace Zugrio.CBot.EA
             if (!size.Trade) { Skip(now, sym.Name, fireEventId, size.Reason, new() { ["riskPctAtMinimum"] = size.RiskPctActual }); return; }
             var tier = Watchlist.TierFor(_tiers, Account.Balance);
             var candidate = new ReadyCandidate(sym.Name, AssetClass.Metal, new DateTimeOffset(DateTime.SpecifyKind(now, DateTimeKind.Utc)), opportunityId, size.RiskMoney, size.RiskPctActual);
-            var selection = PortfolioSelector.Select(new[] { candidate }, OpenExposures(), tier, Account.Balance, _killSwitch.Remaining(Account.Equity));
+            var selection = PortfolioSelector.Select(new[] { candidate }, OpenExposures(), SlotsFor(tier, drift: false), Account.Balance, _killSwitch.Remaining(Account.Equity));
             if (selection.Take.Count == 0)
             { Skip(now, sym.Name, fireEventId, selection.Skipped[0].Reason, new() { ["tierMinBalance"] = tier.MinBalance, ["riskMoney"] = size.RiskMoney }); return; }
             // Adverse price limit: a quarter of a day's typical move (monthly volatility / sqrt 21).
@@ -1476,7 +1499,7 @@ namespace Zugrio.CBot.EA
             },
             ["driftEngine"] = new JsonObject
             {
-                ["on"] = DriftEngineOn, ["markets"] = DriftMarketsText.Trim(), ["demoOnly"] = DriftDemoOnly,
+                ["on"] = DriftEngineOn, ["markets"] = DriftMarketsText.Trim(), ["demoOnly"] = DriftDemoOnly, ["maxSpreadAtr"] = (decimal)DriftMaxSpreadAtr,
                 ["rule"] = "momentum lookback regime/4, hold regime/2, z 1.0, sigma 1440 M1, stop 3 x ATR14 M1 (research/deriv/FAMILIES.md)",
             },
             ["trendEngine"] = new JsonObject
