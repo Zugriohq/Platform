@@ -225,6 +225,7 @@ namespace Zugrio.CBot.EA
         private static readonly TimeSpan TrailInterval = TimeSpan.FromSeconds(10);
         private DateTime _pendingSince = DateTime.MinValue;
         private DailyLossKillSwitch _killSwitch = null!;
+        private readonly EquityTracker _equity = new();
         private DateTime _reportDay = DateTime.MinValue;
         private Tier? _lastTier;
 
@@ -415,6 +416,7 @@ namespace Zugrio.CBot.EA
                 if (gate.Allowed) Log(now, "emergency_close", _exec.Close(pos), failed.FireEventId);
                 else _log.Write(now, "manual_exit_required", new Dictionary<string, object?> { ["fireEventId"] = failed.FireEventId, ["reasons"] = gate.AbortReasons });
             }
+            _equity.Update(Account.Equity);
             var dayBefore = _killSwitch.DayStartEquity;
             if (_killSwitch.Update(now, Account.Equity))
                 _log.Write(now, "kill_switch", new Dictionary<string, object?> { ["dayStartEquity"] = _killSwitch.DayStartEquity, ["equity"] = Account.Equity, ["limit"] = _killSwitch.LimitMoney, ["peakEquity"] = _killSwitch.PeakEquity, ["floor"] = _killSwitch.Floor });
@@ -451,6 +453,7 @@ namespace Zugrio.CBot.EA
                       $"{IndexLeadMinutes} minutes before its own cash close. " +
                       $"Balance {Account.Balance:F2}, equity {Account.Equity:F2}, {Positions.Count(IsZugrio)} open (max {tier.MaxPositions}). Loss still allowed today {_killSwitch.Remaining(Account.Equity):F2}.");
                 Print(Scoreboard.Format(ClosedTrades(now.AddDays(-ResultsDays)), ResultsDays));
+                ReportEquity(now);
                 _activity.NextHour();
                 _activityHour = hour;
             }
@@ -650,6 +653,7 @@ namespace Zugrio.CBot.EA
             var tpPips = Math.Abs(o.Target - o.Price) / o.Sym.PipSize;
             var comment = TradingStyles.WithStyle(Comment(o.OpportunityId), o.Style);
             if (o.Route != null) comment = TradingStyles.WithRoute(comment, o.Route);
+            double bidAtSubmit = o.Sym.Bid, askAtSubmit = o.Sym.Ask;
             TradeResult r;
             try { r = _exec.MarketOrder(o.Side == Side.Buy ? TradeType.Buy : TradeType.Sell, name, o.Size.Units, label, slPips, tpPips,
                     ProtectionManager.WithInitialStop(comment, Math.Round(o.Stop, o.Sym.Digits))); }
@@ -676,6 +680,9 @@ namespace Zugrio.CBot.EA
                 ["side"] = o.Side.ToString(), ["units"] = o.Size.Units, ["riskMoney"] = o.Size.RiskMoney, ["riskPct"] = o.Size.RiskPctActual, ["sizingReason"] = o.Size.Reason,
                 ["route"] = o.Route, ["price"] = o.Price, ["fill"] = r.Position.EntryPrice, ["stop"] = o.Stop, ["target"] = o.Target,
                 ["brokerStop"] = r.Position.StopLoss, ["brokerTarget"] = r.Position.TakeProfit, ["label"] = label, ["atr"] = o.Atr,
+                ["bid"] = bidAtSubmit, ["ask"] = askAtSubmit, ["spreadPips"] = Math.Round(Fills.SpreadPips(bidAtSubmit, askAtSubmit, o.Sym.PipSize), 2),
+                ["slippagePips"] = Math.Round(Fills.SlippagePips(o.Side == Side.Buy, bidAtSubmit, askAtSubmit, r.Position.EntryPrice, o.Sym.PipSize), 2),
+                ["commissionsOpen"] = r.Position.Commissions,
             };
             foreach (var kv in o.Extra) record[kv.Key] = kv.Value;
             _log.Write(now, "entry", record);
@@ -1151,15 +1158,29 @@ namespace Zugrio.CBot.EA
             {
                 ["symbol"] = p.SymbolName, ["style"] = style, ["route"] = route, ["label"] = p.Label, ["reason"] = args.Reason.ToString(), ["side"] = p.TradeType.ToString(), ["units"] = p.VolumeInUnits,
                 ["entry"] = p.EntryPrice, ["netProfit"] = p.NetProfit, ["r"] = double.IsFinite(r) ? Math.Round(r, 2) : null, ["minutes"] = Math.Round(minutes, 1), ["pips"] = p.Pips, ["balance"] = Account.Balance,
+                // costs as the broker charged them: "costs" is gross - net, so it holds whatever commission and swap convention the broker uses
+                ["grossProfit"] = p.GrossProfit, ["commissions"] = p.Commissions, ["swap"] = p.Swap, ["costs"] = Math.Round(p.GrossProfit - p.NetProfit, 2),
+                ["initialStop"] = ProtectionManager.InitialStopFrom(p.Comment), ["equity"] = Account.Equity, ["maxDrawdown"] = Math.Round(_equity.MaxDrawdown, 2),
             });
             _activity.Closed(p.NetProfit);
             Print($"Zugrio EA: TRADE CLOSED {p.TradeType.ToString().ToUpperInvariant()} {p.SymbolName} ({style.ToLowerInvariant()}{(route == null ? "" : route == "REVERSAL_RECLAIM" ? ", reclaim" : ", break and retest")}; {args.Reason}), " +
                   $"P/L {p.NetProfit:+0.00;-0.00;0.00}{(double.IsFinite(r) ? $" ({r:+0.0;-0.0;0.0}R)" : "")}, held {minutes:0} min, balance {Account.Balance:F2}.");
         }
 
+        /// <summary>Hourly equity record for the demo validation: peak, current and deepest drawdown since this start.</summary>
+        private void ReportEquity(DateTime now)
+        {
+            _log.Write(now, "equity", new Dictionary<string, object?>
+            {
+                ["balance"] = Account.Balance, ["equity"] = Account.Equity, ["peak"] = Math.Round(_equity.Peak, 2), ["drawdown"] = Math.Round(_equity.Drawdown, 2),
+                ["maxDrawdown"] = Math.Round(_equity.MaxDrawdown, 2), ["maxDrawdownPct"] = Math.Round(_equity.MaxDrawdownPct, 2),
+            });
+            Print($"Zugrio EA equity: {Account.Equity:F2} (peak {_equity.Peak:F2}, drawdown {_equity.Drawdown:F2}); deepest drawdown since start {_equity.MaxDrawdown:F2} ({_equity.MaxDrawdownPct:F1}%).");
+        }
+
         protected override void OnStop()
         {
-            _log?.Write(Server.TimeInUtc, "stop", new Dictionary<string, object?> { ["balance"] = Account.Balance, ["equity"] = Account.Equity });
+            _log?.Write(Server.TimeInUtc, "stop", new Dictionary<string, object?> { ["balance"] = Account.Balance, ["equity"] = Account.Equity, ["peak"] = _equity.Peak, ["maxDrawdown"] = _equity.MaxDrawdown, ["maxDrawdownPct"] = _equity.MaxDrawdownPct });
         }
 
         private JsonObject Config() => new()

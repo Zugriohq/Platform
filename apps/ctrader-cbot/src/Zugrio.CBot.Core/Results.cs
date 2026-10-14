@@ -37,4 +37,35 @@ namespace Zugrio.CBot.Core
             return $"Zugrio EA results, last {days} days: {Line("all", trades)}. By style: {byStyle}. By setup: {byRoute}. By market (worst first): {bySymbol}.";
         }
     }
+
+    /// <summary>
+    /// Account equity peak and drawdown for the demo record. Updated every second by the EA; the deepest drawdown is
+    /// kept, so the hourly record shows the worst point between samples. Restarts begin a new track (the hourly
+    /// records in the log let the owner join them). It decides nothing.
+    /// </summary>
+    public sealed class EquityTracker
+    {
+        public double Peak { get; private set; }
+        public double Equity { get; private set; }
+        public double Drawdown => Peak - Equity;
+        public double MaxDrawdown { get; private set; }
+        /// <summary>The deepest drawdown as a percentage of the peak it fell from.</summary>
+        public double MaxDrawdownPct { get; private set; }
+
+        public void Update(double equity)
+        {
+            if (!double.IsFinite(equity) || equity <= 0) return;
+            Equity = equity;
+            if (equity > Peak) Peak = equity;
+            if (Drawdown > MaxDrawdown) { MaxDrawdown = Drawdown; MaxDrawdownPct = 100 * Drawdown / Peak; }
+        }
+    }
+
+    /// <summary>Fill quality against the quote at submit, in pips: a buy is quoted the ask, a sell the bid. Positive slippage = filled worse.</summary>
+    public static class Fills
+    {
+        public static double SlippagePips(bool buy, double bid, double ask, double fill, double pip) => (buy ? fill - ask : bid - fill) / pip;
+        public static double SpreadPips(double bid, double ask, double pip) => (ask - bid) / pip;
+    }
 }
+

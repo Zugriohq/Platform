@@ -246,6 +246,22 @@ namespace Zugrio.CBot.Core.Tests
         }
 
         [Fact]
+        public void The_demo_record_carries_fills_costs_protection_exits_and_drawdown()
+        {
+            var src = Ea();
+            var submit = Method(src, "private bool Submit(");
+            // the quote is read before the order is sent, so spread and slippage are measured against what was seen
+            Assert.True(submit.IndexOf("bidAtSubmit = o.Sym.Bid", StringComparison.Ordinal) < submit.IndexOf("_exec.MarketOrder(", StringComparison.Ordinal));
+            foreach (var f in new[] { "[\"fill\"]", "[\"bid\"]", "[\"ask\"]", "[\"spreadPips\"]", "[\"slippagePips\"]", "[\"brokerStop\"]", "[\"brokerTarget\"]" })
+                Assert.Contains(f, submit);
+            var closed = Method(src, "private void OnPositionClosed(");
+            foreach (var f in new[] { "[\"reason\"]", "[\"grossProfit\"]", "[\"commissions\"]", "[\"swap\"]", "[\"costs\"]", "[\"netProfit\"]", "[\"r\"]", "[\"maxDrawdown\"]" })
+                Assert.Contains(f, closed);
+            Assert.Contains("_equity.Update(Account.Equity);", Method(src, "protected override void OnTimer()"));
+            Assert.Contains("\"equity\"", Method(src, "private void ReportEquity("));
+        }
+
+        [Fact]
         public void There_is_one_order_call_and_both_engines_reach_it_through_Submit()
         {
             var src = Ea();

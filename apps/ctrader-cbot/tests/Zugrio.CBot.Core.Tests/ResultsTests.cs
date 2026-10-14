@@ -26,4 +26,42 @@ namespace Zugrio.CBot.Core.Tests
         [Fact]
         public void No_trades_yet() => Assert.Contains("no closed trades yet", Scoreboard.Format(System.Array.Empty<ClosedTrade>(), 7));
     }
+
+    public class EquityTrackerTests
+    {
+        [Fact]
+        public void Tracks_peak_drawdown_and_the_deepest_drawdown()
+        {
+            var e = new EquityTracker();
+            e.Update(100); e.Update(110); e.Update(99); e.Update(105);
+            Assert.Equal(110, e.Peak);
+            Assert.Equal(5, e.Drawdown, 9);
+            Assert.Equal(11, e.MaxDrawdown, 9);
+            Assert.Equal(10, e.MaxDrawdownPct, 9);             // 11 of the 110 peak
+            e.Update(120); e.Update(114);
+            Assert.Equal(6, e.Drawdown, 9);
+            Assert.Equal(11, e.MaxDrawdown, 9);                // the deeper earlier drawdown is kept
+            Assert.Equal(10, e.MaxDrawdownPct, 9);
+        }
+
+        [Fact]
+        public void Ignores_readings_that_are_not_finite_or_positive()
+        {
+            var e = new EquityTracker();
+            Assert.Equal(0, e.MaxDrawdown);
+            e.Update(double.NaN); e.Update(0); e.Update(50); e.Update(double.PositiveInfinity);
+            Assert.Equal(50, e.Peak);
+            Assert.Equal(0, e.MaxDrawdown);
+        }
+
+        [Fact]
+        public void Slippage_is_signed_against_the_trade()
+        {
+            // a buy fills at the ask, a sell at the bid; positive = filled worse than quoted at submit
+            Assert.Equal(2, Fills.SlippagePips(buy: true, bid: 1.1000, ask: 1.1001, fill: 1.1003, pip: 0.0001), 9);
+            Assert.Equal(-1, Fills.SlippagePips(buy: true, bid: 1.1000, ask: 1.1001, fill: 1.1000, pip: 0.0001), 9);
+            Assert.Equal(3, Fills.SlippagePips(buy: false, bid: 1.1000, ask: 1.1001, fill: 1.0997, pip: 0.0001), 9);
+            Assert.Equal(1, Fills.SpreadPips(bid: 1.1000, ask: 1.1001, pip: 0.0001), 9);
+        }
+    }
 }

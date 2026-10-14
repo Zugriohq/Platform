@@ -217,7 +217,43 @@ cTrader Mobile does not run cBots on the phone. It starts and stops **cloud inst
    - If it prints `Zugrio engine failed to load`, the engine is not permitted under `AccessRights.None`: stop there and send me the log line.
    - Send me the "smallest tradable balance" line too: it shows which markets your balance can actually trade.
 3. **Then the cloud.** In cTrader Mobile, open the cBot, pick the account and any symbol (the chart does not matter, the watchlist does), and start it as a cloud instance. One instance covers every market, so the usual limits are enough: one cloud instance on a demo account (it stops after 7 days, restart it), up to ten on a live account, running 24/7. Run **one** instance per account: two would each apply the tier limits on their own.
-4. **Live.** Start an instance on the live account the same way. It trades that account until you stop it. Start with an amount you can afford to lose entirely, and keep a demo instance running alongside for comparison.
+4. **Live comes after the demo record.** Owner, 2026-10-14: the EA is not called validated until its demo record supports it. Live is considered only then (below). When it is, start an instance on the live account the same way: it trades that account until you stop it. Start with an amount you can afford to lose entirely, and keep the demo instance running alongside for comparison.
+
+### Demo validation record
+
+The owner's decision (2026-10-14) sets the conditions for the demo:
+- the engines run **unchanged** during the first evaluation: index dip-buying, and the gold trend engine;
+- the record must show actual entries, fills, costs, protective orders, exits, drawdown and net expectancy before live is considered.
+
+The EA records all of these. A change of engine or parameters shows as a new config or engine hash in every record.
+
+| The owner asks for | Where the EA records it |
+|---|---|
+| Entries | `entry`: symbol, style (`INDEX`, `TREND`), side, units, risk money and %, the sizing reason, ATR |
+| Fills | `entry`: the price planned and the broker's fill, plus the **bid and ask read just before the order**, the spread at submit, and **slippage** in pips against that quote (+ = filled worse) |
+| Costs | `close`: gross profit, commissions, swap, net profit and `costs` (= gross − net, as the broker charged them); `entry`: the opening commission |
+| Protective orders | `entry`: the broker's stop and target on the fill; `set_protection` when a stop is attached or tightened to the exact level; `protect_profit` for every stop move; `protection_failed`, `emergency_close` and `manual_exit_required` when protection could not be confirmed |
+| Exits | `close`: the reason (stop, target, closed by the engine, manual), R, pips, minutes held, balance and equity; `time_stop`, and the engines' own exit lines |
+| Drawdown | `equity`, every hour: equity, peak, current drawdown and the deepest drawdown since this start, tracked every second; `close` and `stop` carry the deepest drawdown too |
+| Net expectancy | the hourly `Zugrio EA results` line (count, win rate, average R after costs, net, by engine), read from the broker's history |
+
+**How to keep the record:**
+- Send me the cBot log, or the `logs/ea-*.jsonl` files when files are available.
+- `node research/demo/summarize.mjs <log files>` summarises it per engine:
+  - entries, and how many had a broker stop on the fill;
+  - spread and slippage, with 95% intervals;
+  - exits by reason;
+  - gross, costs and net;
+  - net R per trade, with a 95% interval;
+  - the deepest drawdown;
+  - protection failures, rejections, and any change of config or engine during the record.
+- A demo cloud instance stops after 7 days. Restart it: each start begins a new drawdown track, and the summary keeps the deepest.
+
+**What the record can and cannot show:**
+- **The engines trade rarely.** The index engine decides once a day per index and enters only after its dip condition. The gold engine decides once a month.
+- **So the first weeks test the execution, not the edge.** They show whether fills, spreads, slippage, protection and exits behave as the research assumed (`FAMILY_ENGINES.md`).
+- **Net expectancy needs many more trades.** Its interval will be wide for months. A positive average on a handful of trades is not validation.
+- **No pass mark is set here.** None has been validated, and inventing one is not allowed. The owner decides from the record.
 
 ## Market Lab (research, no orders)
 
