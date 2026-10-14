@@ -1,0 +1,17 @@
+{
+  "registered": "2026-10-14, after looking at 3 hours of Range Break ticks (the exploration that found the structure below) and before any statistic or trade result on more data",
+  "protocol": "CYCLE_1_PROTOCOL.md, Experiment A (owner's research plan, 2026-10-14)",
+  "observed_structure": "On Deriv's feed, Range Break 100/200 tick once a second by exactly +-1 point (50/50). Inside a range there are exact reflecting levels: RB100 floor 51506 turned up on 104 of 104 visits and ceiling 51528 turned down on 126 of 126; a break is a single jump (+112 seen) to a new range. Range widths seen: 22-63 points.",
+  "definitions": {
+    "segment": "ticks between jumps; a jump is a tick move with |change| > 1 point",
+    "established_floor": "within a segment, the lowest price so far, once it has been visited at least 3 times and price has never gone below it in the segment (causal: known at the tick of the 3rd visit); ceiling mirrored",
+    "touch": "a tick at the established floor (ceiling); touch number k counts touches of that level since it was established",
+    "break": "a jump; its side is the boundary price was at (floor, ceiling or neither) on the tick before, its direction up or down"
+  },
+  "A1_statistics": "breaks per hour and per boundary touch; P(break at a touch) by k in buckets 1, 2-3, 4-7, 8-15, 16+; break direction by side (does a break at the floor go down?); jump size; range width; MFE and MAE over 60, 300 and 900 ticks after a touch; control = ticks at the level 2 points inside the boundary (same segment, same k), which a random walk visits without reflection",
+  "A2_rule": "LONG at an established floor touch (SHORT at a ceiling), entry at the touch tick's price + half the spread; exit after H ticks (H in {60, 300, 900}) or at the first jump, at price - half the spread; no other stop. Costs: Deriv published min spread (RB100 2.6, RB200 2.0) and 2x it. R reported in points and as a share of the range width.",
+  "design_data": "Deriv feed ticks for RB100 and RB200, the 24 hours downloaded on 2026-10-14 (the feed keeps about 24 h)",
+  "holdout": "Fresh feed ticks downloaded on later days (at least 3 further days, not overlapping the design day), and the owner's cTrader bid/ask ticks via Market Lab. The rule, H values and costs above are frozen; nothing is tuned on the holdout.",
+  "pass": "A2 net average > 0 with t >= 2 in the design day AND in the holdout, for the same (index, H, cost) cell; at most 12 cells (2 indices x 3 H x 2 costs), so the scan rule t >= 3.5 applies to the best cell on the design day. Uncertainty: trades are counted once per touch and clustered by segment (touches in one range are dependent).",
+  "known_risks": "A break while long at the floor may jump downward (loss of a jump size, about 100+ points) - the decisive tail; the spread on the owner's account may differ from the published one; cTrader's tick stream may differ from Deriv's feed."
+}
