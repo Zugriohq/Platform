@@ -395,3 +395,22 @@ TTI's "Jump recent" signal has nothing to read. A jump does not tell you what co
 - **No cell depends on the spread assumption.** Even at zero cost nothing passes: the edge before costs is zero.
 
 **Verdict.** TTI 5.16's APA is not validated, as published or with the firing fix. It fires rarely because of the 1R TP1 rule. Making it fire more only multiplies trades that carry no direction. Scalping it on forex, Volatility or Jump would lose about the spread on every trade.
+
+### Positive control: is the APA model or the harness broken? (2026-10-14)
+
+**The question.** The owner asked whether something is wrong with the APA model itself. A positive control answers that. The same harness (`apa_replay.mjs`, TTI's own code) was run on Drift Switch 10 / 20 / 30, the one market where trend persistence is proven: simple momentum makes about +1R gross there (`research/deriv/FAMILIES.md`). The spread is Deriv's min spread. This check is diagnostic, not a registered test.
+
+| Drift Switch, M5 | Before costs | Minus the mirror trade |
+|---|---|---|
+| DSI 10, FIX15 (n 200) | +0.42R (t 4.7) | +0.65R (t 4.1) |
+| DSI 20, FIX15 (n 141) | +0.42R (t 4.0) | +0.69R (t 3.7) |
+| DSI 30, FIX15 (n 141) | +0.13R (t 1.2) | +0.12R (t 0.6) |
+| TTI plan, all three (n 22–47) | +0.38 to +0.42R (t 1.2–1.7) | +0.30 to +0.61R |
+
+On M1, it is +0.04 to +1.34R before costs, but the spread takes most of it with M1-sized stops.
+
+**What it shows.**
+- **APA and the harness work.** Where price persists, APA's break, displacement, zone and trigger sequence picks the right direction, and the mirror trade loses.
+- **On forex, gold, Volatility and Jump at M1–H1 it gives 0R** because those markets have no persistence at those horizons. That matches every other test: the trends found in real markets are weeks to months long (crypto 4-week, gold 12-month).
+- **Even on Drift Switch, APA extracts less than plain momentum,** about +0.4R against about +1R gross. Waiting for a retest and a trigger gives up part of the move.
+- **So the model is not broken, but it is a short-horizon trend-continuation detector.** It can only pay where short-horizon trends exist.
