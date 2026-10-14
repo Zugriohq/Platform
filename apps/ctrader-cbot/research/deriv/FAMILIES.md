@@ -116,3 +116,12 @@ Install the new `ZugrioMarketLab.algo` and start it on the demo account. The fam
 - **Method:** the rules filled at the first tick after the signal minute, plus 0, 2 or 5 seconds, buying at mid + spread/2 and selling at mid − spread/2.
 - **Result:** the same as on bars. At the min spread, +0.58 to +1.03R per trade (t 10–15), with delays up to 5 seconds costing about 0.02R. At 3× the min spread (0.66) with a 5-second delay, still +0.29 to +0.73R.
 - **So the signal does not depend on bar timing.** The account's real spread is the remaining question.
+
+**Tick check of Drift Switch 20 and 30 (`dsi20_tick_check.txt`, `dsi30_tick_check.txt`; 24 h, 1 tick per second).** Same method as for Drift Switch 10.
+
+| | At the min spread, +0 to 5 s | At 3× the min spread, +5 s |
+|---|---|---|
+| Drift Switch 20 | +0.52 to +0.91R (t 4.9–8.4) | +0.19 to +0.57R |
+| Drift Switch 30 | +0.45 to +1.05R (t 4.0–5.2) | +0.19 to +0.78R |
+
+All three Drift Switch indices keep their edge when filled tick by tick after the signal. The account's actual spread is what remains to be measured.
