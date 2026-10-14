@@ -325,6 +325,9 @@ namespace Zugrio.CBot.Core.Tests
             // the drift spread limit is its own (ATR based), not the generic share of the stop
             Assert.DoesNotContain("MaxSpreadShareOfStop", body);
             Assert.Contains("DriftMaxSpreadAtr * s.Atr", body);
+            // ...capped in price below the measured break-even (1.48 / 1.72 / 3.31), so noisy account bars cannot raise it
+            Assert.Contains("if (dm.MaxSpread > 0) maxSpread = Math.Min(maxSpread, dm.MaxSpread);", body);
+            Assert.Contains("\"Drift Switch Index 10,DSI10|0.75; Drift Switch Index 20,DSI20|0.85; Drift Switch Index 30,DSI30|1.65\"", src);
             // drift has its own slots; every other engine ignores open drift trades in the position count
             Assert.Contains("SlotsFor(tier, drift: true)", body);
             foreach (var m in new[] { "private void EnterIndex(", "private void EnterTrend(", "private void EnterCrypto(", "private void ProcessPending(" })

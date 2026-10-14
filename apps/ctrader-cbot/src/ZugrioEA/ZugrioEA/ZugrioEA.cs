@@ -136,8 +136,12 @@ namespace Zugrio.CBot.EA
         // Drift Switch engine (research/deriv/FAMILIES.md, family study 2026-10-14; DriftEngine in Zugrio.CBot.Core). Each entry:
         // names or aliases | max spread in price (about half the break-even spread measured on Deriv's feed). Demo only by
         // default: the rule is validated on Deriv's feed, not yet on this account's fills and spreads.
-        // An optional "|max spread in price" after a market caps its spread further; by default the limit is DriftMaxSpreadAtr.
-        public const string DefaultDriftMarkets = "Drift Switch Index 10,DSI10; Drift Switch Index 20,DSI20; Drift Switch Index 30,DSI30";
+        // "|max spread in price" after a market caps its spread in price as well as DriftMaxSpreadAtr. The defaults are half
+        // the rule's measured break-even (1.48 / 1.72 / 3.31 on Deriv's feed, research/deriv/dsi_spread_curve.mjs; research
+        // values, UNVALIDATED_RESEARCH). A cap in price is needed because the account's M1 bars can be noisier than the
+        // feed's (2026-10-14 demo: ATR14 1.6-1.9 on DSI 10 against 0.7-0.9 on the feed), which raises an ATR-only limit
+        // without raising what the rule earns.
+        public const string DefaultDriftMarkets = "Drift Switch Index 10,DSI10|0.75; Drift Switch Index 20,DSI20|0.85; Drift Switch Index 30,DSI30|1.65";
         [Parameter("Drift Switch engine on", DefaultValue = true, Group = "Zugrio Drift Switch engine (research)")] public bool DriftEngineOn { get; set; } = true;
         [Parameter("Drift markets (name,alternative,...|max spread; ...)", DefaultValue = DefaultDriftMarkets, Group = "Zugrio Drift Switch engine (research)")] public string DriftMarketsText { get; set; } = DefaultDriftMarkets;
         [Parameter("Drift: demo accounts only", DefaultValue = true, Group = "Zugrio Drift Switch engine (research)")] public bool DriftDemoOnly { get; set; } = true;
@@ -730,7 +734,14 @@ namespace Zugrio.CBot.EA
             if (!r.IsSuccessful)
             {
                 _boundary.OnRejected(_accountId, o.FireEventId, now);
-                Log(now, "order_rejected", r, o.FireEventId);
+                // everything the broker saw, so a rejection can be diagnosed from the journal alone
+                _log.Write(now, "order_rejected", new Dictionary<string, object?>
+                {
+                    ["fireEventId"] = o.FireEventId, ["ok"] = false, ["error"] = r.Error?.ToString(), ["symbol"] = name, ["style"] = o.Style, ["side"] = o.Side.ToString(),
+                    ["units"] = o.Size.Units, ["slPips"] = slPips, ["tpPips"] = tpPips, ["price"] = o.Price, ["stop"] = o.Stop, ["target"] = o.Target,
+                    ["bid"] = bidAtSubmit, ["ask"] = askAtSubmit, ["pipSize"] = o.Sym.PipSize, ["digits"] = o.Sym.Digits,
+                    ["volumeMin"] = o.Sym.VolumeInUnitsMin, ["volumeStep"] = o.Sym.VolumeInUnitsStep, ["volumeMax"] = o.Sym.VolumeInUnitsMax,
+                });
                 return false;
             }
             _boundary.OnAcknowledged(_accountId, o.FireEventId, now);
@@ -1256,7 +1267,7 @@ namespace Zugrio.CBot.EA
             var maxSpread = DriftMaxSpreadAtr * s.Atr;
             if (dm.MaxSpread > 0) maxSpread = Math.Min(maxSpread, dm.MaxSpread);
             if (spread > maxSpread)
-            { Skip(now, dm.Name, fireEventId, "DRIFT_SPREAD_ABOVE_LIMIT", new() { ["spread"] = spread, ["maxSpread"] = maxSpread, ["atr"] = s.Atr }); return; }
+            { Skip(now, dm.Name, fireEventId, "DRIFT_SPREAD_ABOVE_LIMIT", new() { ["spread"] = spread, ["maxSpread"] = maxSpread, ["atr"] = s.Atr, ["bid"] = dm.Sym.Bid, ["ask"] = dm.Sym.Ask }); return; }
             var stop = price - s.Direction * dm.Rule.StopAtr * s.Atr;
             var target = price + s.Direction * dm.Rule.FarTargetAtr * s.Atr;   // a backstop: the rule exits on time
             var size = SizeFor(dm.Sym, price, stop);

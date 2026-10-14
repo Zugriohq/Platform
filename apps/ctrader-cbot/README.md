@@ -240,7 +240,7 @@ cTrader Mobile does not run cBots on the phone. It starts and stops **cloud inst
 - protective stop at 3 × ATR14 (M1).
 
 **The checks on every entry.** Entries go through the same `Submit` path as the other engines: guards, sizing, tiers, the daily loss limit and the journal. They also need:
-- a spread below the market's limit (*Drift markets*: 0.7 / 0.8 / 1.5);
+- a spread below the lower of *Drift: max spread* × ATR14 and the market's cap in price (*Drift markets*: 0.75 / 0.85 / 1.65, half the measured break-even);
 - a demo account, while *Drift: demo accounts only* is on.
 
 Exits close through the risk-reducing gate.
@@ -261,7 +261,28 @@ Daily rules:
 - **With both off,** keeping the 5% daily loss limit, 32,584 of 32,599 trades go through.
 - **That is the owner's risk decision.** The owner (2026-10-14) chose: off on demo, so the demo measures the engines. The two daily profit rules now apply on demo only when *Apply the two daily profit rules on demo accounts too* is on. On a live account they always apply as set, and the daily loss limit always applies.
 
-**In the record.** Trades show as style `DRIFT`. Signals refused for spread show as `DRIFT_SPREAD_ABOVE_LIMIT`, with the spread at the time.
+**In the record.** Trades show as style `DRIFT`. Signals refused for spread show as `DRIFT_SPREAD_ABOVE_LIMIT`, with the spread, limit, ATR, bid and ask at the time.
+
+**First demo evidence, 2026-10-14 12:09–12:18 UTC** (the owner's journal; EA 50eda950…).
+
+The account's spread:
+- **About 4.0 in price on Drift Switch 10 and 20** (3.90–4.11 on every signal). DSI 30 is not shown in the journal.
+- **That is above what the rule earns.** It breaks even at 1.48 / 1.72 / 3.31. At a 4.0 spread the expected result is about −2.5 / −2.3 / −0.7 points per trade (`dsi_spread_curve.mjs`).
+- **For comparison,** Deriv publishes a min spread of 0.22 / 0.20 / 0.39 and a target spread of about 2.5 / 2.5 / 5.0.
+- **So refusing these signals was correct.** On this account, Drift Switch loses.
+
+The ATR-only limit was too loose:
+- **On this account, M1 bars on DSI 10 are noisier than Deriv's feed.** ATR14 was 1.6–1.9 against 0.66–0.89 on the feed for the same minutes. DSI 20 matches (0.65 against 0.61–0.66).
+- **The noise raised the 1.5 × ATR limit to 2.4–2.8 on DSI 10.** That is above the rule's break-even, while what the rule earns does not grow with noise.
+- **One DSI 30 order did pass the limit** (sell 11, stop 821 pips, 12:16). The broker rejected it with `TechnicalError`. At an account spread near 4.0 it would have been a losing trade on average.
+
+The changes (EA 972fd982…):
+- **Each market now also has a cap in price,** half its break-even: 0.75 / 0.85 / 1.65. The limit is the lower of the cap and 1.5 × ATR.
+- **A rejected order now records everything the broker saw:** units, stop and target in pips, bid, ask, pip size, digits, and the volume minimum, step and maximum. The next rejection can then be diagnosed from the journal alone. The cause of the DSI 30 `TechnicalError` is not known yet.
+
+What would change this:
+- **Market Lab `DSI` on the account's own ticks** measures what the rule earns on this account's bid/ask. If it earns more there than on the feed, the caps can be raised from that measurement.
+- **A cheaper account** for Drift Switch would also change it.
 
 ### Demo validation record
 
