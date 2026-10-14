@@ -64,3 +64,23 @@ Send the `LAB DSI`, `LAB RB`, `LAB TREK`, `LAB VSW` and `LAB STUDY` lines.
 Trades ended by a jump lost 36–98 points each. At 2× the spread every cell is negative.
 
 **Verdict.** The Range Break fade fails at design. Under the registration, no holdout is needed for a design failure. The plan's own gate also rejects it: "breakout hazard constant across touch counts → reject fade". Range Break 200 is being downloaded to complete the design day.
+
+## Result: Experiment A, Range Break 200 design day (`rb200_tick_design_day.txt`)
+
+**Data.** 87,152 ticks over 24.2 h; 7 jumps (0.29/h); 8 ranges, median width 55; 2,501 touches.
+
+**Breaks.** All 7 breaks at a wall went through it (5 ceilings up, about 174 points; 2 floors down, about 108). Break chance per touch: about 0.3%.
+
+**The frozen rule at the published spread 2.0.**
+
+| Hold | Trades | Avg points per trade | t |
+|---|---|---|---|
+| 60 ticks | 398 | +0.77 | 0.5 |
+| 300 ticks | 170 | +1.79 | 0.6 |
+| 900 ticks | 78 | −2.03 | −0.3 |
+
+Each trade ended by a jump lost about 158 points. At 2× the spread, −1.23 / −0.21 / −4.03.
+
+The control two points inside the wall comes out about the same. With only 8 ranges, the t is weak, and one more break turns any cell negative.
+
+**Experiment A verdict: the Range Break fade fails on both indices.** No cell reaches t ≥ 2, let alone the scan rule's 3.5. The generator reflects at the walls and repays the reflection with breaks that always go through the wall.
