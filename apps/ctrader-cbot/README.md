@@ -219,6 +219,23 @@ cTrader Mobile does not run cBots on the phone. It starts and stops **cloud inst
 3. **Then the cloud.** In cTrader Mobile, open the cBot, pick the account and any symbol (the chart does not matter, the watchlist does), and start it as a cloud instance. One instance covers every market, so the usual limits are enough: one cloud instance on a demo account (it stops after 7 days, restart it), up to ten on a live account, running 24/7. Run **one** instance per account: two would each apply the tier limits on their own.
 4. **Live comes after the demo record.** Owner, 2026-10-14: the EA is not called validated until its demo record supports it. Live is considered only then (below). When it is, start an instance on the live account the same way: it trades that account until you stop it. Start with an amount you can afford to lose entirely, and keep the demo instance running alongside for comparison.
 
+### Drift Switch engine (2026-10-14, demo only by default)
+
+**What it trades.** Drift Switch Index 10 / 20 / 30. These indices switch between bull, bear and sideways trends lasting 10 / 20 / 30 minutes on average.
+
+**The rule (`DriftEngine`).** At each closed M1 bar:
+- if the last *L* minutes moved more than 1 × σ × √L, follow that move (*L* = a quarter of the regime; σ = the robust one-minute σ of the past day);
+- hold for half the regime, then close;
+- protective stop at 3 × ATR14 (M1).
+
+**The checks on every entry.** Entries go through the same `Submit` path as the other engines: guards, sizing, tiers, the daily loss limit and the journal. They also need:
+- a spread below the market's limit (*Drift markets*: 0.7 / 0.8 / 1.5);
+- a demo account, while *Drift: demo accounts only* is on.
+
+Exits close through the risk-reducing gate.
+
+**In the record.** Trades show as style `DRIFT`. Signals refused for spread show as `DRIFT_SPREAD_ABOVE_LIMIT`, with the spread at the time.
+
 ### Demo validation record
 
 The owner's decision (2026-10-14) sets the conditions for the demo:

@@ -169,6 +169,15 @@ Each synthetic is a published random process. A rule can only have an edge where
   - **His Boom 150 "Scan Profit" panel:** 799 setups, 443 targets hit and 356 stops hit (55.4%), +$87.
   - **What the panel assumes:** $87 = 443 × $1 − 356 × $1.00, so it books every stop at exactly −$1. On these indices a spike gaps through the stop. The Crash 150 losses averaged 2.59 points against a 2-point stop, about 30% more. At that size the same counts give 443 − 356 × 1.30 ≈ −$20, before the spread.
 
+**Drift Switch engine (built 2026-10-14, `DriftEngine`, EA style `DRIFT`, `UNVALIDATED_RESEARCH`).** This is the one synthetic family with an edge on Deriv's own data.
+- **Why it works:** its trends persist by design.
+- **Rule:** follow a move over a quarter of the declared regime that clears 1σ√L, hold for half the regime, with a protective stop at 3 × ATR14 (M1).
+- **Evidence on Deriv's feed:** +0.9 to +1.15R per trade (R = 2 × ATR14) at the published min spread, in the registered and the confirmation windows. It is still positive at 3× that spread and tick by tick (`research/deriv/FAMILIES.md`, `CYCLE_1_STATUS.md`).
+- **The open question is the account's spread.** The engine trades only while the live spread is under about half the break-even spread (0.7 / 0.8 / 1.5), and only on demo by default.
+- **Every skipped signal is logged with its spread,** so the demo record shows both the fills and the spreads.
+
+Every other synthetic family is closed by a fair-generator result: Boom/Crash, Jump, Volatility, Step, Range Break, DEX, Hybrid, Daily Reset.
+
 **Family behaviour study (2026-10-14).** There is now one study per family, from Deriv's own descriptions, covering all 13 families and TTI's family signals: `research/deriv/FAMILIES.md`, registered in `behaviour_prereg.json` before any result.
 - Range Break and Drift Switch carry the most plausible mechanisms.
 - Trek and Daily Reset declare a direction.

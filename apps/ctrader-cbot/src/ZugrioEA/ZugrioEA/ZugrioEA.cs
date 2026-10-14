@@ -133,6 +133,14 @@ namespace Zugrio.CBot.EA
         [Parameter("Gold: stop (x monthly volatility)", DefaultValue = 3.0, MinValue = 0.5, Group = "Zugrio Gold trend engine (research)")] public double TrendStopSigma { get; set; } = 3.0;
         [Parameter("Gold: decide once a month, on a weekday from (UTC hour)", DefaultValue = 14, MinValue = 0, MaxValue = 23, Group = "Zugrio Gold trend engine (research)")] public int TrendDecideHourUtc { get; set; } = 14;
 
+        // Drift Switch engine (research/deriv/FAMILIES.md, family study 2026-10-14; DriftEngine in Zugrio.CBot.Core). Each entry:
+        // names or aliases | max spread in price (about half the break-even spread measured on Deriv's feed). Demo only by
+        // default: the rule is validated on Deriv's feed, not yet on this account's fills and spreads.
+        public const string DefaultDriftMarkets = "Drift Switch Index 10,DSI10|0.7; Drift Switch Index 20,DSI20|0.8; Drift Switch Index 30,DSI30|1.5";
+        [Parameter("Drift Switch engine on", DefaultValue = true, Group = "Zugrio Drift Switch engine (research)")] public bool DriftEngineOn { get; set; } = true;
+        [Parameter("Drift markets (name,alternative,...|max spread; ...)", DefaultValue = DefaultDriftMarkets, Group = "Zugrio Drift Switch engine (research)")] public string DriftMarketsText { get; set; } = DefaultDriftMarkets;
+        [Parameter("Drift: demo accounts only", DefaultValue = true, Group = "Zugrio Drift Switch engine (research)")] public bool DriftDemoOnly { get; set; } = true;
+
         [Parameter("Risk per trade (% of balance)", DefaultValue = 1.0, MinValue = 0.05, MaxValue = 5, Group = "Risk (research)")] public double RiskPct { get; set; }
         [Parameter("Max risk at broker minimum volume (%)", DefaultValue = 5.0, MinValue = 0.1, MaxValue = 20, Group = "Risk (research)")] public double MaxRiskPctAtMinVolume { get; set; }
         [Parameter("Max units per order", DefaultValue = 1000000, MinValue = 1, Group = "Risk (research)")] public double MaxUnits { get; set; }
@@ -169,6 +177,18 @@ namespace Zugrio.CBot.EA
             public bool Has(TradingStyle s) => Bars.ContainsKey(s.LocationTf) && Bars.ContainsKey(s.EntryTf);
         }
 
+        /// <summary>One Drift Switch index for the drift engine: its M1 bars, its rule (from the declared regime) and its spread limit.</summary>
+        private sealed class DriftMarket
+        {
+            public DriftMarket(Symbol symbol, Bars m1, DriftRule rule, double maxSpread) { Sym = symbol; M1 = m1; Rule = rule; MaxSpread = maxSpread; }
+            public Symbol Sym { get; }
+            public string Name => Sym.Name;
+            public Bars M1 { get; }
+            public DriftRule Rule { get; }
+            public double MaxSpread { get; }
+            public DateTime LastTickUtc { get; set; } = DateTime.MinValue;
+        }
+
         /// <summary>One equity-index CFD for the index engine: its H1 bars, its exchange's rule and the exchange date it last decided.</summary>
         private sealed class IndexMarket
         {
@@ -200,6 +220,8 @@ namespace Zugrio.CBot.EA
         private readonly List<Market> _markets = new();
         private readonly List<IndexMarket> _indexMarkets = new();
         private Symbol? _trendSym;
+        private readonly List<DriftMarket> _driftMarkets = new();
+        private readonly Dictionary<long, DateTime> _driftExitTried = new();
         private Bars? _trendD1;
         private TrendRule _trendRule = null!;
         private string _trendDecidedMonth = "";
@@ -315,8 +337,9 @@ namespace Zugrio.CBot.EA
             ResolveMarkets(watch);
             AdoptOpenTrades(watch);
             if (TrendEngineOn) SetupTrendEngine();
-            if (_markets.Count == 0 && _indexMarkets.Count == 0 && _trendSym == null)
-            { Print("Zugrio EA: nothing to trade: no watchlist symbol at this broker is in an enabled style, the index engine or the gold trend engine. Not trading."); Stop(); return; }
+            if (DriftEngineOn) SetupDriftEngine();
+            if (_markets.Count == 0 && _indexMarkets.Count == 0 && _trendSym == null && _driftMarkets.Count == 0)
+            { Print("Zugrio EA: nothing to trade: no watchlist symbol at this broker is in an enabled style, the index engine, the gold trend engine or the drift engine. Not trading."); Stop(); return; }
             Positions.Closed += OnPositionClosed;
             Timer.Start(TimeSpan.FromSeconds(1));
 
@@ -330,6 +353,7 @@ namespace Zugrio.CBot.EA
                   (_styles.Count == 0 ? "Decision-core styles off. " : string.Join(", ", _styles.Select(st => $"{st.Name} {st.ContextTf}/{st.LocationTf}/{st.EntryTf} on {_markets.Count(x => x.Styles.Contains(st))} markets")) + ". ") +
                   (_indexMarkets.Count == 0 ? "Index engine: no markets. " : $"Index engine on {string.Join(", ", _indexMarkets.Select(m => m.Name))}. ") +
                   (_trendSym == null ? "Gold trend engine off. " : $"Gold trend engine on {_trendSym.Name}. ") +
+                  (_driftMarkets.Count == 0 ? "Drift engine off. " : $"Drift engine on {string.Join(", ", _driftMarkets.Select(m => $"{m.Name} (look back {m.Rule.Lookback}, hold {m.Rule.Hold} min, max spread {m.MaxSpread.ToString(System.Globalization.CultureInfo.InvariantCulture)})"))}{(DriftDemoOnly && _exec.IsLive ? " - NOT trading: live account and 'demo accounts only' is on" : "")}. ") +
                   $"Config {_configVersion[..12]}, engine {_engine.BundleSha256[..12]}.");
             ProtectUnprotectedOnStart();
             ReportAffordability(Server.TimeInUtc);
@@ -443,6 +467,7 @@ namespace Zugrio.CBot.EA
             ManageTimeStops(now);
             if (_indexMarkets.Count > 0) RunIndexEngine(now);
             if (_trendSym != null) RunTrendEngine(now);
+            RunDriftExits(now);
             var hour = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0, DateTimeKind.Utc);
             if (_activityHour == DateTime.MinValue) _activityHour = hour;
             else if (hour > _activityHour)
@@ -687,7 +712,7 @@ namespace Zugrio.CBot.EA
             foreach (var kv in o.Extra) record[kv.Key] = kv.Value;
             _log.Write(now, "entry", record);
             _activity.Entered(o.Style == TradingStyles.Scalp);
-            var tag = o.Style == TradingStyles.Scalp ? " (scalp)" : o.Style == TradingStyles.Index ? " (index)" : o.Style == TradingStyles.Trend ? " (gold trend)" : "";
+            var tag = o.Style == TradingStyles.Scalp ? " (scalp)" : o.Style == TradingStyles.Index ? " (index)" : o.Style == TradingStyles.Trend ? " (gold trend)" : o.Style == TradingStyles.Drift ? " (drift switch)" : "";
             Print($"Zugrio EA: TRADE OPENED {o.Side.ToString().ToUpperInvariant()} {name}{tag} {r.Position.Quantity.ToString(System.Globalization.CultureInfo.InvariantCulture)} lots at {r.Position.EntryPrice.ToString(System.Globalization.CultureInfo.InvariantCulture)}, " +
                   $"stop {r.Position.StopLoss?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "none"}, target {r.Position.TakeProfit?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "none"}, risk {o.Size.RiskMoney:F2} ({o.Size.RiskPctActual:F1}%).");
             ConfirmProtection(o.Sym, r.Position, o.FireEventId, o.Stop, o.Target);
@@ -723,6 +748,7 @@ namespace Zugrio.CBot.EA
             {
                 if (TradingStyles.FromComment(pos.Comment) == TradingStyles.Index) continue;   // the index rule exits on its own close rule, as tested
                 if (TradingStyles.FromComment(pos.Comment) == TradingStyles.Trend) continue;   // the trend rule holds for the month, as tested
+                if (TradingStyles.FromComment(pos.Comment) == TradingStyles.Drift) continue;   // the drift rule exits on time, as tested
                 if (_lastTrail.TryGetValue(pos.Id, out var last) && now - last < TrailInterval) continue;
                 _lastTrail[pos.Id] = now;
                 var m = _markets.FirstOrDefault(x => x.Name == pos.SymbolName);
@@ -988,6 +1014,108 @@ namespace Zugrio.CBot.EA
 
         private static void RetryIndex(IndexMarket im, DateTime now) { im.DecidedDate = DateTime.MinValue; im.RetryAt = now.AddSeconds(30); }
 
+        // ---- Drift Switch engine (research/deriv/FAMILIES.md; DriftEngine in Zugrio.CBot.Core) ----
+
+        /// <summary>Resolves each Drift Switch index, loads about a day and a half of M1 bars and decides at every closed M1 bar.</summary>
+        private void SetupDriftEngine()
+        {
+            var ci = System.Globalization.CultureInfo.InvariantCulture;
+            var brokerNames = Enumerable.Range(0, Symbols.Count).Select(i => Symbols[i]).ToList();
+            foreach (var entry in (DriftMarketsText ?? "").Split(';').Select(x => x.Trim()).Where(x => x.Length > 0))
+            {
+                var parts = entry.Split('|');
+                var name = Watchlist.Resolve(parts[0].Trim(), brokerNames);
+                var sym = name == null ? null : Symbols.GetSymbol(name);
+                if (sym == null) { Print($"Zugrio EA: drift engine: '{parts[0].Trim()}' is not offered by this broker; skipped."); continue; }
+                var regime = DriftEngine.RegimeMinutes(sym.Name);
+                if (double.IsNaN(regime)) regime = DriftEngine.RegimeMinutes(parts[0]);
+                if (double.IsNaN(regime)) { Print($"Zugrio EA: drift engine: no regime length in '{sym.Name}'; skipped."); continue; }
+                var maxSpread = parts.Length > 1 && double.TryParse(parts[1].Trim(), System.Globalization.NumberStyles.Float, ci, out var ms) ? ms : 0;
+                var rule = DriftRule.ForRegimeMinutes(regime);
+                var m1 = MarketData.GetBars(TimeFrame.Minute, sym.Name);
+                for (var k = 0; k < 50 && m1.Count < rule.SigmaBars + 100; k++) if (m1.LoadMoreHistory() == 0) break;
+                var dm = new DriftMarket(sym, m1, rule, maxSpread);
+                sym.Tick += _ => dm.LastTickUtc = Server.TimeInUtc;
+                m1.BarOpened += _ => OnDriftBar(dm);
+                _driftMarkets.Add(dm);
+            }
+        }
+
+        /// <summary>At each new M1 bar, the bar before it has closed: decide on the closed bars only.</summary>
+        private void OnDriftBar(DriftMarket dm)
+        {
+            var now = Server.TimeInUtc;
+            try
+            {
+                var b = dm.M1; var n = b.Count - 1;   // the last bar is the one that just opened
+                if (n < dm.Rule.SigmaBars + dm.Rule.Lookback + 2) return;
+                var closed = new List<LabBar>(dm.Rule.SigmaBars + 40);
+                for (var i = Math.Max(0, n - dm.Rule.SigmaBars - 30); i < n; i++) closed.Add(new LabBar(b.OpenPrices[i], b.HighPrices[i], b.LowPrices[i], b.ClosePrices[i]));
+                var s = DriftEngine.Decide(closed, dm.Rule);
+                if (s.Direction == 0) return;
+                if (Positions.Any(p => IsZugrio(p) && p.SymbolName == dm.Name && TradingStyles.FromComment(p.Comment) == TradingStyles.Drift)) return;
+                EnterDrift(dm, s, b.OpenTimes[n - 1], now);
+            }
+            catch (Exception e)
+            {
+                _log.Write(now, "drift_error", new Dictionary<string, object?> { ["symbol"] = dm.Name, ["error"] = e.Message });
+                Print($"Zugrio Drift: {dm.Name}: {e.Message}");
+            }
+        }
+
+        private void EnterDrift(DriftMarket dm, DriftSignal s, DateTime barTime, DateTime now)
+        {
+            var ci = System.Globalization.CultureInfo.InvariantCulture;
+            var key = barTime.ToString("yyyy-MM-ddTHH:mm", ci);
+            var fireEventId = "fire:" + Sha($"drift|{dm.Name}|{key}")[..32];
+            var opportunityId = $"drift:{dm.Name}:{key}";
+            if (_boundary.Get(_accountId, fireEventId) != null) return;
+            var label = LabelFor(fireEventId);
+            if (Positions.Find(label) != null || History.FindLast(label) != null) return;
+            _activity.SetupFound(fireEventId);
+            if (DriftDemoOnly && _exec.IsLive) { Skip(now, dm.Name, fireEventId, "DRIFT_DEMO_ONLY"); return; }
+            var buy = s.Direction > 0;
+            var price = buy ? dm.Sym.Ask : dm.Sym.Bid;
+            var spread = dm.Sym.Ask - dm.Sym.Bid;
+            if (dm.MaxSpread > 0 && spread > dm.MaxSpread)
+            { Skip(now, dm.Name, fireEventId, "DRIFT_SPREAD_ABOVE_LIMIT", new() { ["spread"] = spread, ["maxSpread"] = dm.MaxSpread }); return; }
+            var stop = price - s.Direction * dm.Rule.StopAtr * s.Atr;
+            var target = price + s.Direction * dm.Rule.FarTargetAtr * s.Atr;   // a backstop: the rule exits on time
+            if (spread > MaxSpreadShareOfStop * Math.Abs(price - stop))
+            { Skip(now, dm.Name, fireEventId, "SPREAD_TOO_WIDE_FOR_STOP", new() { ["spread"] = spread, ["stopDistance"] = Math.Abs(price - stop) }); return; }
+            var size = SizeFor(dm.Sym, price, stop);
+            if (!size.Trade) { Skip(now, dm.Name, fireEventId, size.Reason, new() { ["riskPctAtMinimum"] = size.RiskPctActual }); return; }
+            var tier = Watchlist.TierFor(_tiers, Account.Balance);
+            var candidate = new ReadyCandidate(dm.Name, AssetClass.Synthetic, new DateTimeOffset(DateTime.SpecifyKind(now, DateTimeKind.Utc)), opportunityId, size.RiskMoney, size.RiskPctActual);
+            var selection = PortfolioSelector.Select(new[] { candidate }, OpenExposures(), tier, Account.Balance, _killSwitch.Remaining(Account.Equity));
+            if (selection.Take.Count == 0)
+            { Skip(now, dm.Name, fireEventId, selection.Skipped[0].Reason, new() { ["tierMinBalance"] = tier.MinBalance, ["riskMoney"] = size.RiskMoney }); return; }
+            // Adverse price limit: half an ATR beyond the decision price (research value).
+            var limit = Math.Round(price + s.Direction * 0.5 * s.Atr, dm.Sym.Digits);
+            Submit(new EntryOrder(dm.Sym, AssetClass.Synthetic, dm.LastTickUtc, TradingStyles.Drift, null, fireEventId, opportunityId, buy ? Side.Buy : Side.Sell, price, stop, target, limit, size, s.Atr,
+                new Dictionary<string, object?> { ["move"] = s.Move, ["threshold"] = s.Threshold, ["sigma"] = s.Sigma, ["lookback"] = dm.Rule.Lookback, ["hold"] = dm.Rule.Hold, ["barTime"] = key }), now);
+        }
+
+        /// <summary>The drift exit: close each drift position Hold minutes after its entry, through the risk-reducing gate (retried every 30 s).</summary>
+        private void RunDriftExits(DateTime now)
+        {
+            foreach (var pos in Positions.Where(p => IsZugrio(p) && TradingStyles.FromComment(p.Comment) == TradingStyles.Drift).ToList())
+            {
+                var dm = _driftMarkets.FirstOrDefault(m => m.Name == pos.SymbolName);
+                var regime = DriftEngine.RegimeMinutes(pos.SymbolName);
+                var hold = dm?.Rule.Hold ?? (double.IsNaN(regime) ? 10 : DriftRule.ForRegimeMinutes(regime).Hold);
+                if ((now - pos.EntryTime).TotalMinutes < hold) continue;
+                if (_driftExitTried.TryGetValue(pos.Id, out var tried) && now - tried < TimeSpan.FromSeconds(30)) continue;
+                _driftExitTried[pos.Id] = now;
+                var view = View(pos);
+                var gate = RiskReducingGate.Check(view, new ClosePosition(view.PositionId), _accountId, _accountId, adapterIntegrityOk: true, brokerReachable: Server.IsConnected);
+                if (!gate.Allowed) { _log.Write(now, "drift_exit_blocked", new Dictionary<string, object?> { ["label"] = pos.Label, ["reasons"] = gate.AbortReasons }); continue; }
+                var pl = pos.NetProfit;
+                var r = _exec.Close(pos);
+                _log.Write(now, "drift_exit", new Dictionary<string, object?> { ["symbol"] = pos.SymbolName, ["label"] = pos.Label, ["holdMinutes"] = hold, ["netProfit"] = pl, ["ok"] = r.IsSuccessful, ["error"] = r.Error?.ToString() });
+            }
+        }
+
         // ---- Gold trend engine (research/lab round 4, rule A; TrendEngine in Zugrio.CBot.Core) ----
 
         /// <summary>Finds the gold symbol and loads about 15 months of daily bars (12 month ends plus volatility).</summary>
@@ -1185,12 +1313,17 @@ namespace Zugrio.CBot.EA
 
         private JsonObject Config() => new()
         {
-            ["schema"] = "zugrio.ea-config/v7", ["calibrationStatus"] = "UNVALIDATED_RESEARCH",
+            ["schema"] = "zugrio.ea-config/v8", ["calibrationStatus"] = "UNVALIDATED_RESEARCH",
             ["indexEngine"] = new JsonObject
             {
                 ["on"] = IndexEngineOn, ["lowerCloses"] = IndexLowerCloses, ["trendSma"] = IndexTrendSma, ["exitSma"] = IndexExitSma, ["atrPeriod"] = _indexRule.AtrPeriod,
                 ["stopAtr"] = (decimal)IndexStopAtr, ["farTargetAtr"] = (decimal)IndexFarTargetAtr, ["closeNewYork"] = IndexCloseText.Trim(), ["venues"] = "v1 US NY 09:00-16:00, London 08:00-16:30, Frankfurt 09:00-17:30, Tokyo 09:00-15:30, Sydney 10:00-16:00, Hong Kong 09:00-16:00", ["leadMinutes"] = IndexLeadMinutes,
                 ["sessionStartNewYork"] = _indexRule.Start.ToString(@"hh\:mm"), ["minBarsPerSession"] = _indexRule.MinBarsPerSession, ["chaseAtr"] = (decimal)IndexChaseAtr,
+            },
+            ["driftEngine"] = new JsonObject
+            {
+                ["on"] = DriftEngineOn, ["markets"] = DriftMarketsText.Trim(), ["demoOnly"] = DriftDemoOnly,
+                ["rule"] = "momentum lookback regime/4, hold regime/2, z 1.0, sigma 1440 M1, stop 3 x ATR14 M1 (research/deriv/FAMILIES.md)",
             },
             ["trendEngine"] = new JsonObject
             {

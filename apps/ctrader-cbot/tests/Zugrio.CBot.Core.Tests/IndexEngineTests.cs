@@ -269,6 +269,28 @@ namespace Zugrio.CBot.Core.Tests
             Assert.Contains("_exec.MarketOrder(", Method(src, "private bool Submit(EntryOrder o, DateTime now)"));
             Assert.Contains("Submit(new EntryOrder(", Method(src, "private void Enter(Pending p, DateTime now)"));
             Assert.Contains("Submit(new EntryOrder(", Method(src, "private void EnterIndex("));
+            Assert.Contains("Submit(new EntryOrder(", Method(src, "private void EnterDrift("));
+        }
+
+        [Fact]
+        public void Drift_entries_check_demo_spread_records_size_and_tiers_before_submitting_and_exit_through_the_gate()
+        {
+            var src = Ea();
+            var body = Method(src, "private void EnterDrift(");
+            var submit = body.IndexOf("Submit(new EntryOrder(", StringComparison.Ordinal);
+            Assert.True(submit > 0);
+            foreach (var must in new[] { "if (Positions.Find(label) != null || History.FindLast(label) != null) return;", "if (DriftDemoOnly && _exec.IsLive)",
+                         "spread > dm.MaxSpread", "SizeFor(dm.Sym, price, stop)", "PortfolioSelector.Select(", "_killSwitch.Remaining(Account.Equity)" })
+            {
+                var at = body.IndexOf(must, StringComparison.Ordinal);
+                Assert.True(at > 0 && at < submit, must + " must come before Submit");
+            }
+            var exits = Method(src, "private void RunDriftExits(");
+            Assert.True(exits.IndexOf("RiskReducingGate.Check(", StringComparison.Ordinal) < exits.IndexOf("_exec.Close(pos)", StringComparison.Ordinal));
+            Assert.Contains("TradingStyles.Drift) continue;", Method(src, "private void ManageOpenProfit("));
+            Assert.Contains("RunDriftExits(now);", Method(src, "protected override void OnTimer()"));
+            // a closed bar only: the bar that just opened is left out
+            Assert.Contains("var n = b.Count - 1;", Method(src, "private void OnDriftBar("));
         }
 
         [Fact]
