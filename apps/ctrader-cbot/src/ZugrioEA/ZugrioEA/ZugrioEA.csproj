@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- ADR-0010: full-auto EA on the demo or live account it starts on; cloud-compatible (AccessRights.None). Runs Zugrio decision-core via Zugrio.CBot.Engine. -->
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>10.0</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AlgoPublish>False</AlgoPublish>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="cTrader.Automate" Version="1.0.21" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../Zugrio.CBot.Core/Zugrio.CBot.Core.csproj" />
+    <ProjectReference Include="../../Zugrio.CBot.Engine/Zugrio.CBot.Engine.csproj" />
+  </ItemGroup>
+</Project>

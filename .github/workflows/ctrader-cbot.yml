@@ -1,0 +1,82 @@
+name: cTrader cBot (Zugrio)
+
+on:
+  pull_request:
+    paths:
+      - "apps/ctrader-cbot/**"
+      - "packages/decision-core/**"
+      - "packages/domain/**"
+      - "pnpm-workspace.yaml"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/ctrader-cbot.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/ctrader-cbot/**"
+      - "packages/decision-core/**"
+      - "packages/domain/**"
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9.15.4 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:packages
+      # The EA embeds decision-core as one JS bundle. It must match a fresh build of the current decision-core.
+      - name: Engine bundle is current
+        run: pnpm --filter @zugrio/ctrader-engine-bridge check
+      - name: Engine bridge tests
+        run: pnpm --filter @zugrio/ctrader-engine-bridge test
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      # Core, engine (Jint runs the bundle byte-identically to Node) and sizing tests, plus
+      # NoOrderApiOutsideEaExecution: order calls only in EaExecution.cs, each directly after RequireBoundAccount(),
+      # and the EA stays cloud-compatible (AccessRights.None) so it runs from cTrader Mobile.
+      - name: Test boundary core, engine and execution confinement
+        working-directory: apps/ctrader-cbot
+        run: dotnet test tests/Zugrio.CBot.Core.Tests -c Release
+      - name: Build indicator and EA (.algo)
+        working-directory: apps/ctrader-cbot
+        run: |
+          dotnet build src/ZugrioSetups/ZugrioSetups -c Release
+          dotnet build src/ZugrioEA/ZugrioEA -c Release
+          dotnet build src/ZugrioMarketLab/ZugrioMarketLab -c Release
+      - name: SHA-256 of the .algo files
+        working-directory: apps/ctrader-cbot
+        run: |
+          set -euo pipefail
+          for p in ZugrioSetups ZugrioEA ZugrioMarketLab; do
+            ( cd "src/$p/$p/bin/Release/net6.0" && sha256sum "$p.algo" | tee "$p.algo.sha256" )
+          done
+          {
+            echo '### cTrader .algo files'
+            echo '- ZugrioSetups.algo: display only, no orders.'
+            echo '- ZugrioEA.algo: full-auto on the demo or **live** account it starts on (ADR-0010). Cloud-compatible: start it from cTrader Mobile.'
+            echo '- ZugrioMarketLab.algo: research only, no orders. Measures the behaviour family of each synthetic index on the broker history.'
+            echo '```'
+            cat src/ZugrioSetups/ZugrioSetups/bin/Release/net6.0/ZugrioSetups.algo.sha256
+            cat src/ZugrioEA/ZugrioEA/bin/Release/net6.0/ZugrioEA.algo.sha256
+            cat src/ZugrioMarketLab/ZugrioMarketLab/bin/Release/net6.0/ZugrioMarketLab.algo.sha256
+            echo "engine bundle: $(cut -d' ' -f1 engine-bridge/dist/zugrio-engine.js.sha256)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zugrio-ctrader-algo
+          if-no-files-found: error
+          path: |
+            apps/ctrader-cbot/src/ZugrioSetups/ZugrioSetups/bin/Release/net6.0/ZugrioSetups.algo
+            apps/ctrader-cbot/src/ZugrioSetups/ZugrioSetups/bin/Release/net6.0/ZugrioSetups.algo.sha256
+            apps/ctrader-cbot/src/ZugrioEA/ZugrioEA/bin/Release/net6.0/ZugrioEA.algo
+            apps/ctrader-cbot/src/ZugrioEA/ZugrioEA/bin/Release/net6.0/ZugrioEA.algo.sha256
+            apps/ctrader-cbot/src/ZugrioMarketLab/ZugrioMarketLab/bin/Release/net6.0/ZugrioMarketLab.algo
+            apps/ctrader-cbot/src/ZugrioMarketLab/ZugrioMarketLab/bin/Release/net6.0/ZugrioMarketLab.algo.sha256

@@ -1,0 +1,47 @@
+APA 0.6.0-FOUNDATION-REFERENCE, TTI html sha256 a007b191b68f5016; group INDEX; 277 base signals over about 14.7 years (all symbols)
+base entry, all signals: +0.101R t 4.0 n 277; total 1.91R a year
+  selection: base on signals where APA triggered +0.160R t 3.0 n 69; where it did not +0.082R t 2.9 n 208
+  APA triggered on 69 of 277 (25%); median delay 15.0 h; entry better than the base entry by -0.078R t -5.6 n 69 (in base R)
+T1 (APA entry, base stop and exit, in base R):
+  APA-timed net: halves +0.114R t 1.5 n 28 / +0.064R t 1.0 n 41; APA minus base on the same signals: halves -0.056R t -2.7 n 28 / -0.088R t -4.8 n 41, pooled -0.075R t -5.5 n 69
+  total R a year: APA-timed 0.40 vs base 1.91 -> fail
+T2 (APA entry and structural stop, base exit, in its own R):
+  APA-timed net: halves -0.155R t -0.3 n 27 / -0.857R t -6.1 n 41; APA minus base on the same signals: halves -0.311R t -0.6 n 27 / -1.010R t -7.0 n 41, pooled -0.732R t -3.1 n 68
+  total R a year: APA-timed -2.68 vs base 1.91; structural stop is +0.066R t 10.8 n 68 of the base stop distance, stopped out 57 of 68 -> fail
+VERDICT INDEX: FAIL
+
+APA 0.6.0-FOUNDATION-REFERENCE, TTI html sha256 a007b191b68f5016; group GOLD; 188 base signals over about 15.6 years (all symbols)
+base entry, all signals: +0.030R t 1.0 n 188; total 0.36R a year
+  selection: base on signals where APA triggered +0.043R t 0.8 n 42; where it did not +0.026R t 0.8 n 146
+  APA triggered on 42 of 188 (22%); median delay 68.0 h; entry better than the base entry by -0.030R t -2.8 n 42 (in base R)
+T1 (APA entry, base stop and exit, in base R):
+  APA-timed net: halves +0.002R t 0.0 n 24 / +0.030R t 0.4 n 18; APA minus base on the same signals: halves -0.033R t -2.8 n 24 / -0.024R t -1.2 n 18, pooled -0.029R t -2.7 n 42
+  total R a year: APA-timed 0.04 vs base 0.36 -> fail
+T2 (APA entry and structural stop, base exit, in its own R):
+  APA-timed net: halves -0.048R t -0.1 n 23 / +0.118R t 0.1 n 18; APA minus base on the same signals: halves -0.095R t -0.1 n 23 / +0.064R t 0.1 n 18, pooled -0.026R t -0.0 n 41
+  total R a year: APA-timed 0.07 vs base 0.36; structural stop is +0.040R t 10.2 n 41 of the base stop distance, stopped out 38 of 41 -> fail
+VERDICT GOLD: FAIL
+
+APA 0.6.0-FOUNDATION-REFERENCE, TTI html sha256 a007b191b68f5016; group CRYPTO; 936 base signals over about 9.0 years (all symbols)
+base entry, all signals: +0.041R t 3.3 n 936; total 4.28R a year
+  selection: base on signals where APA triggered +0.087R t 3.4 n 186; where it did not +0.030R t 2.1 n 750
+  APA triggered on 186 of 936 (20%); median delay 23.0 h; entry better than the base entry by -0.048R t -5.2 n 186 (in base R)
+T1 (APA entry, base stop and exit, in base R):
+  APA-timed net: halves +0.055R t 1.5 n 82 / +0.028R t 0.9 n 104; APA minus base on the same signals: halves -0.050R t -3.3 n 82 / -0.044R t -4.0 n 104, pooled -0.047R t -5.1 n 186
+  total R a year: APA-timed 0.83 vs base 4.28 -> fail
+T2 (APA entry and structural stop, base exit, in its own R):
+  APA-timed net: halves +0.143R t 0.4 n 78 / +0.086R t 0.2 n 101; APA minus base on the same signals: halves +0.026R t 0.1 n 78 / +0.014R t 0.0 n 101, pooled +0.019R t 0.1 n 179
+  total R a year: APA-timed 2.23 vs base 4.28; structural stop is +0.078R t 14.4 n 179 of the base stop distance, stopped out 139 of 179 -> fail
+VERDICT CRYPTO: FAIL
+
+APA 0.6.0-FOUNDATION-REFERENCE, TTI html sha256 a007b191b68f5016; group FX; 1800 base signals over about 15.6 years (all symbols)
+base entry, all signals: -0.023R t -2.6 n 1800; total -2.67R a year
+  selection: base on signals where APA triggered +0.018R t 1.0 n 452; where it did not -0.037R t -3.5 n 1348
+  APA triggered on 452 of 1800 (25%); median delay 68.0 h; entry better than the base entry by -0.032R t -8.6 n 452 (in base R)
+T1 (APA entry, base stop and exit, in base R):
+  APA-timed net: halves +0.027R t 1.1 n 234 / -0.055R t -2.2 n 218; APA minus base on the same signals: halves -0.028R t -5.3 n 234 / -0.033R t -6.3 n 218, pooled -0.030R t -8.2 n 452
+  total R a year: APA-timed -0.37 vs base -2.67 -> fail
+T2 (APA entry and structural stop, base exit, in its own R):
+  APA-timed net: halves +0.798R t 1.3 n 223 / -0.259R t -1.2 n 208; APA minus base on the same signals: halves +0.743R t 1.2 n 223 / -0.234R t -1.2 n 208, pooled +0.271R t 0.8 n 431
+  total R a year: APA-timed 7.97 vs base -2.67; structural stop is +0.046R t 29.0 n 431 of the base stop distance, stopped out 378 of 431 -> fail
+VERDICT FX: FAIL

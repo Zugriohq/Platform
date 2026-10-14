@@ -1,0 +1,33 @@
+{
+  "id": "TTI_5_16_APA_replay",
+  "registered": "2026-10-14, before any APA replay was run",
+  "question": "Does TTI v5.16's Advanced Price Action (APA) detector fire often enough to scalp, why does it fire rarely, and does a triggered APA plan pay after costs on forex, Volatility and Jump?",
+  "code": "TTI v5.16.0's own APA source (APA_CONFIG, swings, displacement, findFVG, analyseAPA, buildPlan, Wilder atr, TTI_FOUNDATION_REFERENCE), extracted verbatim from the HTML by apa_replay.mjs. referenceEntryRouteStudy is stubbed out: it is research output that never feeds the decision.",
+  "scan": "at every closed bar, analyseAPA on the last 300 closed bars (no HTF bias, no RSI context, regime UNKNOWN as the browser falls back to). A setup is identified by its setupId; each setupId's furthest stage and last reason are counted (the funnel).",
+  "entry": "a setup whose stage is TRIGGERED with triggerAt equal to the bar just closed, whose buildPlan is executionEligible (TP1 at least 1R), traded once per setupId: market entry at the next bar's open, paying the spread",
+  "exit": "plan.stop or plan.tp1, stop first when one bar touches both; a gap through either fills at the bar's open; closed at the close after 96 bars otherwise",
+  "R": "(exit - entry) x direction / |entry - stop|, minus spread / |entry - stop|; a trade whose next open is already beyond the stop or TP1 is not taken (counted)",
+  "control": "the same bars, the opposite direction with the same stop and target distances (mirror)",
+  "variants": {
+    "ALL": "every eligible trigger",
+    "HTF": "only when the higher timeframe agrees: last two confirmed k=5 swing highs and lows on H1 (for M5) or M15 (for M1) closed bars are HH/HL for a buy, LH/LL for a sell"
+  },
+  "timeframes": [
+    "M5 (TTI's default)",
+    "M1 (scalp)"
+  ],
+  "markets": {
+    "forex": "EURUSD, GBPUSD, USDJPY, XAUUSD, HistData M1 2024-10 to 2026-09; spread 0.0001 / 0.00015 / 0.012 / 0.35",
+    "volatility": "Deriv feed M1, about 90 days: R_10, R_25, R_50, R_75, R_100, 1HZ15V, 1HZ25V, 1HZ30V, 1HZ50V, 1HZ75V, 1HZ90V, 1HZ100V, 1HZ150V; spread = max(Deriv min spread, target spread % x price)",
+    "jump": "Deriv feed M1, about 90 days: J10, J25, J75, J100 (J50 has no published spread); spread as for volatility"
+  },
+  "spread_note": "The 2026-10-14 demo journal showed Drift Switch spreads of about 4.0 against a published min of 0.2-0.4 and a target of about 2.5, so the published figures may be optimistic; results are also shown at 2x the spread.",
+  "halves": "forex: 2024-10..2025-09 and 2025-10..2026-09; Deriv: the first and second half of each file by time",
+  "pass": "per group (forex, volatility, jump) x timeframe x variant: net mean R > 0 with t >= 2 in BOTH halves, and the trade minus its mirror > 0 in both halves. Twelve cells; anything else is a fail.",
+  "amendment_1": {
+    "registered": "2026-10-14, after the funnel counts of one smoke run (R_75 M5: 308 setups TRIGGERED, 264 of 297 fresh triggers blocked by TP1 < 1R) and before any trade outcome was computed",
+    "why": "buildPlan's TP1 is the nearest confirmed swing including k=2 internal pivots, which is usually inside 1R; the 1R geometry floor then blocks almost every trigger. This is the main reason APA rarely fires.",
+    "variant_FIX15": "every fresh trigger with a plan, ignoring the TP1 floor: stop = plan.stop, target = 1.5R from the actual entry. Same entry, exit, cost, control and pass rules as the registered rule.",
+    "pass": "the same rule as the registered cells, applied to FIX15 as additional cells (ALL and HTF)"
+  }
+}

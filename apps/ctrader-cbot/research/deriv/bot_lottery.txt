@@ -1,0 +1,81 @@
+# 1,000 random bots per index on 90 days of Deriv M1 (botlottery.mjs), Deriv published spreads, stops filled through gaps at the minute close
+BOOM500 (spread 0.528), 1,000 bots over 12 full weeks:
+  bot-weeks in profit: 9%  (any one week, some bots always look good)
+  bots in profit over all 12 weeks: 0 of 1,000
+  longest run of profitable weeks by any bot: 4
+  of the 0 bots in profit in weeks 1-6, 0 (0%) were in profit in weeks 7-12; of the 1000 that lost in weeks 1-6, 0 (0%) were
+  the 50 best bots of weeks 1-6: 0 of 50 in profit in weeks 7-12
+  the 50 best of weeks 1-6 by rule: {"fade":1,"always sell":49}; median target/stop 17.2 / 17.6
+  median bot over the whole period: -4227.7 points; best -757.8; worst -42812.2
+CRASH500 (spread 0.326), 1,000 bots over 12 full weeks:
+  bot-weeks in profit: 7%  (any one week, some bots always look good)
+  bots in profit over all 12 weeks: 0 of 1,000
+  longest run of profitable weeks by any bot: 2
+  of the 1 bots in profit in weeks 1-6, 0 (0%) were in profit in weeks 7-12; of the 999 that lost in weeks 1-6, 1 (0%) were
+  the 50 best bots of weeks 1-6: 0 of 50 in profit in weeks 7-12
+  the 50 best of weeks 1-6 by rule: {"follow":3,"always buy":44,"fade":3}; median target/stop 10.4 / 11.8
+  median bot over the whole period: -3218.4 points; best -238.8; worst -25422.9
+BOOM1000 (spread 1.7275), 1,000 bots over 12 full weeks:
+  bot-weeks in profit: 12%  (any one week, some bots always look good)
+  bots in profit over all 12 weeks: 0 of 1,000
+  longest run of profitable weeks by any bot: 5
+  of the 12 bots in profit in weeks 1-6, 0 (0%) were in profit in weeks 7-12; of the 988 that lost in weeks 1-6, 5 (1%) were
+  the 50 best bots of weeks 1-6: 0 of 50 in profit in weeks 7-12
+  the 50 best of weeks 1-6 by rule: {"fade":41,"follow":3,"always sell":6}; median target/stop 53.9 / 57.8
+  median bot over the whole period: -6568.8 points; best -874.4; worst -76048.7
+CRASH1000 (spread 0.5402), 1,000 bots over 12 full weeks:
+  bot-weeks in profit: 10%  (any one week, some bots always look good)
+  bots in profit over all 12 weeks: 0 of 1,000
+  longest run of profitable weeks by any bot: 3
+  of the 1 bots in profit in weeks 1-6, 0 (0%) were in profit in weeks 7-12; of the 999 that lost in weeks 1-6, 0 (0%) were
+  the 50 best bots of weeks 1-6: 0 of 50 in profit in weeks 7-12
+  the 50 best of weeks 1-6 by rule: {"follow":20,"always buy":30}; median target/stop 19.0 / 19.2
+  median bot over the whole period: -3317.5 points; best -190.7; worst -28460.6
+R_75 (spread 16.41), 1,000 bots over 12 full weeks:
+  bot-weeks in profit: 10%  (any one week, some bots always look good)
+  bots in profit over all 12 weeks: 2 of 1,000
+  longest run of profitable weeks by any bot: 4
+  of the 7 bots in profit in weeks 1-6, 2 (29%) were in profit in weeks 7-12; of the 993 that lost in weeks 1-6, 19 (2%) were
+  the 50 best bots of weeks 1-6: 5 of 50 in profit in weeks 7-12
+  the 50 best of weeks 1-6 by rule: {"fade":23,"follow":12,"always sell":15}; median target/stop 530.9 / 580.7
+  median bot over the whole period: -73454.7 points; best 1668.8; worst -1131498.4
+stpRNG (spread 0.1), 1,000 bots over 12 full weeks:
+  bot-weeks in profit: 1%  (any one week, some bots always look good)
+  bots in profit over all 12 weeks: 0 of 1,000
+  longest run of profitable weeks by any bot: 1
+  of the 0 bots in profit in weeks 1-6, 0 (0%) were in profit in weeks 7-12; of the 1000 that lost in weeks 1-6, 0 (0%) were
+  the 50 best bots of weeks 1-6: 0 of 50 in profit in weeks 7-12
+  the 50 best of weeks 1-6 by rule: {"follow":45,"always sell":3,"always buy":2}; median target/stop 3.9 / 3.9
+  median bot over the whole period: -4077.2 points; best -594.2; worst -14297.9
+J25 (spread 10.61), 1,000 bots over 12 full weeks:
+  bot-weeks in profit: 4%  (any one week, some bots always look good)
+  bots in profit over all 12 weeks: 0 of 1,000
+  longest run of profitable weeks by any bot: 2
+  of the 1 bots in profit in weeks 1-6, 0 (0%) were in profit in weeks 7-12; of the 999 that lost in weeks 1-6, 0 (0%) were
+  the 50 best bots of weeks 1-6: 0 of 50 in profit in weeks 7-12
+  the 50 best of weeks 1-6 by rule: {"fade":11,"always buy":37,"follow":2}; median target/stop 315.2 / 340.5
+  median bot over the whole period: -194890.7 points; best -30936.8; worst -1030892.7
+DSI10 (spread 0.22), 1,000 bots over 12 full weeks:
+  bot-weeks in profit: 30%  (any one week, some bots always look good)
+  bots in profit over all 12 weeks: 238 of 1,000
+  longest run of profitable weeks by any bot: 12
+  of the 297 bots in profit in weeks 1-6, 235 (79%) were in profit in weeks 7-12; of the 703 that lost in weeks 1-6, 27 (4%) were
+  the 50 best bots of weeks 1-6: 50 of 50 in profit in weeks 7-12
+  the 50 best of weeks 1-6 by rule: {"follow":50}; median target/stop 5.9 / 2.0
+  median bot over the whole period: -2141.9 points; best 15466.7; worst -27680.9
+DSI20 (spread 0.2), 1,000 bots over 12 full weeks:
+  bot-weeks in profit: 30%  (any one week, some bots always look good)
+  bots in profit over all 12 weeks: 213 of 1,000
+  longest run of profitable weeks by any bot: 12
+  of the 213 bots in profit in weeks 1-6, 213 (100%) were in profit in weeks 7-12; of the 787 that lost in weeks 1-6, 0 (0%) were
+  the 50 best bots of weeks 1-6: 50 of 50 in profit in weeks 7-12
+  the 50 best of weeks 1-6 by rule: {"follow":50}; median target/stop 5.1 / 1.7
+  median bot over the whole period: -1769.0 points; best 13245.1; worst -20751.4
+DSI30 (spread 0.39), 1,000 bots over 12 full weeks:
+  bot-weeks in profit: 34%  (any one week, some bots always look good)
+  bots in profit over all 12 weeks: 246 of 1,000
+  longest run of profitable weeks by any bot: 12
+  of the 245 bots in profit in weeks 1-6, 245 (100%) were in profit in weeks 7-12; of the 755 that lost in weeks 1-6, 0 (0%) were
+  the 50 best bots of weeks 1-6: 50 of 50 in profit in weeks 7-12
+  the 50 best of weeks 1-6 by rule: {"follow":50}; median target/stop 10.9 / 3.3
+  median bot over the whole period: -3179.1 points; best 18666.3; worst -33636.6

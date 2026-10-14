@@ -1,0 +1,24 @@
+{
+  "registered": "2026-10-14, before any Jump data was obtained or any result seen",
+  "why": "Owner (2026-10-14): TTI seems to read the Jump indices well and its Jump signals have been somewhat profitable; check, and say whether that was factored in. It was not: every TTI replay so far ran on EURUSD, GBPUSD, USDJPY and XAUUSD (HistData); Market Lab has not yet measured any Jump index.",
+  "tti_jump_specifics": {
+    "assetIntel": "'Jump recent': +0.25 to the confluence score when any of the last 5 M5 bars has a range above 3 x ATR14",
+    "bosThr": "break-of-structure threshold 0.15% of price for Jump (0.10% for other synthetics)",
+    "throttle": "at most one Jump signal per 12 minutes per index",
+    "style": "Jump trades as dayTrade (WATCH 2 h, READY 1 h, FIRE 1 h), not scalp",
+    "zone_tolerance": "0.2 x ATR (shared with Boom/Crash)",
+    "spreads": "defSpread JD10 0.001, JD25 0.003, JD50 0.006, JD75 0.009, JD100 0.012"
+  },
+  "data": "Deriv M1 candles for JD10, JD25, JD50, JD75, JD100 (the feed TTI itself uses), the most recent N days (default 90), downloaded by the owner with jump-history.html and converted by deriv2m1.mjs",
+  "variants": {
+    "TTI42": "TTI 4.2 as shipped (replay.mjs, no fixes)",
+    "TTI43a": "replay.mjs --fix F1,F2,F3 (the defect fixes of v43_prereg.json)",
+    "control": "TTI 4.2 on a random walk with each index's own 1-minute volatility (replay.mjs --walk 1)"
+  },
+  "measure": "evaluate.mjs: plan A (TTI's own target and stop) after TTI's spread, from the signal price; R per trade, win rate, profit factor; P(win) calibration; by index",
+  "split": "first half and second half of the downloaded period, by time",
+  "pass": "a variant passes if, with plan A, the net average R pooled over the five Jump indices is positive with t >= 2 in the first half AND in the second half. The control must not pass; if it does, the measurement is suspect and nothing is concluded.",
+  "secondary": "the owner's own TTI track record (Track Record -> export CSV, tti-track-record-*.csv): Jump rows summarised as recorded and recomputed from entry/exit; descriptive only (at most the last 100 signals; TTI's outcome tracker samples every 30 s)",
+  "unchanged": "TTI's code is loaded from the owner's HTML unmodified; replay.mjs is used as committed; evaluate.mjs gains only the Jump spreads above and SPLIT=<epoch> to report the two halves (the midpoint of the downloaded period) instead of calendar years, and SPREAD_<KEY> to price a trade at the broker's spread",
+  "costs": "TTI's defSpread (above) AND, separately, the spread the owner's broker quotes for each Jump index (Market Lab LAB MEASURED line or the cTrader symbol panel), via SPREAD_<KEY>. TTI's own Jump spreads are about 0.00R per trade, likely far below Deriv's; the pass rule applies at the broker's spread when it is known."
+}

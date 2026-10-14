@@ -1,0 +1,29 @@
+{
+  "id": "fx_fundamental_and_positioning_2026_10_14",
+  "registered": "2026-10-14, before the BIS real effective exchange rates (beyond one US file to read the format) or any CFTC positioning data were downloaded",
+  "why": "The owner: in forex, fundamentals, sentiment and order flow matter as much as technicals. Carry (fundamental: rates) and hedge-rebalancing and home-hours flows were tested in fx_structure_prereg.json. This adds currency value (fundamental) and speculative positioning (sentiment / order flow). Three tests at once: t >= 2.5 pooled and positive in both halves (2010-2017, 2018-2026).",
+  "currencies": "EUR, GBP, JPY, AUD, CAD, CHF, NZD against USD (HistData pairs, 21:00 UTC daily closes)",
+  "G1_currency_value": {
+    "source": "Asness, Moskowitz and Pedersen (2013); Menkhoff, Sarno, Schmeling and Schrimpf (2017): currencies that are cheap against their own long-run real value outperform",
+    "signal": "BIS real broad effective exchange rate (WS_EER, M.R.B), monthly; value = -(log REER - mean log REER over the previous 60 months), using the previous month's REER at each month end (publication lag)",
+    "rule": "rank USD and the 7 currencies by value; long the 3 cheapest, short the 3 dearest (USD's return is 0), held one month",
+    "return": "spot against USD plus the policy-rate differential / 12 (BIS WS_CBPOL), as held",
+    "costs": "0.01% per change plus 1%/yr per position",
+    "pass": "net monthly mean > 0 in both halves, pooled t >= 2.5"
+  },
+  "G2a_positioning_extremes": {
+    "source": "crowded speculative positions tend to unwind (positioning extremes as a contrarian signal; e.g. Tornell and Yuan 2012)",
+    "signal": "CFTC Traders in Financial Futures, leveraged funds: (long - short) / open interest in the currency's CME future, weekly (Tuesday data, released Friday); z-score against the previous 156 weeks",
+    "rule": "after each Friday release, at the 21:00 UTC close: if z > 2 short the currency against USD, if z < -2 long; hold 4 weeks; one trade at a time per currency",
+    "costs": "one spread (0.0001; 0.00015 GBPUSD, 0.012 USDJPY) plus 1.5%/yr",
+    "pass": "pooled trades (% return): mean > 0 in both halves, pooled t >= 2.5"
+  },
+  "G2b_positioning_flow": {
+    "source": "order flow is persistent: currencies that speculators are buying keep rising in the following week (Evans and Lyons 2002 on flow; positioning changes as a public flow proxy)",
+    "signal": "the latest weekly change in leveraged funds' (long - short) / open interest",
+    "rule": "after each Friday release, at the 21:00 UTC close: long the 2 currencies with the largest increase, short the 2 with the largest decrease, against USD; held one week",
+    "costs": "0.01% per change plus 1.5%/yr",
+    "pass": "net weekly mean > 0 in both halves, pooled t >= 2.5"
+  },
+  "after": "A pass goes to a forward demo record as its own engine; a fail is recorded and not retuned."
+}

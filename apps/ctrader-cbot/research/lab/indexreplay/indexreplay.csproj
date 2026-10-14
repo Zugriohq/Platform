@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Research tool (no trading authority): replays the EA's own index engine (Zugrio.CBot.Core.IndexEngine) on hourly bars. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../src/Zugrio.CBot.Core/Zugrio.CBot.Core.csproj" />
+  </ItemGroup>
+</Project>

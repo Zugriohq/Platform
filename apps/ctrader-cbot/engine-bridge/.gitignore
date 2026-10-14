@@ -1,0 +1,2 @@
+# The EA embeds this bundle; it is committed and CI checks it is not stale (build.mjs --check).
+!dist/

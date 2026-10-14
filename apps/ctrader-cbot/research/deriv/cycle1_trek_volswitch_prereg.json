@@ -1,0 +1,11 @@
+{
+  "registered": "2026-10-14, before any Trek or Volatility Switch data was seen (neither is on Deriv's public feed; they run only on the owner's cTrader account through Market Lab)",
+  "protocol": "CYCLE_1_PROTOCOL.md, Experiments C and D",
+  "data": "the owner's cTrader bid/ask ticks, Market Lab 'Replay: days of ticks' (default 7), for every symbol whose name contains 'Trek' or 'VolSwitch' / 'Volatility Switch'",
+  "C_trek_statistics": "mid-price change over non-overlapping horizons of 1 minute, 15 minutes and 1 hour: mean, t (non-overlapping), median, share positive; per-minute tail counts beyond +-5 robust sigmas (up vs down); autocorrelation of large (|z| > 5) one-minute moves at lag 1; spread paid: mean, median, 95th percentile",
+  "C_rule": "unconditional exposure only: LONG for 'Trek Up', SHORT for 'Trek Down', for 1 hour, back to back, entered at the ask (bid) and exited at the bid (ask) of the first tick of each hour slot",
+  "C_pass": "first half and second half of the tick sample both net positive with t >= 2 (non-overlapping hours); and the hourly mean exceeds 2 x the median spread. Swap is not included in 1-hour holds; for longer holds it must be added from the broker's terms before any engine.",
+  "D_volswitch_statistics": "one-minute realised volatility (sum of squared tick changes per minute); its autocorrelation at lags 1, 5, 15 and 60 minutes; regime durations from a three-level classification of one-minute realised volatility into its terciles (runs of at least 3 minutes); whether a one-minute realised volatility forecasts the next 15 minutes' better than ATR14 of M1 bars (ratio of mean absolute errors)",
+  "D_pass": "D is a risk-overlay question, not alpha: it passes only if the regime forecast beats the ATR14 baseline (error ratio < 0.9) in both halves; any sizing use then needs its own registered test",
+  "unchanged": "No rule is tuned on these data; any filter or other horizon is a new registration."
+}

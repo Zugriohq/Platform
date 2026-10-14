@@ -1,0 +1,25 @@
+{
+  "registered": "2026-10-14, before any data for these tests was downloaded or seen",
+  "why": "Owner (2026-10-14): Zugrio must be profitable beyond Deriv synthetics - crypto, commodities, indices, forex. Round 4 already tested trend on gold (passes before 5%/yr financing), metals (weak), energy (about 0) and 9 FX pairs (no edge). Not yet tested, with strong published evidence: crypto time-series momentum and the equity-index turn-of-month effect.",
+  "C_crypto_trend": {
+    "data": "Binance spot daily closes, BTCUSDT and ETHUSDT, from listing (2017-08) to 2026-10 (data-api.binance.vision)",
+    "rules": {
+      "C1_tsmom12": "each month end: position = sign(12-month return); hold one month (as round 4 rule A)",
+      "C2_weekly4": "each week end (Sunday close): position = sign(4-week return); hold one week (crypto short-horizon momentum, Liu-Tsyvinski 2021)",
+      "C3_long_only_trend": "each week end: long if close > its 20-week average, else flat"
+    },
+    "unit": "R = position x next-period return / trailing 60-day daily volatility x sqrt(period days)",
+    "costs": "0.2% of price per position change (CFD spread) plus financing on |position| at 0%, 10% and 20% a year (crypto CFD swaps are often 10-20%/yr; the broker's actual swap decides)",
+    "samples": { "first": "2017-08 to 2021-12", "second": "2022-01 to 2026-09" },
+    "pass": "pooled BTC+ETH mean R > 0 in BOTH samples and pooled t >= 2, at 10%/yr financing (3 rules)"
+  },
+  "I_index_turn_of_month": {
+    "data": "HistData 1-minute bars aggregated to daily closes (UTC 21:00 cut), SPXUSD, NSXUSD, GRXEUR, UKXGBP, JPXJPY, 2010-01 to 2026-09",
+    "rule": "long from the close of the 2nd-last trading day of each month to the close of the 3rd trading day of the next month (Lakonishok-Smidt 1988; Ariel 1987); flat otherwise",
+    "control": "the same number of days held at random other times of the month (mean daily return outside the window)",
+    "costs": "0.02% of price per round trip (index CFD spread) plus 5%/yr financing for the days held",
+    "samples": { "first": "2010-2017", "second": "2018-2026" },
+    "pass": "pooled over the 5 indices: window mean daily return minus outside-window mean daily return > 0 with t >= 2 in BOTH samples, and the net window trade positive in both"
+  },
+  "unchanged": "No rule, window or cost is changed after a result; anything else is a new registration."
+}

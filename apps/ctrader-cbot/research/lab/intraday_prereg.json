@@ -1,0 +1,12 @@
+{
+  "registered": "2026-10-12, before any result of this test was seen",
+  "source": "Gao, Han, Li & Zhou (2018), Market intraday momentum, J. Financial Economics; FX/commodity analogues (e.g. Elaut, Froemmel & Lampaert 2018)",
+  "rules": {
+    "IDX_IM": "US indices (US500, US100, US30 hourly futures): signal = return from the previous New York 16:00 close to the 10:00 New York close of the same day; at the 15:00 New York close take position sign(signal); exit at the 16:00 New York close. One trade per index per day.",
+    "LDN_IM": "Gold, silver, oil and 11 FX pairs (hourly): same rule on the London session: signal = previous 16:00 London close to 09:00 London close; trade 15:00 -> 16:00 London close (the hour holding the 16:00 London fix)."
+  },
+  "costs": "0.01% of price per round trip (index, gold and major FX CFD spreads are 0.007-0.015%)",
+  "samples": "first half vs second half of the available dates (indices from 2024-05, FX from 2023-12)",
+  "pass": "per group: mean net return > 0 in BOTH halves and pooled t >= 2 (t on the daily group portfolio: markets on the same day are correlated)",
+  "groups": { "indices": ["US500","US100","US30"], "metals": ["XAUUSD","XAGUSD"], "oil": ["USOIL"], "fx": ["EURUSD","GBPUSD","USDJPY","AUDUSD","NZDUSD","USDCAD","USDCHF","EURJPY","GBPJPY","AUDJPY","EURGBP"] }
+}

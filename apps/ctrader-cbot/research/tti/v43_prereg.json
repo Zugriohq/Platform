@@ -1,0 +1,15 @@
+{
+  "registered": "2026-10-14, before any result of these variants was seen",
+  "why": "Owner: refine TTI 4.2's entry model by closing the defects the forensic review found (REVIEW.md), then measure again.",
+  "fixes": {
+    "F1_closed_bar": "Analyse the last CLOSED M5 bar, not the empty forming bar, so sweep, retest and FVG detection see real candles (REVIEW finding 3).",
+    "F2_levels_from_fill": "Plan the trade from the price at the signal: fire only if the price is inside the setup's entry zone, and set target 1 from that price with the same level logic (PDH/PWH/PMH at least 1R away, else 1.5R) (finding 1).",
+    "F3_fresh_confirmation": "M1 closes and M15/H1/H4 bars refreshed every minute instead of every 10 minutes (finding 4).",
+    "F4_direction_aware": "Trade only in the direction of the higher-timeframe trend (computeXTF htfTrend bullish for BUY, bearish for SELL); TTI's P(win) is the same for both directions (finding 2)."
+  },
+  "variants": { "V43a": "F1 + F2 + F3 (bug fixes only)", "V43b": "F1 + F2 + F3 + F4" },
+  "data": "HistData 1-minute bars 2025-01 to 2026-09: EURUSD, GBPUSD, USDJPY, XAUUSD (as the 4.2 replay); random-walk control on EURUSD for V43b",
+  "measure": "evaluate.mjs plan A (TTI's own target and stop) and the six exit variants, after TTI's spread, from the signal price",
+  "pass": "a variant passes if, with plan A or with the one exit plan chosen on 2025, the net average R is positive with t >= 2 in 2025 AND positive with t >= 2 in 2026 (pooled over the four markets)",
+  "unchanged": "Everything else is TTI 4.2's own code, loaded from the HTML"
+}

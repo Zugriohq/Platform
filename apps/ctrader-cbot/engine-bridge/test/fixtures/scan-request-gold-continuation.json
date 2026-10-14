@@ -1,0 +1,214 @@
+{
+ "schema": "zugrio.ea-scan-request/v1",
+ "configVersion": "test-config",
+ "evaluatedAt": "2026-01-01T00:07:00.000Z",
+ "instrument": {
+  "symbol": "fixture:GOLD",
+  "source": "fabricated-ohlc-v1",
+  "tickSize": 1
+ },
+ "family": {
+  "family": "GOLD",
+  "priceOrigin": "EXTERNAL_MARKET"
+ },
+ "horizon": {
+  "horizon": "INTRADAY",
+  "setupExpiryMs": 3600000,
+  "entryExpiryMs": 120000
+ },
+ "timeframes": {
+  "context": "H1",
+  "location": "M5",
+  "entry": "M1",
+  "management": "H1",
+  "maxAgeMs": {
+   "context": 600000,
+   "location": 600000,
+   "entry": 60000,
+   "management": 600000
+  }
+ },
+ "model": {
+  "route": "CONTINUATION_RETEST",
+  "breakTicks": 1,
+  "touchTicks": 1,
+  "stopTicks": 5,
+  "maxChaseTicks": 4,
+  "minimumRunwayTicks": 2
+ },
+ "pivots": [
+  {
+   "definitionId": "p1",
+   "scale": "INTERMEDIATE",
+   "leftBars": 1,
+   "rightBars": 1
+  }
+ ],
+ "enumeration": {
+  "recentFactsPerRole": 3
+ },
+ "markets": [
+  {
+   "timeframe": "H1",
+   "bars": [
+    {
+     "closedAt": "2026-01-01T00:01:00.000Z",
+     "o": 100,
+     "h": 105,
+     "l": 95,
+     "c": 100
+    },
+    {
+     "closedAt": "2026-01-01T00:02:00.000Z",
+     "o": 100,
+     "h": 105,
+     "l": 90,
+     "c": 100
+    },
+    {
+     "closedAt": "2026-01-01T00:03:00.000Z",
+     "o": 100,
+     "h": 130,
+     "l": 95,
+     "c": 115
+    },
+    {
+     "closedAt": "2026-01-01T00:04:00.000Z",
+     "o": 115,
+     "h": 120,
+     "l": 100,
+     "c": 110
+    },
+    {
+     "closedAt": "2026-01-01T00:05:00.000Z",
+     "o": 110,
+     "h": 119,
+     "l": 100,
+     "c": 110
+    },
+    {
+     "closedAt": "2026-01-01T00:06:00.000Z",
+     "o": 110,
+     "h": 118,
+     "l": 100,
+     "c": 112
+    },
+    {
+     "closedAt": "2026-01-01T00:07:00.000Z",
+     "o": 112,
+     "h": 119,
+     "l": 101,
+     "c": 112
+    }
+   ]
+  },
+  {
+   "timeframe": "M5",
+   "bars": [
+    {
+     "closedAt": "2026-01-01T00:01:00.000Z",
+     "o": 100,
+     "h": 105,
+     "l": 95,
+     "c": 100
+    },
+    {
+     "closedAt": "2026-01-01T00:02:00.000Z",
+     "o": 100,
+     "h": 110,
+     "l": 96,
+     "c": 105
+    },
+    {
+     "closedAt": "2026-01-01T00:03:00.000Z",
+     "o": 105,
+     "h": 108,
+     "l": 97,
+     "c": 104
+    },
+    {
+     "closedAt": "2026-01-01T00:04:00.000Z",
+     "o": 104,
+     "h": 107,
+     "l": 98,
+     "c": 104
+    },
+    {
+     "closedAt": "2026-01-01T00:05:00.000Z",
+     "o": 104,
+     "h": 108,
+     "l": 98,
+     "c": 105
+    },
+    {
+     "closedAt": "2026-01-01T00:06:00.000Z",
+     "o": 105,
+     "h": 109,
+     "l": 99,
+     "c": 106
+    },
+    {
+     "closedAt": "2026-01-01T00:07:00.000Z",
+     "o": 106,
+     "h": 109,
+     "l": 100,
+     "c": 107
+    }
+   ]
+  },
+  {
+   "timeframe": "M1",
+   "bars": [
+    {
+     "closedAt": "2026-01-01T00:01:00.000Z",
+     "o": 106,
+     "h": 108,
+     "l": 104,
+     "c": 106
+    },
+    {
+     "closedAt": "2026-01-01T00:02:00.000Z",
+     "o": 106,
+     "h": 109,
+     "l": 105,
+     "c": 108
+    },
+    {
+     "closedAt": "2026-01-01T00:03:00.000Z",
+     "o": 108,
+     "h": 110,
+     "l": 107,
+     "c": 109
+    },
+    {
+     "closedAt": "2026-01-01T00:04:00.000Z",
+     "o": 109,
+     "h": 110,
+     "l": 108,
+     "c": 109
+    },
+    {
+     "closedAt": "2026-01-01T00:05:00.000Z",
+     "o": 109,
+     "h": 113,
+     "l": 109,
+     "c": 112
+    },
+    {
+     "closedAt": "2026-01-01T00:06:00.000Z",
+     "o": 112,
+     "h": 113,
+     "l": 109.5,
+     "c": 111
+    },
+    {
+     "closedAt": "2026-01-01T00:07:00.000Z",
+     "o": 111,
+     "h": 112,
+     "l": 110,
+     "c": 111
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "FX_positioning_flow_reversal_out_of_sample",
+  "registered": "2026-10-14, before any non-EUR currency prices before 2010 were downloaded",
+  "origin": "fx_fundamental_flow_results.txt, G2b (2010-2026): following leveraged funds' weekly positioning change LOST -0.064% per week per position (t -3.23), negative in both halves. The reverse rule was found in that data, so 2010-2026 cannot test it. CFTC positioning starts in 2006-06, so 2006-06 to 2009-12 is history this rule has not been run on.",
+  "rule": "after each Friday CFTC release, at the 21:00 UTC close: SHORT the 2 currencies whose leveraged-fund (long - short) / open interest rose most that week, LONG the 2 whose fell most, against USD (EUR, GBP, JPY, AUD, CAD, CHF, NZD); held one week",
+  "costs": "0.01% per change plus 1.5%/yr per position, as G2b",
+  "data": "CFTC TFF (as G2b); HistData M1 2006-06 to 2009-12 for the 7 pairs (EURUSD already downloaded for eur_hours, unused for this rule until now)",
+  "pass": "2006-06..2009-12 net weekly mean > 0 with t >= 2.0",
+  "after": "A pass goes to a forward demo record (weekly, low turnover) as its own engine; a fail closes it."
+}

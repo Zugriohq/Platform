@@ -1,0 +1,431 @@
+# Zugrio research lab (no trading authority)
+
+Backtests on real market history. Two kinds:
+- **The EA as it is:** the exact engine bundle and the EA's rules.
+- **New entry models:** prototypes built to the owner's contracts (`docs/product/ZUGRIO_STRUCTURAL_BREAK_CLASSIFICATION_CONTRACT.md`, `docs/product/ZUGRIO_CONTEXTUAL_PATTERN_ONTOLOGY.md`).
+
+Nothing here places orders or changes decision-core. A model reaches the EA only through the ADR-0011 process.
+
+## Reproduce
+
+```sh
+mkdir -p ybars hbars out td
+mkdir -p yraw && python3 -I yfetch.py ybars yraw      # 60 days of 5-minute bars (Yahoo), FX + gold
+python3 -I hfetch.py hbars                            # ~2.8 years of hourly bars (Yahoo)
+node --test ta.test.mjs                               # detector exactness + no-look-ahead tests
+# Current EA (DAY rules) on real data, with Deriv-like spread floors:
+node backtest.mjs ../../engine-bridge/dist/zugrio-engine.js ybars/EURUSD.json 0.00001 0.00008 out/EURUSD.json
+node analyze.mjs out/*.json; node analyze2.mjs out/*.json
+# Top-down liquidity model, per style:
+node topdown.mjs SWING hbars/EURUSD.json hbars/EURUSD.json 0.00001 0.00008 td/SWING-EURUSD.json
+node topdown.mjs DAY   ybars/EURUSD.json hbars/EURUSD.json 0.00001 0.00008 td/DAY-EURUSD.json
+node analyze3.mjs SWING td/SWING-*.json; node combos.mjs SWING td/SWING-*.json
+```
+
+Spread floors used: EURUSD 0.00008, GBPUSD 0.00012, AUDUSD 0.0001, USDJPY 0.012, XAUUSD 0.16.
+
+## Files
+
+| File | What it is |
+|---|---|
+| `ta.mjs` | Causal detectors, each fact carrying `knownAt`:<br>- swings and BOS/CHoCH/MSS (neutral break, then classification);<br>- bias timeline and dealing-range position;<br>- FVG;<br>- candlestick morphology;<br>- liquidity levels: PDH/PDL, PWH/PWL, Asia range, unswept swings, equal highs/lows. |
+| `ta.test.mjs` | Hand-computed exactness tests for every detector, plus a no-look-ahead property test. |
+| `topdown.mjs` | The top-down liquidity model for SWING (H1 entry), DAY (M5) and SCALP (M5, M15 liquidity). Each sweep becomes a reclaim, a shift and an entry. Every setup is recorded with its features. |
+| `backtest.mjs` | The current EA (DAY) on real bars, with shadow trades for every filter. |
+| `analyze*.mjs`, `combos.mjs` | Expectancy by component, early half vs late half. |
+| `replay3.mjs` | Scalp replay on a tick-consistent random walk (synthetic indices). |
+
+## Results, 2026-10-10 (Yahoo data; not a performance claim)
+
+**Current EA, DAY rules, 11 weeks, 5 markets.**
+- **Overall:** 111 trades, −0.17R ± 0.12. No exit variant (1R–3R take-profit, with or without management) fixes it, so the entries are the problem.
+- **Filters confirmed:** the setups removed by the counter-trend-reclaim filter lost −0.28R, and those removed by the spread filter lost −0.51R, in both halves.
+
+**Top-down liquidity model, SWING (H1 entry), 2.8 years, 5 markets.**
+- **Baseline:** 1,365 triggers at +0.06R ± 0.04 (fixed 2R target).
+- **Confluence that adds edge in both halves** (early | late):
+  - FVG in the shift leg: +0.17 | +0.11.
+  - FVG + (reversal candle at the sweep or inducement taken first): **+0.29 ± 0.13 (n=134) | +0.17 ± 0.12 (n=153)**.
+- **Not useful:** plain MN/W1/D1 trend alignment (BOS/CHoCH state) adds nothing here, and full alignment is +0.01R.
+
+**DAY and SCALP versions (M5, 11 weeks).** Negative so far (−0.25R and −0.09R) on small samples. This needs more M5 history before anything can be concluded.
+
+**Caveats.**
+- Several combinations were tried, so the best one carries a selection bias. It needs a forward test (demo) before any promotion.
+- Yahoo quotes are not Deriv's. Costs are modelled with spread floors.
+- Not built yet:
+  - chart patterns at points of interest;
+  - trendlines (per the ontology: two anchors propose a line, a third confirms it);
+  - Elliott wave, which is not in the Zugrio ontology.
+
+## Round 2, 2026-10-10: refinement, pre-registered hold-out, and the classic families
+
+New files:
+- `topdown2.mjs`: entry/exit permutations per setup (market, FVG-edge limit, FVG midpoint; 1.5R/2R/3R/liquidity) plus higher-timeframe FVG location. Adds an `INTRA` style (H1 entry, H4 liquidity).
+- `analyze4.mjs`: consistency metrics (PF, max drawdown, % months positive, markets positive, halves, trades per year).
+- `markets.json`: 5 development + 12 hold-out markets with spread floors.
+- `prereg.json`: the four finalists, registered before the hold-out run.
+- `classic.mjs`, `idx.mjs`, `idxbench.mjs`: literature strategies, and the index dip-buying test against random long exposure.
+
+**1. Refinement on the 5 development markets.** The FVG-edge limit entry was the big lever:
+- SWING, all FVG setups: +0.37R, PF 1.56, 5/5 markets positive.
+- With reversal candle or inducement: +0.65R, PF 2.04.
+- INTRA with the same confluence and fixed 2R: +0.60R, PF 2.29.
+- DAY and SCALP on M5 stayed negative or inconclusive (11 weeks of data).
+
+**2. Pre-registered hold-out, 12 unseen markets** (forex crosses, silver, oil, US500/US100/US30). **All four finalists failed:**
+
+| Finalist | Development | Hold-out |
+|---|---|---|
+| SWING-A | +0.37R | −0.09R (5/12 markets positive) |
+| SWING-B | +0.65R | −0.15R |
+| INTRA-B | +0.60R | −0.01R |
+| SCALP-A | +0.20R | −0.32R |
+
+The development edge was over-fitting and market luck. The sweep, shift and FVG model has no robust edge on this data.
+
+**3. Classic families, literature parameters, no tuning, 10 years of daily data × 17 markets:**
+- **Donchian 55/20 trend:** −0.12R. Forex negative, indices and commodities positive.
+- **12-month time-series momentum:** +0.03R per month-trade, 7/10 years positive. Indices and gold carry it.
+- **RSI(2) mean reversion:** 0.00R overall. US500 +0.08R, US100 +0.13R.
+- **Forex** showed no robust edge in any family.
+
+**4. Index dip-buying, clean test** (pre-2016 history never examined, plus 11 world indices since 1990, CFD costs included):
+- **S&P 500:** +0.073R before 2016 and +0.089R after.
+- **Nasdaq 100:** +0.087R before 2016 and +0.104R after.
+- **All 11 indices together:** +0.024R, 20/37 years positive.
+- **Against random long exposure on the same days:** the timing value is +0.041%/day on the S&P 500 (t=2.0) and +0.061%/day on the Nasdaq 100 (t=1.8). Most other indices are mildly positive and HSI is negative.
+
+That is a modest real timing edge on top of the equity drift: about 20 trades a year per index, held about 5 days. It is not a scalping edge.
+
+## Round 3, 2026-10-10: a separate engine for equity indices
+
+New files:
+- `ifetch.py`: daily bars for 11 world indices since 1990.
+- `idx2.mjs`: ten literature variants of index dip-buying (V0–V9).
+- `idx3.mjs`: the best variant with a protective stop, in R units for EA sizing, and the same logic on hourly bars.
+
+```sh
+mkdir -p ibars fbars && python3 -I ifetch.py ibars fbars
+node idx2.mjs; node idx3.mjs; node idxfut.mjs
+# The EA's own engine (C#) on hourly futures bars vs the cash-close rule (hbars from hfetch.py):
+dotnet run --project indexreplay -c Release -- hbars/US500.json ibars/SPX.json
+```
+
+More files:
+- `idxfut.mjs`: the rule on daily futures closes.
+- `indexreplay/`: replays `Zugrio.CBot.Core.IndexEngine`, the code the EA runs, on hourly bars.
+
+**Split, declared before the run:**
+- **Development:** S&P 500 and Nasdaq 100, 1990–2009.
+- **Test in time:** the same two indices, 2010 onwards.
+- **Test in markets:** 9 other indices, all years (DJI, RUT, DAX, FTSE, N225, SX5E, CAC, HSI, ASX200).
+
+**Costs:** 0.02% of price per round trip plus 5% a year financing per night.
+
+**Timing value** is the mean daily return on days in a trade minus that market's mean on all days, i.e. the edge over random long exposure. Its standard error is clustered by date, because indices move together.
+
+**1. The best variant: V4, "3 lower closes".** Enter at the close when the close is above SMA200 and lower than each of the 3 closes before it. Exit at the first close above SMA5.
+
+| Sample | Trades/yr | Avg/trade | Win | PF | Timing t | Max DD (1×) | Years positive |
+|---|---|---|---|---|---|---|---|
+| Dev, SPX+NDX 1990–2009 | 17 | +0.71% | 75% | 3.17 | 3.6 | 11% | 16/19 |
+| Test, SPX+NDX 2010+ | 18 | +0.44% | 74% | 2.24 | 2.0 | 12% | 12/17 |
+| Test, 9 other indices | 64 (all 9) | +0.22% | 69% | 1.41 | 3.1 | 10% | 26/36 |
+
+V4 is the only variant that is positive with timing t ≥ 2 in all three samples.
+- **V3 (cumulative RSI(2) < 35) and V5 (RSI(2) < 10 and IBS < 0.25):** positive everywhere, but weaker.
+- **Turn of the month (V8):** +0.19% to +0.32% a trade and positive in all three samples, but timing t only 1.1–2.3.
+- **Combining V0 with turn of the month (V9):** dilutes the edge.
+
+**2. With a protective stop** (R = stop distance):
+
+| Stop | Dev | Test in time | Test in markets | Stopped |
+|---|---|---|---|---|
+| 2 ATR | +0.148R | +0.151R | +0.035R | 15–23% |
+| 2.5 ATR | +0.122R | +0.111R | +0.040R | 11–16% |
+| **3 ATR** | **+0.115R** (PF 2.05) | **+0.099R** (PF 1.72) | **+0.039R** (PF 1.23) | 7–12% |
+| 4 ATR | +0.096R | +0.070R | +0.028R | 3–7% |
+
+- **Which stop:** 3 ATR keeps most of the edge, with the smallest drawdown per unit of edge.
+- **Pooled t is overstated:** trades in different markets on the same dates are correlated, so the test-in-markets t is smaller than its pooled value.
+
+**3. The same logic on hourly bars (US500, US100, US30):** no edge (−0.04R to +0.003R in both halves). The effect is a daily-close phenomenon. It cannot be turned into a scalp.
+
+**4. What it is worth.** About 18 trades a year per index, held about 3 days. On US500 and US100 together that is about 35 trades a year at about +0.1R each, or roughly 3–4R a year with a worst historical drawdown of about 6R. It is slow, real and modest. It is not a growth engine for a small account on its own.
+
+**Correction.** The first version of `idx2.mjs` grouped the pooled daily series by raw timestamp. Yahoo stamps each exchange's bar at its own session open in UTC, so the 9-market pool compounded the markets one after another instead of averaging them. That broke the pooled CAGR, drawdown and Sharpe. Per-trade averages, PF, win rate and years positive were unaffected. The timing value was also recomputed: per market-day against each market's own mean, with errors clustered by date. That lowered several t values, for example turn of the month in the 9-market pool from 3.6 to 2.3.
+
+**5. Does it survive a CFD's close?** Index CFDs and futures close on the futures session, not the cash closing auction. On daily index futures closes (Yahoo continuous front month, not back-adjusted), with the 3-ATR stop and the same costs:
+
+| Futures | 2000–2012 | 2013–2026 |
+|---|---|---|
+| S&P 500 (ES) | +0.142R, t=3.5 (n=79) | +0.102R, t=2.8 (n=114) |
+| Nasdaq 100 (NQ) | +0.099R, t=2.3 (n=81) | +0.099R, t=2.4 (n=105) |
+| Dow (YM) | +0.067R, t=1.5 | +0.029R, t=0.7 |
+
+- S&P 500 and Nasdaq 100 together: **+0.109R, t=5.4, n=379, PF 2.07**.
+- The Dow is weaker, so the EA's default index markets are the US 500 and the US Tech 100 only.
+
+**6. The EA's engine on a CFD-like feed.** `indexreplay` builds New York sessions from 2.8 years of hourly futures bars (about 23 hours a day, on UTC hours, like a CFD).
+- **Sessions vs the cash index:** up/down agrees with the cash index on 96.5% (S&P) and 98.1% (Nasdaq) of days.
+- **Results, net of costs:** +0.067R ± 0.104 (US500, 18 trades) and +0.118R ± 0.056 (US100, 14 trades).
+- **Entry days vs the cash-close rule:** 13 of 18 and 10 of 14 match. "3 lower closes" flips on small differences between futures and cash closes, which is why section 5 matters more than exact trade matching.
+- **Dropped sessions:** days missing from Yahoo's hourly feed (expiry Fridays, half days) are dropped by the 6-bar session rule, as intended.
+
+## Round 4, 2026-10-12: trend-following on gold, commodities and FX (pre-registered)
+
+New files:
+- `tsmom_prereg.json`: rules, samples, costs and the pass criterion, registered before the run.
+- `tsmom.mjs`: the test itself.
+
+**Data.** 25 years of daily bars (Yahoo):
+- Gold, silver, platinum, copper, oil and natural gas futures, as continuous front month;
+- 9 FX pairs.
+
+**Rules.** Monthly 12-month time-series momentum (A), and a 1/3/12-month trend ensemble (B). R is measured against monthly volatility. Each group is scored as a monthly portfolio.
+
+**Results:**
+
+| Group | Before financing | At 1.5%/yr financing | At 5%/yr (registered) |
+|---|---|---|---|
+| Gold, rule A | +0.177R/month, t=3.0; halves +0.28 / +0.09 | +0.148, t=2.5; halves +0.26 / +0.06 | +0.082, t=1.4; second half −0.01 |
+| Metals, rule A | +0.092, t=2.1 | +0.071, t=1.7 | +0.023 |
+| Energy | about 0 | about 0 | about 0 |
+| FX, rules A and B | +0.02, t=0.6 | −0.03 | −0.15 (financing alone) |
+
+**What it means.**
+- **FX.** Price trend gives no edge even before costs. This is consistent with rounds 1–2.
+- **Gold.** A real gross trend premium, weaker since 2013. Whether it survives depends on the broker's swap for holding XAUUSD, which is the next fact needed.
+- **The registered 5%/yr verdict is "fail".** The other rows are a sensitivity check, not a re-test.
+- **Caveat.** These futures series are not back-adjusted, so they behave like spot plus roll gaps. The financing deduction stands in for the carry a CFD holder pays.
+
+## Round 5, 2026-10-12: intraday momentum, the day-trading candidate (pre-registered)
+
+New files:
+- `intraday_prereg.json`: the registration, written before the run.
+- `intraday.mjs`: the test.
+
+**Rule** (Gao, Han, Li and Zhou 2018). The move from the previous close into the first hour of the session sets the direction. Trade the last hour of the session in that direction, one trade per market per day.
+- Indices: on New York time.
+- Gold, silver, oil and 11 FX pairs: the analogue on London time (the 16:00 London fix hour).
+
+**Costs:** 0.01% per trade. **Data:** 2.4–2.8 years of hourly bars.
+
+| Group | Days | Gross | Net | t | Halves | Verdict |
+|---|---|---|---|---|---|---|
+| US indices (US500, US100, US30) | 579 | −0.25bp | −1.25bp | −1.2 | −1.2 / −1.3 | fail |
+| Gold, silver | 595 | +3.9bp | +2.9bp | 1.2 | +0.9 / +5.0 | fail |
+| Oil | 590 | +1.4bp | +0.4bp | 0.1 | −4.2 / +5.0 | fail |
+| 11 FX pairs | 726 | 0.0bp | −1.0bp | −3.2 | −0.4 / −1.7 | fail |
+
+The published intraday-momentum effect is absent in these recent years: below cost in every group, and about zero before cost.
+
+
+## Round 6, 2026-10-12: minute-level day-trade and scalp rules (pre-registered)
+
+Files:
+- `minute_prereg.json`: registered before any minute data was downloaded. Amendment 1 changed the data source, also before data was seen.
+- `hdfetch.py`: HistData.com 1-minute bars.
+- `minute.mjs`: the test.
+
+**Data:** EURUSD, GBPUSD, XAUUSD and the S&P 500 CFD (SPXUSD), 2024-10 to 2026-09.
+- Design year: 2024-10 to 2025-09.
+- Test year: 2025-10 to 2026-09.
+
+Each rule names the party that pays the edge (METHODOLOGY.md step 2).
+
+**Costs** (round trip): EURUSD 1.0 pip, GBPUSD 1.5 pips, gold $0.35, S&P 500 0.6 points.
+
+**Pass:** net mean > 0 with t ≥ 2 in **both** years. t is date-clustered.
+
+| Rule | Group | Gross | Design net (t) | Test net (t) | Verdict |
+|---|---|---|---|---|---|
+| FX fix reversal (16:00 London) | EURUSD + GBPUSD | −0.04bp | −2.0bp (−3.3) | −0.05bp (−0.1) | fail |
+| same, month-end only (secondary) | | +2.3bp | +0.8bp (0.3), n=24 | +1.8bp (0.9), n=24 | fail |
+| Gold PM fix reversal (15:00 London) | XAUUSD | −0.20bp | −0.9bp (−0.5) | −1.5bp (−0.4) | fail |
+| 1-minute shock fade (scalp) | FX | +0.03R | −0.22R (−10.5), 62% wins | −0.27R (−11.6), 60% wins | fail |
+| | gold | −0.02R | −0.19R (−7.0) | −0.11R (−4.1) | fail |
+| | S&P 500 | 0.00R | −0.20R (−6.8) | −0.16R (−6.0) | fail |
+| 1-minute shock follow (secondary) | all | −0.02 to −0.05R | −0.21 to −0.30R | −0.10 to −0.34R | fail |
+| Opening-range breakout (London 08:00, NY 09:30) | FX | +0.06R | +0.02R (0.3) | −0.11R (−2.5) | fail |
+| | gold | +0.04R | +0.04R (0.7) | −0.06R (−1.1) | fail |
+| | S&P 500 | +0.04R | +0.04R (0.8) | −0.02R (−0.5) | fail |
+| Previous day's high/low, FADE | FX / gold / S&P 500 | −0.07 / −0.11 / −0.11R | all negative | all negative | fail |
+| Previous day's high/low, BREAK | FX / gold / S&P 500 | +0.07 / +0.11 / +0.11R | +0.04 / +0.01 / +0.11R | −0.03 / +0.16 / +0.03R | fail |
+
+**What it means.**
+- **No minute-level rule survives costs.** The scalps are the clearest case. A 1-minute shock fade wins 60% of the time and is about zero before cost: its 0.5× target and 0.75× stop produce the win rate by geometry alone. The spread (about 0.2R per trade at this size) makes it strongly negative.
+  - **The lesson:** a high win rate on a short scalp says nothing about an edge.
+- **The previous day's high and low tend to break rather than reverse.** This holds in all three groups, but the effect is small and below the bar (t ≤ 1.9 gross).
+  - **For TTI**, which targets those levels: price does not systematically turn at them. TTI's give-backs at 0.9–1R are not caused by the levels.
+- **Fix reversals:** about zero in these years. The month-end version is positive in both years, but on only 24 days each.
+- **Harness fix before the final run:** gold sessions reopen after the 17:00–18:00 New York break, and the first version's search for a session's first bar stopped one minute short of it. That left only 7 gold trades for the level rule; the fixed run has 180. No rule changed.
+
+## Round 7, 2026-10-14: index turn of the month, and the surviving engines combined
+
+**Turn of the month (pre-registered: `realmarkets_prereg.json`, `I_index_turn_of_month`; `turn_of_month.mjs`).**
+- **Rule and data:** long from the 2nd-last trading day's close to the 3rd trading day's close, on five index CFDs (S&P 500, Nasdaq 100, DAX, FTSE 100, Nikkei 225). HistData M1 bars give daily closes at 21:00 UTC, 2010-11 to 2026-09.
+- **Result: fail** (`turn_of_month_results.txt`).
+  - Window minus other days: −5.6bp a day (t −1.0) in 2010–17 and −1.1bp (t −0.2) in 2018–26.
+  - The net trade: −8.8bp and +5.5bp, t ≤ 0.3.
+- **Data fix, made after the first run:** HistData's GRXEUR file holds a different index from 2020-06-15 to 2023-12-04, near 3,200–4,400 against the DAX near 12,000–16,000.
+  - Its switch day on 2023-12-04 fell inside a window and showed as a +131% day.
+  - Days moving more than 25% in log terms are now dropped as data breaks: 2 days, both in GRXEUR.
+  - The verdict is the same with or without the fix.
+
+**The surviving engines combined (`portfolio.mjs`, `portfolio_results.txt`; descriptive, no new rule).**
+- **What is combined:** the three real-market engines that passed their registered tests, each as the EA sizes it (one trade = 1R of risk to its stop):
+  - index dip-buying on ES and NQ;
+  - gold 12-month trend;
+  - BTC and ETH 4-week trend.
+- **Period:** the common one, 2017-09 to 2026-09.
+
+| Engine | R a year | Monthly t | Sharpe | Max drawdown | Years positive |
+|---|---|---|---|---|---|
+| Index dip-buying | 1.30 | 1.9 | 0.62 | 5.5R | 6/10 |
+| Gold trend (1.5%/yr financing) | 0.46 | 1.2 | 0.40 | 4.0R | 5/10 |
+| Crypto trend (10%/yr financing) | 4.75 | 3.1 | 1.04 | 5.0R | 9/10 |
+| **All three** | **6.51** | **3.9** | **1.28** | **5.7R** | **9/10** |
+
+- **The engines are nearly uncorrelated.** Monthly correlations are −0.08 to 0.09, so together the drawdown is about one engine's.
+- **What it is worth:** at 1% risk per trade, about 6.5% a year with a worst drawdown of about 6%, before compounding. Gold at 5% financing adds only 0.18R a year.
+- **Caveats:**
+  - The crypto rule was tested on the same 2017–2026 data, so the combination is not an out-of-sample test.
+  - CFD swaps and spreads can differ from these assumptions.
+  - The demo record decides.
+
+## Round 8, 2026-10-14: APA as entry timing, and news context (pre-registered)
+
+**(a) APA entry timing inside the evidenced signals** (`apa_timing_prereg.json`, `apa_timing.mjs`, `apa_timing_results.txt`).
+- **Method:** TTI 5.16's own APA code chooses the entry inside each base signal: index dip-buying, gold 12-month trend, 10 FX pairs on the 12-month trend, and BTC/ETH 4-week trend.
+- **Comparison:** the same signals entered at the base rule's own time.
+- **Result: all four groups fail.**
+
+| Group | Base rule, R a year | APA fires on | APA entry vs base entry | APA-timed, R a year (T1 / T2) |
+|---|---|---|---|---|
+| Index (SPX, NDX) | 1.91 | 25% | −0.078R (t −5.6) | 0.40 / −2.68 |
+| Gold | 0.36 | 22% | −0.030R (t −2.8) | 0.04 / 0.07 |
+| FX, 10 pairs | −2.67 (no edge, as in round 4) | 25% | −0.032R (t −8.6) | −0.37 / +7.97, second half negative |
+| Crypto (BTC, ETH) | 4.28 | 20% | −0.048R (t −5.2) | 0.83 / 2.23 |
+
+- **APA waits for a retest and a confirmation candle, so it enters after the move has begun.** Its entry is worse than the base entry in every group, and it skips 75–80% of signals.
+- **Its structural stop is 4–8% of the base stop distance.** That stop is hit on 70–90% of trades.
+- **FX T2 is noise, not a pass.** It is +0.80R in the first half and −0.26R in the second (|t| ≤ 1.3).
+
+**Positive control** (`research/tti/REVIEW.md`). On Drift Switch, where persistence is real, the same APA code makes +0.42R before costs and beats its mirror trade (t 4.7). The model works where short-horizon trends exist.
+
+**(b) News context** (`news_prereg.json`, `news.mjs`, `news_results.txt`).
+
+**B2, pre-FOMC drift: PASS. It is now an EA engine** (`FomcEngine`, demo only).
+- Long S&P 500 and Nasdaq 100 from 14:00 New York the day before a scheduled FOMC statement to 13:55 on the day.
+- 126 meetings: +0.18% per meeting net (t 2.8); 2010–17 +0.04%, 2018–26 +0.30%.
+- The statement's jump sits on the data's 14:00 minute, so the exit is before it.
+
+**B1, index-engine news veto: FAIL, not adopted.**
+- **The veto:** skip a dip-buying signal when FOMC, NFP or CPI falls on the next trading day.
+- **The vetoed signals did better, not worse:** +0.162R per trade (n 30) against +0.088R for the rest. With the veto, the year drops from 1.77R to 1.44R.
+- **Event days:**
+  - FOMC days are from the Fed's list.
+  - NFP and CPI days are reconstructed from EURUSD's 08:30 New York minute: 199 and 201 days. The known NFP days 2024-08-02 and 2025-09-05 are found.
+
+## Round 9, 2026-10-14: a registered search for more edges (`edge_search_prereg.json`, `edge_search.mjs`)
+
+**Design.** Four published effects not tested before, registered together. Because four are tested at once, the bar is t ≥ 2.5 pooled and positive in both halves.
+
+**Result: all four fail** (`edge_search_results.txt`).
+
+| Test | Before costs | Net, both halves | Verdict |
+|---|---|---|---|
+| E1 Crypto 4-week trend on 11 more coins (BNB, XRP, ADA, LTC, LINK, XLM, TRX, ETC, EOS, DOGE, BCH) | — | +0.049R / +0.003R, pooled t 0.7 | fail |
+| E2 Index overnight drift (SPX, NDX close to open) | **+0.038% a night (t 3.5)** | −0.003% / +0.001%, t −0.1 | fail: the effect is real, but costs take it all |
+| E3 10-month trend filter on 10 indices, 1990–2026 | — | +0.099R (t 2.2) / +0.020R (t 0.5), pooled t 1.95 | fail. It cuts the drawdown from 12.6R to 7.5R against buy-and-hold, at about the same Sharpe (0.33 vs 0.30) |
+| E4 FX cross-sectional momentum (10 pairs) | — | −0.001R / −0.086R | fail |
+
+**What this means.**
+- **E1 weakens the case for the crypto engine.** The BTC/ETH 4-week trend (t 3.7) does not extend to the next 11 coins. Only BNB is positive at t ≥ 2. That suggests part of the BTC/ETH result could be chance or specific to those two coins. The demo record decides whether the engine stays.
+- **E2 is a true effect that the instrument cannot capture.** A CFD's spread and overnight financing are about the size of the overnight premium.
+- **E3 restates that the strongest return in this data is the equity premium itself.** Buy-and-hold on SPX and NDX is +0.11R and +0.18R a month (t 2.3 and 3.9) after 5% financing. It is not a timing edge, and choosing US indices because they did best would be hindsight. The filter's value is the smaller drawdown.
+- **FX has now failed every family tested:**
+  - time-series trend;
+  - cross-sectional momentum;
+  - intraday momentum;
+  - fix reversals;
+  - minute rules;
+  - APA at M1 to D1.
+
+## Round 10, 2026-10-14: forex-specific effects (`fx_structure_prereg.json`, `fx_structure.mjs`)
+
+**Design.** Four effects that come from how the currency market works, rather than ideas borrowed from other markets. They were registered together, with the bar at t ≥ 2.5 pooled and positive in both halves.
+
+**Result: all four fail** (`fx_structure_results.txt`).
+
+| Test | What the data shows | Net | Verdict |
+|---|---|---|---|
+| F1 Currencies weaken in their home hours (Breedon–Ranaldo) | Partly real: EUR falls 1.45bp a day in European hours (t −3.6). JPY goes the other way (+1.0bp in Tokyo hours, t 2.3) | −1.8bp a day: two spreads a day exceed the drift | fail |
+| F2 Month-end equity-hedge rebalancing (Melvin–Prins) | −2.3bp per trade before costs, wrong sign | −3.3bp | fail |
+| F3 AUDNZD and EURGBP z > 2 reversion | AUDNZD −0.08R, EURGBP +0.15R (t 1.5) | +0.07R, t 0.85 | fail |
+| F4 Carry, top 3 against bottom 3 of 8 policy rates (BIS) | The interest earned is real: +0.09% a month per position. Spot moves give back −0.03% | −0.03%: a 1%/yr swap markup takes the rest | fail |
+
+**What it means.** Forex has real structure: home-hours drift, interest differentials. But every effect found is a fraction of a basis point a day, or about 1% a year, and a retail CFD's spread or swap markup is about as large. The one lead, short EUR in European hours, was found in this run, not registered before it. It would need its own registration and a forward test before it counts.
+
+## Round 11, 2026-10-14: the EUR lead out of sample; forex fundamentals, sentiment and order flow
+
+**The EUR European-hours lead** (`eur_hours_prereg.json`, `eur_hours.mjs`, `eur_hours_results.txt`).
+- **The rule:** short EURUSD 07:00–12:00 UTC each weekday.
+- **The test period:** 2001–2009, which the pattern was not found in.
+- **Gross: replicated.** +1.99bp a day (t 2.83), and positive in all 9 years.
+- **Net at 1 pip: +1.16bp (t 1.65), so the registered verdict is fail.** At 2 pips it is +0.33bp.
+- **EURJPY in the same window, 2010–26:** +1.04bp gross (t 2.0) and ≈0 net.
+- **What it is:** a real, persistent order-flow pattern that is worth trading only with a round trip well under 1 pip.
+
+**Fundamentals and positioning** (`fx_fundamental_flow_prereg.json`, `fx_fundamental_flow.mjs`, `fx_fundamental_flow_results.txt`). Three tests, bar t ≥ 2.5 in both halves.
+
+| Test | Net result | Verdict |
+|---|---|---|
+| G1 Currency value: BIS real effective rate against its 5-year mean, long 3 cheapest and short 3 dearest of 8, with carry included | −0.07% / −0.26% a month (t −0.7 / −2.9) | fail |
+| G2a Positioning extremes: CFTC leveraged funds, z > 2, contrarian, 4 weeks | −0.50% / +0.38% per trade | fail |
+| G2b Positioning flow: follow last week's leveraged-fund buying | −0.054% / −0.082% a week (t −3.2 pooled) | fail; significant the other way |
+
+**The reverse of G2b, out of sample** (`flow_reversal_prereg.json`, `flow_reversal.mjs`, `flow_reversal_results.txt`).
+- **Rule and period:** fade last week's leveraged-fund flow, on CFTC data and prices from 2006-06 to 2009-12. That period was unseen.
+- **Result:** gross +0.007% (t 0.1), net −0.029%. **Fail.** The 2010–26 reversal was specific to that period.
+
+**Forex, summary of rounds 4–11.**
+- **Technical:** trend, cross-sectional momentum, intraday momentum, minute rules, APA M1–D1.
+- **Fundamental:** carry, value.
+- **Flow:** home hours, month-end hedging, CFTC positioning both ways.
+- **Relative value:** AUDNZD, EURGBP.
+
+None of these pays after a retail round trip and swap. The two real effects found are the interest differential (carry) and the EUR European-hours drift. Each is about the size of the costs.
+
+## Round 12, 2026-10-14: a model pro trader on synthetics, forex and gold (`pro_trader_prereg.json`, `pro_trader.mjs`, `pro_trader_results.txt`)
+
+**The trader.** One frozen playbook, registered before it was coded, of the kind a discretionary professional would recognise:
+- **Context:** top-down trend on D1 (H4 on synthetics), and the H1 regime by ADX.
+- **Setups:**
+  - A, a trend pullback to the H1 EMA20 with an M15 rejection;
+  - B, a range fade at the Bollinger band with RSI;
+  - C, the London breakout of the Asian range, in the trend's direction.
+- **Management:** half off at 1R, the stop moved to breakeven, the rest at 3R, and time stops.
+- **Filters:** sessions, and no new trades around FOMC, NFP and CPI.
+
+Every trade is paired with a **random-direction** trade at the same moment with identical management.
+
+| Market | Trades | Net per trade | Before costs | Random direction, net | Playbook minus random | Verdict |
+|---|---|---|---|---|---|---|
+| Synthetics, 49 indices, 90 days | 2,807 | −0.013R (t −0.6) | +0.012R | −0.009R | −0.004R (t −0.1) | fail |
+| Forex, 10 pairs, 2010–2026 | 35,280 | −0.092R (t −14.9) | −0.011R | −0.091R | −0.001R (t −0.1) | fail |
+| Gold, 2010–2026 | 3,549 | −0.042R (t −2.1) | +0.043R (t 2.2) | −0.104R | **+0.062R (t 2.4)** | fail |
+
+**Per setup.**
+- On forex, the London breakout (C) is +0.039R before costs (t 3.1) and −0.052R net.
+- Synthetics are flat in every family. The best, Range Break +0.18R and Drift Switch +0.11R, have t < 2, and Volatility is −0.16R.
+- At 3× the published synthetic spread, the result is −0.064R (t −3.0).
+
+**What it shows.**
+- **On synthetics and forex the playbook's entries carry no information.** Each trade does exactly as well as a coin flip with the same management (difference ≈0R over 38,000 trades). Management (partials, breakeven, time stops) changes the shape of the results, not their average.
+- **Forex loses about 0.08–0.09R a trade to costs,** because stops of 1.5 H1 ATRs are only a few times the spread.
+- **Gold is the exception.** The playbook beats random direction by +0.06R (t 2.4, positive in both halves). That is the trend context working, consistent with the gold trend premium found in round 4. But the costs, about 0.08R a trade at 1.5 H1 ATRs, are larger than the edge, so it loses net.
+  - The same trend on monthly holds is what the EA's gold engine trades.
+  - A gold version with wider stops and longer holds, so costs are a smaller share of R, would be a new registered test, not a change to this one.

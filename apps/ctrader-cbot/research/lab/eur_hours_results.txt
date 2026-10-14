@@ -1,0 +1,4 @@
+EURUSD 2001-2009, short 07:00-12:00 UTC: gross +1.991bp (t 2.83, n 2219); net at 1 pip +1.158bp (t 1.65, n 2219); at 2 pips +0.325bp (t 0.46, n 2219)
+  by year (gross): 2001 +6.51, 2002 +0.22, 2003 +1.82, 2004 +0.75, 2005 +2.11, 2006 +2.89, 2007 +2.88, 2008 +0.65, 2009 +0.33
+VERDICT: FAIL (registered: net at 1 pip > 0 with t >= 2 and gross > 0, the 2010-2026 sign)
+secondary, EURJPY 2010-2026 same window: gross +1.039bp (t 2.02, n 4318); net at 1.2 pips +0.123bp (t 0.24, n 4318)

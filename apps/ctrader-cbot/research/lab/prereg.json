@@ -1,0 +1,11 @@
+{
+  "registeredAt": "2026-10-10T13:23:47Z",
+  "rule": "Chosen on the 5 development markets only. Evaluated once on the 12 hold-out markets; no changes after seeing hold-out results.",
+  "finalists": [
+    {"id": "SWING-A", "style": "SWING", "filter": "F1 FVG", "perm": "FVG_liq", "why": "broadest: FVG-edge limit entry after sweep+shift, liquidity target"},
+    {"id": "SWING-B", "style": "SWING", "filter": "F2 FVG+(candle|ind)", "perm": "FVG_liq", "why": "adds reversal candle at the sweep or inducement taken first"},
+    {"id": "INTRA-B", "style": "INTRA", "filter": "F2 FVG+(candle|ind)", "perm": "FVG_2", "why": "H1 entries, H4 liquidity, fixed 2R"},
+    {"id": "SCALP-A", "style": "SCALP", "filter": "F1 FVG", "perm": "FVG_2", "why": "exploratory only: 11 weeks of M5 data"}
+  ],
+  "passCriteria": "avg R > 0 with avg - 2*SE > 0 overall, profit factor > 1.2, positive in both halves, positive on at least 2/3 of hold-out markets"
+}

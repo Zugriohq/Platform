@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jump History Download</title>
+<style>
+  :root { --bg: #f7f7f5; --fg: #1d1d1b; --muted: #6b6b66; --line: #d9d9d4; --accent: #1f5fbf; --ok: #217a3c; --bad: #b3261e; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #161615; --fg: #ecece8; --muted: #a3a39d; --line: #34342f; --accent: #7aa7f0; --ok: #6cc486; --bad: #f08a80; } }
+  :root[data-theme="dark"] { --bg: #161615; --fg: #ecece8; --muted: #a3a39d; --line: #34342f; --accent: #7aa7f0; --ok: #6cc486; --bad: #f08a80; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 24px 16px; }
+  h1 { font-size: 20px; margin: 0 0 8px; }
+  p { color: var(--muted); margin: 0 0 16px; }
+  label { display: block; margin: 12px 0 4px; }
+  input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--fg); width: 120px; }
+  button { font: inherit; margin-top: 16px; padding: 8px 16px; border: 0; border-radius: 6px; background: var(--accent); color: #fff; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: default; }
+  pre { white-space: pre-wrap; border: 1px solid var(--line); border-radius: 6px; padding: 12px; min-height: 120px; font-size: 13px; }
+  .ok { color: var(--ok); } .bad { color: var(--bad); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Jump indices: M1 history for the TTI replay</h1>
+  <p>Downloads 1-minute candles for Jump 10, 25, 50, 75 and 100 from Deriv's public feed, the same one TTI uses (no login, read only), and saves one file. Send that file back for the TTI-on-Jump test (research/tti/jump_prereg.json).</p>
+  <label for="days">Days of history</label>
+  <input id="days" type="number" min="7" max="365" value="90">
+  <div><button id="go">Download</button></div>
+  <pre id="log">Ready.</pre>
+</main>
+<script>
+const SYMBOLS = ["JD10", "JD25", "JD50", "JD75", "JD100"];
+// TTI's own endpoint order (WS_EPS): the current public API first; the legacy app_id endpoint no longer connects for everyone (owner, 2026-10-14).
+const URLS_WS = ["wss://api.derivws.com/trading/v1/options/ws/public", "wss://ws.derivws.com/websockets/v3?app_id=1089"];
+const logEl = document.getElementById("log");
+const log = (m, cls) => { const s = document.createElement("div"); if (cls) s.className = cls; s.textContent = m; logEl.appendChild(s); logEl.scrollTop = logEl.scrollHeight; };
+
+async function connect() {
+  let last;
+  for (const u of URLS_WS) { try { const api = await open(u); log("Connected to " + u, "ok"); return api; } catch (e) { last = e; log("Could not connect to " + u, "bad"); } }
+  throw last;
+}
+function open(url) {
+  return new Promise((ok, fail) => {
+    const ws = new WebSocket(url); let id = 0; const wait = new Map();
+    const t = setTimeout(() => { try { ws.close(); } catch (e) {} fail(new Error("timeout")); }, 15000);
+    ws.onopen = () => { clearTimeout(t); ok({
+      ask: (req) => new Promise((res) => { const r = ++id; wait.set(r, res); ws.send(JSON.stringify({ ...req, req_id: r })); }),
+      close: () => ws.close(),
+    }); };
+    ws.onerror = () => { clearTimeout(t); fail(new Error("could not connect to Deriv")); };
+    ws.onmessage = (e) => { const m = JSON.parse(e.data); const f = wait.get(m.req_id); if (f) { wait.delete(m.req_id); f(m); } };
+  });
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function history(api, sym, fromEpoch) {
+  const rows = new Map(); let end = "latest";
+  for (let page = 0; page < 400; page++) {
+    let m;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      m = await api.ask({ ticks_history: sym, style: "candles", granularity: 60, count: 5000, end });
+      if (!m.error) break;
+      log(`${sym}: ${m.error.code || "error"} ${m.error.message || ""}; retrying`, "bad"); await sleep(2000 * (attempt + 1));
+    }
+    if (m.error) throw new Error(`${sym}: ${m.error.message}`);
+    const c = m.candles || []; if (!c.length) break;
+    for (const x of c) rows.set(x.epoch, [x.epoch, +x.open, +x.high, +x.low, +x.close]);
+    const first = c[0].epoch;
+    log(`${sym}: ${rows.size} candles, back to ${new Date(first * 1000).toISOString().slice(0, 16)} UTC`);
+    if (first <= fromEpoch || c.length < 2) break;
+    end = String(first - 1);
+    await sleep(250);
+  }
+  return [...rows.values()].filter((r) => r[0] >= fromEpoch).sort((a, b) => a[0] - b[0]);
+}
+
+document.getElementById("go").onclick = async (ev) => {
+  const btn = ev.target; btn.disabled = true; logEl.textContent = "";
+  const days = Math.max(7, Math.min(365, +document.getElementById("days").value || 90));
+  const fromEpoch = Math.floor(Date.now() / 1000) - days * 86400;
+  try {
+    const api = await connect();
+    const lines = ["symbol,epoch,open,high,low,close"];
+    for (const s of SYMBOLS) { for (const r of await history(api, s, fromEpoch)) lines.push(s + "," + r.join(",")); }
+    api.close();
+    let blob = new Blob([lines.join("\n") + "\n"], { type: "text/csv" }), name = `deriv-jump-m1-${days}d-${new Date().toISOString().slice(0, 10)}.csv`;
+    if (window.CompressionStream) { blob = await new Response(blob.stream().pipeThrough(new CompressionStream("gzip"))).blob(); name += ".gz"; }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    log(`Saved ${name}: ${lines.length - 1} candles, ${(blob.size / 1e6).toFixed(1)} MB. Send this file back.`, "ok");
+  } catch (e) { log("Stopped: " + e.message, "bad"); }
+  btn.disabled = false;
+};
+</script>
+</body>
+</html>

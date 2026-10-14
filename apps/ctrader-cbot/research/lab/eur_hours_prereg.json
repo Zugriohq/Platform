@@ -1,0 +1,10 @@
+{
+  "id": "EUR_european_hours_out_of_sample",
+  "registered": "2026-10-14, before any EURUSD data before 2010 was downloaded",
+  "origin": "fx_structure_results.txt (F1, 2010-2026): EUR fell 1.45bp a day during European hours (07:00-12:00 UTC), t -3.6. That was found in the data, not registered, so 2010-2026 cannot test it. This registration tests it on history it has not seen.",
+  "rule": "each weekday, short EURUSD from 07:00 UTC to 12:00 UTC (the same fixed UTC window as F1, daylight saving ignored)",
+  "data": "HistData EURUSD M1, 2001-01 to 2009-12 (out of sample in time). Secondary, reported but not part of the pass: the same window on EURJPY 2010-2026, which shares the EUR leg but not the USD leg.",
+  "costs": "one round trip a day: 1 pip (0.0001) as registered, and 2 pips reported as a stress (spreads were wider before 2010)",
+  "pass": "2001-2009 net mean per day > 0 at 1 pip with t >= 2.0, and the gross mean has the same sign as in 2010-2026. Otherwise it is a 2010-2026 artefact.",
+  "after": "A pass goes to a forward demo record on the owner's account, with the actual spread logged; the EA would only trade it if the logged spread keeps the net positive."
+}

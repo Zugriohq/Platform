@@ -1,0 +1,39 @@
+{
+  "id": "edge_search_2026_10_14",
+  "registered": "2026-10-14, before any of these four tests was run or its data was downloaded (crypto daily)",
+  "why": "The owner asked where the advantages are across markets. Rather than mine data, four effects with published evidence that this project has not yet tested are registered together. Because four are tested at once, the bar is stricter than a single test: t >= 2.5 pooled, and positive in both halves.",
+  "E1_crypto_trend_breadth": {
+    "rule": "C_crypto_trend C2 unchanged (realmarkets_prereg.json): the sign of the 4-week return over Sunday closes, long or short, held to the next Monday",
+    "markets": "the large coins with a Binance USDT spot pair listed before 2020-01-01 and still trading: BNB, XRP, ADA, LTC, LINK, XLM, TRX, ETC, EOS, DOGE, BCH (BTC and ETH excluded: already tested). Survivorship: coins delisted since are missing, which flatters any long-biased rule; this rule is long or short.",
+    "data": "Binance 1d klines, from listing to 2026-10",
+    "costs": "0.2% per change plus 10%/yr while held",
+    "unit": "R = net weekly return / weekly sigma (60 daily returns x sqrt 7), as C2",
+    "halves": "before 2022-01-01 and after",
+    "pass": "equal-weight across coins per week (clustered by week): mean > 0 in both halves and pooled t >= 2.5"
+  },
+  "E2_index_overnight_drift": {
+    "rule": "long from 16:00 New York (cash close) to 09:30 New York on the next trading day, flat during the session",
+    "markets": "SPXUSD, NSXUSD (HistData M1, 2010-11 to 2026-09)",
+    "costs": "0.02% per round trip plus 5%/yr per calendar night",
+    "halves": "2010-2017 and 2018-2026",
+    "pass": "mean over both indices per night: net > 0 in both halves and pooled t >= 2.5"
+  },
+  "E3_index_trend_filter": {
+    "rule": "Faber (2007): at each month end, long the index when its close is above the 10-month average of month-end closes, else flat; held to the next month end",
+    "markets": "SPX, NDX, DJI, RUT, DAX, FTSE, N225, CAC, HSI, ASX200 (Yahoo daily, 1990-2026)",
+    "costs": "0.02% per change plus 5%/yr while long",
+    "unit": "net monthly return / monthly sigma (60 daily returns x sqrt 21); flat months count as 0",
+    "comparison": "buy-and-hold with the same financing, reported beside it (the filter's value is the drawdown it avoids, not only the mean)",
+    "halves": "1990-2007 and 2008-2026",
+    "pass": "equal-weight across indices per month: net mean > 0 in both halves and pooled t >= 2.5"
+  },
+  "E4_fx_cross_sectional_momentum": {
+    "rule": "Menkhoff et al. (2012): at each month end, rank the 10 pairs by their 12-month return; long the top 3, short the bottom 3, held to the next month end",
+    "markets": "EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, USDCHF, NZDUSD, EURJPY, GBPJPY, EURGBP (HistData M1 -> 21:00 UTC daily closes, 2010-2026)",
+    "costs": "0.01% per change plus 1.5%/yr per position",
+    "unit": "net monthly return / monthly sigma, averaged over the 6 positions",
+    "halves": "2010-2017 and 2018-2026",
+    "pass": "net mean > 0 in both halves and pooled t >= 2.5"
+  },
+  "after": "A pass goes to a forward record (demo) as its own engine, with the same discipline as the existing ones; a fail is recorded and not retuned."
+}

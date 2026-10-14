@@ -1,0 +1,126 @@
+
+## REAL DATA, all markets: 1362 signals (120 unusable: 118 with the target already passed, 2 with the stop on the wrong side)
+App's own record: 420 WIN / 375 LOSS (53% wins), 566 timeouts
+Median app target 1.30R from the signal price; median cost 0.06R; reached before the stop: 0.5R 50%, 0.8R 34%, 1R 27%
+  A as now: app target                 avg -0.195R  t -7.3  win 44%
+  B fixed target 0.8R                  avg -0.162R  t -7.2  win 47%
+  C target 15% in front of the level   avg -0.192R  t -7.5  win 46%
+  D break-even at 0.7R                 avg -0.188R  t -7.7  win 43%
+  E half at 0.8R, rest break-even      avg -0.177R  t -7.9  win 50%
+  F trail 0.5R from 0.8R               avg -0.165R  t -7.2  win 50%
+  G fixed target 1.5R                  avg -0.170R  t -6.5  win 41%
+
+## REAL EURUSD: 247 signals (17 unusable: 17 with the target already passed, 0 with the stop on the wrong side)
+App's own record: 71 WIN / 75 LOSS (49% wins), 100 timeouts
+Median app target 1.34R from the signal price; median cost 0.10R; reached before the stop: 0.5R 47%, 0.8R 35%, 1R 30%
+  A as now: app target                 avg -0.309R  t -5.3  win 38%
+  B fixed target 0.8R                  avg -0.236R  t -4.4  win 44%
+  C target 15% in front of the level   avg -0.313R  t -5.4  win 40%
+  D break-even at 0.7R                 avg -0.262R  t -4.8  win 34%
+  E half at 0.8R, rest break-even      avg -0.250R  t -4.7  win 46%
+  F trail 0.5R from 0.8R               avg -0.227R  t -4.1  win 46%
+  G fixed target 1.5R                  avg -0.258R  t -4.0  win 36%
+
+## REAL GBPUSD: 256 signals (19 unusable: 18 with the target already passed, 1 with the stop on the wrong side)
+App's own record: 76 WIN / 82 LOSS (48% wins), 98 timeouts
+Median app target 1.67R from the signal price; median cost 0.13R; reached before the stop: 0.5R 53%, 0.8R 38%, 1R 28%
+  A as now: app target                 avg -0.241R  t -3.1  win 42%
+  B fixed target 0.8R                  avg -0.251R  t -4.6  win 46%
+  C target 15% in front of the level   avg -0.248R  t -3.5  win 43%
+  D break-even at 0.7R                 avg -0.209R  t -2.9  win 38%
+  E half at 0.8R, rest break-even      avg -0.234R  t -4.0  win 49%
+  F trail 0.5R from 0.8R               avg -0.226R  t -3.6  win 49%
+  G fixed target 1.5R                  avg -0.272R  t -4.4  win 39%
+
+## REAL USDJPY: 204 signals (16 unusable: 16 with the target already passed, 0 with the stop on the wrong side)
+App's own record: 61 WIN / 54 LOSS (53% wins), 89 timeouts
+Median app target 1.71R from the signal price; median cost 0.08R; reached before the stop: 0.5R 49%, 0.8R 30%, 1R 24%
+  A as now: app target                 avg -0.173R  t -2.5  win 44%
+  B fixed target 0.8R                  avg -0.193R  t -3.2  win 45%
+  C target 15% in front of the level   avg -0.151R  t -2.3  win 47%
+  D break-even at 0.7R                 avg -0.184R  t -2.9  win 39%
+  E half at 0.8R, rest break-even      avg -0.184R  t -3.0  win 47%
+  F trail 0.5R from 0.8R               avg -0.166R  t -2.6  win 47%
+  G fixed target 1.5R                  avg -0.135R  t -2.0  win 43%
+
+## REAL XAUUSD: 655 signals (68 unusable: 67 with the target already passed, 1 with the stop on the wrong side)
+App's own record: 212 WIN / 164 LOSS (56% wins), 279 timeouts
+Median app target 1.19R from the signal price; median cost 0.02R; reached before the stop: 0.5R 50%, 0.8R 34%, 1R 26%
+  A as now: app target                 avg -0.139R  t -3.9  win 48%
+  B fixed target 0.8R                  avg -0.087R  t -2.8  win 49%
+  C target 15% in front of the level   avg -0.136R  t -4.0  win 49%
+  D break-even at 0.7R                 avg -0.152R  t -5.0  win 50%
+  E half at 0.8R, rest break-even      avg -0.124R  t -4.3  win 53%
+  F trail 0.5R from 0.8R               avg -0.117R  t -4.1  win 53%
+  G fixed target 1.5R                  avg -0.105R  t -2.9  win 43%
+
+## REAL, 2025: 851 signals (76 unusable: 75 with the target already passed, 1 with the stop on the wrong side)
+App's own record: 286 WIN / 229 LOSS (56% wins), 335 timeouts
+Median app target 1.19R from the signal price; median cost 0.06R; reached before the stop: 0.5R 54%, 0.8R 36%, 1R 28%
+  A as now: app target                 avg -0.189R  t -5.8  win 46%
+  B fixed target 0.8R                  avg -0.134R  t -4.7  win 49%
+  C target 15% in front of the level   avg -0.188R  t -6.0  win 48%
+  D break-even at 0.7R                 avg -0.173R  t -6.0  win 44%
+  E half at 0.8R, rest break-even      avg -0.159R  t -5.9  win 52%
+  F trail 0.5R from 0.8R               avg -0.138R  t -4.9  win 52%
+  G fixed target 1.5R                  avg -0.143R  t -4.3  win 42%
+
+## REAL, 2026: 511 signals (44 unusable: 43 with the target already passed, 1 with the stop on the wrong side)
+App's own record: 134 WIN / 146 LOSS (48% wins), 231 timeouts
+Median app target 1.60R from the signal price; median cost 0.06R; reached before the stop: 0.5R 44%, 0.8R 31%, 1R 24%
+  A as now: app target                 avg -0.206R  t -4.4  win 42%
+  B fixed target 0.8R                  avg -0.209R  t -5.5  win 44%
+  C target 15% in front of the level   avg -0.200R  t -4.4  win 44%
+  D break-even at 0.7R                 avg -0.213R  t -4.8  win 41%
+  E half at 0.8R, rest break-even      avg -0.208R  t -5.4  win 47%
+  F trail 0.5R from 0.8R               avg -0.211R  t -5.5  win 47%
+  G fixed target 1.5R                  avg -0.215R  t -5.0  win 39%
+
+## REAL, setup FVG_MITIGATION: 1049 signals (82 unusable: 81 with the target already passed, 1 with the stop on the wrong side)
+App's own record: 350 WIN / 296 LOSS (54% wins), 402 timeouts
+Median app target 1.25R from the signal price; median cost 0.07R; reached before the stop: 0.5R 52%, 0.8R 37%, 1R 29%
+  A as now: app target                 avg -0.191R  t -6.5  win 45%
+  B fixed target 0.8R                  avg -0.168R  t -6.4  win 47%
+  C target 15% in front of the level   avg -0.190R  t -6.7  win 47%
+  D break-even at 0.7R                 avg -0.195R  t -7.2  win 43%
+  E half at 0.8R, rest break-even      avg -0.181R  t -7.1  win 50%
+  F trail 0.5R from 0.8R               avg -0.174R  t -6.8  win 50%
+  G fixed target 1.5R                  avg -0.170R  t -5.6  win 40%
+
+## REAL, setup TREND_CONTINUATION: 307 signals (37 unusable: 36 with the target already passed, 1 with the stop on the wrong side)
+App's own record: 68 WIN / 78 LOSS (47% wins), 161 timeouts
+Median app target 1.41R from the signal price; median cost 0.03R; reached before the stop: 0.5R 41%, 0.8R 26%, 1R 19%
+  A as now: app target                 avg -0.205R  t -3.2  win 41%
+  B fixed target 0.8R                  avg -0.138R  t -3.0  win 49%
+  C target 15% in front of the level   avg -0.195R  t -3.2  win 43%
+  D break-even at 0.7R                 avg -0.161R  t -2.8  win 43%
+  E half at 0.8R, rest break-even      avg -0.161R  t -3.4  win 48%
+  F trail 0.5R from 0.8R               avg -0.129R  t -2.5  win 50%
+  G fixed target 1.5R                  avg -0.167R  t -3.3  win 43%
+
+## REAL, setup BREAKOUT_CONTINUATION: 6 signals (1 unusable: 1 with the target already passed, 0 with the stop on the wrong side)
+App's own record: 2 WIN / 1 LOSS (67% wins), 3 timeouts
+Median app target 4.53R from the signal price; median cost 0.02R; reached before the stop: 0.5R 40%, 0.8R 20%, 1R 20%
+  A as now: app target                 avg -0.418R  t -1.5  win 40%
+  B fixed target 0.8R                  avg -0.308R  t -0.9  win 40%
+  C target 15% in front of the level   avg -0.425R  t -1.6  win 40%
+  D break-even at 0.7R                 avg -0.418R  t -1.5  win 40%
+  E half at 0.8R, rest break-even      avg -0.418R  t -1.5  win 40%
+  F trail 0.5R from 0.8R               avg -0.418R  t -1.5  win 40%
+  G fixed target 1.5R                  avg -0.239R  t -0.6  win 40%
+
+## Is P(win) a probability? (plan A after cost, by TTI's P(win))
+  P(win) 0.00-0.65: n 112, stated 60%, actual wins 35%, avg -0.360R
+  P(win) 0.65-0.70: n 1032, stated 67%, actual wins 45%, avg -0.183R
+  P(win) 0.70-0.75: n 98, stated 71%, actual wins 52%, avg -0.137R
+
+## RANDOM WALK CONTROL (no edge by construction): 488 signals (56 unusable: 56 with the target already passed, 0 with the stop on the wrong side)
+App's own record: 157 WIN / 122 LOSS (56% wins), 209 timeouts
+Median app target 1.34R from the signal price; median cost 0.02R; reached before the stop: 0.5R 53%, 0.8R 31%, 1R 24%
+  A as now: app target                 avg -0.082R  t -1.6  win 49%
+  B fixed target 0.8R                  avg -0.108R  t -2.9  win 49%
+  C target 15% in front of the level   avg -0.074R  t -1.4  win 50%
+  D break-even at 0.7R                 avg -0.082R  t -1.7  win 53%
+  E half at 0.8R, rest break-even      avg -0.085R  t -2.1  win 55%
+  F trail 0.5R from 0.8R               avg -0.087R  t -2.3  win 55%
+  G fixed target 1.5R                  avg -0.120R  t -2.8  win 43%

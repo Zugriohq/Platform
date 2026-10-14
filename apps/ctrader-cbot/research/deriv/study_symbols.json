@@ -1,0 +1,292 @@
+[
+ {
+  "file": "DSI10",
+  "name": "Drift Switch Index 10",
+  "spread": 0.22
+ },
+ {
+  "file": "DSI20",
+  "name": "Drift Switch Index 20",
+  "spread": 0.2
+ },
+ {
+  "file": "DSI30",
+  "name": "Drift Switch Index 30",
+  "spread": 0.39
+ },
+ {
+  "file": "RB100",
+  "name": "Range Break 100 Index",
+  "spread": 2.6
+ },
+ {
+  "file": "RB200",
+  "name": "Range Break 200 Index",
+  "spread": 2.0
+ },
+ {
+  "file": "RDBULL",
+  "name": "Bull Market Index",
+  "spread": null
+ },
+ {
+  "file": "RDBEAR",
+  "name": "Bear Market Index",
+  "spread": null
+ },
+ {
+  "file": "DEX600UP",
+  "name": "DEX 600 UP Index",
+  "spread": null
+ },
+ {
+  "file": "DEX600DN",
+  "name": "DEX 600 DOWN Index",
+  "spread": 0.55
+ },
+ {
+  "file": "DEX900UP",
+  "name": "DEX 900 UP Index",
+  "spread": 0.53
+ },
+ {
+  "file": "DEX900DN",
+  "name": "DEX 900 DOWN Index",
+  "spread": 6.18
+ },
+ {
+  "file": "DEX1500UP",
+  "name": "DEX 1500 UP Index",
+  "spread": 0.41
+ },
+ {
+  "file": "DEX1500DN",
+  "name": "DEX 1500 DOWN Index",
+  "spread": 4.12
+ },
+ {
+  "file": "stpRNG",
+  "name": "Step Index",
+  "spread": 0.1
+ },
+ {
+  "file": "stpRNG2",
+  "name": "Step Index 200",
+  "spread": 0.2
+ },
+ {
+  "file": "stpRNG3",
+  "name": "Step Index 300",
+  "spread": 0.3
+ },
+ {
+  "file": "stpRNG4",
+  "name": "Step Index 400",
+  "spread": 0.4
+ },
+ {
+  "file": "stpRNG5",
+  "name": "Step Index 500",
+  "spread": null
+ },
+ {
+  "file": "VOLBOOM400",
+  "name": "Vol over Boom 400",
+  "spread": 1.23
+ },
+ {
+  "file": "VOLBOOM550",
+  "name": "Vol over Boom 550",
+  "spread": 1.08
+ },
+ {
+  "file": "VOLBOOM750",
+  "name": "Vol over Boom 750",
+  "spread": 2.04
+ },
+ {
+  "file": "VOLCRASH400",
+  "name": "Vol over Crash 400",
+  "spread": 1.11
+ },
+ {
+  "file": "VOLCRASH550",
+  "name": "Vol over Crash 550",
+  "spread": 0.51
+ },
+ {
+  "file": "VOLCRASH750",
+  "name": "Vol over Crash 750",
+  "spread": 1.89
+ },
+ {
+  "file": "J10",
+  "name": "Jump 10 Index",
+  "spread": 3.11
+ },
+ {
+  "file": "J25",
+  "name": "Jump 25 Index",
+  "spread": 10.61
+ },
+ {
+  "file": "J50",
+  "name": "Jump 50 Index",
+  "spread": null
+ },
+ {
+  "file": "J75",
+  "name": "Jump 75 Index",
+  "spread": 1.82
+ },
+ {
+  "file": "J100",
+  "name": "Jump 100 Index",
+  "spread": 0.07
+ },
+ {
+  "file": "BOOM50",
+  "name": "Boom 50 Index",
+  "spread": 1.2719
+ },
+ {
+  "file": "BOOM150N",
+  "name": "Boom 150 Index",
+  "spread": 0.1705
+ },
+ {
+  "file": "BOOM300N",
+  "name": "Boom 300 Index",
+  "spread": 0.504
+ },
+ {
+  "file": "BOOM500",
+  "name": "Boom 500 Index",
+  "spread": 0.528
+ },
+ {
+  "file": "BOOM600",
+  "name": "Boom 600 Index",
+  "spread": null
+ },
+ {
+  "file": "BOOM900",
+  "name": "Boom 900 Index",
+  "spread": 0.959
+ },
+ {
+  "file": "BOOM1000",
+  "name": "Boom 1000 Index",
+  "spread": 1.7275
+ },
+ {
+  "file": "CRASH50",
+  "name": "Crash 50 Index",
+  "spread": 1.208
+ },
+ {
+  "file": "CRASH150N",
+  "name": "Crash 150 Index",
+  "spread": 0.1533
+ },
+ {
+  "file": "CRASH300N",
+  "name": "Crash 300 Index",
+  "spread": 1.112
+ },
+ {
+  "file": "CRASH500",
+  "name": "Crash 500 Index",
+  "spread": 0.326
+ },
+ {
+  "file": "CRASH600",
+  "name": "Crash 600 Index",
+  "spread": null
+ },
+ {
+  "file": "CRASH900",
+  "name": "Crash 900 Index",
+  "spread": 1.352
+ },
+ {
+  "file": "CRASH1000",
+  "name": "Crash 1000 Index",
+  "spread": 0.5402
+ },
+ {
+  "file": "R_10",
+  "name": "Volatility 10 Index",
+  "spread": 0.188
+ },
+ {
+  "file": "R_25",
+  "name": "Volatility 25 Index",
+  "spread": 0.331
+ },
+ {
+  "file": "R_50",
+  "name": "Volatility 50 Index",
+  "spread": 0.023
+ },
+ {
+  "file": "R_75",
+  "name": "Volatility 75 Index",
+  "spread": 16.41
+ },
+ {
+  "file": "R_100",
+  "name": "Volatility 100 Index",
+  "spread": 0.29
+ },
+ {
+  "file": "1HZ10V",
+  "name": "Volatility 10 (1s) Index",
+  "spread": null
+ },
+ {
+  "file": "1HZ15V",
+  "name": "Volatility 15 (1s) Index",
+  "spread": 0.799
+ },
+ {
+  "file": "1HZ25V",
+  "name": "Volatility 25 (1s) Index",
+  "spread": 70.05
+ },
+ {
+  "file": "1HZ30V",
+  "name": "Volatility 30 (1s) Index",
+  "spread": 0.586
+ },
+ {
+  "file": "1HZ50V",
+  "name": "Volatility 50 (1s) Index",
+  "spread": 51.75
+ },
+ {
+  "file": "1HZ75V",
+  "name": "Volatility 75 (1s) Index",
+  "spread": 1.55
+ },
+ {
+  "file": "1HZ90V",
+  "name": "Volatility 90 (1s) Index",
+  "spread": 11.015
+ },
+ {
+  "file": "1HZ100V",
+  "name": "Volatility 100 (1s) Index",
+  "spread": 0.47
+ },
+ {
+  "file": "1HZ150V",
+  "name": "Volatility 150 (1s) Index",
+  "spread": 0.07
+ },
+ {
+  "file": "1HZ250V",
+  "name": "Volatility 250 (1s) Index",
+  "spread": null
+ }
+]

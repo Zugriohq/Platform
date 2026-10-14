@@ -1,0 +1,19 @@
+{
+  "EURUSD": {"tick": 0.00001, "spread": 0.00008, "set": "dev"},
+  "GBPUSD": {"tick": 0.00001, "spread": 0.00012, "set": "dev"},
+  "AUDUSD": {"tick": 0.00001, "spread": 0.0001, "set": "dev"},
+  "USDJPY": {"tick": 0.001, "spread": 0.012, "set": "dev"},
+  "XAUUSD": {"tick": 0.01, "spread": 0.16, "set": "dev"},
+  "USDCHF": {"tick": 0.00001, "spread": 0.00012, "set": "holdout"},
+  "USDCAD": {"tick": 0.00001, "spread": 0.00012, "set": "holdout"},
+  "NZDUSD": {"tick": 0.00001, "spread": 0.00012, "set": "holdout"},
+  "EURJPY": {"tick": 0.001, "spread": 0.015, "set": "holdout"},
+  "GBPJPY": {"tick": 0.001, "spread": 0.025, "set": "holdout"},
+  "EURGBP": {"tick": 0.00001, "spread": 0.0001, "set": "holdout"},
+  "AUDJPY": {"tick": 0.001, "spread": 0.015, "set": "holdout"},
+  "XAGUSD": {"tick": 0.001, "spread": 0.02, "set": "holdout"},
+  "USOIL": {"tick": 0.01, "spread": 0.03, "set": "holdout"},
+  "US500": {"tick": 0.25, "spread": 0.5, "set": "holdout"},
+  "US100": {"tick": 0.25, "spread": 1.5, "set": "holdout"},
+  "US30": {"tick": 1, "spread": 3, "set": "holdout"}
+}

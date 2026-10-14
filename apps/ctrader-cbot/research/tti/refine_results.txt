@@ -1,0 +1,15 @@
+Slices x exit plans searched on 2025: 637. Positive in 2025: 14.
+Ten best on 2025 (design), and the same slice on 2026 (test):
+  market+pWin: XAUUSD & >=0.70                     plan B: 2025 n 48 +0.233R t 2.5  ->  2026 n 22 -0.287R t -2.0
+  market+pWin: XAUUSD & >=0.70                     plan E: 2025 n 48 +0.140R t 1.6  ->  2026 n 22 -0.237R t -1.8
+  market+pWin: XAUUSD & >=0.70                     plan G: 2025 n 48 +0.187R t 1.5  ->  2026 n 22 -0.341R t -2.7
+  market+pWin: XAUUSD & >=0.70                     plan F: 2025 n 48 +0.118R t 1.4  ->  2026 n 22 -0.239R t -1.8
+  market+pWin: XAUUSD & >=0.70                     plan D: 2025 n 48 +0.112R t 1.1  ->  2026 n 22 -0.268R t -2.1
+  market+pWin: XAUUSD & >=0.70                     plan A: 2025 n 48 +0.051R t 0.5  ->  2026 n 22 -0.259R t -2.0
+  regime+session: EXPANSION & Asia                 plan G: 2025 n 62 +0.057R t 0.4  ->  2026 n 37 -0.140R t -1.0
+  pWin: >=0.70                                     plan B: 2025 n 67 +0.033R t 0.4  ->  2026 n 31 -0.201R t -1.5
+  regime+pWin: EXPANSION & >=0.70                  plan B: 2025 n 67 +0.033R t 0.4  ->  2026 n 31 -0.201R t -1.5
+  dir+pWin: BUY & >=0.70                           plan B: 2025 n 67 +0.033R t 0.4  ->  2026 n 31 -0.201R t -1.5
+Slices with t >= 2 in 2025: 1; of those, positive in 2026: 0; with t >= 2 in 2026 too: 0.
+Reversed signals (approx., same stop/target mirrored) 2025: n 775 +0.004R t 0.1
+Reversed signals (approx., same stop/target mirrored) 2026: n 467 -0.006R t -0.1

@@ -1,0 +1,15 @@
+Common period 2017-09 to 2026-09 (109 months). Units: R, the risk of one trade to its stop.
+
+engine | trades/periods | R per year | monthly t | annual Sharpe | max drawdown | worst month | months positive | years positive
+INDEX | 144 | 1.30 | 1.87 | 0.62 | 5.5R | -2.05R | 69% | 6/10
+GOLD | 109 | 0.46 | 1.22 | 0.40 | 4.0R | -0.67R | 55% | 5/10
+CRYPTO | 942 | 4.75 | 3.14 | 1.04 | 5.0R | -1.89R | 49% | 9/10
+ALL | 1195 | 6.51 | 3.87 | 1.28 | 5.7R | -3.07R | 64% | 9/10
+
+monthly correlations: INDEX-GOLD 0.09, INDEX-CRYPTO -0.08, GOLD-CRYPTO 0.02
+ALL by year (R): 2017 +5.0, 2018 -0.1, 2019 +1.3, 2020 +11.2, 2021 +13.3, 2022 +2.2, 2023 +5.0, 2024 +9.6, 2025 +7.3, 2026 +4.4
+
+At a risk of r% of equity per trade, the expected year is about 6.5 x r% with a worst historical drawdown of about 5.7 x r% (simple, not compounded):
+  r = 0.25%: about 1.6% a year, worst drawdown about 1.4%
+  r = 0.5%: about 3.3% a year, worst drawdown about 2.9%
+  r = 1%: about 6.5% a year, worst drawdown about 5.7%
