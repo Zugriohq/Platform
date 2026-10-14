@@ -79,3 +79,26 @@ The EA (ADR-0010) runs Zugrio's decision-core on synthetics, forex and gold, in 
 - Set *Index engine on* to false, or install the previous `.algo`.
 - To go back to the previous behaviour, set *Decision-core styles* to `DAY,SCALP`.
 - No data migration. Open index trades keep their broker stops and are closed by their exit rule only while the engine runs. Otherwise they stay protected by the stop and target.
+
+## Addendum, 2026-10-14: more indices, and a gold trend engine
+
+The owner asked to build on the edges found rather than research further. Both changes stay within this ADR's frame: EA family engines, `UNVALIDATED_RESEARCH`, outside decision-core and the product portfolio. Both use the EA's single Submit path, guards, sizing, tiers and risk-reducing exits.
+
+1. **The index engine runs on each index's own exchange session.**
+   - **New default markets:** the research's test-in-markets indices (Wall Street 30, Germany 40, UK 100, Japan 225, Euro 50, France 40, Australia 200, Hong Kong 50).
+   - **Clocks:** each market follows its exchange's clock, with computed daylight-saving rules for New York, London, Frankfurt and Sydney, and fixed offsets for Tokyo and Hong Kong.
+   - **Balance threshold:** their evidence is weaker (+0.039R with the stop, PF 1.23), so they unlock at a $250 balance. The US 500 and US Tech 100 still trade from $0.
+2. **Gold trend engine** (research/lab round 4, rule A: monthly sign of the 12-month return).
+   - **Registered result: fail.** At the registered 5%/yr financing it failed.
+   - **Sensitivity only:** it held at 1.5%/yr (+0.15R a month, t = 2.5).
+   - **Swap gate:** the engine therefore holds a side only while the broker's own swap for that side costs at most 1.5% a year, read from the symbol at each decision. This makes the condition explicit and self-enforcing; it is not a claim that the registered test passed.
+   - **Stop:** a 3× monthly-volatility crash stop. The research rule had none.
+
+**Demotion:** as for the index engine. Each engine is switched off if, after 30 closed trades, its average R is below zero by more than one standard error. Gold trades about once a month, so its evidence accrues slowly.
+
+**Rollback:**
+- Turn off *Gold trend engine on*.
+- Edit *Index markets* back to the US pair.
+- Or install the previous `.algo`.
+
+Synthetic scalping is closed. The owner's friend's Crash 150 buy and Boom 150 sell rules were replayed on the broker's own ticks: 7 days each, about 1,000 trades each. They lost −0.165 and −0.263 points per trade on fair generators (`apps/ctrader-cbot/FAMILY_ENGINES.md`).
