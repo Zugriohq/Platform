@@ -368,3 +368,33 @@ Each rule names the party that pays the edge (METHODOLOGY.md step 2).
 | F4 Carry, top 3 against bottom 3 of 8 policy rates (BIS) | The interest earned is real: +0.09% a month per position. Spot moves give back −0.03% | −0.03%: a 1%/yr swap markup takes the rest | fail |
 
 **What it means.** Forex has real structure: home-hours drift, interest differentials. But every effect found is a fraction of a basis point a day, or about 1% a year, and a retail CFD's spread or swap markup is about as large. The one lead, short EUR in European hours, was found in this run, not registered before it. It would need its own registration and a forward test before it counts.
+
+## Round 11, 2026-10-14: the EUR lead out of sample; forex fundamentals, sentiment and order flow
+
+**The EUR European-hours lead** (`eur_hours_prereg.json`, `eur_hours.mjs`, `eur_hours_results.txt`).
+- **The rule:** short EURUSD 07:00–12:00 UTC each weekday.
+- **The test period:** 2001–2009, which the pattern was not found in.
+- **Gross: replicated.** +1.99bp a day (t 2.83), and positive in all 9 years.
+- **Net at 1 pip: +1.16bp (t 1.65), so the registered verdict is fail.** At 2 pips it is +0.33bp.
+- **EURJPY in the same window, 2010–26:** +1.04bp gross (t 2.0) and ≈0 net.
+- **What it is:** a real, persistent order-flow pattern that is worth trading only with a round trip well under 1 pip.
+
+**Fundamentals and positioning** (`fx_fundamental_flow_prereg.json`, `fx_fundamental_flow.mjs`, `fx_fundamental_flow_results.txt`). Three tests, bar t ≥ 2.5 in both halves.
+
+| Test | Net result | Verdict |
+|---|---|---|
+| G1 Currency value: BIS real effective rate against its 5-year mean, long 3 cheapest and short 3 dearest of 8, with carry included | −0.07% / −0.26% a month (t −0.7 / −2.9) | fail |
+| G2a Positioning extremes: CFTC leveraged funds, z > 2, contrarian, 4 weeks | −0.50% / +0.38% per trade | fail |
+| G2b Positioning flow: follow last week's leveraged-fund buying | −0.054% / −0.082% a week (t −3.2 pooled) | fail; significant the other way |
+
+**The reverse of G2b, out of sample** (`flow_reversal_prereg.json`, `flow_reversal.mjs`, `flow_reversal_results.txt`).
+- **Rule and period:** fade last week's leveraged-fund flow, on CFTC data and prices from 2006-06 to 2009-12. That period was unseen.
+- **Result:** gross +0.007% (t 0.1), net −0.029%. **Fail.** The 2010–26 reversal was specific to that period.
+
+**Forex, summary of rounds 4–11.**
+- **Technical:** trend, cross-sectional momentum, intraday momentum, minute rules, APA M1–D1.
+- **Fundamental:** carry, value.
+- **Flow:** home hours, month-end hedging, CFTC positioning both ways.
+- **Relative value:** AUDNZD, EURGBP.
+
+None of these pays after a retail round trip and swap. The two real effects found are the interest differential (carry) and the EUR European-hours drift. Each is about the size of the costs.
