@@ -86,6 +86,44 @@ namespace Zugrio.CBot.Core.Tests
         }
 
         [Fact]
+        public void Drift_switch_on_ticks_pays_with_a_small_spread_and_loses_with_a_large_one()
+        {
+            // One tick a second; drift regimes of 20 minutes on average, as DSI 20.
+            var rnd = new Random(21); var drift = 0.0; var p = 1000.0; var t0 = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            List<LabTick> Path(double spread)
+            {
+                rnd = new Random(21); drift = 0; p = 1000; var list = new List<LabTick>();
+                for (var i = 0; i < 20 * 86400 / 10; i++)
+                {
+                    if (rnd.NextDouble() < 1.0 / 1200) drift = 0.02 * (rnd.Next(3) - 1);
+                    p += drift + 0.05 * Gauss(rnd);
+                    list.Add(new LabTick(t0.AddSeconds(i), p - spread / 2, p + spread / 2));
+                }
+                return list;
+            }
+            var tight = Behaviour.MomentumOnTicks(Path(0.05), 5, 10);
+            Assert.True(tight.Test.AvgR > 0 && tight.Test.T > 3, $"tight {tight.Test.AvgR} t {tight.Test.T}");
+            Assert.InRange(tight.AvgSpread, 0.0499, 0.0501);
+            var wide = Behaviour.MomentumOnTicks(Path(20), 5, 10);
+            Assert.True(wide.Test.AvgR < 0, $"wide {wide.Test.AvgR}");
+            // a random walk on ticks: no edge even with no spread
+            rnd = new Random(5); p = 1000; var rw = new List<LabTick>();
+            for (var i = 0; i < 20 * 86400 / 10; i++) { p += 0.05 * Gauss(rnd); rw.Add(new LabTick(t0.AddSeconds(i), p, p)); }
+            Assert.InRange(Behaviour.MomentumOnTicks(rw, 5, 10).Test.T, -3, 3);
+        }
+
+        [Fact]
+        public void The_range_fade_never_trades_a_close_beyond_the_range()
+        {
+            // A path that keeps closing above its 30-bar range (a steady climb): every close is beyond the edge, so the
+            // fade has no trade, and no stop can sit behind the entry (first run, 2026-10-14: -inf R on Range Break 100).
+            var climb = Enumerable.Range(0, 400).Select(i => new LabBar(1000 + i, 1000 + i + 0.5, 1000 + i - 0.5, 1000 + i + 0.5)).ToList();
+            var t = Behaviour.RangeFade(climb, 30, 0.01);
+            Assert.Equal(0, t.Trades);
+            Assert.True(double.IsFinite(t.AvgR));
+        }
+
+        [Fact]
         public void A_memoryless_boom_has_no_overdue_spike_and_one_with_a_rising_hazard_does()
         {
             // Memoryless: a spike on any tick with probability 1/500, as Deriv's "on average once every 500 ticks" allows.

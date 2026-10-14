@@ -36,7 +36,9 @@ namespace Zugrio.CBot.Lab
         // 2026-10-13 (Boom 150 sell 2/2 at 0.5 lots, Boom 50 sell 10/10 at 0.1 lots) and the Crash 150 buy 2/2 measured first.
         // Off by default since the family behaviour study (2026-10-14): the friend's rules were measured (FAMILY_ENGINES.md).
         // Example: "Boom 150 Index|SELL|2|2|0.5; Crash 150 Index|BUY|2|2|0.5".
-        public const string DefaultReplayRules = "";
+        // Since 2026-10-14 (family study, research/deriv/FAMILIES.md): the Drift Switch momentum rules on the account's own
+        // bid/ask ticks. "SYMBOL|DSI" runs that check; the spread it pays is the account's, which decides the result.
+        public const string DefaultReplayRules = "Drift Switch Index 10|DSI; Drift Switch Index 20|DSI; Drift Switch Index 30|DSI";
         [Parameter("Tick replay rules (symbol|BUY/SELL|TP points|SL points|lots; ...), empty = none", DefaultValue = DefaultReplayRules)] public string ReplayRules { get; set; } = DefaultReplayRules;
         // Names differ from the previous build so a saved instance picks up the new defaults (7 days; battery off).
         [Parameter("Replay: days of ticks", DefaultValue = 7, MinValue = 1, MaxValue = 14)] public int ReplayDays { get; set; } = 7;
@@ -126,10 +128,11 @@ namespace Zugrio.CBot.Lab
         private ReplayJob? BeginJob(string rule, CultureInfo ci)
         {
             var parts = rule.Split('|').Select(x => x.Trim()).ToArray();
-            if (parts.Length < 4 || parts[0].Length == 0) { Print($"LAB REPLICA: rule '{rule}' needs symbol|BUY/SELL|TP|SL|lots."); return null; }
+            var dsi = parts.Length >= 2 && parts[1].Equals("DSI", StringComparison.OrdinalIgnoreCase);
+            if (!dsi && (parts.Length < 4 || parts[0].Length == 0)) { Print($"LAB REPLICA: rule '{rule}' needs symbol|BUY/SELL|TP|SL|lots, or symbol|DSI."); return null; }
             var sym = Symbols.GetSymbol(parts[0]);
             if (sym == null) { Print($"LAB REPLICA: '{parts[0]}' not found at this broker."); return null; }
-            Print($"LAB REPLICA {sym.Name}: loading {ReplayDays} days of ticks (rule {parts[1]} tp {parts[2]} sl {parts[3]})...");
+            Print($"LAB REPLICA {sym.Name}: loading {ReplayDays} days of ticks ({(dsi ? "Drift Switch tick check" : $"rule {parts[1]} tp {parts[2]} sl {parts[3]}")})...");
             var job = new ReplayJob { Parts = parts, Sym = sym, From = Server.TimeInUtc.AddDays(-ReplayDays) };
             job.Clock.Start();
             return job;
@@ -255,10 +258,36 @@ namespace Zugrio.CBot.Lab
 
         private const int LoadSecondsLimit = 180;
 
+        /// <summary>
+        /// The family study's Drift Switch candidates (behaviour_prereg.json) on this account's own bid/ask ticks: lookback
+        /// and hold of a quarter and half the declared regime length, entered 0, 2 and 5 seconds after the signal minute.
+        /// The result turns on the spread: on Deriv's feed the rules gain about +1R before costs and break even near a
+        /// spread of 1.4 (DSI 10), 1.6 (DSI 20) and 3.0 (DSI 30); Deriv publishes both a lower and a higher figure.
+        /// </summary>
+        private void DriftSwitchCheck(Symbol sym, Ticks ticks, DateTime from, CultureInfo ci)
+        {
+            var list = new List<LabTick>(ticks.Count);
+            for (var i = 0; i < ticks.Count; i++) if (ticks[i].Time >= from) list.Add(new LabTick(ticks[i].Time, ticks[i].Bid, ticks[i].Ask));
+            var p = Behaviour.Classify(sym.Name);
+            var regime = double.IsNaN(p.Number) ? 20 : p.Number;
+            int q = Math.Max(2, (int)Math.Round(regime / 4)), h2 = Math.Max(3, (int)Math.Round(regime / 2));
+            Print($"LAB DSI {sym.Name}: {list.Count} ticks, {(list.Count > 0 ? $"{list[0].T:yyyy-MM-dd HH:mm} to {list[^1].T:yyyy-MM-dd HH:mm} UTC" : "none")}, spread now {(sym.Ask - sym.Bid).ToString("G4", ci)}, " +
+                  $"average {(list.Count > 0 ? list.Average(x => x.Ask - x.Bid) : 0).ToString("G4", ci)}, highest {(list.Count > 0 ? list.Max(x => x.Ask - x.Bid) : 0).ToString("G4", ci)}.");
+            var half = list.Count / 2;
+            foreach (var lb in new[] { q, h2 }) foreach (var hold in new[] { q, h2 }) foreach (var delay in new[] { 0.0, 2, 5 })
+            {
+                var (all, sp) = Behaviour.MomentumOnTicks(list, lb, hold, delay);
+                var a = Behaviour.MomentumOnTicks(list.Take(half).ToList(), lb, hold, delay).Test; var b = Behaviour.MomentumOnTicks(list.Skip(half).ToList(), lb, hold, delay).Test;
+                Print($"LAB DSI {sym.Name} {all.Name}: {all.Trades} trades, avg {all.AvgR.ToString("+0.000;-0.000", ci)}R t={all.T.ToString("F1", ci)}, win {(100 * all.WinRate).ToString("F0", ci)}%, " +
+                      $"halves {a.AvgR.ToString("+0.000;-0.000", ci)} / {b.AvgR.ToString("+0.000;-0.000", ci)}R, spread paid {sp.ToString("G4", ci)}");
+            }
+        }
+
         /// <summary>One replay rule on the loaded ticks, with bid/ask fills: prints LAB REPLICA/GENERATOR/GRID lines.</summary>
         private void Analyze(ReplayJob j, CultureInfo ci)
         {
             var parts = j.Parts; var sym = j.Sym; var ticks = j.Ticks!; var from = j.From;
+            if (parts[1].Equals("DSI", StringComparison.OrdinalIgnoreCase)) { DriftSwitchCheck(sym, ticks, from, ci); return; }
             try
             {
                 var dir = parts[1].Equals("SELL", StringComparison.OrdinalIgnoreCase) ? -1 : 1;

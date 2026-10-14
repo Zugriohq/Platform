@@ -191,7 +191,9 @@ namespace Zugrio.CBot.Core
                 var (hi, lo) = Range(b, i, w); var width = hi - lo; var c = b[i].C; var a = MarketLab.Atr(b, i, 14);
                 if (!(width > 4 * spread) || !(a > 0)) { i++; continue; }
                 var pos = (c - lo) / width;
-                if (pos < 0.9 && pos > 0.1) { i++; continue; }
+                // "in its top (bottom) 10%": inside the range. A close beyond the edge is a break, not a fade (fixed
+                // 2026-10-14 on the first run: such closes put the stop behind the entry, and Range Break 100 read -inf R).
+                if ((pos < 0.9 && pos > 0.1) || pos > 1 || pos < 0) { i++; continue; }
                 var dir = pos >= 0.9 ? -1 : 1;
                 var mid = (hi + lo) / 2; var stop = dir < 0 ? hi + 0.25 * width : lo - 0.25 * width;
                 var (rr, exit) = MarketLab.Trade(b, i, dir, Math.Abs(c - mid), Math.Abs(stop - c), a, w, spread);
@@ -278,6 +280,46 @@ namespace Zugrio.CBot.Core
                 res.Add((dir * (b[i + hold].C - b[i].C) - spread) / (2 * a)); i += hold;
             }
             return MarketLab.Summarise($"streak{k} {(follow ? "follow" : "fade")} hold{hold} (TTI)", res);
+        }
+
+        /// <summary>
+        /// The Drift Switch momentum rule (Rules: lookback L, z 1.0, hold H) on the account's own ticks, filled as a bot
+        /// would be: M1 bars from the mid price; at the first tick at least delaySeconds after the signal minute closes,
+        /// buy at the ask or sell at the bid; close at the first tick after the exit minute closes, at the bid (long) or
+        /// ask (short). R = 2 x ATR14 of the mid bars at the signal (MarketLab.Momentum's unit). Also returns the average
+        /// spread paid at entry, so the result can be read against the published spreads.
+        /// </summary>
+        public static (LabTest Test, double AvgSpread) MomentumOnTicks(IReadOnlyList<LabTick> ticks, int lookback, int hold, double delaySeconds = 0)
+        {
+            var name = $"momentum lb{lookback} z1 hold{hold} on ticks +{delaySeconds.ToString(CultureInfo.InvariantCulture)}s";
+            if (ticks.Count < 100) return (MarketLab.Summarise(name, Array.Empty<double>()), double.NaN);
+            var bars = new List<LabBar>(); var ends = new List<DateTime>();
+            DateTime minute = default; double o = 0, h = 0, l = 0, c = 0;
+            foreach (var t in ticks)
+            {
+                var mid = (t.Bid + t.Ask) / 2; var m = new DateTime(t.T.Ticks - t.T.Ticks % TimeSpan.TicksPerMinute, t.T.Kind);
+                if (o == 0 || m != minute)
+                {
+                    if (o != 0) { bars.Add(new LabBar(o, h, l, c)); ends.Add(minute.AddMinutes(1)); }
+                    minute = m; o = h = l = c = mid;
+                }
+                else { h = Math.Max(h, mid); l = Math.Min(l, mid); c = mid; }
+            }
+            int At(DateTime x) { int lo = 0, hi = ticks.Count - 1; if (ticks[hi].T < x) return -1; while (lo < hi) { var mm = (lo + hi) / 2; if (ticks[mm].T < x) lo = mm + 1; else hi = mm; } return lo; }
+            var r = MarketLab.Returns(bars); var sig = MarketLab.JumpScale(r);
+            var res = new List<double>(); var spreads = new List<double>();
+            for (var i = Math.Max(lookback, 15); i + hold < bars.Count;)
+            {
+                var move = bars[i].C / bars[i - lookback].C - 1; var a = MarketLab.Atr(bars, i, 14);
+                if (!(sig > 0) || !(a > 0) || Math.Abs(move) < sig * Math.Sqrt(lookback)) { i++; continue; }
+                var dir = Math.Sign(move);
+                var ei = At(ends[i].AddSeconds(delaySeconds)); var xi = At(ends[i + hold].AddSeconds(delaySeconds));
+                if (ei < 0 || xi < 0) break;
+                double entry = dir > 0 ? ticks[ei].Ask : ticks[ei].Bid, exit = dir > 0 ? ticks[xi].Bid : ticks[xi].Ask;
+                res.Add(dir * (exit - entry) / (2 * a)); spreads.Add(ticks[ei].Ask - ticks[ei].Bid);
+                i += hold;
+            }
+            return (MarketLab.Summarise(name, res), spreads.Count > 0 ? spreads.Average() : double.NaN);
         }
 
         /// <summary>Hold in direction dir for `hold` bars, back to back. R = 2 x ATR at entry.</summary>

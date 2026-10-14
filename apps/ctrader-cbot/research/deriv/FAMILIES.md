@@ -79,3 +79,28 @@ Install the new `ZugrioMarketLab.algo` and start it on the demo account. The fam
 - It reads 21 days of M1 per symbol, 15 symbols per run, mechanism families first and Volatility last.
 - Each symbol prints `LAB FAMILY` (what Deriv says), `LAB MEASURED`, `LAB RULE` lines and a `LAB STUDY VERDICT`.
 - The run ends with `LAB STUDY SUMMARY` and the number to start the next batch from.
+
+## Results, first run (2026-10-14; Deriv feed, amendment 1)
+
+**Data.** 90 days of M1 bars per symbol from Deriv's public feed (2026-07-16 to 2026-10-14). The registered window is the last 21 days; the 69 days before it are the confirmation window.
+
+**Spread.** Deriv's published CFD "min spread" (`deriv_specs_2026-10-14.json`). Results are in:
+- `study_results_mechanism_families.txt`;
+- `study_results_dsi_target_spread.txt`.
+
+**Fix on the first run.** The range fade traded closes *beyond* the range. That put the stop behind the entry, and Range Break 100 read −∞ R. The fix matches the registered wording ("in its top/bottom 10%", i.e. inside the range), with a test. No other rule changed.
+
+| Family | Verdict | What the data shows |
+|---|---|---|
+| **Drift Switch 10 / 20 / 30** | **Passes at Deriv's min spread, fails at its target spread.** The spread decides | Strong persistence, exactly as Deriv describes: lag-1 autocorrelation 0.50 / 0.29 / 0.12; VR240 9.3 / 9.0 / 5.0. Momentum at a quarter and half of the regime length gains **+0.5 to +1.3R per trade before costs** (R = 2 × ATR14). The result is the same in both halves of the 21 days and in the 69-day confirmation window (t 20–108). Break-even spread is about **1.4 (DSI 10), 1.6 (DSI 20) and 3.0 (DSI 30)**. Deriv publishes a min spread of 0.22 / 0.20 / 0.39 (the rules net +0.5 to +1.1R) and a target spread of 0.08% / 0.09% / 0.07% of price, about 2.5 / 2.5 / 5.0 (the rules net −0.6 to −1.3R) |
+| Range Break 100 / 200 | no edge | Strong reversion inside ranges (VR240 0.15 / 0.09). But 0.3–0.7 jumps an hour hit the fades' stops: the fades lose even before spread, and break-follows lose |
+| DEX 600–1500 up/down | no edge | TTI's overdue rule and drift-follow: best t 0.5 |
+| Vol over Boom/Crash 400–750 | no edge | best t 0.4 |
+| Step 100–500 | no edge | TTI's streak rules: best t 1.0 at the published spread (Step 500 gross t 2.3, spread not published, confirmation not reached) |
+| Bull/Bear Market (Daily Reset) | no edge | hold in the declared direction: t 0.5 (gross; spread not published) |
+| Jump 10–100 | no edge | as `research/tti/REVIEW.md` |
+
+**What decides Drift Switch.** The structure is real and large, so the question is the account's actual spread and fill.
+- Market Lab's tick replay now runs the same rules on the account's own bid/ask ticks by default: `SYMBOL|DSI`, `Behaviour.MomentumOnTicks`, entry 0, 2 and 5 seconds after the signal.
+- It prints the average and highest spread actually paid.
+- **That run, not this one, can make Drift Switch a candidate.**

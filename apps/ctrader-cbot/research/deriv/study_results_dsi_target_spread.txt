@@ -1,0 +1,56 @@
+
+== Drift Switch Index 10 (DSI10): DriftSwitch 10; registered 30241 bars from 2026-09-23 08:05, confirmation 99359 bars; spread 2.47
+   Deriv: shifts between bullish, bearish and sideways trends lasting 10, 20 or 30 minutes on average.
+   measured: spread = 4.06 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 2.73 VR15 4.94 VR60 6.87 VR240 9.31; AC1 0.497; vol memory 0.01; net drift 1.089/h (z 5.5)
+   rule momentum lb2 z1 hold5: 4173 trades, avg -0.784R t -38.5, halves -0.909 / -0.654 | confirmation 13609 trades, avg -0.766R t -69.0 | gross +1.041R
+   rule momentum lb5 z1 hold5: 4361 trades, avg -0.834R t -40.9, halves -0.957 / -0.699 | confirmation 14281 trades, avg -0.827R t -73.8 | gross +0.980R
+   rule momentum lb2 z1 hold2: 7772 trades, avg -1.266R t -180.5, halves -1.379 / -1.142 | confirmation 25439 trades, avg -1.258R t -327.1 | gross +0.529R
+   rule momentum lb5 z1 hold2: 9464 trades, avg -1.310R t -197.1, halves -1.428 / -1.186 | confirmation 31131 trades, avg -1.312R t -357.2 | gross +0.482R
+
+== Drift Switch Index 10 (DSI10): DriftSwitch 10; registered 30241 bars from 2026-09-23 08:05, confirmation 99359 bars; spread 4.94
+   Deriv: shifts between bullish, bearish and sideways trends lasting 10, 20 or 30 minutes on average.
+   measured: spread = 8.13 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 2.73 VR15 4.94 VR60 6.87 VR240 9.31; AC1 0.497; vol memory 0.01; net drift 1.089/h (z 5.5)
+   rule momentum lb2 z1 hold5: 4173 trades, avg -2.609R t -120.4, halves -2.857 / -2.351 | confirmation 13609 trades, avg -2.593R t -218.2 | gross +1.041R
+   rule momentum lb5 z1 hold5: 4361 trades, avg -2.648R t -123.1, halves -2.895 / -2.384 | confirmation 14281 trades, avg -2.642R t -222.8 | gross +0.980R
+   rule momentum lb2 z1 hold2: 7772 trades, avg -3.061R t -352.1, halves -3.293 / -2.811 | confirmation 25439 trades, avg -3.051R t -633.0 | gross +0.529R
+   rule momentum lb5 z1 hold2: 9464 trades, avg -3.103R t -389.4, halves -3.341 / -2.853 | confirmation 31131 trades, avg -3.108R t -693.9 | gross +0.482R
+
+== Drift Switch Index 20 (DSI20): DriftSwitch 20; registered 30241 bars from 2026-09-23 08:07, confirmation 99361 bars; spread 2.491
+   Deriv: shifts between bullish, bearish and sideways trends lasting 10, 20 or 30 minutes on average.
+   measured: spread = 5.25 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 2.08 VR15 4.00 VR60 7.02 VR240 9.01; AC1 0.290; vol memory 0.01; net drift -0.5781/h (z -3.5)
+   rule momentum lb5 z1 hold10: 2417 trades, avg -0.734R t -19.5, halves -0.675 / -0.797 | confirmation 8092 trades, avg -0.647R t -31.6 | gross +1.269R
+   rule momentum lb10 z1 hold10: 2408 trades, avg -0.795R t -20.6, halves -0.712 / -0.892 | confirmation 8021 trades, avg -0.684R t -32.5 | gross +1.206R
+   rule momentum lb5 z1 hold5: 4196 trades, avg -1.224R t -74.9, halves -1.179 / -1.269 | confirmation 13988 trades, avg -1.122R t -126.6 | gross +0.767R
+   rule momentum lb10 z1 hold5: 4383 trades, avg -1.273R t -77.1, halves -1.218 / -1.327 | confirmation 14481 trades, avg -1.159R t -129.3 | gross +0.718R
+
+== Drift Switch Index 20 (DSI20): DriftSwitch 20; registered 30241 bars from 2026-09-23 08:07, confirmation 99361 bars; spread 4.982
+   Deriv: shifts between bullish, bearish and sideways trends lasting 10, 20 or 30 minutes on average.
+   measured: spread = 10.50 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 2.08 VR15 4.00 VR60 7.02 VR240 9.01; AC1 0.290; vol memory 0.01; net drift -0.5781/h (z -3.5)
+   rule momentum lb5 z1 hold10: 2417 trades, avg -2.738R t -70.5, halves -2.635 / -2.844 | confirmation 8092 trades, avg -2.541R t -121.2 | gross +1.269R
+   rule momentum lb10 z1 hold10: 2408 trades, avg -2.797R t -70.7, halves -2.667 / -2.939 | confirmation 8021 trades, avg -2.574R t -120.1 | gross +1.206R
+   rule momentum lb5 z1 hold5: 4196 trades, avg -3.216R t -183.5, halves -3.124 / -3.307 | confirmation 13988 trades, avg -3.004R t -318.6 | gross +0.767R
+   rule momentum lb10 z1 hold5: 4383 trades, avg -3.264R t -185.7, halves -3.162 / -3.363 | confirmation 14481 trades, avg -3.039R t -321.9 | gross +0.718R
+
+== Drift Switch Index 30 (DSI30): DriftSwitch 30; registered 30241 bars from 2026-09-23 08:09, confirmation 99363 bars; spread 5.01
+   Deriv: shifts between bullish, bearish and sideways trends lasting 10, 20 or 30 minutes on average.
+   measured: spread = 4.69 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 1.47 VR15 2.43 VR60 4.37 VR240 4.99; AC1 0.124; vol memory 0.00; net drift 0.2198/h (z 0.6)
+   rule momentum lb15 z1 hold15: 1585 trades, avg -0.638R t -13.0, halves -0.712 / -0.570 | confirmation 5300 trades, avg -0.609R t -22.5 | gross +1.047R
+   rule momentum lb8 z1 hold15: 1654 trades, avg -0.647R t -13.6, halves -0.712 / -0.579 | confirmation 5450 trades, avg -0.603R t -22.7 | gross +1.045R
+   rule momentum lb15 z1 hold8: 2700 trades, avg -1.021R t -43.0, halves -1.046 / -0.993 | confirmation 8911 trades, avg -0.956R t -73.1 | gross +0.655R
+   rule momentum lb8 z1 hold8: 2679 trades, avg -1.020R t -43.2, halves -1.013 / -1.028 | confirmation 8847 trades, avg -0.946R t -72.6 | gross +0.657R
+
+== Drift Switch Index 30 (DSI30): DriftSwitch 30; registered 30241 bars from 2026-09-23 08:09, confirmation 99363 bars; spread 10.02
+   Deriv: shifts between bullish, bearish and sideways trends lasting 10, 20 or 30 minutes on average.
+   measured: spread = 9.39 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 1.47 VR15 2.43 VR60 4.37 VR240 4.99; AC1 0.124; vol memory 0.00; net drift 0.2198/h (z 0.6)
+   rule momentum lb15 z1 hold15: 1585 trades, avg -2.323R t -47.0, halves -2.400 / -2.251 | confirmation 5300 trades, avg -2.211R t -81.1 | gross +1.047R
+   rule momentum lb8 z1 hold15: 1654 trades, avg -2.338R t -48.8, halves -2.406 / -2.268 | confirmation 5450 trades, avg -2.211R t -82.3 | gross +1.045R
+   rule momentum lb15 z1 hold8: 2700 trades, avg -2.697R t -111.0, halves -2.725 / -2.665 | confirmation 8911 trades, avg -2.550R t -191.2 | gross +0.655R
+   rule momentum lb8 z1 hold8: 2679 trades, avg -2.696R t -111.4, halves -2.692 / -2.702 | confirmation 8847 trades, avg -2.541R t -190.7 | gross +0.657R
+
+== SUMMARY
+Drift Switch Index 10: DriftSwitch, no edge (best momentum lb2 z1 hold5 t -38.5)
+Drift Switch Index 10: DriftSwitch, no edge (best momentum lb2 z1 hold5 t -120.4)
+Drift Switch Index 20: DriftSwitch, no edge (best momentum lb5 z1 hold10 t -19.5)
+Drift Switch Index 20: DriftSwitch, no edge (best momentum lb5 z1 hold10 t -70.5)
+Drift Switch Index 30: DriftSwitch, no edge (best momentum lb15 z1 hold15 t -13.0)
+Drift Switch Index 30: DriftSwitch, no edge (best momentum lb15 z1 hold15 t -47.0)
