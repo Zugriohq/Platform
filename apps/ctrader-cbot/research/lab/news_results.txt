@@ -1,0 +1,11 @@
+B2 pre-FOMC drift (126 meetings, 2010-12-14 to 2026-09-16; mean over the indices per meeting):
+  gross +0.215% (t 3.27, n 126); net 2010-17 +0.035% (t 0.45, n 57), 2018-26 +0.301% (t 3.03, n 69), pooled +0.181% (t 2.76, n 126)
+  in R (3 x daily ATR): 2010-17 +0.016R (t 0.77, n 57), 2018-26 +0.053R (t 2.83, n 69); per index: SPXUSD +0.132% (t 2.30, n 125); NSXUSD +0.228% (t 2.84, n 123)
+  -> PASS
+
+Event days: 143 FOMC (list), 199 NFP and 201 CPI (reconstructed). Check: 2025-09-05 NFP NFP; 2024-08-02 NFP NFP
+B1 index veto (event on the next trading day): all signals +0.096R (t 3.86, n 270); vetoed +0.162R (t 2.59, n 30) [2010-17 +0.226R (t 2.71, n 13), 2018-26 +0.113R (t 1.25, n 17)]; kept +0.088R (t 3.27, n 240)
+  vetoed by FOMC: +0.399R (t 2.20, n 5)
+  vetoed by NFP: +0.102R (t 1.16, n 17)
+  vetoed by CPI: +0.142R (t 1.87, n 8)
+  total R a year: without veto 1.77, with veto 1.44 -> fail (do not adopt)

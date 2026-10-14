@@ -294,3 +294,37 @@ Each rule names the party that pays the edge (METHODOLOGY.md step 2).
   - The crypto rule was tested on the same 2017–2026 data, so the combination is not an out-of-sample test.
   - CFD swaps and spreads can differ from these assumptions.
   - The demo record decides.
+
+## Round 8, 2026-10-14: APA as entry timing, and news context (pre-registered)
+
+**(a) APA entry timing inside the evidenced signals** (`apa_timing_prereg.json`, `apa_timing.mjs`, `apa_timing_results.txt`).
+- **Method:** TTI 5.16's own APA code chooses the entry inside each base signal: index dip-buying, gold 12-month trend, 10 FX pairs on the 12-month trend, and BTC/ETH 4-week trend.
+- **Comparison:** the same signals entered at the base rule's own time.
+- **Result: all four groups fail.**
+
+| Group | Base rule, R a year | APA fires on | APA entry vs base entry | APA-timed, R a year (T1 / T2) |
+|---|---|---|---|---|
+| Index (SPX, NDX) | 1.91 | 25% | −0.078R (t −5.6) | 0.40 / −2.68 |
+| Gold | 0.36 | 22% | −0.030R (t −2.8) | 0.04 / 0.07 |
+| FX, 10 pairs | −2.67 (no edge, as in round 4) | 25% | −0.032R (t −8.6) | −0.37 / +7.97, second half negative |
+| Crypto (BTC, ETH) | 4.28 | 20% | −0.048R (t −5.2) | 0.83 / 2.23 |
+
+- **APA waits for a retest and a confirmation candle, so it enters after the move has begun.** Its entry is worse than the base entry in every group, and it skips 75–80% of signals.
+- **Its structural stop is 4–8% of the base stop distance.** That stop is hit on 70–90% of trades.
+- **FX T2 is noise, not a pass.** It is +0.80R in the first half and −0.26R in the second (|t| ≤ 1.3).
+
+**Positive control** (`research/tti/REVIEW.md`). On Drift Switch, where persistence is real, the same APA code makes +0.42R before costs and beats its mirror trade (t 4.7). The model works where short-horizon trends exist.
+
+**(b) News context** (`news_prereg.json`, `news.mjs`, `news_results.txt`).
+
+**B2, pre-FOMC drift: PASS. It is now an EA engine** (`FomcEngine`, demo only).
+- Long S&P 500 and Nasdaq 100 from 14:00 New York the day before a scheduled FOMC statement to 13:55 on the day.
+- 126 meetings: +0.18% per meeting net (t 2.8); 2010–17 +0.04%, 2018–26 +0.30%.
+- The statement's jump sits on the data's 14:00 minute, so the exit is before it.
+
+**B1, index-engine news veto: FAIL, not adopted.**
+- **The veto:** skip a dip-buying signal when FOMC, NFP or CPI falls on the next trading day.
+- **The vetoed signals did better, not worse:** +0.162R per trade (n 30) against +0.088R for the rest. With the veto, the year drops from 1.77R to 1.44R.
+- **Event days:**
+  - FOMC days are from the Fed's list.
+  - NFP and CPI days are reconstructed from EURUSD's 08:30 New York minute: 199 and 201 days. The known NFP days 2024-08-02 and 2025-09-05 are found.
