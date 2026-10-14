@@ -191,3 +191,89 @@ At a 1-ATR stop, the round-trip spread is 0.26R on M5 and about 0.06R on H1.
 4. **The market features TTI uses add nothing tradable on these markets at these horizons.**
 
 **What remains outside this study:** order-flow, positioning, options and macro data (framework sections E, I, K). The feed does not have them, so they are not tested.
+
+## Owner's decision and the checks on the event study (2026-10-14)
+
+**Decision (owner).**
+- The tested TTI hypothesis, that its **continuation entries** (break of structure, accepted break, FVG retracement and momentum follow-through, with its filters) predict direction on these markets at M5 and H1, is **not validated**.
+- That is all this research shows. It does **not** show that every price-only approach is invalid.
+- The registered `if_nothing_passes` line ("the TTI line is closed") is narrowed to this: the research is kept for reference, not discarded.
+- **No reversal strategy** is built from the weak mean-reversion result.
+- The EA's existing engines go to **demo validation unchanged**. The EA is not called validated until its demo record supports it (`README.md`, "Demo validation record").
+
+**Checks A–D.** They were run by `events_checks.mjs` (`checks_m5.txt`, `checks_h1.txt`).
+- The script loads the registered `events.mjs` unedited and first proves it reproduces both results files byte for byte.
+- SHA-256 of the registered files, unchanged:
+  - `events.mjs` `535952e974a6dbaa3e0adab4a77eef9db7205036c949cd69f64f43f78987b215`;
+  - `events_results.txt` `3a851f7f3372ee80f5992c803e750f795c0556fac7b4004aa914cc03e84c5814`;
+  - `events_results_h1.txt` `6a29baead50dbf21d1b56aed52b2810faa0410f961d5108649a42c4e64764294`.
+
+**A. Is the random control like for like?**
+- **What R0 shares with the events.** It uses the same `walk()`:
+  - next-bar open entry, 1-ATR stop, 1.5-ATR target, 48-bar limit;
+  - stop first when both are touched in one bar;
+  - gap fills at the open;
+  - the same spread, the same one-trade-at-a-time rule, and the same pooling and day clustering.
+- **Where it differs.** It is sampled every 12th bar rather than at event times, so its hours and volatility differ from the events'.
+- **R0 gross is +0.000R and +0.007R on M5.** So stop-first and gap fills add no bias.
+- **A1: a control at the same times as the events.** Each event's own entry bar, ATR, fill rule and exit rule is re-walked in a seeded random direction. Difference from the event is in R, day-clustered, with 95% CIs.
+  - Momentum fade on M5:
+    - design +0.110 [−0.013, +0.233], t 1.8;
+    - test +0.084 [−0.067, +0.235], t 1.1.
+
+    Against the same-time control, the fade is weaker than when measured against zero. On H1 it is +0.237R (t 0.9) and +0.444R (t 2.2) on n 62 and 45.
+  - Break of structure is *below* the same-time control: −0.031R (t −3.5 in design, −2.6 in test). Its continuation information points the wrong way.
+  - Sweep-reclaim: +0.015 (t 1.7) and +0.024 (t 2.1). That is real but about 0.02R, a tenth of the cost.
+  - **FVG retracement (limit fill) needed care.** The registered walk counts the fill bar's stop. That is sound for the event's own direction, but not for a random opposite direction, whose stop side was usually printed before the fill. A naive control would therefore look −0.13R worse than the event and invent an effect. Walking both from the bar after the fill gives −0.012R (t −1.0), i.e. no information. The registered E4 results themselves are unaffected (their own convention is conservative).
+- **A2: which side of the price.** The bars are bid, and the study subtracts one full spread per trade. Re-walking with the spread where it acts gives net results mostly within 0.03R of the registered ones, at most 0.07R (momentum follow, which improves but stays near −0.23R), on both timeframes, with no verdict changed:
+  - a long buys at the ask and exits at the bid;
+  - a short sells at the bid, with its stop and target on the ask, so its stop is touched earlier.
+
+  The fade on M5 is −0.125R (t −2.9) in design and −0.011R (t −0.2) in test.
+
+**B. Dependence, clustering and overlap.**
+- Overlap within each variant and market is removed (one open trade at a time). Same-day trades are clustered across markets.
+- n counts trades, not independent observations. The number of clusters is the conservative count:
+  - the M5 fade has 236 days (design) and 140 days (test);
+  - by week, 65 and 40;
+  - by month, 15 and 9.
+- Clustering by week or month moves no t statistic by more than 0.9, and no conclusion changes. The largest moves are sweep-reclaim on M5 in the test period (1.3 → 2.1 by month) and the London/NY fade (1.9 → 2.6 by month); both still fail in the design period.
+- Daily results are not serially dependent: the lag-1 correlation of daily sums is −0.05 (fade) and −0.02 (control).
+- Across the 19 variants, the fade's single test-period t of 2.1 is about what chance gives the best of 19.
+- **The fade is not consistent by market.** Gross (net) in design → test:
+
+  | Market | Design | Test |
+  |---|---|---|
+  | EURUSD | +0.00 (−0.20) | +0.23 (−0.02) |
+  | GBPUSD | +0.01 | +0.06 |
+  | USDJPY | +0.26 (t 2.5) | +0.14 (t 1.3) |
+  | XAUUSD | +0.07 | +0.04 |
+  | SPX | +0.05 | +0.13 |
+
+**C. Was the 2026 holdout used to revise definitions?**
+- Event definitions, variants, split, costs and pass rule were committed in 310016a before any event-study result.
+- `events.mjs` was written once, run, and committed unchanged with the M5 results (4043cb2). The session log shows no edit after a run.
+- The H1 amendment was registered after the M5 results and before any H1 result. The H1 run uses the same code with a timeframe argument.
+- **Caveat.** 2026 data is not untouched data overall. It was the test period of earlier studies on the same markets: the TTI 4.2 and 4.3 replays, and round 6. Those studies informed which hypotheses were worth testing here, but none of these definitions was changed after seeing a 2026 result.
+
+**D. The cost model.**
+- **The costs are assumptions, not measurements.** They are fixed round-trip spreads (EURUSD 1.0 pip, GBPUSD 1.5, USDJPY 1.2, XAUUSD $0.35, SPX 0.6 points), with no commission, no slippage and no variation by session or volatility.
+- They are not Deriv's. Deriv's live spreads could not be read from this environment, so the demo record (below) is where they will be measured.
+- In R, the cost varies with volatility. For the M5 fade it averages 0.21R in Asia hours and 0.12R in London/New York.
+- The fade breaks even only at 0.43× (design) and 0.71× (test) of the assumed spread. Realistic Deriv costs, which are probably wider and include slippage, make this worse, not better.
+- **Post-hoc slice, not acted on.** The M5 fade is +0.32R gross over 17:00–22:00 UTC (n 174, both periods together). It is one of four sessions looked at after the fact, without a split. It is a hypothesis, not evidence, and nothing is built from it.
+
+**The +0.08–0.12R mean-reversion effect, exactly.**
+- **Rule.** Over the last 12 closed M5 bars, |close − close 12 bars earlier| ≥ 2 × ATR14(M5) × √12. Trade against that move.
+- **Trade.** Enter at the next bar's open, with a 1-ATR stop and a 1.5-ATR target; exit after 48 bars otherwise. Stop first if both are touched in a bar; one trade at a time per market.
+- **Data.** Pooled over the five markets, with standard errors clustered by UTC date.
+- **Results:**
+
+  | | n | Gross | 95% CI | t | Net |
+  |---|---|---|---|---|---|
+  | M5 design (2024-10 to 2025-12) | 840 | +0.077R | [−0.015, +0.170] | 1.6 | −0.102R (t −2.2) |
+  | M5 test (2026-01 to 2026-09) | 505 | +0.123R | [+0.008, +0.238] | 2.1 | −0.051R (t −0.9) |
+  | H1 design | 62 | +0.223R | [−0.066, +0.513] | | |
+  | H1 test | 45 | +0.167R | [−0.248, +0.582] | | |
+
+- It fails the registered test (gross t ≥ 2 in both periods), and it is negative after the assumed costs.

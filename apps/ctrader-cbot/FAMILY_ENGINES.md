@@ -53,6 +53,24 @@ Evidence comes from `research/lab/README.md` (rounds 1–3) and Market Lab (on t
 - Intraday momentum (the first half hour predicts the last half hour; Gao, Han, Li and Zhou, 2018). Needs years of intraday cash-index data, which the lab does not have (60 days only).
 - Overnight drift: CFD financing probably eats it. Measure the broker's swap first.
 
+## Price-structure entries (TTI) and the demo (2026-10-14)
+
+**The research.** It is kept in `research/tti/` (`REVIEW.md`), covering:
+- TTI 4.2, replayed for two years;
+- TTI 4.3, with its defects fixed;
+- an event study of its entry information on five markets, on M5 and H1.
+
+**The owner's decision:**
+- The **continuation-entry hypothesis** (structure breaks, accepted breaks, FVG retracements and momentum follow-through predict direction) is **not validated**.
+- That is not a finding that every price-only approach is invalid.
+- The only consistent sign is a weak short-term mean reversion: momentum fade about +0.08 to +0.12R gross on M5, under half the cost. It is **not** made into a strategy.
+
+**Next step: demo validation.** The EA's existing engines run on demo, unchanged:
+- index dip-buying;
+- the gold trend engine.
+
+What is recorded, and how it is read, is in `README.md` under "Demo validation record". The EA is not called validated until that record supports it.
+
 ## Forex
 
 **Mechanism.** Currencies are the most efficient market retail can trade. Known premia are carry (interest differential, paid as swap) and slow cross-sectional momentum. Price structure alone has none that survives costs.
