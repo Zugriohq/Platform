@@ -261,3 +261,36 @@ Each rule names the party that pays the edge (METHODOLOGY.md step 2).
   - **For TTI**, which targets those levels: price does not systematically turn at them. TTI's give-backs at 0.9–1R are not caused by the levels.
 - **Fix reversals:** about zero in these years. The month-end version is positive in both years, but on only 24 days each.
 - **Harness fix before the final run:** gold sessions reopen after the 17:00–18:00 New York break, and the first version's search for a session's first bar stopped one minute short of it. That left only 7 gold trades for the level rule; the fixed run has 180. No rule changed.
+
+## Round 7, 2026-10-14: index turn of the month, and the surviving engines combined
+
+**Turn of the month (pre-registered: `realmarkets_prereg.json`, `I_index_turn_of_month`; `turn_of_month.mjs`).**
+- **Rule and data:** long from the 2nd-last trading day's close to the 3rd trading day's close, on five index CFDs (S&P 500, Nasdaq 100, DAX, FTSE 100, Nikkei 225). HistData M1 bars give daily closes at 21:00 UTC, 2010-11 to 2026-09.
+- **Result: fail** (`turn_of_month_results.txt`).
+  - Window minus other days: −5.6bp a day (t −1.0) in 2010–17 and −1.1bp (t −0.2) in 2018–26.
+  - The net trade: −8.8bp and +5.5bp, t ≤ 0.3.
+- **Data fix, made after the first run:** HistData's GRXEUR file holds a different index from 2020-06-15 to 2023-12-04, near 3,200–4,400 against the DAX near 12,000–16,000.
+  - Its switch day on 2023-12-04 fell inside a window and showed as a +131% day.
+  - Days moving more than 25% in log terms are now dropped as data breaks: 2 days, both in GRXEUR.
+  - The verdict is the same with or without the fix.
+
+**The surviving engines combined (`portfolio.mjs`, `portfolio_results.txt`; descriptive, no new rule).**
+- **What is combined:** the three real-market engines that passed their registered tests, each as the EA sizes it (one trade = 1R of risk to its stop):
+  - index dip-buying on ES and NQ;
+  - gold 12-month trend;
+  - BTC and ETH 4-week trend.
+- **Period:** the common one, 2017-09 to 2026-09.
+
+| Engine | R a year | Monthly t | Sharpe | Max drawdown | Years positive |
+|---|---|---|---|---|---|
+| Index dip-buying | 1.30 | 1.9 | 0.62 | 5.5R | 6/10 |
+| Gold trend (1.5%/yr financing) | 0.46 | 1.2 | 0.40 | 4.0R | 5/10 |
+| Crypto trend (10%/yr financing) | 4.75 | 3.1 | 1.04 | 5.0R | 9/10 |
+| **All three** | **6.51** | **3.9** | **1.28** | **5.7R** | **9/10** |
+
+- **The engines are nearly uncorrelated.** Monthly correlations are −0.08 to 0.09, so together the drawdown is about one engine's.
+- **What it is worth:** at 1% risk per trade, about 6.5% a year with a worst drawdown of about 6%, before compounding. Gold at 5% financing adds only 0.18R a year.
+- **Caveats:**
+  - The crypto rule was tested on the same 2017–2026 data, so the combination is not an out-of-sample test.
+  - CFD swaps and spreads can differ from these assumptions.
+  - The demo record decides.

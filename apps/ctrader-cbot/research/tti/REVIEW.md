@@ -389,7 +389,7 @@ TTI's "Jump recent" signal has nothing to read. A jump does not tell you what co
 | FIX15, M5 (6,192 / 3,419 / 1,202 trades) | −0.05R / −0.35R | +0.01R / −0.10 to −0.13R | +0.05R / −0.02 to −0.07R |
 | FIX15, M1 (26,787 / 14,682 / 4,575 trades) | −0.01R / −0.67 to −0.78R | −0.01R / −0.41 to −0.52R | +0.01R / −0.26 to −0.48R |
 
-- **Before costs, APA's direction is worth about 0R.** The difference from the mirror trade is within ±0.1R with |t| < 2 in every large cell.
+- **Before costs, APA's direction is worth about 0R.** The difference from the mirror trade is within ±0.15R with |t| < 2 in every 1.5R cell.
 - **The higher-timeframe filter (`HTF`, the top-down agreement) changes nothing.**
 - **Costs then decide the result.** On M1, APA's structural stops are so close that the spread is 0.4–0.7R per trade. That is why scalping it loses fastest.
 - **No cell depends on the spread assumption.** Even at zero cost nothing passes: the edge before costs is zero.

@@ -1,0 +1,13 @@
+SPXUSD: 4096 days 2010-11-15 to 2026-10-01, 190 trades, 0 data breaks dropped; mean daily return (bp) window 1.11 vs outside 5.09 (2010-17), window 5.79 vs outside 4.41 (2018-26)
+NSXUSD: 4096 days 2010-11-15 to 2026-10-01, 190 trades, 0 data breaks dropped; mean daily return (bp) window 2.85 vs outside 6.71 (2010-17), window 8.74 vs outside 6.49 (2018-26)
+GRXEUR: 4053 days 2010-11-15 to 2026-10-01, 189 trades, 2 data breaks dropped; mean daily return (bp) window -7.99 vs outside 6.23 (2010-17), window 3.93 vs outside 2.89 (2018-26)
+UKXGBP: 4038 days 2010-11-15 to 2026-10-01, 190 trades, 0 data breaks dropped; mean daily return (bp) window 1.63 vs outside 1.53 (2010-17), window 1.64 vs outside 1.42 (2018-26)
+JPXJPY: 4095 days 2010-11-15 to 2026-10-01, 190 trades, 0 data breaks dropped; mean daily return (bp) window -4.27 vs outside 6.58 (2010-17), window -1.26 vs outside 6.18 (2018-26)
+2010-2017: 86 month boundaries; window minus outside, per day -5.56bp (t -1.02); window trade gross +1.32bp (t 0.06), net -8.80bp (t -0.40) -> fails
+2018-2026: 104 month boundaries; window minus outside, per day -1.12bp (t -0.22); window trade gross +15.58bp (t 0.77), net +5.54bp (t 0.27) -> fails
+  SPXUSD net per trade: 2010-17 -0.12bp (t -0.01, n 86); 2018-26 +13.65bp (t 0.69, n 104)
+  NSXUSD net per trade: 2010-17 +8.23bp (t 0.39, n 86); 2018-26 +25.39bp (t 1.00, n 104)
+  GRXEUR net per trade: 2010-17 -34.54bp (t -1.20, n 86); 2018-26 +6.13bp (t 0.25, n 103)
+  UKXGBP net per trade: 2010-17 +0.20bp (t 0.01, n 86); 2018-26 -1.07bp (t -0.06, n 104)
+  JPXJPY net per trade: 2010-17 -17.78bp (t -0.56, n 86); 2018-26 -16.13bp (t -0.57, n 104)
+VERDICT (registered rule): FAIL
