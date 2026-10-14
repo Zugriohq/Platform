@@ -350,3 +350,48 @@ The test fails, before any realistic spread: TTI's Jump spreads cost about 0.00R
 TTI's "Jump recent" signal has nothing to read. A jump does not tell you what comes next.
 
 **Verdict.** TTI on Jump is not validated: −0.10R per trade, the same as its random-walk control, and negative in both halves. The profit the app's own panel suggests comes from how it books outcomes, not from the market.
+
+## TTI 5.16 Advanced Price Action (APA): why it rarely fires, and whether it pays (2026-10-14, pre-registered in `apa_prereg.json`)
+
+**What was run.** `apa_replay.mjs` lifts TTI 5.16's own APA code out of the owner's HTML, unchanged, and runs it at every closed bar. The extracted code is `APA_CONFIG`, `swings`, `displacement`, `findFVG`, `analyseAPA`, `buildPlan` and the Wilder ATR.
+- **Funnel:** every setup is counted at the furthest stage it reached.
+- **Trades:** every fresh trigger is traded: market entry at the next open, the plan's stop and TP1, the spread paid.
+- **Control:** the mirror trade, the opposite direction with the same distances.
+- **Markets:**
+  - forex and gold (EURUSD, GBPUSD, USDJPY, XAUUSD), two years;
+  - 13 Volatility indices and 4 Jump indices, 90 days.
+- **Timeframes:** M5 (TTI's default) and M1 (scalp).
+- **Results:** `apa_results.txt`; the summary is `apa_summary.mjs`.
+
+**Why APA rarely fires.** Most setups never trigger, and of those that do, about 80% are refused by one rule:
+
+| Stage (fx M5, 40,584 setups) | Setups stopped there |
+|---|---|
+| Break with no displacement | 19,200 (47%) |
+| No FVG or no zone overlap | 7,951 |
+| Price never came back to the zone | 5,594 |
+| Came back, no trigger candle | 1,144 |
+| **Triggered** | **6,695** |
+| of the fresh triggers: TP1 below 1R | **5,418** |
+| of the fresh triggers: price already past stop or TP1 | 559 |
+| **Traded** | **487 (0.17 per market per day)** |
+
+- **The 1R rule is the bottleneck.** TP1 is the nearest confirmed swing, including the small k=2 internal pivots, and that is usually inside 1R.
+- **The same holds everywhere.** Volatility, Jump and M1 show the same picture: 0.2–1.1 trades per market per day.
+- **Amendment 1 (`FIX15`),** registered from the funnel counts alone, before any outcome: drop the 1R rule and target 1.5R. APA then fires 2–13 times per market per day.
+
+**Whether it pays.** No. All 24 registered cells fail.
+
+| Rule, timeframe | Forex: before costs / net | Volatility: before costs / net | Jump: before costs / net |
+|---|---|---|---|
+| TTI plan, M5 | −0.04R / −0.38 to −0.61R | +0.14R (t 1.0) / −0.18 and +0.02R | +0.05R / +0.03 and −0.15R |
+| TTI plan, M1 | +0.01R / −1.0 to −1.5R | −0.02R / −0.7 to −1.9R | +0.81R (t 1.5) / +0.68 and −0.32R |
+| FIX15, M5 (6,192 / 3,419 / 1,202 trades) | −0.05R / −0.35R | +0.01R / −0.10 to −0.13R | +0.05R / −0.02 to −0.07R |
+| FIX15, M1 (26,787 / 14,682 / 4,575 trades) | −0.01R / −0.67 to −0.78R | −0.01R / −0.41 to −0.52R | +0.01R / −0.26 to −0.48R |
+
+- **Before costs, APA's direction is worth about 0R.** The difference from the mirror trade is within ±0.1R with |t| < 2 in every large cell.
+- **The higher-timeframe filter (`HTF`, the top-down agreement) changes nothing.**
+- **Costs then decide the result.** On M1, APA's structural stops are so close that the spread is 0.4–0.7R per trade. That is why scalping it loses fastest.
+- **No cell depends on the spread assumption.** Even at zero cost nothing passes: the edge before costs is zero.
+
+**Verdict.** TTI 5.16's APA is not validated, as published or with the firing fix. It fires rarely because of the 1R TP1 rule. Making it fire more only multiplies trades that carry no direction. Scalping it on forex, Volatility or Jump would lose about the spread on every trade.
