@@ -1,0 +1,229 @@
+
+== Boom 50 Index (BOOM50): Boom 50 up; registered 30241 bars from 2026-09-23 08:05, confirmation 99359 bars; spread 1.2719
+   Deriv: rapid surges; 50-1,000 ticks set how often, on average, the market booms.
+   measured: spread = 0.23 x the typical 1-min move; jumps 0.01/h (100% up); jump due? late/early - (z -); VR5 0.99 VR15 0.98 VR60 0.99 VR240 0.89; AC1 0.006; vol memory -0.01; net drift 1.221/h (z 0.6)
+   rule drift short tp1 sl2 max60: 6246 trades, avg -0.130R t -12.2, halves -0.128 / -0.133 | confirmation 20716 trades, avg -0.116R t -20.0 | gross -0.032R
+   rule drift short tp0.5 sl3 max60: 8059 trades, avg -0.078R t -15.0, halves -0.082 / -0.074 | confirmation 26817 trades, avg -0.073R t -25.9 | gross -0.012R
+
+== Boom 150 Index (BOOM150N): Boom 150 up; registered 30241 bars from 2026-09-23 08:07, confirmation 99361 bars; spread 0.1705
+   Deriv: rapid surges; 50-1,000 ticks set how often, on average, the market booms.
+   measured: spread = 2.56 x the typical 1-min move; jumps 0.65/h (100% up); jump due? late/early 0.95 (z -0.4); VR5 1.02 VR15 1.00 VR60 0.97 VR240 0.89; AC1 -0.005; vol memory -0.01; net drift 0.5357/h (z 2.1)
+   rule overdue x1 (TTI): 172 trades, avg +0.151R t 1.2, halves +0.113 / +0.033 | confirmation 667 trades, avg -0.085R t -1.3 | gross +0.201R
+   rule overdue x0.7 (TTI): 235 trades, avg +0.121R t 1.1, halves +0.058 / +0.035 | confirmation 893 trades, avg -0.144R t -2.6 | gross +0.172R
+   rule drift short tp1 sl2 max60: 7796 trades, avg -0.201R t -17.9, halves -0.190 / -0.212 | confirmation 26080 trades, avg -0.177R t -29.3 | gross -0.056R
+   rule drift short tp0.5 sl3 max60: 10427 trades, avg -0.116R t -22.1, halves -0.116 / -0.116 | confirmation 34843 trades, avg -0.108R t -38.9 | gross -0.018R
+
+== Boom 300 Index (BOOM300N): Boom 300 up; registered 30241 bars from 2026-09-23 08:25, confirmation 99359 bars; spread 0.504
+   Deriv: rapid surges; 50-1,000 ticks set how often, on average, the market booms.
+   measured: spread = 13.60 x the typical 1-min move; jumps 2.58/h (100% up); jump due? late/early 1.02 (z 0.3); VR5 1.00 VR15 1.01 VR60 0.94 VR240 1.02; AC1 -0.004; vol memory 0.00; net drift 0.2223/h (z 1.0)
+   rule overdue x1 (TTI): 662 trades, avg -0.195R t -4.5, halves -0.213 / -0.166 | confirmation 2270 trades, avg -0.130R t -7.7 | gross +0.030R
+   rule overdue x0.7 (TTI): 907 trades, avg -0.192R t -5.3, halves -0.211 / -0.163 | confirmation 3019 trades, avg -0.143R t -9.9 | gross +0.032R
+   rule drift short tp1 sl2 max60: 8802 trades, avg -0.744R t -56.6, halves -0.792 / -0.697 | confirmation 29111 trades, avg -0.556R t -78.1 | gross -0.045R
+   rule drift short tp0.5 sl3 max60: 11777 trades, avg -0.489R t -81.7, halves -0.526 / -0.452 | confirmation 39194 trades, avg -0.368R t -115.3 | gross -0.018R
+
+== Boom 500 Index (BOOM500): Boom 500 up; registered 30241 bars from 2026-09-23 08:27, confirmation 99361 bars; spread 0.528
+   Deriv: rapid surges; 50-1,000 ticks set how often, on average, the market booms.
+   measured: spread = 7.58 x the typical 1-min move; jumps 3.35/h (100% up); jump due? late/early 1.03 (z 0.5); VR5 1.02 VR15 1.01 VR60 1.04 VR240 1.25; AC1 -0.002; vol memory 0.00; net drift 1.348/h (z 1.7)
+   rule overdue x1 (TTI): 881 trades, avg -0.002R t -0.1, halves -0.006 / -0.006 | confirmation 2737 trades, avg -0.075R t -4.2 | gross +0.061R
+   rule overdue x0.7 (TTI): 1195 trades, avg -0.017R t -0.6, halves -0.026 / -0.016 | confirmation 3867 trades, avg -0.067R t -4.4 | gross +0.046R
+   rule drift short tp1 sl2 max60: 9062 trades, avg -0.321R t -19.7, halves -0.339 / -0.300 | confirmation 30006 trades, avg -0.334R t -37.7 | gross -0.054R
+   rule drift short tp0.5 sl3 max60: 12186 trades, avg -0.195R t -28.9, halves -0.210 / -0.181 | confirmation 40606 trades, avg -0.220R t -58.6 | gross -0.017R
+
+== Boom 600 Index (BOOM600): Boom 600 up; registered 30241 bars from 2026-09-23 08:28, confirmation 99362 bars; spread UNKNOWN (gross only)
+   Deriv: rapid surges; 50-1,000 ticks set how often, on average, the market booms.
+   measured: spread = 0.00 x the typical 1-min move; jumps 3.22/h (100% up); jump due? late/early 0.91 (z -1.7); VR5 1.03 VR15 1.05 VR60 1.06 VR240 1.33; AC1 0.011; vol memory 0.01; net drift 0.0502/h (z 0.1)
+   rule overdue x0.7 (TTI): 1101 trades, avg -+0.000R t -0.0, halves +0.034 / -0.045 | confirmation 3768 trades, avg -0.001R t -0.0 | gross -+0.000R
+   rule overdue x1 (TTI): 822 trades, avg -0.021R t -0.7, halves -0.012 / -0.042 | confirmation 2781 trades, avg +0.004R t 0.3 | gross -0.021R
+   rule drift short tp1 sl2 max60: 9271 trades, avg -0.019R t -1.1, halves -0.016 / -0.020 | confirmation 30442 trades, avg -0.024R t -2.6 | gross -0.019R
+   rule drift short tp0.5 sl3 max60: 12395 trades, avg -0.020R t -2.6, halves -0.017 / -0.021 | confirmation 41005 trades, avg -0.012R t -2.8 | gross -0.020R
+
+== Boom 900 Index (BOOM900): Boom 900 up; registered 30241 bars from 2026-09-23 08:30, confirmation 99364 bars; spread 0.959
+   Deriv: rapid surges; 50-1,000 ticks set how often, on average, the market booms.
+   measured: spread = 17.02 x the typical 1-min move; jumps 2.69/h (100% up); jump due? late/early 1.02 (z 0.3); VR5 1.01 VR15 0.99 VR60 1.06 VR240 1.62; AC1 0.005; vol memory 0.01; net drift -1.473/h (z -1.6)
+   rule overdue x0.7 (TTI): 1017 trades, avg -0.127R t -4.4, halves -0.117 / -0.146 | confirmation 3341 trades, avg -0.057R t -3.6 | gross -0.042R
+   rule overdue x1 (TTI): 732 trades, avg -0.148R t -4.4, halves -0.154 / -0.159 | confirmation 2473 trades, avg -0.082R t -4.6 | gross -0.063R
+   rule drift short tp1 sl2 max60: 9542 trades, avg -0.622R t -28.7, halves -0.617 / -0.627 | confirmation 31066 trades, avg -0.610R t -49.8 | gross -0.002R
+   rule drift short tp0.5 sl3 max60: 12740 trades, avg -0.399R t -48.3, halves -0.391 / -0.408 | confirmation 41521 trades, avg -0.391R t -76.2 | gross +0.010R
+
+== Boom 1000 Index (BOOM1000): Boom 1000 up; registered 30241 bars from 2026-09-23 08:32, confirmation 99366 bars; spread 1.7275
+   Deriv: rapid surges; 50-1,000 ticks set how often, on average, the market booms.
+   measured: spread = 19.10 x the typical 1-min move; jumps 2.46/h (100% up); jump due? late/early 1.04 (z 0.7); VR5 0.99 VR15 1.00 VR60 1.01 VR240 0.96; AC1 -0.007; vol memory -0.00; net drift -1.758/h (z -1.1)
+   rule overdue x1 (TTI): 692 trades, avg -0.108R t -3.1, halves -0.099 / -0.105 | confirmation 2240 trades, avg -0.104R t -5.1 | gross -0.024R
+   rule overdue x0.7 (TTI): 930 trades, avg -0.114R t -3.7, halves -0.111 / -0.121 | confirmation 3091 trades, avg -0.078R t -4.5 | gross -0.030R
+   rule drift short tp1 sl2 max60: 9617 trades, avg -0.685R t -30.7, halves -0.667 / -0.704 | confirmation 31177 trades, avg -0.755R t -59.1 | gross +0.003R
+   rule drift short tp0.5 sl3 max60: 12816 trades, avg -0.451R t -47.3, halves -0.449 / -0.454 | confirmation 41552 trades, avg -0.495R t -90.9 | gross +0.000R
+
+== Crash 50 Index (CRASH50): Crash 50 down; registered 30241 bars from 2026-09-23 08:33, confirmation 99367 bars; spread 1.208
+   Deriv: sudden downturns; 50-1,000 ticks set how often, on average, the market crashes.
+   measured: spread = 0.23 x the typical 1-min move; jumps 0.01/h (0% up); jump due? late/early - (z -); VR5 0.99 VR15 1.00 VR60 0.94 VR240 0.73; AC1 0.000; vol memory -0.01; net drift -3.311/h (z -1.7)
+   rule drift long tp1 sl2 max60: 6196 trades, avg -0.141R t -13.0, halves -0.131 / -0.149 | confirmation 20742 trades, avg -0.127R t -21.7 | gross -0.043R
+   rule drift long tp0.5 sl3 max60: 8048 trades, avg -0.084R t -15.8, halves -0.081 / -0.087 | confirmation 26682 trades, avg -0.075R t -26.5 | gross -0.018R
+
+== Crash 150 Index (CRASH150N): Crash 150 down; registered 30241 bars from 2026-09-23 08:35, confirmation 99369 bars; spread 0.1533
+   Deriv: sudden downturns; 50-1,000 ticks set how often, on average, the market crashes.
+   measured: spread = 2.37 x the typical 1-min move; jumps 0.71/h (0% up); jump due? late/early 1.02 (z 0.2); VR5 1.01 VR15 1.02 VR60 0.95 VR240 0.96; AC1 0.002; vol memory -0.00; net drift 0.248/h (z 1.0)
+   rule overdue x0.7 (TTI): 279 trades, avg -0.079R t -0.8, halves -0.039 / -0.066 | confirmation 817 trades, avg +0.051R t 0.9 | gross -0.032R
+   rule overdue x1 (TTI): 217 trades, avg -0.087R t -0.8, halves -0.047 / -0.059 | confirmation 615 trades, avg +0.086R t 1.3 | gross -0.040R
+   rule drift long tp1 sl2 max60: 7961 trades, avg -0.145R t -13.4, halves -0.138 / -0.151 | confirmation 26026 trades, avg -0.170R t -28.0 | gross -0.013R
+   rule drift long tp0.5 sl3 max60: 10521 trades, avg -0.102R t -19.9, halves -0.100 / -0.104 | confirmation 34360 trades, avg -0.099R t -35.4 | gross -0.013R
+
+== Crash 300 Index (CRASH300N): Crash 300 down; registered 30241 bars from 2026-09-23 08:36, confirmation 99370 bars; spread 1.112
+   Deriv: sudden downturns; 50-1,000 ticks set how often, on average, the market crashes.
+   measured: spread = 6.41 x the typical 1-min move; jumps 2.62/h (0% up); jump due? late/early 1.07 (z 1.1); VR5 1.00 VR15 1.02 VR60 1.01 VR240 1.08; AC1 -0.003; vol memory 0.01; net drift 0.02876/h (z 0.0)
+   rule overdue x0.7 (TTI): 873 trades, avg -0.063R t -1.8, halves -0.092 / -0.027 | confirmation 3021 trades, avg -0.134R t -6.9 | gross +0.017R
+   rule overdue x1 (TTI): 619 trades, avg -0.089R t -2.1, halves -0.163 / -0.045 | confirmation 2255 trades, avg -0.118R t -5.2 | gross -0.008R
+   rule drift long tp1 sl2 max60: 8780 trades, avg -0.290R t -22.3, halves -0.299 / -0.280 | confirmation 28909 trades, avg -0.397R t -55.4 | gross -0.023R
+   rule drift long tp0.5 sl3 max60: 11818 trades, avg -0.189R t -32.7, halves -0.186 / -0.191 | confirmation 38848 trades, avg -0.262R t -82.9 | gross -0.009R
+
+== Crash 500 Index (CRASH500): Crash 500 down; registered 30241 bars from 2026-09-23 08:38, confirmation 99372 bars; spread 0.326
+   Deriv: sudden downturns; 50-1,000 ticks set how often, on average, the market crashes.
+   measured: spread = 8.46 x the typical 1-min move; jumps 3.32/h (0% up); jump due? late/early 1.03 (z 0.5); VR5 1.03 VR15 1.02 VR60 1.03 VR240 1.23; AC1 0.011; vol memory 0.00; net drift -0.3093/h (z -0.7)
+   rule overdue x1 (TTI): 822 trades, avg -0.041R t -1.3, halves +0.005 / -0.084 | confirmation 2878 trades, avg -0.054R t -3.1 | gross +0.026R
+   rule overdue x0.7 (TTI): 1125 trades, avg -0.044R t -1.6, halves -0.025 / -0.066 | confirmation 3887 trades, avg -0.060R t -4.0 | gross +0.023R
+   rule drift long tp1 sl2 max60: 9093 trades, avg -0.334R t -20.7, halves -0.301 / -0.368 | confirmation 30140 trades, avg -0.325R t -37.0 | gross -0.034R
+   rule drift long tp0.5 sl3 max60: 12263 trades, avg -0.222R t -31.8, halves -0.199 / -0.246 | confirmation 40588 trades, avg -0.215R t -56.6 | gross -0.022R
+
+== Crash 600 Index (CRASH600): Crash 600 down; registered 30241 bars from 2026-09-23 08:40, confirmation 99374 bars; spread UNKNOWN (gross only)
+   Deriv: sudden downturns; 50-1,000 ticks set how often, on average, the market crashes.
+   measured: spread = 0.00 x the typical 1-min move; jumps 3.30/h (0% up); jump due? late/early 1.08 (z 1.4); VR5 0.99 VR15 1.02 VR60 1.02 VR240 1.17; AC1 0.006; vol memory 0.00; net drift -0.3253/h (z -0.1)
+   rule overdue x0.7 (TTI): 1171 trades, avg +0.011R t 0.4, halves -0.007 / +0.025 | confirmation 3807 trades, avg +0.011R t 0.8 | gross +0.011R
+   rule overdue x1 (TTI): 838 trades, avg -0.010R t -0.3, halves -0.005 / +0.002 | confirmation 2710 trades, avg -0.008R t -0.5 | gross -0.010R
+   rule drift long tp1 sl2 max60: 9232 trades, avg -0.017R t -1.0, halves -0.001 / -0.031 | confirmation 30406 trades, avg -0.023R t -2.4 | gross -0.017R
+   rule drift long tp0.5 sl3 max60: 12427 trades, avg -0.013R t -1.8, halves -0.002 / -0.024 | confirmation 40886 trades, avg -0.014R t -3.4 | gross -0.013R
+
+== Crash 900 Index (CRASH900): Crash 900 down; registered 30241 bars from 2026-09-23 08:41, confirmation 99375 bars; spread 1.352
+   Deriv: sudden downturns; 50-1,000 ticks set how often, on average, the market crashes.
+   measured: spread = 13.03 x the typical 1-min move; jumps 2.63/h (0% up); jump due? late/early 0.97 (z -0.5); VR5 1.00 VR15 1.02 VR60 1.08 VR240 1.20; AC1 0.002; vol memory -0.01; net drift 2.275/h (z 1.3)
+   rule overdue x1 (TTI): 721 trades, avg -0.066R t -1.9, halves -0.096 / -0.051 | confirmation 2433 trades, avg -0.056R t -3.2 | gross -0.001R
+   rule overdue x0.7 (TTI): 956 trades, avg -0.097R t -3.2, halves -0.140 / -0.058 | confirmation 3202 trades, avg -0.064R t -4.2 | gross -0.032R
+   rule drift long tp1 sl2 max60: 9556 trades, avg -0.485R t -22.5, halves -0.503 / -0.468 | confirmation 31116 trades, avg -0.487R t -40.2 | gross -0.012R
+   rule drift long tp0.5 sl3 max60: 12761 trades, avg -0.333R t -35.6, halves -0.343 / -0.323 | confirmation 41430 trades, avg -0.311R t -62.4 | gross -0.021R
+
+== Crash 1000 Index (CRASH1000): Crash 1000 down; registered 30241 bars from 2026-09-23 08:43, confirmation 99377 bars; spread 0.5402
+   Deriv: sudden downturns; 50-1,000 ticks set how often, on average, the market crashes.
+   measured: spread = 16.56 x the typical 1-min move; jumps 2.57/h (0% up); jump due? late/early 0.92 (z -1.5); VR5 1.01 VR15 0.97 VR60 1.05 VR240 1.00; AC1 0.002; vol memory -0.01; net drift 0.4384/h (z 0.7)
+   rule overdue x1 (TTI): 718 trades, avg -0.122R t -3.4, halves -0.114 / -0.140 | confirmation 2239 trades, avg -0.039R t -2.0 | gross -0.049R
+   rule overdue x0.7 (TTI): 943 trades, avg -0.108R t -3.6, halves -0.108 / -0.112 | confirmation 3011 trades, avg -0.068R t -4.1 | gross -0.035R
+   rule drift long tp1 sl2 max60: 9581 trades, avg -0.578R t -25.8, halves -0.599 / -0.556 | confirmation 31310 trades, avg -0.608R t -47.9 | gross -0.004R
+   rule drift long tp0.5 sl3 max60: 12708 trades, avg -0.381R t -40.7, halves -0.401 / -0.363 | confirmation 41697 trades, avg -0.393R t -73.1 | gross -0.003R
+
+== Volatility 10 Index (R_10): Volatility 10; registered 30241 bars from 2026-09-23 08:05, confirmation 99358 bars; spread 0.188
+   Deriv: constant volatility from 10% to 250%; ticks every 2 s, or every 1 s for (1s).
+   measured: spread = 0.28 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 0.99 VR15 1.00 VR60 1.05 VR240 1.26; AC1 -0.002; vol memory -0.00; net drift -0.06824/h (z -0.3)
+   rule momentum lb15 z1.5 hold15: 746 trades, avg -0.079R t -1.6, halves -0.033 / -0.125 | confirmation 2439 trades, avg -0.116R t -4.2 | gross +0.017R
+   rule fade lb15 z1.5 hold15: 746 trades, avg -0.114R t -2.3, halves -0.162 / -0.067 | confirmation 2439 trades, avg -0.081R t -2.9 | gross -0.017R
+
+== Volatility 25 Index (R_25): Volatility 25; registered 30241 bars from 2026-09-23 08:07, confirmation 99360 bars; spread 0.331
+   Deriv: constant volatility from 10% to 250%; ticks every 2 s, or every 1 s for (1s).
+   measured: spread = 0.37 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 1.01 VR15 1.05 VR60 1.12 VR240 1.27; AC1 0.006; vol memory 0.01; net drift 0.02388/h (z 0.1)
+   rule momentum lb15 z1.5 hold15: 742 trades, avg -0.082R t -1.6, halves -0.082 / -0.072 | confirmation 2448 trades, avg -0.145R t -5.2 | gross +0.048R
+   rule fade lb15 z1.5 hold15: 742 trades, avg -0.177R t -3.5, halves -0.179 / -0.185 | confirmation 2448 trades, avg -0.108R t -3.9 | gross -0.048R
+
+== Volatility 50 Index (R_50): Volatility 50; registered 30241 bars from 2026-09-23 08:25, confirmation 99358 bars; spread 0.023
+   Deriv: constant volatility from 10% to 250%; ticks every 2 s, or every 1 s for (1s).
+   measured: spread = 0.40 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 0.98 VR15 0.94 VR60 0.91 VR240 0.86; AC1 -0.003; vol memory 0.00; net drift -0.01254/h (z -0.6)
+   rule fade lb15 z1.5 hold15: 722 trades, avg -0.029R t -0.6, halves +0.016 / -0.088 | confirmation 2398 trades, avg -0.143R t -5.1 | gross +0.111R
+   rule momentum lb15 z1.5 hold15: 722 trades, avg -0.252R t -5.2, halves -0.291 / -0.198 | confirmation 2398 trades, avg -0.095R t -3.4 | gross -0.111R
+
+== Volatility 75 Index (R_75): Volatility 75; registered 30241 bars from 2026-09-23 08:27, confirmation 99360 bars; spread 16.41
+   Deriv: constant volatility from 10% to 250%; ticks every 2 s, or every 1 s for (1s).
+   measured: spread = 0.35 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 1.02 VR15 0.99 VR60 0.90 VR240 0.85; AC1 0.009; vol memory 0.01; net drift -13.79/h (z -0.9)
+   rule momentum lb15 z1.5 hold15: 694 trades, avg -0.108R t -2.1, halves -0.213 / -0.007 | confirmation 2384 trades, avg -0.087R t -3.2 | gross +0.018R
+   rule fade lb15 z1.5 hold15: 694 trades, avg -0.143R t -2.8, halves -0.036 / -0.245 | confirmation 2384 trades, avg -0.141R t -5.2 | gross -0.018R
+
+== Volatility 100 Index (R_100): Volatility 100; registered 30241 bars from 2026-09-23 08:28, confirmation 99361 bars; spread 0.29
+   Deriv: constant volatility from 10% to 250%; ticks every 2 s, or every 1 s for (1s).
+   measured: spread = 0.34 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 0.99 VR15 0.97 VR60 0.99 VR240 0.92; AC1 -0.010; vol memory 0.00; net drift 0.1336/h (z 0.5)
+   rule fade lb15 z1.5 hold15: 733 trades, avg -0.109R t -2.2, halves -0.203 / -0.017 | confirmation 2417 trades, avg -0.098R t -3.5 | gross +0.011R
+   rule momentum lb15 z1.5 hold15: 733 trades, avg -0.130R t -2.6, halves -0.040 / -0.218 | confirmation 2417 trades, avg -0.154R t -5.6 | gross -0.011R
+
+== Volatility 10 (1s) Index (1HZ10V): Volatility 10; registered 30241 bars from 2026-09-23 08:30, confirmation 99364 bars; spread UNKNOWN (gross only)
+   Deriv: constant volatility from 10% to 250%; ticks every 2 s, or every 1 s for (1s).
+   measured: spread = 0.00 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 1.01 VR15 1.00 VR60 0.93 VR240 0.98; AC1 0.002; vol memory -0.00; net drift -0.2174/h (z -0.5)
+   rule fade lb15 z1.5 hold15: 746 trades, avg +0.106R t 2.2, halves +0.124 / +0.081 | confirmation 2440 trades, avg +0.000R t 0.0 | gross +0.106R
+   rule momentum lb15 z1.5 hold15: 746 trades, avg -0.106R t -2.2, halves -0.124 / -0.081 | confirmation 2440 trades, avg -+0.000R t -0.0 | gross -0.106R
+
+== Volatility 15 (1s) Index (1HZ15V): Volatility 15; registered 30241 bars from 2026-09-23 08:31, confirmation 99365 bars; spread 0.799
+   Deriv: constant volatility from 10% to 250%; ticks every 2 s, or every 1 s for (1s).
+   measured: spread = 0.28 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 0.99 VR15 0.99 VR60 1.01 VR240 0.79; AC1 0.001; vol memory 0.00; net drift 0.2239/h (z 0.2)
+   rule momentum lb15 z1.5 hold15: 729 trades, avg -0.088R t -1.8, halves -0.006 / -0.200 | confirmation 2386 trades, avg -0.086R t -3.2 | gross +0.008R
+   rule fade lb15 z1.5 hold15: 729 trades, avg -0.104R t -2.1, halves -0.188 / +0.010 | confirmation 2386 trades, avg -0.111R t -4.2 | gross -0.008R
+
+== Volatility 25 (1s) Index (1HZ25V): Volatility 25; registered 30241 bars from 2026-09-23 08:33, confirmation 99367 bars; spread 70.05
+   Deriv: constant volatility from 10% to 250%; ticks every 2 s, or every 1 s for (1s).
+   measured: spread = 0.24 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 1.00 VR15 1.04 VR60 1.13 VR240 1.17; AC1 -0.007; vol memory 0.00; net drift -52.08/h (z -0.5)
+   rule momentum lb15 z1.5 hold15: 717 trades, avg +0.032R t 0.7, halves -0.019 / +0.085 | confirmation 2398 trades, avg -0.066R t -2.5 | gross +0.111R
+   rule fade lb15 z1.5 hold15: 717 trades, avg -0.190R t -4.0, halves -0.139 / -0.246 | confirmation 2398 trades, avg -0.104R t -3.9 | gross -0.111R
+
+== Volatility 30 (1s) Index (1HZ30V): Volatility 30; registered 30241 bars from 2026-09-23 08:35, confirmation 99369 bars; spread 0.586
+   Deriv: constant volatility from 10% to 250%; ticks every 2 s, or every 1 s for (1s).
+   measured: spread = 0.24 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 1.01 VR15 0.97 VR60 0.97 VR240 1.14; AC1 0.000; vol memory 0.00; net drift -0.02722/h (z -0.0)
+   rule fade lb15 z1.5 hold15: 724 trades, avg -0.054R t -1.1, halves -0.058 / -0.041 | confirmation 2396 trades, avg -0.079R t -3.0 | gross +0.025R
+   rule momentum lb15 z1.5 hold15: 724 trades, avg -0.104R t -2.1, halves -0.100 / -0.118 | confirmation 2396 trades, avg -0.068R t -2.5 | gross -0.025R
+
+== Volatility 50 (1s) Index (1HZ50V): Volatility 50; registered 30241 bars from 2026-09-23 08:36, confirmation 99370 bars; spread 51.75
+   Deriv: constant volatility from 10% to 250%; ticks every 2 s, or every 1 s for (1s).
+   measured: spread = 0.40 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 1.00 VR15 0.98 VR60 0.80 VR240 0.82; AC1 -0.006; vol memory -0.01; net drift -42.32/h (z -0.9)
+   rule momentum lb15 z1.5 hold15: 720 trades, avg -0.117R t -2.5, halves -0.169 / -0.062 | confirmation 2322 trades, avg -0.101R t -3.7 | gross +0.017R
+   rule fade lb15 z1.5 hold15: 720 trades, avg -0.151R t -3.2, halves -0.090 / -0.215 | confirmation 2322 trades, avg -0.113R t -4.1 | gross -0.017R
+
+== Volatility 75 (1s) Index (1HZ75V): Volatility 75; registered 30241 bars from 2026-09-23 08:38, confirmation 99372 bars; spread 1.55
+   Deriv: constant volatility from 10% to 250%; ticks every 2 s, or every 1 s for (1s).
+   measured: spread = 0.30 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 1.01 VR15 0.98 VR60 0.93 VR240 0.85; AC1 -0.005; vol memory 0.01; net drift -1.814/h (z -1.0)
+   rule fade lb15 z1.5 hold15: 720 trades, avg -0.072R t -1.5, halves -0.014 / -0.107 | confirmation 2424 trades, avg -0.072R t -2.7 | gross +0.028R
+   rule momentum lb15 z1.5 hold15: 720 trades, avg -0.129R t -2.6, halves -0.179 / -0.101 | confirmation 2424 trades, avg -0.075R t -2.8 | gross -0.028R
+
+== Volatility 90 (1s) Index (1HZ90V): Volatility 90; registered 30241 bars from 2026-09-23 08:39, confirmation 99373 bars; spread 11.015
+   Deriv: constant volatility from 10% to 250%; ticks every 2 s, or every 1 s for (1s).
+   measured: spread = 0.40 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 1.02 VR15 1.04 VR60 1.08 VR240 1.12; AC1 -0.002; vol memory 0.01; net drift 13.67/h (z 1.4)
+   rule momentum lb15 z1.5 hold15: 754 trades, avg -0.068R t -1.4, halves -0.038 / -0.095 | confirmation 2377 trades, avg -0.177R t -6.6 | gross +0.067R
+   rule fade lb15 z1.5 hold15: 754 trades, avg -0.202R t -4.1, halves -0.247 / -0.158 | confirmation 2377 trades, avg -0.185R t -6.9 | gross -0.067R
+
+== Volatility 100 (1s) Index (1HZ100V): Volatility 100; registered 30241 bars from 2026-09-23 08:41, confirmation 99375 bars; spread 0.47
+   Deriv: constant volatility from 10% to 250%; ticks every 2 s, or every 1 s for (1s).
+   measured: spread = 0.31 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 1.01 VR15 1.01 VR60 1.04 VR240 1.19; AC1 -0.009; vol memory 0.03; net drift 0.5102/h (z 1.0)
+   rule fade lb15 z1.5 hold15: 734 trades, avg -0.079R t -1.6, halves -0.030 / -0.140 | confirmation 2383 trades, avg -0.132R t -4.8 | gross +0.026R
+   rule momentum lb15 z1.5 hold15: 734 trades, avg -0.131R t -2.6, halves -0.201 / -0.046 | confirmation 2383 trades, avg -0.164R t -6.0 | gross -0.026R
+
+== Volatility 150 (1s) Index (1HZ150V): Volatility 150; registered 30241 bars from 2026-09-23 08:43, confirmation 99377 bars; spread 0.07
+   Deriv: constant volatility from 10% to 250%; ticks every 2 s, or every 1 s for (1s).
+   measured: spread = 0.94 x the typical 1-min move; jumps 0.00/h (-% up); jump due? late/early - (z -); VR5 1.02 VR15 0.98 VR60 0.96 VR240 0.97; AC1 -0.003; vol memory 0.02; net drift 0.01159/h (z 0.5)
+   rule fade lb15 z1.5 hold15: 719 trades, avg -0.220R t -4.4, halves -0.266 / -0.170 | confirmation 2368 trades, avg -0.266R t -10.1 | gross +0.120R
+   rule momentum lb15 z1.5 hold15: 719 trades, avg -0.459R t -9.1, halves -0.445 / -0.479 | confirmation 2368 trades, avg -0.394R t -14.8 | gross -0.120R
+
+== Volatility 250 (1s) Index (1HZ250V): Volatility 250; registered 30241 bars from 2026-09-23 08:44, confirmation 99378 bars; spread UNKNOWN (gross only)
+   Deriv: constant volatility from 10% to 250%; ticks every 2 s, or every 1 s for (1s).
+   measured: spread = 0.00 x the typical 1-min move; jumps 6.29/h (50% up); jump due? late/early 0.27 (z -38.5); VR5 0.46 VR15 0.50 VR60 0.36 VR240 0.25; AC1 -0.304; vol memory 0.12; net drift 7.937E-05/h (z 0.1)
+   rule fade lb15 z1.5 hold15: 1403 trades, avg +0.951R t 13.2, halves +0.871 / +1.022 | confirmation 4133 trades, avg +1.149R t 26.5 | gross +0.951R  < registered pass at zero spread; spread unknown
+   rule momentum lb15 z1.5 hold15: 1403 trades, avg -0.951R t -13.2, halves -0.871 / -1.022 | confirmation 4133 trades, avg -1.149R t -26.5 | gross -0.951R
+
+== SUMMARY
+Boom 50 Index: Boom, no edge (best drift short tp1 sl2 max60 t -12.2)
+Boom 150 Index: Boom, no edge (best overdue x1 (TTI) t 1.2)
+Boom 300 Index: Boom, no edge (best overdue x1 (TTI) t -4.5)
+Boom 500 Index: Boom, no edge (best overdue x1 (TTI) t -0.1)
+Boom 600 Index: Boom, no edge (best overdue x0.7 (TTI) t -0.0, gross)
+Boom 900 Index: Boom, no edge (best overdue x0.7 (TTI) t -4.4)
+Boom 1000 Index: Boom, no edge (best overdue x1 (TTI) t -3.1)
+Crash 50 Index: Crash, no edge (best drift long tp1 sl2 max60 t -13.0)
+Crash 150 Index: Crash, no edge (best overdue x0.7 (TTI) t -0.8)
+Crash 300 Index: Crash, no edge (best overdue x0.7 (TTI) t -1.8)
+Crash 500 Index: Crash, no edge (best overdue x1 (TTI) t -1.3)
+Crash 600 Index: Crash, no edge (best overdue x0.7 (TTI) t 0.4, gross)
+Crash 900 Index: Crash, no edge (best overdue x1 (TTI) t -1.9)
+Crash 1000 Index: Crash, no edge (best overdue x1 (TTI) t -3.4)
+Volatility 10 Index: Volatility, no edge (best momentum lb15 z1.5 hold15 t -1.6)
+Volatility 25 Index: Volatility, no edge (best momentum lb15 z1.5 hold15 t -1.6)
+Volatility 50 Index: Volatility, no edge (best fade lb15 z1.5 hold15 t -0.6)
+Volatility 75 Index: Volatility, no edge (best momentum lb15 z1.5 hold15 t -2.1)
+Volatility 100 Index: Volatility, no edge (best fade lb15 z1.5 hold15 t -2.2)
+Volatility 10 (1s) Index: Volatility, no edge (best fade lb15 z1.5 hold15 t 2.2, gross)
+Volatility 15 (1s) Index: Volatility, no edge (best momentum lb15 z1.5 hold15 t -1.8)
+Volatility 25 (1s) Index: Volatility, no edge (best momentum lb15 z1.5 hold15 t 0.7)
+Volatility 30 (1s) Index: Volatility, no edge (best fade lb15 z1.5 hold15 t -1.1)
+Volatility 50 (1s) Index: Volatility, no edge (best momentum lb15 z1.5 hold15 t -2.5)
+Volatility 75 (1s) Index: Volatility, no edge (best fade lb15 z1.5 hold15 t -1.5)
+Volatility 90 (1s) Index: Volatility, no edge (best momentum lb15 z1.5 hold15 t -1.4)
+Volatility 100 (1s) Index: Volatility, no edge (best fade lb15 z1.5 hold15 t -1.6)
+Volatility 150 (1s) Index: Volatility, no edge (best fade lb15 z1.5 hold15 t -4.4)
+Volatility 250 (1s) Index: Volatility, no edge (best fade lb15 z1.5 hold15 t 13.2, gross)

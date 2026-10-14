@@ -1,0 +1,29 @@
+../../../../../syn/ticks/DSI10.ticks: 87316 ticks, 1.00/s over 24.3 h; 1456 M1 bars; spread 0.22
+  momentum lb3 hold3
+    bars as in the study 299 trades, avg +0.651R t 14.5
+    ticks, spread x1, +0s: 298 trades, avg +0.654R t 14.6
+    ticks, spread x1, +2s: 298 trades, avg +0.652R t 14.7
+    ticks, spread x1, +5s: 298 trades, avg +0.642R t 14.5
+    ticks, spread x2, +2s: 298 trades, avg +0.510R t 11.5
+    ticks, spread x3, +5s: 298 trades, avg +0.359R t 8.1
+  momentum lb3 hold5
+    bars as in the study 197 trades, avg +1.036R t 11.7
+    ticks, spread x1, +0s: 197 trades, avg +1.034R t 11.7
+    ticks, spread x1, +2s: 197 trades, avg +1.029R t 11.6
+    ticks, spread x1, +5s: 197 trades, avg +1.018R t 11.5
+    ticks, spread x2, +2s: 197 trades, avg +0.886R t 10.0
+    ticks, spread x3, +5s: 197 trades, avg +0.732R t 8.3
+  momentum lb5 hold3
+    bars as in the study 321 trades, avg +0.590R t 12.6
+    ticks, spread x1, +0s: 321 trades, avg +0.588R t 12.6
+    ticks, spread x1, +2s: 321 trades, avg +0.581R t 12.4
+    ticks, spread x1, +5s: 321 trades, avg +0.575R t 12.3
+    ticks, spread x2, +2s: 321 trades, avg +0.439R t 9.4
+    ticks, spread x3, +5s: 321 trades, avg +0.290R t 6.2
+  momentum lb5 hold5
+    bars as in the study 205 trades, avg +0.917R t 9.8
+    ticks, spread x1, +0s: 204 trades, avg +0.922R t 9.8
+    ticks, spread x1, +2s: 204 trades, avg +0.915R t 9.7
+    ticks, spread x1, +5s: 204 trades, avg +0.901R t 9.6
+    ticks, spread x2, +2s: 204 trades, avg +0.772R t 8.2
+    ticks, spread x3, +5s: 204 trades, avg +0.616R t 6.5

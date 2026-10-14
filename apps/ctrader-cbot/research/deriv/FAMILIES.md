@@ -104,3 +104,15 @@ Install the new `ZugrioMarketLab.algo` and start it on the demo account. The fam
 - Market Lab's tick replay now runs the same rules on the account's own bid/ask ticks by default: `SYMBOL|DSI`, `Behaviour.MomentumOnTicks`, entry 0, 2 and 5 seconds after the signal.
 - It prints the average and highest spread actually paid.
 - **That run, not this one, can make Drift Switch a candidate.**
+
+**Controls (2026-10-14, `study_results_boom_crash_volatility.txt`).**
+- **Boom and Crash 50–1000:** no edge. TTI's overdue rule is at best t 1.2. Drift-follow on Boom/Crash 50 loses heavily (t −12 to −13).
+- **Volatility 10–100 and (1s) 10–150:** no edge, |t| ≤ 2.5 everywhere.
+- **Volatility 250 (1s): t 13.2 for the fade, gross only.** This is an artefact, not structure. On Deriv's feed this index trades near 0.3, quoted to 2 decimals, so one price step (0.01) is about 3% of the price. Minutes move by −0.01, 0 or +0.01, and the rounding creates the reversion (AC1 −0.30). No spread is published for it, and it is not a candidate.
+- **Drift Switch is not quantised:** about 60 price steps per typical minute's move.
+
+**Tick check of Drift Switch 10 (`dsi10_tick_check.txt`, `dsitick.mjs`).**
+- **Data:** Deriv's feed keeps about 24 hours of ticks: 87,316 ticks at 1 per second.
+- **Method:** the rules filled at the first tick after the signal minute, plus 0, 2 or 5 seconds, buying at mid + spread/2 and selling at mid − spread/2.
+- **Result:** the same as on bars. At the min spread, +0.58 to +1.03R per trade (t 10–15), with delays up to 5 seconds costing about 0.02R. At 3× the min spread (0.66) with a 5-second delay, still +0.29 to +0.73R.
+- **So the signal does not depend on bar timing.** The account's real spread is the remaining question.
