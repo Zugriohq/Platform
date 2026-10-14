@@ -312,3 +312,41 @@ TTI's longer day-trade horizon and stricter break threshold on Jump could plausi
 The pipeline was checked end to end on a simulated Jump series. TTI fires on it, and its "target already passed" defect appears there too.
 
 **Also wanted.** The owner's own TTI Track Record export (Track Record → export, `tti-track-record-*.csv`). `trackrecord.mjs` summarises it by instrument: as TTI recorded it, and recomputed from entry, stop and exit. It is descriptive only, as it covers at most the last 100 signals.
+
+### Result (2026-10-14): TTI on Jump performs like a random walk
+
+**Data.** Deriv's feed *is* reachable from the research container, through the endpoint TTI itself uses first (`wss://api.derivws.com/trading/v1/options/ws/public`). Only the legacy `ws.derivws.com` address is blocked. The owner's browser download failed for the same reason: the page tried only the legacy address, and it now tries TTI's order.
+
+`derivfetch.mjs` downloaded 90 days of M1 bars for Jump 10–100 (2026-07-16 to 2026-10-14, 129,600 bars each). Results are in `jump_results.txt`.
+
+**TTI 4.2 as shipped on Jump.** 339 signals over 90 days.
+
+| | Signals | Avg R per trade (plan A, from the signal price) | t |
+|---|---|---|---|
+| All five indices | 339 (310 usable) | **−0.101** | −1.8 |
+| First half | 183 | −0.139 | −2.2 |
+| Second half | 156 | −0.056 | −0.6 |
+| Jump 50 / Jump 75 (best) | 112 / 67 | −0.011 / +0.008 | ≈ 0 |
+| **Random-walk control** | 204 | **−0.096** | −1.8 |
+| TTI with fixes F1–F3 | 95 | −0.216 | −2.3 |
+
+The test fails, before any realistic spread: TTI's Jump spreads cost about 0.00R. TTI on Jump does what it does on a random walk with the same volatility.
+
+**Why TTI's own record looks profitable.** Its panel showed 95 WIN / 97 LOSS with a median target of 1.6R, which reads as profitable. Measured from the price at the signal, the same signals total −31R. Three effects close that gap:
+1. **29 of the 95 WINs (31%) had their target already passed when the signal fired.** TTI books them as wins, but they cannot be traded.
+2. **TTI plans from its ideal zone entry.** The signal price is a median **0.49R** worse. TTI's WINs average +0.71R from the signal price, not the planned 1.6R.
+3. **147 of 339 signals (43%) time out.** They are not in the WIN/LOSS count.
+
+**What Jump itself does** (M1, jumps beyond 6 robust sigmas). It matches Deriv's description:
+
+| Measure | Result |
+|---|---|
+| Jumps per hour detected at M1 | 0.34–0.37. Deriv says one per 20 minutes at the tick level; smaller ones are absorbed inside a minute |
+| Up share | 48–52% |
+| Gap regularity | coefficient of variation 0.98–1.01, i.e. memoryless: no jump is ever "due" |
+| After a jump | in the jump's direction, next 5 bars −0.04 to +0.10 sigma (one t 2.0 out of ten); next 30 bars −0.06 to 0 sigma |
+| Ordinary minutes | lag-1 autocorrelation −0.006 to 0.000 |
+
+TTI's "Jump recent" signal has nothing to read. A jump does not tell you what comes next.
+
+**Verdict.** TTI on Jump is not validated: −0.10R per trade, the same as its random-walk control, and negative in both halves. The profit the app's own panel suggests comes from how it books outcomes, not from the market.

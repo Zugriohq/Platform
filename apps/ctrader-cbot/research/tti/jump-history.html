@@ -31,18 +31,25 @@
 </main>
 <script>
 const SYMBOLS = ["JD10", "JD25", "JD50", "JD75", "JD100"];
-const URL_WS = "wss://ws.derivws.com/websockets/v3?app_id=1089";
+// TTI's own endpoint order (WS_EPS): the current public API first; the legacy app_id endpoint no longer connects for everyone (owner, 2026-10-14).
+const URLS_WS = ["wss://api.derivws.com/trading/v1/options/ws/public", "wss://ws.derivws.com/websockets/v3?app_id=1089"];
 const logEl = document.getElementById("log");
 const log = (m, cls) => { const s = document.createElement("div"); if (cls) s.className = cls; s.textContent = m; logEl.appendChild(s); logEl.scrollTop = logEl.scrollHeight; };
 
-function connect() {
+async function connect() {
+  let last;
+  for (const u of URLS_WS) { try { const api = await open(u); log("Connected to " + u, "ok"); return api; } catch (e) { last = e; log("Could not connect to " + u, "bad"); } }
+  throw last;
+}
+function open(url) {
   return new Promise((ok, fail) => {
-    const ws = new WebSocket(URL_WS); let id = 0; const wait = new Map();
-    ws.onopen = () => ok({
+    const ws = new WebSocket(url); let id = 0; const wait = new Map();
+    const t = setTimeout(() => { try { ws.close(); } catch (e) {} fail(new Error("timeout")); }, 15000);
+    ws.onopen = () => { clearTimeout(t); ok({
       ask: (req) => new Promise((res) => { const r = ++id; wait.set(r, res); ws.send(JSON.stringify({ ...req, req_id: r })); }),
       close: () => ws.close(),
-    });
-    ws.onerror = () => fail(new Error("could not connect to Deriv"));
+    }); };
+    ws.onerror = () => { clearTimeout(t); fail(new Error("could not connect to Deriv")); };
     ws.onmessage = (e) => { const m = JSON.parse(e.data); const f = wait.get(m.req_id); if (f) { wait.delete(m.req_id); f(m); } };
   });
 }
@@ -74,7 +81,7 @@ document.getElementById("go").onclick = async (ev) => {
   const days = Math.max(7, Math.min(365, +document.getElementById("days").value || 90));
   const fromEpoch = Math.floor(Date.now() / 1000) - days * 86400;
   try {
-    const api = await connect(); log("Connected to Deriv.", "ok");
+    const api = await connect();
     const lines = ["symbol,epoch,open,high,low,close"];
     for (const s of SYMBOLS) { for (const r of await history(api, s, fromEpoch)) lines.push(s + "," + r.join(",")); }
     api.close();
