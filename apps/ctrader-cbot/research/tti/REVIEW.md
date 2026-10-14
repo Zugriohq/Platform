@@ -151,3 +151,43 @@ Same data and pass rule as before; results are in `v43a_results.txt` and `v43b_r
 - **They do not reach an edge.** Neither variant is positive in either year with plan A. The one exit that is positive in 2026 (trailing, +0.05R, t = 0.5) is negative in 2025.
 - **The fixed engine behaves like a random-walk trader.** Its result sits between zero and minus the spread.
 - **Verdict:** both variants fail the registered test. The entry model's information (M5 structure patterns, FVG, sweeps, scored confluence) does not predict direction on these markets once its implementation faults are removed.
+
+## What information gives TTI an edge? The event study (2026-10-14, pre-registered in `events_prereg.json`)
+
+This is the owner's framework, priorities 1–6 (regime, momentum, breakout acceptance and failure, displacement, retracement, sweep response), measured on every occurrence in history rather than on TTI's own signals.
+
+**Scope:**
+- Five markets: EURUSD, GBPUSD, USDJPY, XAUUSD and the S&P 500 CFD.
+- 2024-10 to 2026-09: design to 2025-12, test in 2026.
+- 19 variants, all traded the same way: next-bar entry, 1-ATR stop, 1.5-ATR target, 48-bar limit.
+- One run on M5 bars and one on H1 bars (amendment 1, registered after the M5 run and before the H1 run).
+
+Results are in `events_results.txt` (M5) and `events_results_h1.txt` (H1); `node events.mjs <dir> [300|3600]`.
+
+**The control: unbiased measurement, and the cost of a trade.**
+
+| | Random direction, gross | Net |
+|---|---|---|
+| M5 | +0.000R (design), +0.007R (test) | −0.26R |
+| H1 | +0.010R, +0.006R | −0.05 to −0.06R |
+
+At a 1-ATR stop, the round-trip spread is 0.26R on M5 and about 0.06R on H1.
+
+**What the information does, before cost (gross):**
+
+| Information | M5 | H1 |
+|---|---|---|
+| Break of structure, continuation (all six variants) | −0.02 to −0.07R, t to −5 | −0.01 to −0.07R, not significant (one variant +0.04R in design, −0.04R in test) |
+| Accepted break (3 bars later still beyond) | −0.02 to −0.04R | −0.04 to 0.00R |
+| Sweep of the 20-bar extreme, closed back inside (reversal) | +0.01R (t 1.3–1.7) | about 0 |
+| FVG retracement to the midpoint | about 0 | −0.23 to +0.04R, not stable |
+| 1-hour momentum burst, follow | −0.12R | −0.18 to −0.29R (n under 60) |
+| 1-hour momentum burst, fade | +0.08R / +0.12R (t 1.6 / 2.1) | +0.22R / +0.17R (t 1.5 / 0.8, n under 70) |
+
+**The answer:**
+1. **No variant passes**, not as predictive (gross t ≥ 2 in both periods) and not as tradable.
+2. **The information TTI trades points the wrong way, a little.** On M5, structure breaks follow through slightly *less* often than random. The only consistent sign in the data is weak short-term mean reversion: sweeps reverse, and big bursts partly revert. TTI's continuation logic is on the wrong side of it, which matches TTI 4.2 doing worse than the random walk.
+3. **The size is the problem.** The largest consistent effect, the momentum fade at about +0.1R, is under half the M5 cost of 0.26R. On H1 the sample is too small to confirm it.
+4. **The market features TTI uses add nothing tradable on these markets at these horizons.**
+
+**What remains outside this study:** order-flow, positioning, options and macro data (framework sections E, I, K). The feed does not have them, so they are not tested.
