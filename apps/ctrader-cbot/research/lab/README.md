@@ -328,3 +328,28 @@ Each rule names the party that pays the edge (METHODOLOGY.md step 2).
 - **Event days:**
   - FOMC days are from the Fed's list.
   - NFP and CPI days are reconstructed from EURUSD's 08:30 New York minute: 199 and 201 days. The known NFP days 2024-08-02 and 2025-09-05 are found.
+
+## Round 9, 2026-10-14: a registered search for more edges (`edge_search_prereg.json`, `edge_search.mjs`)
+
+**Design.** Four published effects not tested before, registered together. Because four are tested at once, the bar is t ≥ 2.5 pooled and positive in both halves.
+
+**Result: all four fail** (`edge_search_results.txt`).
+
+| Test | Before costs | Net, both halves | Verdict |
+|---|---|---|---|
+| E1 Crypto 4-week trend on 11 more coins (BNB, XRP, ADA, LTC, LINK, XLM, TRX, ETC, EOS, DOGE, BCH) | — | +0.049R / +0.003R, pooled t 0.7 | fail |
+| E2 Index overnight drift (SPX, NDX close to open) | **+0.038% a night (t 3.5)** | −0.003% / +0.001%, t −0.1 | fail: the effect is real, but costs take it all |
+| E3 10-month trend filter on 10 indices, 1990–2026 | — | +0.099R (t 2.2) / +0.020R (t 0.5), pooled t 1.95 | fail. It cuts the drawdown from 12.6R to 7.5R against buy-and-hold, at about the same Sharpe (0.33 vs 0.30) |
+| E4 FX cross-sectional momentum (10 pairs) | — | −0.001R / −0.086R | fail |
+
+**What this means.**
+- **E1 weakens the case for the crypto engine.** The BTC/ETH 4-week trend (t 3.7) does not extend to the next 11 coins. Only BNB is positive at t ≥ 2. That suggests part of the BTC/ETH result could be chance or specific to those two coins. The demo record decides whether the engine stays.
+- **E2 is a true effect that the instrument cannot capture.** A CFD's spread and overnight financing are about the size of the overnight premium.
+- **E3 restates that the strongest return in this data is the equity premium itself.** Buy-and-hold on SPX and NDX is +0.11R and +0.18R a month (t 2.3 and 3.9) after 5% financing. It is not a timing edge, and choosing US indices because they did best would be hindsight. The filter's value is the smaller drawdown.
+- **FX has now failed every family tested:**
+  - time-series trend;
+  - cross-sectional momentum;
+  - intraday momentum;
+  - fix reversals;
+  - minute rules;
+  - APA at M1 to D1.
