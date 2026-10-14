@@ -109,3 +109,18 @@ Those ideas were tested here and in round 6, and none carries an edge after cost
   - **The gold trend premium:** undecided until the broker's swap is known.
 - **Minute-level rules on the major markets do not survive retail spreads** (round 6).
 - **Scalping can only pay where the price process itself is mispriced.** The Deriv spike-index tick replica (Market Lab `LAB REPLICA`) tests that.
+
+## Can an edge be extracted by refining TTI? (2026-10-14)
+
+`refine.mjs` searched TTI's real-market signals for a profitable slice; results are in `refine_results.txt`.
+
+**The slices:** market, setup, regime, direction, session and P(win), alone and in pairs, each under all seven exit rules. That is 637 slices with at least 30 signals.
+
+**How:** each slice was chosen on 2025 and confirmed on 2026.
+
+**Results:**
+- **2025 (design):** only 14 slices were positive. Only one had t ≥ 2: gold with P(win) ≥ 0.70 and a 0.8R target, at +0.233R.
+- **2026 (test):** that slice lost −0.287R (t = −2.0). None of the ten best 2025 slices was positive in 2026.
+- **Reversing every signal:** +0.004R in 2025 and −0.006R in 2026. TTI's direction is uninformative, not a usable contrarian signal.
+
+**Conclusion:** there is no stable subset to refine into an engine. The best-looking slice is what selection from 637 tries produces by chance.

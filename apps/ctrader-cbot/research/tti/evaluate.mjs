@@ -54,7 +54,7 @@ for (let a = 0; a < args.length; a += 2) {
   for (const s of J.signals) {
     const d = s.dir === "BUY" ? 1 : -1, i0 = firstAt(B, s.firedAt / 1000); if (i0 >= B.n) continue;
     const E = s.price, risk = d * (E - s.stop), tA = d * (s.target - E) / risk;
-    const row = { key: J.key, walk: J.walk, year: new Date(s.firedAt).getUTCFullYear(), setup: s.setup, regime: s.regime, pWin: s.pWin, appOutcome: s.appOutcome, tA, risk, costR: sp / risk };
+    const row = { key: J.key, walk: J.walk, year: new Date(s.firedAt).getUTCFullYear(), hour: new Date(s.firedAt).getUTCHours(), dir: s.dir, setup: s.setup, regime: s.regime, pWin: s.pWin, appOutcome: s.appOutcome, tA, risk, costR: sp / risk };
     if (!(risk > 0)) { row.bad = "stop on the wrong side"; all.push(row); continue; }
     if (!(tA > 0)) { row.bad = "target already passed at the signal"; all.push(row); continue; }
     // best excursion before the stop, within 2 hours
@@ -94,3 +94,4 @@ for (const s of [...new Set(real.map((r) => r.setup))]) lines.push(...block(`REA
 lines.push(...calibration(real));
 if (walk.length) lines.push(...block("RANDOM WALK CONTROL (no edge by construction)", walk));
 console.log(lines.join("\n"));
+if (process.env.DUMP) fs.writeFileSync(process.env.DUMP, JSON.stringify(all));
