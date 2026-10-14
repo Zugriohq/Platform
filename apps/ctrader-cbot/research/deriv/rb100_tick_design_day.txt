@@ -1,0 +1,13 @@
+../../../../../syn/ticks24/RB100.ticks: 87131 ticks over 24.2 h; 24 jumps (0.99/h); 25 segments; range width median 34 (n 25); 2891 boundary touches
+A1 breaks by the side price was on: floor 14 (0 up, 14 down, avg size 101); ceiling 8 (8 up, 0 down, avg size 86); inside 2 (0 up, 2 down, avg size 2)
+A1 breaks at a boundary that go THROUGH it (floor -> down, ceiling -> up): 22 of 22
+A1 P(break on the next tick | touch), by touch number k: k 1: 0/232 = 0.00%; k 2-3: 1/219 = 0.46%; k 4-7: 2/188 = 1.06%; k 8-15: 4/266 = 1.50%; k 16+: 15/1986 = 0.76%
+A1 H 60: touch MFE 8.7 / MAE -5.2 points (n 2891); control (2 inside) MFE 7.2 / MAE -5.5 (n 5189)
+A2 H 60 spread x1 (2.6): 484 trades, avg -2.45 points (t -2.4, 25 ranges); 22 ended by a jump, avg -98.1; control -2.61 (t -3.2, n 568)
+A2 H 60 spread x2 (5.2): 484 trades, avg -5.05 points (t -4.9, 25 ranges); 22 ended by a jump, avg -100.7; control -5.21 (t -6.4, n 568)
+A1 H 300: touch MFE 21.4 / MAE -9.6 points (n 2891); control (2 inside) MFE 20.2 / MAE -10.3 (n 5189)
+A2 H 300 spread x1 (2.6): 206 trades, avg -0.23 points (t -0.1, 25 ranges); 22 ended by a jump, avg -70.5; control -1.08 (t -0.4, n 209)
+A2 H 300 spread x2 (5.2): 206 trades, avg -2.83 points (t -1.0, 25 ranges); 22 ended by a jump, avg -73.1; control -3.68 (t -1.4, n 209)
+A1 H 900: touch MFE 35.1 / MAE -14.8 points (n 2891); control (2 inside) MFE 35.0 / MAE -15.5 (n 5189)
+A2 H 900 spread x1 (2.6): 91 trades, avg -0.42 points (t -0.1, 25 ranges); 24 ended by a jump, avg -36.3; control +4.81 (t 0.9, n 92)
+A2 H 900 spread x2 (5.2): 91 trades, avg -3.02 points (t -0.5, 25 ranges); 24 ended by a jump, avg -38.9; control +2.21 (t 0.4, n 92)

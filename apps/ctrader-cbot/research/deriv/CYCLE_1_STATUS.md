@@ -42,3 +42,25 @@ One Market Lab run on demo, with default settings. It places no orders. It runs 
 - the bar study on Trek, Skew Step, Multi Step and Volatility Switch.
 
 Send the `LAB DSI`, `LAB RB`, `LAB TREK`, `LAB VSW` and `LAB STUDY` lines.
+
+## Result: Experiment A, Range Break 100 design day (2026-10-14, `rb100_tick_design_day.txt`)
+
+**Data.** 87,131 ticks over 24.2 h; 24 jumps (0.99/h); 25 ranges, median width 34 points; 2,891 boundary touches.
+
+**A1, the generator.**
+- **Every break at a wall goes through that wall: 22 of 22.** All 14 floor breaks went down (average 101 points); all 8 ceiling breaks went up (average 86).
+- **Break chance per touch: about 0.8%, with no usable pattern by touch number.** By touch number k: k = 1: 0/232; k 2–3: 0.5%; k 4–7: 1.1%; k 8–15: 1.5%; k 16+: 0.8%.
+- **The reflection is real but small against the tail.** Excursions after a touch are only slightly better than at the inside control two points away (MFE 8.7 vs 7.2 over 60 ticks).
+- **So the walls reflect, and the breaks repay the reflection exactly.** It is the same fair design as Boom/Crash.
+
+**A2, the frozen rule, at the published min spread 2.6.**
+
+| Hold | Trades | Avg points per trade | t | Ended by a jump |
+|---|---|---|---|---|
+| 60 ticks | 484 | −2.45 | −2.4 | 22 |
+| 300 ticks | 206 | −0.23 | −0.1 | 22 |
+| 900 ticks | 91 | −0.42 | −0.1 | 24 |
+
+Trades ended by a jump lost 36–98 points each. At 2× the spread every cell is negative.
+
+**Verdict.** The Range Break fade fails at design. Under the registration, no holdout is needed for a design failure. The plan's own gate also rejects it: "breakout hazard constant across touch counts → reject fade". Range Break 200 is being downloaded to complete the design day.
