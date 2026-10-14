@@ -124,3 +124,30 @@ Those ideas were tested here and in round 6, and none carries an edge after cost
 - **Reversing every signal:** +0.004R in 2025 and −0.006R in 2026. TTI's direction is uninformative, not a usable contrarian signal.
 
 **Conclusion:** there is no stable subset to refine into an engine. The best-looking slice is what selection from 637 tries produces by chance.
+
+## TTI 4.3: the defects fixed and measured again (2026-10-14, pre-registered in `v43_prereg.json`)
+
+Same data and pass rule as before; results are in `v43a_results.txt` and `v43b_results.txt`. Run with `replay.mjs --fix F1,F2,F3[,F4]`.
+
+**The fixes:**
+- **F1:** analyse closed bars.
+- **F2:** fire only from inside the entry zone, with the target set from the signal price.
+- **F3:** confirmation data refreshed every minute.
+- **F4 (variant b only):** trade only with the higher-timeframe trend.
+
+**What the fixes changed:**
+- **Most signals were chasing.** With F2, 85% of TTI's signals (1,581 of 1,938 in variant a) fired with the price already outside the setup's own entry zone, and are dropped.
+- **F1 fills the empty setups.** Setups that never fired before (sweep, BOS retest) now can.
+
+| | Signals | Plan A (TTI's levels) | Best exit | 2025 | 2026 |
+|---|---|---|---|---|---|
+| TTI 4.2 as shipped | 1,362 | −0.195R (t −7.3) | −0.162R | −0.19R | −0.21R |
+| 4.3a: F1–F3 | 357 | −0.111R (t −2.1) | −0.044R (trail) | −0.05R (t −0.7) | −0.14R (t −1.7) |
+| 4.3b: F1–F4 | 358 | −0.113R (t −2.2) | −0.044R (trail) | −0.05R (t −0.7) | −0.13R (t −1.6) |
+| 4.3b on a random walk | 40 | +0.02R | | | |
+
+**Reading the table:**
+- **The fixes help.** The loss per trade roughly halves. Most of the old loss was the chasing and the empty-bar artefacts.
+- **They do not reach an edge.** Neither variant is positive in either year with plan A. The one exit that is positive in 2026 (trailing, +0.05R, t = 0.5) is negative in 2025.
+- **The fixed engine behaves like a random-walk trader.** Its result sits between zero and minus the spread.
+- **Verdict:** both variants fail the registered test. The entry model's information (M5 structure patterns, FVG, sweeps, scored confluence) does not predict direction on these markets once its implementation faults are removed.

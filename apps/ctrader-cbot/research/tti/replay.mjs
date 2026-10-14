@@ -17,6 +17,8 @@ import vm from "vm";
 
 const [html, barsPath, KEY, outPath] = process.argv.slice(2);
 const walkSeed = process.argv.includes("--walk") ? +process.argv[process.argv.indexOf("--walk") + 1] : null;
+// --fix F1,F2,F3,F4: the defects of REVIEW.md closed (v43_prereg.json). Without it the replay is TTI 4.2 as shipped.
+const FIX = new Set(process.argv.includes("--fix") ? process.argv[process.argv.indexOf("--fix") + 1].split(",") : []);
 
 // ---- bars ----
 const buf = fs.readFileSync(barsPath), f = new Float64Array(buf.buffer, buf.byteOffset, buf.length / 8), N = f.length / 5;
@@ -58,8 +60,27 @@ vm.runInContext(`
   for (const f of ["renderTile","renderWatchlist","afterRecompute","subscribeTicksForInst","renderFeed","renderBrain","updateTitle",
     "playAlert","toast","saveLog","refreshWLItem","drawSignalLevels","renderAnalysis","updateTopBarRegime","updateLiveCt"]) globalThis[f] = () => {};
   globalThis.requestHTF = (k) => { S[k]._htfRequested = true; };
-  globalThis.scheduleOutcome = (o) => { __fired.push(o); };
-`, Object.assign(ctx, { __fired: fired }));
+  globalThis.scheduleOutcome = (o) => {
+    // F2: fire only from inside the setup's entry zone, and set target 1 from the signal price (same level logic).
+    if (__F2) {
+      const L = o.lvls, z = L && L.entryZone, p = o.price, d = o.sig === "BUY" ? 1 : -1, stop = +L.stop;
+      if (!z || p < +z.low || p > +z.high || d * (p - stop) <= 0) { o.outcome = "DROPPED"; __dropped.n++; return; }
+      const k = computeTargets(o.sig, p, Math.abs(p - stop), o.comps.htfLvl, o.comps.fibV);
+      o.lvls = { ...L, target: k.t1.toFixed(gS(o.k).d), entry: String(p) };
+    }
+    __fired.push(o);
+  };
+  // F4: only in the direction of the higher-timeframe trend (TTI's P(win) is the same for both directions).
+  if (__F4) {
+    const orig = planTradeLevels;
+    globalThis.planTradeLevels = function (e, t, s, n, i, a, l, r, o, c) {
+      const P = orig.apply(this, arguments);
+      if (P.plannerStatus !== "VALID") return P;
+      const tr = c && c.htfTrend;
+      return (t === "BUY" && tr === "bullish") || (t === "SELL" && tr === "bearish") ? P : emptyLevelPlan("HTF_CONFLICT");
+    };
+  }
+`, Object.assign(ctx, { __fired: fired, __dropped: { n: 0 }, __F2: FIX.has("F2"), __F4: FIX.has("F4") }));
 const S = vm.runInContext("S", ctx), st = S[KEY];
 if (!st) throw new Error("unknown TTI key " + KEY);
 const VERSION = vm.runInContext("TTI_VERSION", ctx);
@@ -106,22 +127,25 @@ for (let i = 0; i < N; i++) {
     NOW = T[i] * 1000;
     if (m5) { st.candles[st.candles.length - 1] = { t: m5.t, o: m5.o, h: m5.h, l: m5.l, c: m5.c }; st.closes[st.closes.length - 1] = m5.c; }
     m5 = { t: bar5, o: O[i], h: O[i], l: O[i], c: O[i] };
-    st.candles.push({ ...m5 }); st.closes.push(m5.c); if (st.candles.length > 300) { st.candles.shift(); st.closes.shift(); }
+    // F1: analyse the closed bars; the new (forming) bar is added after the full recompute.
+    if (!FIX.has("F1")) { st.candles.push({ ...m5 }); st.closes.push(m5.c); if (st.candles.length > 300) { st.candles.shift(); st.closes.shift(); } }
     st.prevPrice = st.price || m5.o; st.price = m5.o;
     if (st.candles.length >= 20) {
       if (!started) { vm.runInContext(`bootstrapGARCH(${JSON.stringify(KEY)})`, ctx); started = true; }
-      if (st._htfRequested && T[i] - lastHTF >= 600) { setHTF(Math.max(0, i - 1)); lastHTF = T[i]; }
+      if (st._htfRequested && T[i] - lastHTF >= (FIX.has("F3") ? 0 : 600)) { setHTF(Math.max(0, i - 1)); lastHTF = T[i]; }
       if (!d1Done || T[i] % 86400 < 300) { const d1 = asOf("D1", Math.max(0, i - 1), 35); st.candlesD1 = d1; st.closesD1 = d1.map((x) => x.c); d1Done = true; }
       const before = fired.length;
       vm.runInContext(`recomputeFull(${JSON.stringify(KEY)}); checkSig(${JSON.stringify(KEY)});`, ctx);
       for (let k = before; k < fired.length; k++) pending.push(fired[k]);
     }
+    if (FIX.has("F1")) { st.candles.push({ ...m5 }); st.closes.push(m5.c); if (st.candles.length > 300) { st.candles.shift(); st.closes.shift(); } }
   }
   // Updates inside the M5 bar (one per minute here), then the outcome check the app runs on its own record.
   NOW = (T[i] + 59) * 1000;
   m5.h = Math.max(m5.h, H[i]); m5.l = Math.min(m5.l, L[i]); m5.c = C[i];
   st.candles[st.candles.length - 1] = { ...m5 }; st.closes[st.closes.length - 1] = m5.c; st.prevPrice = st.price; st.price = C[i];
   const a = atrFn(st.candles.slice(-20), 14) || 1e-9; st.tickVelocity = (0.4 * (C[i] - O[i])) / a;
+  if (FIX.has("F3") && st._htfRequested) { const m1 = []; for (let j = Math.max(0, i - 59); j <= i; j++) m1.push({ t: T[j], o: O[j], h: H[j], l: L[j], c: C[j] }); st.candlesM1 = m1; st.closesM1 = m1.map((x) => x.c); }
   if (st.candles.length >= 20) vm.runInContext(`recomputeLight(${JSON.stringify(KEY)})`, ctx);
   for (let k = pending.length - 1; k >= 0; k--) {
     const s = pending[k], tg = parseFloat(s.lvls.target), sl = parseFloat(s.lvls.stop), p = C[i];
@@ -133,5 +157,5 @@ for (let i = 0; i < N; i++) {
 
 const rows = fired.map((s) => ({ firedAt: s.firedAt, dir: s.sig, price: s.price, stop: +s.lvls.stop, target: +s.lvls.target, entryIdeal: +s.lvls.entry,
   setup: s.lvls.setupType, regime: s.regime, pWin: s.pWin, evNet: s.evNet, rrNet: s.lvls.rrNet, costR: s.lvls.costR, appOutcome: s.outcome }));
-fs.writeFileSync(outPath, JSON.stringify({ version: VERSION, key: KEY, bars: barsPath, walk: walkSeed, from: T[0], to: T[N - 1], seconds: (Date.now() - t0) / 1000, signals: rows }));
-console.log(KEY, walkSeed !== null ? "(random walk " + walkSeed + ")" : "", "TTI", VERSION, "signals", rows.length, "in", ((Date.now() - t0) / 1000).toFixed(0) + "s");
+fs.writeFileSync(outPath, JSON.stringify({ version: VERSION, fixes: [...FIX], dropped: ctx.__dropped.n, key: KEY, bars: barsPath, walk: walkSeed, from: T[0], to: T[N - 1], seconds: (Date.now() - t0) / 1000, signals: rows }));
+console.log(KEY, walkSeed !== null ? "(random walk " + walkSeed + ")" : "", "TTI", VERSION, FIX.size ? "fixes " + [...FIX].join(",") : "", "signals", rows.length, "dropped (outside zone)", ctx.__dropped.n, "in", ((Date.now() - t0) / 1000).toFixed(0) + "s");
