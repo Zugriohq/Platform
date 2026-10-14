@@ -38,7 +38,11 @@ namespace Zugrio.CBot.Lab
         // Example: "Boom 150 Index|SELL|2|2|0.5; Crash 150 Index|BUY|2|2|0.5".
         // Since 2026-10-14 (family study, research/deriv/FAMILIES.md): the Drift Switch momentum rules on the account's own
         // bid/ask ticks. "SYMBOL|DSI" runs that check; the spread it pays is the account's, which decides the result.
-        public const string DefaultReplayRules = "Drift Switch Index 10|DSI; Drift Switch Index 20|DSI; Drift Switch Index 30|DSI";
+        // Cycle 1 (research/deriv/CYCLE_1_PROTOCOL.md): Range Break walls (RB), Trek (TREK) and Volatility Switch (VSW) on the
+        // account's own ticks; the last two are not on Deriv's public feed, so this is their only data.
+        public const string DefaultReplayRules = "Drift Switch Index 10|DSI; Drift Switch Index 20|DSI; Drift Switch Index 30|DSI; " +
+            "Range Break 100 Index|RB; Range Break 200 Index|RB; Trek Up Index|TREK; Trek Down Index|TREK; " +
+            "VolSwitch Low Vol Index|VSW; VolSwitch Medium Vol Index|VSW; VolSwitch High Vol Index|VSW";
         [Parameter("Tick replay rules (symbol|BUY/SELL|TP points|SL points|lots; ...), empty = none", DefaultValue = DefaultReplayRules)] public string ReplayRules { get; set; } = DefaultReplayRules;
         // Names differ from the previous build so a saved instance picks up the new defaults (7 days; battery off).
         [Parameter("Replay: days of ticks", DefaultValue = 7, MinValue = 1, MaxValue = 14)] public int ReplayDays { get; set; } = 7;
@@ -47,7 +51,9 @@ namespace Zugrio.CBot.Lab
         // The family behaviour study (Behaviour, research/deriv/FAMILIES.md, behaviour_prereg.json): each symbol is read as
         // the Deriv product its name says, measured against what Deriv says that family does, and tested only with the
         // rules that family's mechanism implies. Mechanism families first; Volatility indices last, as controls.
-        public const string StudyKeywords = "Drift,Range Break,DEX,Trek,Skew,Multi,Step,Bull,Bear,Daily,Switch,Vol over,Hybrid,Jump,Boom,Crash,Volatility";
+        // Since 2026-10-14 the families on Deriv's public feed are studied from it (research/deriv/FAMILIES.md); the default here
+        // is the families that are only on the account: Trek, Skew Step, Multi Step, Volatility Switch.
+        public const string StudyKeywords = "Trek,Skew,Multi,VolSwitch,Volatility Switch";
         [Parameter("Family behaviour study", DefaultValue = true)] public bool RunStudy { get; set; } = true;
         [Parameter("Study: symbol keywords, in priority order", DefaultValue = StudyKeywords)] public string StudyKeywordText { get; set; } = StudyKeywords;
         [Parameter("Study: days of M1 history", DefaultValue = 21, MinValue = 3, MaxValue = 30)] public int StudyDays { get; set; } = 21;
@@ -128,11 +134,11 @@ namespace Zugrio.CBot.Lab
         private ReplayJob? BeginJob(string rule, CultureInfo ci)
         {
             var parts = rule.Split('|').Select(x => x.Trim()).ToArray();
-            var dsi = parts.Length >= 2 && parts[1].Equals("DSI", StringComparison.OrdinalIgnoreCase);
+            var dsi = parts.Length >= 2 && new[] { "DSI", "RB", "TREK", "VSW" }.Contains(parts[1].ToUpperInvariant());
             if (!dsi && (parts.Length < 4 || parts[0].Length == 0)) { Print($"LAB REPLICA: rule '{rule}' needs symbol|BUY/SELL|TP|SL|lots, or symbol|DSI."); return null; }
             var sym = Symbols.GetSymbol(parts[0]);
             if (sym == null) { Print($"LAB REPLICA: '{parts[0]}' not found at this broker."); return null; }
-            Print($"LAB REPLICA {sym.Name}: loading {ReplayDays} days of ticks ({(dsi ? "Drift Switch tick check" : $"rule {parts[1]} tp {parts[2]} sl {parts[3]}")})...");
+            Print($"LAB REPLICA {sym.Name}: loading {ReplayDays} days of ticks ({(dsi ? parts[1].ToUpperInvariant() + " tick check" : $"rule {parts[1]} tp {parts[2]} sl {parts[3]}")})...");
             var job = new ReplayJob { Parts = parts, Sym = sym, From = Server.TimeInUtc.AddDays(-ReplayDays) };
             job.Clock.Start();
             return job;
@@ -258,6 +264,24 @@ namespace Zugrio.CBot.Lab
 
         private const int LoadSecondsLimit = 180;
 
+        /// <summary>Cycle 1 tick studies (TickStudies): Range Break walls, Trek unconditional returns, Volatility Switch persistence.</summary>
+        private void CycleOneCheck(string kind, Symbol sym, Ticks ticks, DateTime from)
+        {
+            var list = new List<LabTick>(ticks.Count);
+            for (var i = 0; i < ticks.Count; i++) if (ticks[i].Time >= from) list.Add(new LabTick(ticks[i].Time, ticks[i].Bid, ticks[i].Ask));
+            var lines = kind == "RB" ? TickStudies.RangeBreak(list, 1.5 * PointStep(list))
+                : kind == "TREK" ? TickStudies.Trek(list, sym.Name.IndexOf("down", StringComparison.OrdinalIgnoreCase) >= 0 ? -1 : 1)
+                : TickStudies.VolSwitch(list);
+            foreach (var l in lines) Print($"LAB {kind} {sym.Name}: {l}");
+        }
+
+        /// <summary>The typical one-tick mid move (Range Break steps by a fixed amount), so a jump is any move above 1.5 steps.</summary>
+        private static double PointStep(IReadOnlyList<LabTick> t)
+        {
+            var d = new List<double>(); for (var i = 1; i < Math.Min(t.Count, 20000); i++) { var x = Math.Abs((t[i].Bid + t[i].Ask) / 2 - (t[i - 1].Bid + t[i - 1].Ask) / 2); if (x > 0) d.Add(x); }
+            if (d.Count == 0) return 1; d.Sort(); return d[d.Count / 2];
+        }
+
         /// <summary>
         /// The family study's Drift Switch candidates (behaviour_prereg.json) on this account's own bid/ask ticks: lookback
         /// and hold of a quarter and half the declared regime length, entered 0, 2 and 5 seconds after the signal minute.
@@ -288,6 +312,7 @@ namespace Zugrio.CBot.Lab
         {
             var parts = j.Parts; var sym = j.Sym; var ticks = j.Ticks!; var from = j.From;
             if (parts[1].Equals("DSI", StringComparison.OrdinalIgnoreCase)) { DriftSwitchCheck(sym, ticks, from, ci); return; }
+            if (new[] { "RB", "TREK", "VSW" }.Contains(parts[1].ToUpperInvariant())) { CycleOneCheck(parts[1].ToUpperInvariant(), sym, ticks, from); return; }
             try
             {
                 var dir = parts[1].Equals("SELL", StringComparison.OrdinalIgnoreCase) ? -1 : 1;
