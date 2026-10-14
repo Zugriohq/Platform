@@ -1,0 +1,25 @@
+{
+  "registered": "2026-10-14, before any result of this study was seen",
+  "why": "Owner's framework (what information could give TTI a predictive edge): test, one condition at a time, whether the information TTI's entry model uses changes the distribution of returns that follow, gross (prediction) and net (economics), on data not used to choose it.",
+  "data": "HistData 1-minute bars aggregated to M5 (TTI's base timeframe), 2024-10 to 2026-09: EURUSD, GBPUSD, USDJPY, XAUUSD, SPXUSD",
+  "split": { "design": "2024-10-01 to 2025-12-31", "test": "2026-01-01 to 2026-09-30" },
+  "outcome": "Every event is traded the same way: enter at the next M5 open in the event's direction; stop 1.0 x ATR14(M5), target 1.5 x ATR14(M5), exit after 48 bars (4 h) otherwise; stop assumed first when both are touched in one bar; gap through a stop fills at the open. R = result / ATR. Net = gross minus the round-trip spread in R. One open trade per event family and market at a time.",
+  "costs_round_trip": { "EURUSD": 0.0001, "GBPUSD": 0.00015, "USDJPY": 0.012, "XAUUSD": 0.35, "SPXUSD": 0.6 },
+  "definitions": {
+    "swing": "fractal: high (low) above (below) the 3 bars either side; known 3 bars later",
+    "htf_trend": "last closed H1 close above (below) its 50-hour EMA = up (down)",
+    "efficiency": "|close(t) - close(t-48)| / sum of |bar-to-bar changes| over 48 bars; trend regime >= 0.30, range regime < 0.15",
+    "displacement": "the event bar's body >= 1.0 x ATR",
+    "close_location": "event bar closes in the outer 25% of its range in the event direction"
+  },
+  "events": {
+    "E1_BOS": "close crosses the last confirmed swing high (low): long (short). Variants: all; +displacement; +close_location; +htf_trend agrees; +trend regime; +range regime",
+    "E2_BOS_ACCEPTED": "E1, and 3 bars later the close is still beyond the broken level: enter then. Variants: all; +htf_trend agrees",
+    "E3_SWEEP_RECLAIM": "high (low) above (below) the prior 20-bar high (low) but the close back inside: short (long). Variants: all; +sweep depth <= 0.5 ATR; +htf_trend agrees with the reversal; +range regime",
+    "E4_FVG_RETRACE": "3-bar fair-value gap whose middle bar body >= 1.0 ATR; the first return to the gap's midpoint within 24 bars: enter there in the gap's direction (limit at the midpoint, or the open if it gaps past). Variants: all; +htf_trend agrees; +trend regime",
+    "E5_MOMENTUM": "12-bar return >= 2 x ATR x sqrt(12) in size. FOLLOW and FADE, each: all; +London/New York hours (07:00-17:00 UTC)"
+  },
+  "tests": "19 variants (E1 6, E2 2, E3 4, E4 3, E5 4), pooled over the five markets with date-clustered standard errors",
+  "pass": "PREDICTIVE: gross mean R > 0 with t >= 2 in design AND in test. TRADABLE: net mean R > 0 with t >= 2 in design AND in test. With 19 variants about one in 40 design results reaches t >= 2 by chance, so the test-period requirement is the safeguard.",
+  "if_nothing_passes": "TTI's entry information has no detectable predictive value on these markets at M5; the TTI line is closed."
+}
