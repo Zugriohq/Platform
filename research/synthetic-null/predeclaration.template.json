@@ -1,0 +1,27 @@
+{
+  "_comment": "TEMPLATE ONLY. Copy to predeclaration.json, set cost_model from current broker contract specs per symbol, commit it, THEN run. Any change after the test window is first read voids results (synthnull/predeclare.py).",
+  "signals": [
+    "momentum_5", "momentum_15", "momentum_50",
+    "reversal_5", "reversal_15", "reversal_50",
+    "bollinger_fade_20_2", "rsi_fade_14",
+    "post_spike_reversal_5", "post_spike_reversal_20"
+  ],
+  "windows": {
+    "calibration": [0.0, 0.4],
+    "test": [0.4, 0.7],
+    "holdout": [0.7, 1.0]
+  },
+  "cost_model": {
+    "slippage": 0.0,
+    "extra_half_spread": 0.0,
+    "commission_frac": 0.0,
+    "swap_long_frac": 0.0,
+    "swap_short_frac": 0.0,
+    "entry_delay_ticks": 1
+  },
+  "event_threshold_z": 8.0,
+  "correction": "holm",
+  "alpha": 0.05,
+  "n_null": 999,
+  "seed": 20261015
+}

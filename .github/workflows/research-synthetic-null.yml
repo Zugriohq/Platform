@@ -1,0 +1,28 @@
+name: Research — synthetic null harness
+
+on:
+  pull_request:
+    paths:
+      - "research/synthetic-null/**"
+      - ".github/workflows/research-synthetic-null.yml"
+  push:
+    branches: [main]
+    paths:
+      - "research/synthetic-null/**"
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: research/synthetic-null
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python -m pytest -q tests
