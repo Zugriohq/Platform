@@ -38,8 +38,13 @@ def _window(ts: TickSeries, frac: list[float]) -> TickSeries:
 
 
 def _commit() -> str:
+    """HEAD commit, suffixed ``-dirty`` when uncommitted changes exist so evidence never over-claims."""
     try:
-        return subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
+        head = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True).stdout.strip()
+        dirty = subprocess.run(
+            ["git", "status", "--porcelain", "--", "."], capture_output=True, text=True, check=True
+        ).stdout.strip()
+        return f"{head}-dirty" if dirty else head
     except (OSError, subprocess.CalledProcessError):
         return "unknown"
 
