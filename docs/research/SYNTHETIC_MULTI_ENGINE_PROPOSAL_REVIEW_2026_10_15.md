@@ -1,17 +1,36 @@
 # Review: External "Multi-Engine Synthetic Trading Bot" Proposal
 
-Status: **research review — non-authoritative.** This document records an assessment of an externally supplied architecture proposal. It does not change product scope, architecture, risk policy or Gate status, and it is not evidence of any edge.
+Status: **research review — non-authoritative. D1, D2 and D4 decided 2026-10-15; D3 pending #118.** This document records an assessment of an externally supplied architecture proposal. It does not change product scope, architecture, risk policy or Gate status, and it is not evidence of any edge.
 Date: 2026-10-15
 Input: founder-supplied text titled *"Comprehensive Trading Bot Architecture Documentation — Multi-Engine System for Synthetic Indices & Volatility Markets"* (pasted into an AI session; not checked into the repository; no author or sources cited).
-Linked issue: none yet.
+Linked issue: #118 (Slice 4 generator-matched null harness).
+
+## 0. Decisions
+
+| # | Decision | Answer | Owner | Status |
+|---|---|---|---|---|
+| D1 | Are binary/digital (fixed-payout, fixed-expiry) contracts in scope? | **No.** Slice 4 is CFD-only. Binaries stay a backlogged "later specialist" family that would need an ADR and a regulatory review, and they cannot gate Release 1. | Founder / Product Lead | Decided 2026-10-15 |
+| D2 | How do Deriv synthetics route to execution? | **cTrader/MT5. The locked decision stands.** No ADR was proposed to overturn it. The proposal's Deriv-API execution layer is out. | Founder / Product Lead | Decided 2026-10-15 |
+| D3 | Which synthetic family does Slice 4 start with? | **Decided by evidence, not intuition.** The family with the strongest holdout-confirmed result against its generator-matched null is chosen. If none survives, Slice 4 returns PASS and the Release 1 synthetic claim is escalated. | Founder, on evidence from #118 | Pending #118 |
+| D4 | Who signs off RiskPolicy values? | **The founder.** No values exist yet. Nothing on the capital path is built until they are signed off. This review proposes no numbers. | Founder / Product Lead | Owner named 2026-10-15; values pending (#21 §2, #94) |
+
+**What happens to the proposal:** nothing from it is built.
+- Its process-check ideas go into #118's Stage A.
+- Its cost arithmetic goes into #118's cost model, as CFD costs under D1.
+- Its overfitting red flags go into Slice 4's validation criteria.
+- Everything else is discarded for the reasons in §3–§4: five engines, autonomous execution, the Python/Rust/Timescale/Redis/K8s stack, hard-coded risk percentages and unsourced performance claims.
+
+This record is closed once D3 resolves. At that point the PR is either merged as a closed record or closed.
 
 ## 1. Summary verdict
+
+**Disqualifier:** none of the proposal's claimed edges was tested against a generator-matched null (`ZR-STR-026`). That alone makes them inadmissible, whatever the other issues below. Any idea from it that survives must pass #118 before it carries any weight.
 
 The proposal is **not adoptable as a Zugrio specification**. It conflicts with frozen Release 1 decisions in at least ten places (§3), contains several factual and internal-consistency errors (§4), and presents uncited win rates, Sharpe ratios and monthly returns as expectations.
 
 Parts of it are **usable as research input** for Release 1 **Slice 4 (synthetic-family fixed bundle)**. Those parts are its insistence on per-family mechanics, cost/payout realism, walk-forward validation and overfitting red flags, plus some candidate diagnostics (§5). Even there, Zugrio's existing requirement is stricter. Under `ZR-STR-026`, any apparent edge must beat a **generator-matched null** after realistic costs. The proposal never applies that test, and it is the test most of its claimed edges would have to survive.
 
-Recommendation: do not open implementation work from this proposal. If the founder wants to pursue any of it, take it into Slice 4 as the research plan in §6 and settle the decisions in §7 first.
+Outcome: no implementation work is opened from this proposal. The usable parts feed #118 (see §0).
 
 ## 2. What the proposal describes
 
@@ -92,22 +111,13 @@ These items are worth keeping, but only as Slice 4 research hypotheses or diagno
 3. **Overfitting red flags.** The suspiciously high win rates, few trades and day-tuned parameters the proposal flags are reasonable screening heuristics. They are not admission thresholds.
 4. **Feature candidates.** Ticks-since-spike, hazard estimates, RV/BV and realized-volatility ratios are candidates for a versioned `featureSchemaId` under a family-scoped manifest, if research justifies them.
 
-## 6. Suggested research path (Slice 4 only, non-capital)
+## 6. Research path
 
-1. Pick **one** synthetic family/instrument based on legacy lineage and available data, as the build cut requires. The proposal's "start with V75" is the weakest candidate for a directional edge, because it is the product closest to a pure constant-volatility martingale.
-2. Run the §5.1 conformance diagnostics on point-in-time tick data. Record the generator parameters and how uncertain they are.
-3. Build the generator-matched null simulator for that family.
-4. Freeze one Core TradeBundle for that scope. Apply identical selection, execution and cost rules to the real series and to the null.
-5. Report the result as bundle-level evidence. If the bundle does not beat the null after costs, the outcome is **PASS**, and that is a valid result.
+Specified in #118. One correction to an obvious shortcut is recorded here: a null matched only on tick interval and σ (GBM) is wrong for every family except Volatility. Boom/Crash, Jump, Step and Range Break would all reject it trivially because of their *documented* mechanics. That would rank families by how badly the null is misspecified rather than by edge. Each family therefore needs a generator-matched parametric null, plus a model-free (permutation) null where one is valid.
 
-All of this lives under `research/` (Python) and creates no production authority.
+## 7. Decisions
 
-## 7. Decisions needed from the founder / decision owners
-
-1. **Product type:** are Deriv binary/digital (fixed-payout, expiry) contracts in scope at all? The current architecture assumes CFD-style positions via cTrader/MT5. Adding binaries brings in the nonlinear-payoff family and needs an ADR plus a regulatory review, since retail binary-option availability differs by jurisdiction.
-2. **Venue:** for synthetics, is the intended route Deriv via cTrader/MT5 (inside the current adapter plan) or the Deriv WebSocket API (a new adapter and capability matrix under #21)?
-3. **Slice 4 family:** which synthetic family/instrument has the strongest legacy evidence and data?
-4. **Risk policy ownership** (Build cut §11): who sets daily-loss, drawdown and sizing limits? This review deliberately does not propose numbers.
+Moved to §0.
 
 ## 8. Sources
 
