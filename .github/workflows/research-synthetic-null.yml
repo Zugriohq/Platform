@@ -26,3 +26,18 @@ jobs:
           python-version: "3.12"
       - run: pip install -r requirements.txt
       - run: python -m pytest -q tests
+
+  ctrader-recorder:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: research/synthetic-null/tools/ctrader/ZugrioTickRecorder/ZugrioTickRecorder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: No trading calls in the recorder
+        run: "! grep -nE 'ExecuteMarketOrder|PlaceLimitOrder|PlaceStopOrder|PlaceStopLimitOrder|ModifyPosition|ClosePosition|CancelPendingOrder|ModifyPendingOrder' ZugrioTickRecorder.cs"
+      - name: Build against the official cTrader.Automate SDK
+        run: dotnet build -c Release
