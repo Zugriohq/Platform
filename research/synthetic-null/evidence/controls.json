@@ -1,0 +1,95 @@
+{
+  "code_commit": "202b29cd6c02f5695a93e97f267211cb3cf4e0b2",
+  "negative_control": {
+    "alpha": 0.05,
+    "n_ticks": 5000,
+    "n_null": 199,
+    "tests": {
+      "momentum_5|parametric_fitted": {
+        "rejections": 11,
+        "runs": 200,
+        "rate": 0.055,
+        "ci95": [
+          0.02777225455200654,
+          0.09627764443391289
+        ]
+      },
+      "reversal_5|parametric_fitted": {
+        "rejections": 8,
+        "runs": 200,
+        "rate": 0.04,
+        "ci95": [
+          0.0174248089944806,
+          0.07729196822601611
+        ]
+      },
+      "momentum_5|permutation": {
+        "rejections": 9,
+        "runs": 200,
+        "rate": 0.045,
+        "ci95": [
+          0.02078042222700435,
+          0.08370268807585397
+        ]
+      },
+      "reversal_5|permutation": {
+        "rejections": 7,
+        "runs": 200,
+        "rate": 0.035,
+        "ci95": [
+          0.014185525898419244,
+          0.07078099835097719
+        ]
+      }
+    }
+  },
+  "positive_control": {
+    "alpha": 0.05,
+    "n_ticks": 5000,
+    "n_null": 99,
+    "runs": 100,
+    "detection_rate": {
+      "0.0": {
+        "parametric_fitted": 0.07,
+        "permutation": 0.04
+      },
+      "0.1": {
+        "parametric_fitted": 0.07,
+        "permutation": 0.08
+      },
+      "0.2": {
+        "parametric_fitted": 0.13,
+        "permutation": 0.15
+      },
+      "0.3": {
+        "parametric_fitted": 0.19,
+        "permutation": 0.2
+      },
+      "0.5": {
+        "parametric_fitted": 0.8,
+        "permutation": 0.82
+      },
+      "0.65": {
+        "parametric_fitted": 1.0,
+        "permutation": 1.0
+      },
+      "0.8": {
+        "parametric_fitted": 1.0,
+        "permutation": 1.0
+      }
+    }
+  },
+  "spike_structure_control": {
+    "gbm_null": {
+      "real": 264.7768278853229,
+      "null_median": 0.0005078895709167419,
+      "p_two_sided": 0.004
+    },
+    "boom_matched_null": {
+      "real": 264.7768278853229,
+      "null_median": 294.1148041109364,
+      "p_two_sided": 0.064
+    }
+  },
+  "elapsed_s": 1100.8
+}
